@@ -1,0 +1,57 @@
+/* JUST TESTING FOR NOW */
+
+.row {
+	margin: 0 !important;
+}
+
+.span {
+	height: 25em;
+	outline: 1px dotted black;
+	padding: 5px;
+	position: relative;
+}
+
+hr {
+	border-bottom-color: black !important;
+}
+
+
+#column-2 {
+	margin-left: 1%;
+}
+
+#note-text-entry {
+	width: 95%;
+	height: 230px;
+}
+
+#note-headline-entry {
+	width: 75%;
+}
+
+#column-3 .action-btn-group {
+	position: absolute;
+	bottom: 2%;
+	right: 2%;
+}
+
+.btn-primary {
+	position: absolute;
+	bottom: 2%;
+	right: 2%;
+}
+
+
+#column-2 {
+}
+
+#column-2 .tag-btn {
+	width: 150%;
+	font-size: 18px;
+	margin-top: 20%;
+	margin-left: 50%;
+}
+
+#column-2 .active {
+	background-color: red;
+}

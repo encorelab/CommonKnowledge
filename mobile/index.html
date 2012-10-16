@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+  
+  <head>
+    <meta charset="utf-8">
+    <title>
+    </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <script type="text/javascript" src="../shared/underscore-min.js"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js">
+    </script>
+    <script src="js/bootstrap.js">
+    </script>
+
+    <!-- Le styles -->
+    <link href="css/bootstrap.css" rel="stylesheet">
+
+    <style>
+      body { padding-top: 60px; /* 60px to make the container go all the way
+      to the bottom of the topbar */ }
+    </style>
+    <link href="css/bootstrap-responsive.css" rel="stylesheet">
+    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js">
+      </script>
+    <![endif]-->
+
+    <link href="css/ck.mobile.css" rel="stylesheet">
+
+    
+    <!-- Le fav and touch icons -->
+    <link rel="shortcut icon" href="ico/favicon.ico">
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="ico/apple-touch-icon-57-precomposed.png">
+    <style>
+    </style>
+  </head>
+  
+  <body>
+    <div class="navbar navbar-fixed-top navbar-inverse">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="brand">
+            Common Knowledge - Brainstorming
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div id="column-1" class="span3 span">
+        <div id="note-1" class="note">
+          <p class="title">
+            The running shoes are awesome
+          </p>
+          <p class="author">
+            Colin (12/10/15)
+          </p>
+        </div>
+        <hr>
+        <div id="note-2" class="note">
+          <p class="title">
+            Why would you want these?
+          </p>
+          <p class="author">
+            Armin (12/10/15)
+          </p>
+        </div>
+        <hr>
+        <div id="note-3" class="note">
+          <p class="title">
+            Poop
+          </p>
+          <p class="author">
+            Sneaky kid (12/10/15)
+          </p>
+        </div>
+        <a id="new-note-button" class="btn btn-primary">
+          Write a New Note
+        </a>
+      </div>
+
+      <div id="column-2" class="span3 span">
+        <h3 id="selected-note">
+          These running shoes are awesome
+        </h3>
+        <div>
+          <p>
+            I like these running shoes because I think they'd help make me run faster.
+            They have pumps on the tongues, to help with performance. The are also
+            light. I hope that they come in other colours.
+          </p>
+        </div>
+        <div>
+          <p>
+            Colin (12/10/15)
+            <br>
+          </p>
+        </div>
+        <a id="build-on-button" class="btn btn-primary">
+          Build On This Note
+        </a>
+      </div>
+
+      <div id="column-3" class="span6 span">
+        <div class="control-group">
+          <label for="note-text-entry">
+            Note
+          </label>
+          <textarea id="note-text-entry" name="note-text-entry"></textarea>
+        </div>        
+        <div class="control-group">
+          <label for="note-headline">
+            Headline
+          </label>
+          <input id="note-headline" name="note-headline" placeholder="Enter headline..."
+          type="">
+        </div>
+        <div class="btn-group action-btn-group">
+          <a id="cancel-note-button" class="btn btn-danger">
+            Cancel
+          </a>
+          <a id="submit-note-button" class="btn btn-success">
+            Submit
+          </a>
+        </div>
+      </div>
+    </div>
+  </body>
+
+</html>
