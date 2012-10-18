@@ -9,19 +9,16 @@
         <meta name="description" content="">
         <meta name="author" content="">
 
+        <script src="js/sail.js/sail.js" type="text/javascript"></script>
+
         <script type="text/javascript">
             Sail.load()
-                .then('../shared/js/deps/jquery-1.6.2.js', '../shared/js/deps/underscore-1.3.3.js')
-                .then('../shared/js/sail.js/rollcall.js', 'js/sail.js/deps/backbone-0.9.2.js')
+                .then('https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js', 'js/sail.js/deps/underscore-1.3.3.js')
+                .then('js/sail.js/rollcall.js', 'js/sail.js/deps/backbone-0.9.2.js')
                 .then('js/bootstrap.js')
                 .then('js/ck.mobile.js')
                 //.thenRun(function() { return Sail.init(CK.Mobile); });  
         </script>
-
-        <!-- <script type="text/javascript" src="../shared/underscore-min.js"></script> -->
-
-        <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script> -->
-        <!-- <script src="js/bootstrap.js"></script> -->
 
         <!-- Le styles -->
         <link href="css/bootstrap.css" rel="stylesheet">
@@ -112,35 +109,6 @@
             </div>
 
             <div id="column-3" class="span6 span">
-                <div class="control-group">
-                    <label for="note-text-entry">
-                        Note
-                    </label>
-                    <textarea id="note-text-entry" name="note-text-entry"></textarea>
-                </div>
-                <div class="control-group">
-                    <label for="note-headline">
-                        Headline
-                    </label>
-                    <input id="note-headline" name="note-headline" placeholder="Enter headline..."
-                    type="">
-                </div>
-                <div class="btn-group action-btn-group">
-                    <a id="cancel-note-button" class="btn btn-danger">
-                        Cancel
-                    </a>
-                    <a id="submit-note-button" class="btn btn-success">
-                        <!-- share -->
-                        Submit
-                    </a>
-                </div>
-            </div>
-            <a id="build-on-button" class="btn btn-primary">
-                Build On
-            </a>
-        </div>
-
-        <div id="column-3" class="span6 span">
             <div class="control-group">
                 <label for="note-text-entry">
                     Note
@@ -164,6 +132,9 @@
             </div>
 
         </div>
+        </div>
+
+        
         
     </body>
 
