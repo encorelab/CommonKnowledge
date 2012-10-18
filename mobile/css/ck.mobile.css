@@ -9,14 +9,14 @@
 }
 
 .span {
-	height: 25em;
+	height: 400px;
 	outline: 1px solid black;
 	padding: 5px;
 	position: relative;
 }
 
-hr {
-	border-bottom-color: black !important;
+.scrollable {
+	overflow: scroll;
 }
 
 
@@ -25,8 +25,9 @@ hr {
 }
 
 .note {
-	outline: 1px dotted black;
+	border-bottom: 1px solid black;
 	padding: 5px;
+	padding-bottom: 10px;
 }
 
 #selected-note .note-title {
@@ -35,25 +36,21 @@ hr {
 	margin-bottom: 5px;
 }
 
-#note-text-entry {
+#note-body-entry {
 	width: 95%;
 	height: 230px;
 }
 
 #note-headline-entry {
-	width: 75%;
+	width: 90%;
 }
 
-#column-3 .action-btn-group {
-	position: absolute;
-	bottom: 2%;
-	right: 2%;
+.action-btn-group {
+	float: right;
 }
 
 .btn-primary {
-	position: absolute;
-	bottom: 2%;
-	right: 2%;
+	float: right;
 }
 
 

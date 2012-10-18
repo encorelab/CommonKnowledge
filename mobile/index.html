@@ -17,7 +17,7 @@
                 .then('js/sail.js/rollcall.js', 'js/sail.js/deps/backbone-0.9.2.js')
                 .then('js/bootstrap.js')
                 .then('js/ck.mobile.js')
-                //.thenRun(function() { return Sail.init(CK.Mobile); });  
+                .thenRun(function() { return Sail.init(CK.Mobile); });  
         </script>
 
         <!-- Le styles -->
@@ -50,42 +50,34 @@
         </div>
 
         <div class="row">
-            <div id="column-1" class="span3 span bs-docs-sidebar">
+            <div id="column-1" class="span3 span bs-docs-sidebar scrollable">
                 <ul class="nav nav-list bs-docs-sidenav affix-top">
-                    <li id="note-1" class="">
+                    <li id="note-1" class="note">
                         <a href="">
-                            <div class="title">
-                                The running shoes are awesome
-                            </div>
-                            <div class="author">
-                                Colin (12/10/15)
-                            </div>
-                            <i class="icon-chevron-right"></i>
+                            <span class="headline">The running shoes are awesome</span>
+                            <br />
+                            <span class="author">Colin </span><span class="date">(12/10/15)</span>
+                            <i class="icon-chevron-right" style="float:right"></i>
                         </a>
                     </li>
-                    <li id="note-2" class="">
+                    <li id="note-2" class="note">
                         <a href="">
-                            <div class="title">
-                                Why would you want these?
-                            </div>
-                            <div class="author">
-                                Armin (12/10/15)
-                            </div>
-                            <i class="icon-chevron-right"></i>  
+                            <span class="headline">Why would you want these?</span>
+                            <br />
+                            <span class="author">Armin </span><span class="date">(12/10/15)</span>
+                            <i class="icon-chevron-right" style="float:right"></i>                            
                         </a>
                     </li>
-                    <li id="note-3" class="">
-                        <div class="title">
-                            Poop
-                        </div>
-                        <div class="author">
-                            Sneaky kid (12/10/15)
-                        </div>
+                    <li id="note-3" class="note">
+                        <a href="">
+                            <span class="headline">Poop</span>
+                            <br />
+                            <span class="author">Sneaky kid </span><span class="date">(12/10/15)</span>
+                            <i class="icon-chevron-right" style="float:right"></i>                            
+                        </a>
                     </li>
+
                 </ul>
-                <a id="new-note-button" class="btn btn-primary">
-                    New Note
-                </a>
             </div>
 
             <div id="column-2" class="span3 span">
@@ -103,39 +95,49 @@
                     </div>
 
                 </div>
-                <a id="build-on-button" class="btn btn-primary">
-                    Build On
-                </a>
             </div>
 
             <div id="column-3" class="span6 span">
-            <div class="control-group">
-                <label for="note-text-entry">
-                    Note
-                </label>
-                <textarea id="note-text-entry" name="note-text-entry"></textarea>
+                <div class="control-group">
+                    <label for="note-body-entry">
+                        Note
+                    </label>
+                    <textarea id="note-body-entry" name="note-body-entry"></textarea>
+                </div>
+                <div class="control-group">
+                    <label for="note-headline-entry">
+                        Headline
+                    </label>
+                    <input id="note-headline-entry" name="note-headline-entry" placeholder="Enter headline..."
+                    type="">
+                </div>
             </div>
-            <div class="control-group">
-                <label for="note-headline">
-                    Headline
-                </label>
-                <input id="note-headline" name="note-headline" placeholder="Enter headline..."
-                type="">
-            </div>
-            <div class="btn-group action-btn-group">
-                <a id="cancel-note-button" class="btn btn-danger">
-                    Cancel
-                </a>
-                <a id="share-note-button" class="btn btn-success">
-                    Share
-                </a>
-            </div>
-
-        </div>
         </div>
 
-        
-        
+
+        <div class="row">
+            <div class="span3">
+                <a id="new-note-button" class="btn btn-primary">
+                    New Note
+                </a>
+            </div>
+            <div class="span3">
+                <a id="build-on-button" class="btn btn-primary">
+                    Build On
+                </a>
+            </div>            
+            <div class="span6">
+                <div class="btn-group action-btn-group">
+                    <a id="cancel-note-button" class="btn btn-danger">
+                        Cancel
+                    </a>
+                    <a id="share-note-button" class="btn btn-success">
+                        Share
+                    </a>
+                </div>
+            </div>
+        </div>
+
     </body>
 
 </html>

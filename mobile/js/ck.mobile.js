@@ -24,9 +24,12 @@ window.CK = window.CK || {};
         jQuery(Sail.app).trigger('initialized');
 
         app.createBindings();
+        jQuery('#connecting').hide();         // shouldn't this be handled by Sail? This is the wrong place (and maybe the wrong loader)
+
 
         return true;
       });
+
   };
 
   app.authenticate = function () {
@@ -85,8 +88,10 @@ window.CK = window.CK || {};
 
     connected: function (ev) {
       console.log("Connected...");
+      jQuery('#connecting').hide();         // shouldn't this be handled by Sail?
 
       app.restoreState();
+
     },
 
     sail: {
@@ -104,8 +109,7 @@ window.CK = window.CK || {};
 
         app.contributions.add(contrib);
 
-        new app.view.ContributionView({model: contrib})
-        .render();
+        new app.view.ContributionView({model: contrib}).render();
 
 
         //addTagToList(new_contribution);
@@ -117,10 +121,13 @@ window.CK = window.CK || {};
     }
   };
 
-  /* code goes here... */
-
+  /* non sail code */
 
   app.createBindings = function() {
+    jQuery('#share-note-button').click(function() {
+      console.log('share clicked');
+    });
+
     jQuery('#cancel-note-button').click(function() {
       console.log('cancel clicked');
     });
