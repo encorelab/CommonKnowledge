@@ -6,7 +6,7 @@
 
 .span {
 	height: 25em;
-	outline: 1px dotted black;
+	outline: 1px solid black;
 	padding: 5px;
 	position: relative;
 }
@@ -18,6 +18,11 @@ hr {
 
 #column-2 {
 	margin-left: 1%;
+}
+
+.note {
+	outline: 1px dotted black;
+	padding: 5px;
 }
 
 #note-text-entry {
