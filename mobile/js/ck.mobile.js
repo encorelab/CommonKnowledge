@@ -23,7 +23,7 @@ window.CK = window.CK || {};
                 Sail.autobindEvents(CK.Mobile);
                 jQuery(Sail.app).trigger('initialized');
 
-                // TODO: add click bindings here?
+                app.createBindings();
 
                 return true;
             });
@@ -79,7 +79,7 @@ window.CK = window.CK || {};
         },
 
         'ui.initialized': function (ev) {
-            
+
         },
 
         connected: function (ev) {
@@ -117,6 +117,13 @@ window.CK = window.CK || {};
     };
 
     /* code goes here... */
+
+
+    app.createBindings = function() {
+        jQuery('#cancel-note-button').click(function() {
+            console.log('cancel clicked');
+        });
+    };
 
     CK.Mobile = app;
 })(window.CK);

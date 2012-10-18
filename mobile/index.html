@@ -2,13 +2,9 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
-        <title>
-        </title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="description" content="">
-        <meta name="author" content="">
-
-        <script type="text/javascript" src="../shared/underscore-min.js"></script>
+        <meta name="author" content=""> 
 
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js">
         </script>
@@ -37,17 +33,14 @@
         <link rel="apple-touch-icon-precomposed" sizes="114x114" href="ico/apple-touch-icon-114-precomposed.png">
         <link rel="apple-touch-icon-precomposed" sizes="72x72" href="ico/apple-touch-icon-72-precomposed.png">
         <link rel="apple-touch-icon-precomposed" href="ico/apple-touch-icon-57-precomposed.png">
-
     </head>
 
     <body>
         <div class="navbar navbar-fixed-top navbar-inverse">
             <div class="navbar-inner">
-                <div class="container">
-                    <a class="brand">
-                        Common Knowledge - New note
-                    </a>
-                </div>
+                <a class="brand">
+                    Common Knowledge - New note
+                </a>
             </div>
         </div>
 
@@ -58,7 +51,7 @@
                         The running shoes are awesome
                     </div>
                     <div class="author">
-                        Colin (12/10/15)
+                        Colin <span class="date">(12/10/15)</span>
                     </div>
                 </div>
                 <div id="note-2" class="note">
@@ -66,7 +59,7 @@
                         Why would you want these?
                     </div>
                     <div class="author">
-                        Armin (12/10/15)
+                        Armin <span class="date">(12/10/15)</span>
                     </div>
                 </div>
                 <div id="note-3" class="note">
@@ -74,7 +67,7 @@
                         Poop
                     </div>
                     <div class="author">
-                        Sneaky kid (12/10/15)
+                        Sneaky kid <span class="date">(12/10/15)</span>
                     </div>
                 </div>
                 <a id="new-note-button" class="btn btn-primary">
@@ -119,9 +112,8 @@
                     <a id="cancel-note-button" class="btn btn-danger">
                         Cancel
                     </a>
-                    <a id="submit-note-button" class="btn btn-success">
-                        <!-- share -->
-                        Submit
+                    <a id="share-note-button" class="btn btn-success">
+                        Share
                     </a>
                 </div>
             </div>

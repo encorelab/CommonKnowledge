@@ -1,5 +1,9 @@
 /* JUST TESTING FOR NOW */
 
+.brand {
+	margin-left: 12px !important;
+}
+
 .row {
 	margin: 0 !important;
 }
@@ -23,6 +27,12 @@ hr {
 .note {
 	outline: 1px dotted black;
 	padding: 5px;
+}
+
+#selected-note .note-title {
+	font-size: 18px;
+	font-weight: bold;
+	margin-bottom: 5px;
 }
 
 #note-text-entry {
