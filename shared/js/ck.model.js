@@ -8,21 +8,22 @@
 
     function Model() {}
 
-    Model.configure = function(config) {
-      if (!((config.run != null) && (app.run.name != null))) {
+    Model.setup = function(config) {
+      if (!((config.run != null) && (config.run.name != null))) {
         throw "Cannot configure model because config does not have a run.name!";
       }
       config.drowsyURL = config.mongo.url + "/" + config.run.name;
-      CK.Model.prototype.Contribution.urlRoot = config.drowsyURL + "/contributions";
-      CK.Model.prototype.Contributions.url = config.drowsyURL + "/contributions";
-      return this.createNecessaryCollections(['contributions']);
+      CK.Model.config = config;
+      CK.Model.Contribution.prototype.urlRoot = config.drowsyURL + "/contributions";
+      CK.Model.Contributions.prototype.url = config.drowsyURL + "/contributions";
+      return CK.Model.DrowsyModel.createNecessaryCollections(['contributions']);
     };
 
     return Model;
 
   })();
 
-  CK.Model.prototype.DrowsyModel = (function(_super) {
+  CK.Model.DrowsyModel = (function(_super) {
 
     __extends(DrowsyModel, _super);
 
@@ -39,7 +40,7 @@
 
     DrowsyModel.prototype.initialize = function() {
       if (!this.get(this.idAttribute)) {
-        this.set(this.idAttribute, model.generateMongoObjectId());
+        this.set(this.idAttribute, CK.Model.DrowsyModel.generateMongoObjectId());
       }
       if (!this.get('timestamp')) {
         return this.set('timestamp', Date());
@@ -50,20 +51,22 @@
       var base, rand, randLength, time;
       base = 16;
       randLength = 13;
-      time = (new Date()).getTime().toString(base);
+      time = Date.now().toString(base);
       rand = Math.ceil(Math.random() * (Math.pow(base, randLength) - 1)).toString(base);
       return time + (Array(randLength + 1).join("0") + rand).slice(-randLength);
     };
 
     DrowsyModel.createNecessaryDatabase = function(requiredDatabase, afterwards) {
-      return jQuery.ajax(app.config.mongo.url, {
+      var config;
+      config = CK.Model.config;
+      return jQuery.ajax(config.mongo.url, {
         type: 'get',
         dataType: 'json',
         success: function(existingDatabases) {
           if (__indexOf.call(existingDatabases, requiredDatabase) >= 0) {
             return afterwards();
           } else {
-            return jQuery.post(app.config.mongo.url, {
+            return jQuery.post(config.mongo.url, {
               db: requiredDatabase
             }, afterwards);
           }
@@ -76,7 +79,10 @@
     };
 
     DrowsyModel.createNecessaryCollections = function(requiredCollections) {
-      return jQuery.ajax(app.drowsyURL, {
+      var config,
+        _this = this;
+      config = CK.Model.config;
+      return jQuery.ajax(config.drowsyURL, {
         type: 'get',
         dataType: 'json',
         success: function(existingCollections) {
@@ -85,8 +91,8 @@
           for (_i = 0, _len = requiredCollections.length; _i < _len; _i++) {
             col = requiredCollections[_i];
             if (__indexOf.call(existingCollections, col) < 0) {
-              console.log("Creating collection '" + col + "' under " + app.drowsyURL);
-              _results.push(jQuery.post(app.drowsyURL, {
+              console.log("Creating collection '" + col + "' under " + config.drowsyURL);
+              _results.push(jQuery.post(config.drowsyURL, {
                 collection: col
               }));
             } else {
@@ -96,7 +102,7 @@
           return _results;
         },
         error: function(err) {
-          console.error("Couldn't fetch list of collections from " + app.drowsyURL + " because: ", JSON.parse(err.responseText));
+          console.error("Couldn't fetch list of collections from " + config.drowsyURL + " because: ", JSON.parse(err.responseText));
           throw err.responseText;
         }
       });
@@ -106,7 +112,7 @@
 
   })(Backbone.Model);
 
-  CK.Model.prototype.DrowsyCollection = (function(_super) {
+  CK.Model.DrowsyCollection = (function(_super) {
 
     __extends(DrowsyCollection, _super);
 
@@ -114,13 +120,13 @@
       return DrowsyCollection.__super__.constructor.apply(this, arguments);
     }
 
-    DrowsyCollection.prototype.model = CK.Model.prototype.DrowsyModel;
+    DrowsyCollection.prototype.model = CK.Model.DrowsyModel;
 
     return DrowsyCollection;
 
-  })(Backbone.Model);
+  })(Backbone.Collection);
 
-  CK.Model.prototype.Contribution = (function(_super) {
+  CK.Model.Contribution = (function(_super) {
 
     __extends(Contribution, _super);
 
@@ -132,22 +138,22 @@
 
     return Contribution;
 
-  })(CK.Model.prototype.DrowsyModel);
+  })(CK.Model.DrowsyModel);
 
-  CK.Model.prototype.Contribution = (function(_super) {
+  CK.Model.Contributions = (function(_super) {
 
-    __extends(Contribution, _super);
+    __extends(Contributions, _super);
 
-    function Contribution() {
-      return Contribution.__super__.constructor.apply(this, arguments);
+    function Contributions() {
+      return Contributions.__super__.constructor.apply(this, arguments);
     }
 
-    Contribution.prototype.model = CK.Model.prototype.Contribution;
+    Contributions.prototype.model = CK.Model.Contribution;
 
-    Contribution.prototype.url = void 0;
+    Contributions.prototype.url = void 0;
 
-    return Contribution;
+    return Contributions;
 
-  })(CK.Model.prototype.DrowsyModel);
+  })(CK.Model.DrowsyCollection);
 
 }).call(this);
