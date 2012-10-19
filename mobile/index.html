@@ -16,7 +16,7 @@
             Sail.load()
                 .then(Sail.JS_ROOT_PATH+'/rollcall.js')
                 .then('js/bootstrap.js')
-                .then('js/ck.mobile.js')
+                .then('js/ck.view.js','js/ck.mobile.js')
                 .thenRun(function() { return Sail.init(new CK.Mobile()); });  
         </script>
 
@@ -94,18 +94,18 @@
                 </div>
             </div>
 
-            <div id="column-3" class="span6 span">
+            <div id="contribution-input" class="span6 span">
                 <div class="control-group">
                     <label for="note-body-entry">
                         Note
                     </label>
-                    <textarea id="note-body-entry" name="note-body-entry"></textarea>
+                    <textarea class="field" id="note-body-entry" name="note-body-entry"></textarea>
                 </div>
                 <div class="control-group">
                     <label for="note-headline-entry">
                         Headline
                     </label>
-                    <input id="note-headline-entry" name="note-headline-entry" placeholder="Enter headline..."
+                    <input class="field" id="note-headline-entry" name="note-headline-entry" placeholder="Enter headline..."
                     type="">
                 </div>
             </div>

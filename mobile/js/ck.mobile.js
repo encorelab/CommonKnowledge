@@ -30,6 +30,8 @@ window.CK = window.CK || {};
         return true;
       });
 
+      // do this again after submitting to backend
+      this.currentContribution = new CK.Model.Contribution();
   };
 
   app.prototype.authenticate = function () {
@@ -83,8 +85,9 @@ window.CK = window.CK || {};
     },
 
     'ui.initialized': function (ev) {
-      console.log('ui.initialized! ... creating bindings (whatever that means)')
-      this.createBindings();
+      console.log('ui.initialized! ... creating bindings (whatever that means)');
+      this.initViews();
+      // this.createBindings();
     },
 
     connected: function (ev) {
@@ -131,6 +134,13 @@ window.CK = window.CK || {};
 
     jQuery('#cancel-note-button').click(function() {
       console.log('cancel clicked');
+    });
+  };
+
+  app.prototype.initViews = function() {
+    self.contributionInputView = new CK.view.ContributionInputView({
+      el: jQuery('#contribution-input'),
+      model: this.currentContribution
     });
   };
 
