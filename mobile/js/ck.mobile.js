@@ -4,12 +4,12 @@
 window.CK = window.CK || {};
 
 (function(CK) {
-  var app = {};
+  var app = _.extend(Sail.App);
 
-  app.name = "CK.Mobile";
+  app.prototype.name = "CK.Mobile";
 
   // TODO: copied from washago code
-  app.init = function() {
+  app.prototype.init = function() {
     //Sail.app.groupchatRoom = 'washago@conference.' + Sail.app.xmppDomain;
 
     // TODO: move this out to config.json
@@ -23,7 +23,7 @@ window.CK = window.CK || {};
         Sail.autobindEvents(CK.Mobile);
         jQuery(Sail.app).trigger('initialized');
 
-        app.createBindings();
+        //app.createBindings();
         jQuery('#connecting').hide();         // shouldn't this be handled by Sail? This is the wrong place (and maybe the wrong loader)
 
 
@@ -32,12 +32,12 @@ window.CK = window.CK || {};
 
   };
 
-  app.authenticate = function () {
+  app.prototype.authenticate = function () {
     // TODO: implement me... probalby just copy + modify code from washago?
   };
 
   // TODO: copied from washago code
-  app.restoreState = function () {
+  app.prototype.restoreState = function () {
     app.contributions = new app.model.Contributions();
 
     app.contributions.on('add', function (contrib) {
@@ -57,7 +57,7 @@ window.CK = window.CK || {};
     app.restoreContributions();
   };
 
-  app.restoreContributions = function () {
+  app.prototype.restoreContributions = function () {
     this.contributions.fetch({
       data: { 
         selector: JSON.stringify({
@@ -73,7 +73,7 @@ window.CK = window.CK || {};
     });
   };
 
-  app.events = {
+  app.prototype.events = {
     initialized: function (ev) {
       app.authenticate();
     },
@@ -83,7 +83,8 @@ window.CK = window.CK || {};
     },
 
     'ui.initialized': function (ev) {
-
+      console.log('ui.initialized! ... creating bindings (whatever that means)')
+      this.createBindings();
     },
 
     connected: function (ev) {
@@ -123,7 +124,7 @@ window.CK = window.CK || {};
 
   /* non sail code */
 
-  app.createBindings = function() {
+  app.prototype.createBindings = function() {
     jQuery('#share-note-button').click(function() {
       console.log('share clicked');
     });
