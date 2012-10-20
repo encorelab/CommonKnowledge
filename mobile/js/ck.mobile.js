@@ -3,25 +3,25 @@
 
 window.CK = window.CK || {};
 
-(function(CK) {
-  var app = _.extend(Sail.App);
+CK.Mobile = function () {
+  var app = this;
 
-  app.prototype.name = "CK.Mobile";
+  app.name = "CK.Mobile";
 
   // TODO: copied from washago code
-  app.prototype.init = function() {
+  app.init = function() {
     //Sail.app.groupchatRoom = 'washago@conference.' + Sail.app.xmppDomain;
 
     // TODO: move this out to config.json
-    Sail.app.username = "roadshow";
-    Sail.app.password = "roadshow";
+    this.username = "roadshow";
+    this.password = "roadshow";
 
     Sail.modules
       .load('Strophe.AutoConnector', {mode: 'pseudo-anon'})
       .load('AuthStatusWidget')
       .thenRun(function () {
-        Sail.autobindEvents(CK.Mobile);
-        jQuery(Sail.app).trigger('initialized');
+        Sail.autobindEvents(app);
+        app.trigger('initialized');
 
         //app.createBindings();
         jQuery('#connecting').hide();         // shouldn't this be handled by Sail? This is the wrong place (and maybe the wrong loader)
@@ -34,21 +34,24 @@ window.CK = window.CK || {};
       this.currentContribution = new CK.Model.Contribution();
   };
 
-  app.prototype.authenticate = function () {
+  app.authenticate = function () {
     // TODO: implement me... probalby just copy + modify code from washago?
+
+    // TODO: for now we're hard-coding a run name... need to get this from auth
+    this.config.run = {name: "ck-alpha1"};
   };
 
   // TODO: copied from washago code
-  app.prototype.restoreState = function () {
-    app.contributions = new app.model.Contributions();
+  app.restoreState = function () {
+    this.contributions = new this.model.Contributions();
 
-    app.contributions.on('add', function (contrib) {
+    this.contributions.on('add', function (contrib) {
       // addTagToList(contrib);
       // addTypeToList(contrib);
       // addAboutToList(contrib);
     });
 
-    app.contributions.on('reset', function (collection) {
+    this.contributions.on('reset', function (collection) {
       collection.each(function (contrib) {
         // addTagToList(contrib);
         // addTypeToList(contrib);
@@ -56,28 +59,30 @@ window.CK = window.CK || {};
       });
     });
 
-    app.restoreContributions();
+    this.restoreContributions();
   };
 
-  app.prototype.restoreContributions = function () {
+  app.restoreContributions = function () {
     this.contributions.fetch({
       data: { 
         selector: JSON.stringify({
-          session: app.run.name
+          session: CK.Mobile.run.name
         }) 
       },
       success: function (contributions) {
         contributions.each(function (contrib) {
-          new app.view.ContributionView({model: contrib})
+          new CK.Mobile.view.ContributionView({model: contrib})
           .render();
         });
       }
     });
   };
 
-  app.prototype.events = {
+  app.events = {
     initialized: function (ev) {
       app.authenticate();
+
+      CK.Model.setup(app.config);
     },
 
     authenticated: function (ev) {
@@ -127,7 +132,7 @@ window.CK = window.CK || {};
 
   /* non sail code */
 
-  app.prototype.createBindings = function() {
+  app.createBindings = function() {
     jQuery('#share-note-button').click(function() {
       console.log('share clicked');
     });
@@ -137,12 +142,13 @@ window.CK = window.CK || {};
     });
   };
 
-  app.prototype.initViews = function() {
+  app.initViews = function() {
     self.contributionInputView = new CK.view.ContributionInputView({
       el: jQuery('#contribution-input'),
       model: this.currentContribution
     });
   };
+}
 
-  CK.Mobile = app;
-})(window.CK);
+CK.Mobile.prototype = new Sail.App();
+
