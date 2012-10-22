@@ -17,7 +17,7 @@
         this.model.set(f.attr('name'), f.val());
       },
 
-      'click #share-note-btn': 'submit',
+      'click #share-note-btn': 'share',
       'click #cancel-note-btn': 'cancel'
     },
 
@@ -27,7 +27,8 @@
       this.model.on('change', this.render);
     },
 
-    submit: function () {
+    share: function () {
+      console.log("Submitting contribution...");
       // var self = this;
 
       // jQuery.mobile.showPageLoadingMsg();
@@ -53,7 +54,7 @@
     },
 
     cancel: function () {
-      console.log("Cancelling Contribution...");
+      console.log("Cancelling contribution...");
       // this.clear();
       // delete veos.reportForm;
       // delete veos.currentReport;
