@@ -16,8 +16,8 @@
             Sail.load()
                 .then(Sail.JS_ROOT_PATH+'/rollcall.js')
                 .then('js/bootstrap.js')
-                .then('js/ck.mobile.js')
-                .then('/shared/js/ck.model.js', 'js/ck.view.js')
+                .then('../shared/js/ck.js')
+                .then('../shared/js/ck.model.js', 'js/ck.view.js','js/ck.mobile.js')
                 .thenRun(function() { return Sail.init(new CK.Mobile()); });  
         </script>
 

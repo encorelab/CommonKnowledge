@@ -69,11 +69,12 @@
     **/
     render: function () {
       console.log("rendering ContributionInputView!");
-      var view = this;
-      _.each(this.attributes, function (attributeValue, attributeName) {
-        console.log("Updating "+attributeName+" with val "+attributeValue);
-        this.$el.find('.field['+attributeName+']').val(attributeValue);
-      });
+      // Doesn't work since this.$el is undefined
+      // var view = this;
+      // _.each(this.attributes, function (attributeValue, attributeName) {
+      //   console.log("Updating "+attributeName+" with val "+attributeValue);
+      //   this.$el.find('.field['+attributeName+']').val(attributeValue);
+      // });
     }
   });
 
