@@ -134,6 +134,7 @@ CK.Mobile = function () {
   /* ck.mobile stuff */
 
   app.initViews = function() {
+    console.log('creating InputView');
     app.contributionInputView = new CK.view.ContributionInputView({
       el: jQuery('#contribution-input'),
       model: app.currentContribution
