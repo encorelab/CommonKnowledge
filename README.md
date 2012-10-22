@@ -1,6 +1,24 @@
 # README!
 
-...
+In order to run Common Knowledge you need a server (we recommend Ubuntu 12.04 at this point) that is able
+to run the database (MongoDB),
+Rollcall (https://github.com/educoder/rollcall/wiki),
+a XMPP server (Prosody or Ejabberd), and
+the REST interface for the database - Drowsy Dromedary (https://github.com/zuk/DrowsyDromedary).
+
+Drowsy Dromodary, Rollcall, and the Agents require Ruby 1.9.3 to be installed.
+
+## Agents
+Make sure you have Ruby 1.9.3 installed and add the users *eventlogger* and *choreographer* to Rollcall.
+Make sure to use the hashed password in the daemon.rb file.
+Furthermore, make sure that the mongo database works fine and can be called by typing "mongo" in the console.
+
+To start the agent go to the common knowledge folder (in a terminal) and change into the agent folder. Now type
+bundle exec ruby daemon.rb
+
+to stop the agent type:
+kill `cat pids/ck.pid`
+
 
 
 #LICENSE
