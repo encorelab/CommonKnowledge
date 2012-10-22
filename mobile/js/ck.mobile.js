@@ -31,6 +31,8 @@ CK.Mobile = function () {
 
       // do this again after submitting to backend
       app.currentContribution = new CK.Model.Contribution();
+      // get some feedback in the console log about the view chaning the model
+      app.currentContribution.on('change', function(model) { console.log(model.changedAttributes()) });
   };
 
   app.authenticate = function () {
