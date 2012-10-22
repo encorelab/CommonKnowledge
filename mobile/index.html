@@ -51,7 +51,7 @@
         </div>
 
         <div class="row">
-            <div id="column-1" class="span3 span bs-docs-sidebar scrollable">
+            <div id="contribution-list" class="span3 view-container bs-docs-sidebar scrollable">
                 <ul class="nav nav-list bs-docs-sidenav affix-top">
                     <li id="note-1" class="note">
                         <a href="">
@@ -74,11 +74,15 @@
                             <span class="author">Sneaky kid </span><span class="date">(12/10/15)</span>                          
                         </a>
                     </li>
-
                 </ul>
+                <div class="btn-container">
+                    <a id="new-note-btn" class="btn btn-primary">
+                        New Note
+                    </a>
+                </div>
             </div>
 
-            <div id="column-2" class="span3 span">
+            <div id="contribution-details" class="span3 view-container">
                 <div id="selected-note">
                     <div class="note-title">
                         These running shoes are awesome
@@ -91,11 +95,15 @@
                     <div>
                         Colin (12/10/15)
                     </div>
-
+                    <div class="btn-container">
+                        <a id="build-on-btn" class="btn btn-primary">
+                            Build On
+                        </a>
+                    </div>
                 </div>
             </div>
 
-            <div id="contribution-input" class="span6 span">
+            <div id="contribution-input" class="span6 view-container">
                 <div class="control-group">
                     <label for="note-body-entry">
                         Note
@@ -109,30 +117,14 @@
                     <input class="field" id="note-headline-entry" name="note-headline-entry" placeholder="Enter headline..."
                     type="">
                 </div>
-            </div>
-        </div>
-
-
-        <div class="row">
-            <div class="span3">
-                <a id="new-note-button" class="btn btn-primary">
-                    New Note
-                </a>
-            </div>
-            <div class="span3">
-                <a id="build-on-button" class="btn btn-primary">
-                    Build On
-                </a>
-            </div>            
-            <div class="span6">
-                <div class="btn-group action-btn-group">
-                    <a id="cancel-note-button" class="btn btn-danger">
+                <div class="btn-container btn-group action-btn-group">
+                    <a id="cancel-note-btn" class="btn btn-danger">
                         Cancel
                     </a>
-                    <a id="share-note-button" class="btn btn-success">
+                    <a id="share-note-btn" class="btn btn-success">
                         Share
                     </a>
-                </div>
+                </div>                
             </div>
         </div>
 

@@ -1,5 +1,3 @@
-/* JUST TESTING FOR NOW */
-
 .brand {
 	margin-left: 12px !important;
 }
@@ -8,21 +6,38 @@
 	margin: 0 !important;
 }
 
-.span {
-	height: 400px;
-	outline: 1px solid black;
-	padding: 5px;
-	position: relative;
-}
-
 .scrollable {
 	overflow: scroll;
 }
 
-
-#column-2 {
-	margin-left: 1%;
+.view-container {
+	height: 400px;
+	border: 1px solid;
+	padding: 5px;
+	position: relative;
 }
+
+
+/****** containers ******/
+
+#contribution-details {
+	margin-left: 0;
+	border-left-width: 0px;				/* overwritting .view-container to prevent dup borders btw 1/2 */
+}
+
+#contribution-details .tag-btn {
+	width: 150%;
+	font-size: 18px;
+	margin-top: 20%;
+	margin-left: 50%;
+}
+
+#contribution-details .active {
+	background-color: red;
+}
+
+
+/******* elements *******/
 
 .note {
 	border-bottom: 1px solid black;
@@ -45,25 +60,12 @@
 	width: 90%;
 }
 
-.action-btn-group {
+.btn-container {
+	position: absolute;
+	bottom: 3px;
+	right: 3px;
+}
+
+/*.btn-primary {
 	float: right;
-}
-
-.btn-primary {
-	float: right;
-}
-
-
-#column-2 {
-}
-
-#column-2 .tag-btn {
-	width: 150%;
-	font-size: 18px;
-	margin-top: 20%;
-	margin-left: 50%;
-}
-
-#column-2 .active {
-	background-color: red;
-}
+}*/
