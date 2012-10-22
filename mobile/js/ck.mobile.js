@@ -24,7 +24,7 @@ window.CK = window.CK || {};
         jQuery(Sail.app).trigger('initialized');
 
         //app.createBindings();
-        jQuery('#connecting').hide();         // shouldn't this be handled by Sail? This is the wrong place (and maybe the wrong loader)
+        // jQuery('#connecting').hide();         // shouldn't this be handled by Sail? This is the wrong place (and maybe the wrong loader)
 
 
         return true;
@@ -32,6 +32,9 @@ window.CK = window.CK || {};
 
       // do this again after submitting to backend
       this.currentContribution = new CK.Model.Contribution();
+
+      //TODO: This should NOT be called here but instead in ui.initialized (which isn't called so I moved it here for now)
+      this.initViews();
   };
 
   app.prototype.authenticate = function () {
@@ -138,7 +141,7 @@ window.CK = window.CK || {};
   };
 
   app.prototype.initViews = function() {
-    self.contributionInputView = new CK.view.ContributionInputView({
+    this.contributionInputView = new CK.view.ContributionInputView({
       el: jQuery('#contribution-input'),
       model: this.currentContribution
     });

@@ -28,28 +28,28 @@
     },
 
     submit: function () {
-      var self = this;
+      // var self = this;
 
-      jQuery.mobile.showPageLoadingMsg();
-      jQuery('.ui-loader h1').text('Submitting...');
-      // use this once we upgrade to jQuery Mobile 1.2
-      //jQuery.mobile.loading( 'show', { theme: "b", text: "Submitting...", textonly: false });
+      // jQuery.mobile.showPageLoadingMsg();
+      // jQuery('.ui-loader h1').text('Submitting...');
+      // // use this once we upgrade to jQuery Mobile 1.2
+      // //jQuery.mobile.loading( 'show', { theme: "b", text: "Submitting...", textonly: false });
 
-      self.model.save(null, {
-        complete: function () {
-          // replace failure with msg here?
-          jQuery.mobile.hidePageLoadingMsg();
-        },
-        success: function () {
-          console.log('Model saved');
-          //var note = self.model;
-        },
-        failure: function(model, response) {
-          console.log('Error submitting: ' + response);
-          // check for error codes from Matt
-          // highligh different required fields based on error codes
-        }        
-      });
+      // self.model.save(null, {
+      //   complete: function () {
+      //     // replace failure with msg here?
+      //     jQuery.mobile.hidePageLoadingMsg();
+      //   },
+      //   success: function () {
+      //     console.log('Model saved');
+      //     //var note = self.model;
+      //   },
+      //   failure: function(model, response) {
+      //     console.log('Error submitting: ' + response);
+      //     // check for error codes from Matt
+      //     // highligh different required fields based on error codes
+      //   }        
+      // });
     },
 
     cancel: function () {
