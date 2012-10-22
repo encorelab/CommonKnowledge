@@ -1,14 +1,18 @@
 body {
-	padding-top: 60px; /* from bootstrap: 60px to make the container go all the way to the bottom of the topbar */
-
- }
+	padding-top: 70px; /* from bootstrap: 60px to make the container go all the way to the bottom of the topbar.
+						  but we actually need 70px for tablet rotation */
+	background-color: #eee9e9;
+}
 
 .brand {
 	margin-left: 12px !important;
 }
 
 .row {
-	margin: 0 !important;
+	/*margin: 0 !important;*/
+	/*margin: -10px -10px 0px -10px !important;*/
+	margin-left: -10px;
+	margin-top: -10px;
 }
 
 .scrollable {
@@ -21,11 +25,13 @@ body {
 }
 
 .view-container {
-	height: 400px;
+	height: 380px;
 	border: 1px solid;
 	padding: 5px;
 	margin-bottom: 10px;
+	margin-left: 18px;
 	position: relative;
+	background-color: white;
 }
 
 .btn-container {
@@ -54,6 +60,10 @@ body {
 	width: 611px;						/* sigh - still fighting bootstrap */
 }
 
+#contribution-input .control-group {
+	margin-bottom: 0px;
+}
+
 
 /******* elements *******/
 
@@ -80,7 +90,7 @@ body {
 
 #note-body-entry {
 	width: 95%;
-	height: 230px;
+	height: 170px;					/* think about changing this dependant on if the tablet is vert or hor (along with .view-container) */
 }
 
 #note-headline-entry {

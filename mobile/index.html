@@ -95,6 +95,7 @@
                 </div>
             </div>
 
+            <!-- hidden until tablet hears event re moving to tagging -->
             <div id="tag-selection" class="span4 view-container hide">
                 <div class="tag-btn-group btn-group btn-group-vertical" data-toggle="buttons-checkbox">
                     <button type="button" class="btn tag-btn btn-warning">Shoes</button>
@@ -113,16 +114,20 @@
             <div id="contribution-input" class="span8 view-container">
                 <div class="control-group">
                     <label for="note-body-entry">
-                        Note
+                        <b>Note</b>
                     </label>
                     <textarea class="field" id="note-body-entry" name="note-body-entry"></textarea>
                 </div>
                 <div class="control-group">
                     <label for="note-headline-entry">
-                        Headline
+                        <b>Headline</b>
                     </label>
                     <input class="field" id="note-headline-entry" name="note-headline-entry" placeholder="Enter headline..."
                     type="">
+                </div>
+                <!-- hidden until tablet hears event re synthesizing -->
+                <div id="tag-container">
+
                 </div>
                 <div class="btn-container btn-group action-btn-group">
                     <a id="cancel-note-btn" class="btn btn-danger">
