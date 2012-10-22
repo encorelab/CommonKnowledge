@@ -1,7 +1,7 @@
 body {
 	padding-top: 70px; /* from bootstrap: 60px to make the container go all the way to the bottom of the topbar.
 						  but we actually need 70px for tablet rotation */
-	background-color: #eee9e9;
+	background-color: #F5F5F5;
 }
 
 .brand {
@@ -58,10 +58,18 @@ body {
 
 #contribution-input {
 	width: 611px;						/* sigh - still fighting bootstrap */
+	background-color: #C3E4ED;
 }
 
 #contribution-input .control-group {
 	margin-bottom: 0px;
+}
+
+#contribution-input #tag-submission-container {
+	height: 100px;
+	width: 70%;
+	margin-top: 15px;
+	overflow: auto;
 }
 
 
@@ -97,14 +105,22 @@ body {
 	width: 90%;
 }
 
-#tag-selection .tag-btn {
-	font-size: 18px;
-	margin-top: 20%;
+#tag-selection .tag-btn, #tag-submission-container .tag-btn {
   	-webkit-border-radius: 4px 4px 4px 4px;
     -moz-border-radius: 4px 4px 4px 4px;
-    border-radius: 4px 4px 4px 4px;	
+    border-radius: 4px 4px 4px 4px;		
 }
 
-#tag-selection .active {
+.row .tag-btn.active {
 	background-color: #5BB75B;
 }
+
+#tag-selection .tag-btn {
+	font-size: 18px;
+	margin-top: 20%;	
+}
+
+#tag-submission-container .tag-btn {
+	margin: 5px;
+}
+
