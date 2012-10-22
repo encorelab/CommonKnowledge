@@ -23,8 +23,7 @@ CK.Mobile = function () {
         Sail.autobindEvents(app);
         app.trigger('initialized');
 
-        //app.createBindings();
-        // jQuery('#connecting').hide();         // shouldn't this be handled by Sail? This is the wrong place (and maybe the wrong loader)
+        jQuery('#connecting').hide();         // shouldn't this be handled by Sail? This is the wrong place (and maybe the wrong loader)
 
 
         return true;
@@ -92,14 +91,14 @@ CK.Mobile = function () {
     },
 
     'ui.initialized': function (ev) {
-      console.log('ui.initialized! ... creating bindings (whatever that means)');
-      this.initViews();
-      // this.createBindings();
+      console.log('ui.initialized!');
+      jQuery('#connecting').hide();         // shouldn't this be handled by Sail?
+
+      app.initViews();
     },
 
     connected: function (ev) {
       console.log("Connected...");
-      jQuery('#connecting').hide();         // shouldn't this be handled by Sail?
 
       app.restoreState();
 
@@ -132,18 +131,7 @@ CK.Mobile = function () {
     }
   };
 
-  /* non sail code */
-
-  app.createBindings = function() {
-    jQuery('#share-note-button').click(function() {
-      console.log('share clicked');
-    });
-
-    jQuery('#cancel-note-button').click(function() {
-      console.log('cancel clicked');
-    });
-  };
-
+  /* ck.mobile stuff */
 
   app.initViews = function() {
     app.contributionInputView = new CK.view.ContributionInputView({

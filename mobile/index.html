@@ -21,24 +21,16 @@
                 .thenRun(function() { return Sail.init(new CK.Mobile()); });  
         </script>
 
-        <!-- Le styles -->
-        <link href="css/bootstrap.css" rel="stylesheet">
-
-        <!-- TODO: Why not put this CSS into ck.mobile.css????? -->
-        <style>
-            body { padding-top: 60px; /* 60px to make the container go all the way
-            to the bottom of the topbar */ }
-        </style>
         <link href="css/bootstrap-responsive.css" rel="stylesheet">
-        
+        <link href="css/bootstrap.css" rel="stylesheet">      
         <link href="css/ck.mobile.css" rel="stylesheet">
 
         <!-- Le fav and touch icons -->
         <link rel="shortcut icon" href="ico/favicon.ico">
-        <link rel="apple-touch-icon-precomposed" sizes="144x144" href="ico/apple-touch-icon-144-precomposed.png">
+<!--         <link rel="apple-touch-icon-precomposed" sizes="144x144" href="ico/apple-touch-icon-144-precomposed.png">
         <link rel="apple-touch-icon-precomposed" sizes="114x114" href="ico/apple-touch-icon-114-precomposed.png">
         <link rel="apple-touch-icon-precomposed" sizes="72x72" href="ico/apple-touch-icon-72-precomposed.png">
-        <link rel="apple-touch-icon-precomposed" href="ico/apple-touch-icon-57-precomposed.png">
+        <link rel="apple-touch-icon-precomposed" href="ico/apple-touch-icon-57-precomposed.png"> -->
     </head>
 
     <body>
@@ -51,8 +43,8 @@
         </div>
 
         <div class="row">
-            <div id="column-1" class="span3 span bs-docs-sidebar scrollable">
-                <ul class="nav nav-list bs-docs-sidenav affix-top">
+            <div id="contribution-list" class="span4 view-container bs-docs-sidebar">
+                <ul class="nav nav-list bs-docs-sidenav affix-top scrollable">
                     <li id="note-1" class="note">
                         <a href="">
                             <span class="headline">The running shoes are awesome</span>
@@ -74,13 +66,17 @@
                             <span class="author">Sneaky kid </span><span class="date">(12/10/15)</span>                          
                         </a>
                     </li>
-
                 </ul>
+                <div class="btn-container">
+                    <a id="new-note-btn" class="btn btn-primary">
+                        New Note
+                    </a>
+                </div>
             </div>
 
-            <div id="column-2" class="span3 span">
-                <div id="selected-note">
-                    <div class="note-title">
+            <div id="contribution-details" class="span4 view-container">
+                <div id="selected-note" class="scrollable">
+                    <div class="note-headline">
                         These running shoes are awesome
                     </div>
                     <div class="note-body">
@@ -88,14 +84,33 @@
                         They have pumps on the tongues, to help with performance. The are also
                         light. I hope that they come in other colours.
                     </div>
-                    <div>
-                        Colin (12/10/15)
+                    <div class="note-metadata">
+                        <span class="note-author">Colin </span><span class="note-date">(12/10/15)</span>
                     </div>
-
+                </div>
+                <div class="btn-container">
+                    <a id="build-on-btn" class="btn btn-primary">
+                        Build On
+                    </a>
                 </div>
             </div>
 
-            <div id="contribution-input" class="span6 span">
+            <div id="tag-selection" class="span4 view-container hide">
+                <div class="tag-btn-group btn-group btn-group-vertical" data-toggle="buttons-checkbox">
+                    <button type="button" class="btn tag-btn btn-warning">Shoes</button>
+                    <button type="button" class="btn tag-btn btn-warning">Running</button>
+                    <button type="button" class="btn tag-btn btn-warning">Economy</button>
+                    <button type="button" class="btn tag-btn btn-warning">Athletes</button>
+                    <button type="button" class="btn tag-btn btn-warning">N/A</button>
+                </div>                
+                <div class="btn-container">
+                    <a id="build-on-btn" class="btn btn-primary">
+                        Build On
+                    </a>
+                </div>
+            </div>        
+
+            <div id="contribution-input" class="span8 view-container">
                 <div class="control-group">
                     <label for="note-body-entry">
                         Note
@@ -109,30 +124,14 @@
                     <input class="field" id="note-headline-entry" name="note-headline-entry" placeholder="Enter headline..."
                     type="">
                 </div>
-            </div>
-        </div>
-
-
-        <div class="row">
-            <div class="span3">
-                <a id="new-note-button" class="btn btn-primary">
-                    New Note
-                </a>
-            </div>
-            <div class="span3">
-                <a id="build-on-button" class="btn btn-primary">
-                    Build On
-                </a>
-            </div>            
-            <div class="span6">
-                <div class="btn-group action-btn-group">
-                    <a id="cancel-note-button" class="btn btn-danger">
+                <div class="btn-container btn-group action-btn-group">
+                    <a id="cancel-note-btn" class="btn btn-danger">
                         Cancel
                     </a>
-                    <a id="share-note-button" class="btn btn-success">
+                    <a id="share-note-btn" class="btn btn-success">
                         Share
                     </a>
-                </div>
+                </div>                
             </div>
         </div>
 

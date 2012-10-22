@@ -17,8 +17,8 @@
         this.model.set(f.attr('name'), f.val());
       },
 
-      'click #submit-report': 'submit',
-      'click #cancel-report': 'cancel'
+      'click #share-note-btn': 'submit',
+      'click #cancel-note-btn': 'cancel'
     },
 
     initialize: function () {

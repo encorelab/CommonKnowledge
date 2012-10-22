@@ -1,4 +1,7 @@
-/* JUST TESTING FOR NOW */
+body {
+	padding-top: 60px; /* from bootstrap: 60px to make the container go all the way to the bottom of the topbar */
+
+ }
 
 .brand {
 	margin-left: 12px !important;
@@ -8,21 +11,51 @@
 	margin: 0 !important;
 }
 
-.span {
+.scrollable {
+	overflow: scroll;
+	height: 86%;				/* leaving room for the buttons */
+}
+
+.hide {
+	display: none;
+}
+
+.view-container {
 	height: 400px;
-	outline: 1px solid black;
+	border: 1px solid;
 	padding: 5px;
+	margin-bottom: 10px;
 	position: relative;
 }
 
-.scrollable {
-	overflow: scroll;
+.btn-container {
+	position: absolute;
+	bottom: 3px;
+	right: 3px;
 }
 
 
-#column-2 {
-	margin-left: 1%;
+/****** containers ******/
+
+#contribution-details, #tag-selection {
+	margin-left: 0;
+	border-left-width: 0px;				/* overwritting .view-container to prevent dup borders btw 1/2 */
 }
+
+#tag-selection {
+	text-align: center;
+}
+
+#tag-selection .tag-btn-group {
+	width: 50%;
+}
+
+#contribution-input {
+	width: 611px;						/* sigh - still fighting bootstrap */
+}
+
+
+/******* elements *******/
 
 .note {
 	border-bottom: 1px solid black;
@@ -30,10 +63,19 @@
 	padding-bottom: 10px;
 }
 
-#selected-note .note-title {
+#selected-note {
+	padding: 6px 15px 0px 15px;
+
+}
+
+#selected-note .note-headline {
 	font-size: 18px;
 	font-weight: bold;
 	margin-bottom: 5px;
+}
+
+#selected-note .note-metadata {
+	float: right;
 }
 
 #note-body-entry {
@@ -45,25 +87,14 @@
 	width: 90%;
 }
 
-.action-btn-group {
-	float: right;
-}
-
-.btn-primary {
-	float: right;
-}
-
-
-#column-2 {
-}
-
-#column-2 .tag-btn {
-	width: 150%;
+#tag-selection .tag-btn {
 	font-size: 18px;
 	margin-top: 20%;
-	margin-left: 50%;
+  	-webkit-border-radius: 4px 4px 4px 4px;
+    -moz-border-radius: 4px 4px 4px 4px;
+    border-radius: 4px 4px 4px 4px;	
 }
 
-#column-2 .active {
-	background-color: red;
+#tag-selection .active {
+	background-color: #5BB75B;
 }
