@@ -5,7 +5,99 @@
   var self = {};
 
   /**
-    NoteView
+    ListView
+  **/
+  self.ContributionListView = Backbone.View.extend({
+    events: {
+      // for most fields
+      'change .field': function (ev) {
+        var f = jQuery(ev.target);
+
+        console.log("Setting "+f.attr("name")+" to "+f.val());
+        this.model.set(f.attr('name'), f.val());
+      },
+
+      'click .note': 'open',
+      'click #new-note-btn': 'new'
+    },
+
+    initialize: function () {
+      console.log("Initializing ContributionListView...");
+
+      this.model.on('change', this.render);
+    },
+
+    open: function () {
+      console.log("Opening contribution...");
+
+    },
+
+    new: function () {
+      console.log("Time for a new note!");
+
+      Sail.app.currentContribution.clear();
+      Sail.app.contributionInputView.$el.find(".field").val(null);
+    },
+
+    /**
+      Triggers full update of all dynamic elements in the report page.
+    **/
+    render: function () {
+      console.log("rendering ContributionListView!");
+      // var view = Sail.app.contributionInputView;
+      // _.each(this.attributes, function (attributeValue, attributeName) {
+      //   console.log("Updating "+attributeName+" with val "+attributeValue);
+      //   view.$el.find('.field['+attributeName+']').val(attributeValue);
+      // });
+    }
+  });
+
+
+  /**
+    DetailsView
+  **/
+  self.ContributionDetailsView = Backbone.View.extend({
+    events: {
+      // for most fields
+      'change .field': function (ev) {
+        var f = jQuery(ev.target);
+
+        console.log("Setting "+f.attr("name")+" to "+f.val());
+        this.model.set(f.attr('name'), f.val());
+      },
+
+      'click #build-on-btn': 'build-on',
+    },
+
+    initialize: function () {
+      console.log("Initializing ContributionDetailsView...");
+
+      this.model.on('change', this.render);
+    },
+
+    'build-on': function () {
+      console.log("Creating a build-on note");
+
+      // Sail.app.currentContribution.clear();
+      // Sail.app.contributionInputView.$el.find(".field").val(null);
+    },
+
+    /**
+      Triggers full update of all dynamic elements in the report page.
+    **/
+    render: function () {
+      console.log("rendering ContributionDetailsView!");
+      // var view = Sail.app.contributionInputView;
+      // _.each(this.attributes, function (attributeValue, attributeName) {
+      //   console.log("Updating "+attributeName+" with val "+attributeValue);
+      //   view.$el.find('.field['+attributeName+']').val(attributeValue);
+      // });
+    }
+  });
+
+
+  /**
+    InputView
   **/
   self.ContributionInputView = Backbone.View.extend({
     events: {

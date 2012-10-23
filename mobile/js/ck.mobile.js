@@ -29,10 +29,27 @@ CK.Mobile = function () {
         return true;
       });
 
+
+      // THESE DON'T REALLY BELONG HERE - SORT THIS OUT
       // do this again after submitting to backend
       app.currentContribution = new CK.Model.Contribution();
       // get some feedback in the console log about the view chaning the model
       app.currentContribution.on('change', function(model) { console.log(model.changedAttributes()) });
+
+      app.contributionsList = new CK.Model.Contributions();
+      app.contributionsList.on('change', function(model) { console.log(model.changedAttributes()) });
+      app.contributionDetails = new CK.Model.Contribution();
+      app.contributionDetails.on('change', function(model) { console.log(model.changedAttributes()) });
+
+      // var collection = new CK.Model.Contributions();
+      // collection.on('reset', function (collection) {
+      //   collection.each(function(contrib) {
+      //     console.log(contrib);
+      //   });
+      // })
+      // collection.fetch();
+      // might be better to just do a restoreContributions on connected or whatever
+
   };
 
   app.authenticate = function () {
@@ -72,7 +89,7 @@ CK.Mobile = function () {
       },
       success: function (contributions) {
         contributions.each(function (contrib) {
-          new CK.Mobile.View.ContributionView({model: contrib}).render();         // view does not currently exist
+          new CK.Mobile.View.ContributionView({model: contrib}).render();
         });
       }
     });
@@ -134,6 +151,16 @@ CK.Mobile = function () {
   /* ck.mobile stuff */
 
   app.initViews = function() {
+    console.log('creating ListView');
+    app.contributionListView = new CK.Mobile.View.ContributionListView({
+      el: jQuery('#contribution-list'),
+      model: app.contributionsList
+    });
+    console.log('creating DetailsView');
+    app.contributionListView = new CK.Mobile.View.ContributionDetailsView({
+      el: jQuery('#contribution-details'),
+      model: app.contributionDetails
+    });    
     console.log('creating InputView');
     app.contributionInputView = new CK.Mobile.View.ContributionInputView({
       el: jQuery('#contribution-input'),
