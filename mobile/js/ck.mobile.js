@@ -72,8 +72,7 @@ CK.Mobile = function () {
       },
       success: function (contributions) {
         contributions.each(function (contrib) {
-          new CK.Mobile.view.ContributionView({model: contrib})
-          .render();
+          new CK.Mobile.View.ContributionView({model: contrib}).render();         // view does not currently exist
         });
       }
     });
@@ -119,7 +118,8 @@ CK.Mobile = function () {
 
         app.contributions.add(contrib);
 
-        new app.view.ContributionView({model: contrib}).render();
+        //new app.view.ContributionView({model: contrib}).render();
+        new CK.Mobile.View.ContributionView({model: contrib}).render();     // am I right?
 
 
         //addTagToList(new_contribution);
@@ -135,7 +135,7 @@ CK.Mobile = function () {
 
   app.initViews = function() {
     console.log('creating InputView');
-    app.contributionInputView = new CK.view.ContributionInputView({
+    app.contributionInputView = new CK.Mobile.View.ContributionInputView({
       el: jQuery('#contribution-input'),
       model: app.currentContribution
     });

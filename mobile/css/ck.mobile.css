@@ -4,6 +4,10 @@ body {
 	background-color: #F5F5F5;
 }
 
+i {
+	float: right;
+}
+
 .brand {
 	margin-left: 12px !important;
 }
