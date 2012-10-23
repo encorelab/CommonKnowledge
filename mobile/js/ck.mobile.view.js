@@ -19,6 +19,7 @@
 
       // 'click #share-note-btn': this.share,
       // 'click #cancel-note-btn': this.cancel
+      // OR CK.Mobile.View.cancel?
       'click #share-note-btn': 'share',
       'click #cancel-note-btn': 'cancel'
     },
@@ -30,22 +31,27 @@
     },
 
     share: function () {
-      console.log("Submitting contribution...");
-      // var self = this;
+      if (jQuery('#note-body-entry').val() != '' && jQuery('#note-headline-entry').val() != '') {
+        console.log("Submitting contribution...");
+        // var self = this;
 
-
-      Sail.app.currentContribution.save(null, {
-        complete: function () {
-          console.log('Submitted!');
-        },
-        success: function () {
-          console.log('Model saved');
-          //var note = self.model;
-        },
-        failure: function(model, response) {
-          console.log('Error submitting: ' + response);
-        }
-      });
+        Sail.app.currentContribution.save(null, {
+          complete: function () {
+            console.log('Submitted!');
+          },
+          success: function () {
+            console.log('Model saved');
+            //var note = self.model;
+            Sail.app.currentContribution.clear();
+            Sail.app.contributionInputView.$el.find(".field").val(null); 
+          },
+          failure: function(model, response) {
+            console.log('Error submitting: ' + response);       // do we want this as an alert instead?
+          }
+        });
+      } else {
+        alert('Please enter both a note and a headline');           // should we switch these all to the nice toasts that MikeM was using in Washago?
+      }
     },
 
     cancel: function () {
