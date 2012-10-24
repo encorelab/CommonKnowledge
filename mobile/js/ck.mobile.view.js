@@ -10,14 +10,17 @@
   self.ContributionListView = Backbone.View.extend({
     events: {
       // for most fields
-      'change .field': function (ev) {
-        var f = jQuery(ev.target);
+      'click .note': function (ev) {
+        Sail.app.contributionDetails = Sail.app.contributionList.get(ev.target.id);
+        console.log('Clicked contribution: ' + Sail.app.contributionDetails);
+        Sail.app.contributionDetailsView.render();
+        
+        // var f = jQuery(ev.target);
 
-        console.log("Setting "+f.attr("name")+" to "+f.val());
-        this.model.set(f.attr('name'), f.val());
+        // console.log("Setting "+f.attr("name")+" to "+f.val());
+        // this.model.set(f.attr('name'), f.val());
       },
 
-      'click .note': 'open',
       'click #new-note-btn': 'new'
     },
 
@@ -32,11 +35,6 @@
       Sail.app.contributionList.fetch();
     },
 
-    open: function () {
-      console.log("Opening contribution...");
-
-    },
-
     new: function () {
       console.log("Time for a new note!");
 
@@ -46,14 +44,15 @@
     },
 
     /**
-      Triggers full update of all dynamic elements in the report page.
+      Triggers full update of all dynamic elements in the list view
     **/
     render: function () {
       console.log("rendering ContributionListView!");
 
+      // TODO - do I really need to attach the id to everything? Can I have the li or a be the only clickable thing?
       Sail.app.contributionList.each(function(contrib) {
         console.log('headline: '+contrib.get('note-headline-entry'));
-        note = "<li class='note'><a><span class='headline'>" + contrib.get('note-headline-entry') + "</span>";
+        note = "<li><a class='note' id=" + contrib.id + "><span class='headline'>" + contrib.get('note-headline-entry') + "</span>";
         note += "<br /><i class='icon-chevron-right'></i>";
         note += "<span class='author'>temp author</span><span class='date'> (temp date)</span></a></li>";
         note = jQuery(note);
@@ -75,12 +74,12 @@
   self.ContributionDetailsView = Backbone.View.extend({
     events: {
       // for most fields - FIXME
-      'change .field': function (ev) {
-        var f = jQuery(ev.target);
+      // 'change .field': function (ev) {
+      //   var f = jQuery(ev.target);
 
-        console.log("Setting "+f.attr("name")+" to "+f.val());
-        this.model.set(f.attr('name'), f.val());
-      },
+      //   console.log("Setting "+f.attr("name")+" to "+f.val());
+      //   this.model.set(f.attr('name'), f.val());
+      //},
 
       'click #build-on-btn': 'build-on',
     },
@@ -99,10 +98,14 @@
     },
 
     /**
-      Triggers full update of all dynamic elements in the report page.
+      Triggers full update of all dynamic elements in the details view
     **/
     render: function () {
       console.log("rendering ContributionDetailsView!");
+      // note that if there are blank fields (which should never happen outside of testing), the previous title stays
+      Sail.app.contributionDetailsView.$el.find('.note-headline').text(Sail.app.contributionDetails.get('note-headline-entry'));
+      Sail.app.contributionDetailsView.$el.find('.note-body').text(Sail.app.contributionDetails.get('note-body-entry'));
+
       // var view = Sail.app.contributionInputView;
       // _.each(this.attributes, function (attributeValue, attributeName) {
       //   console.log("Updating "+attributeName+" with val "+attributeValue);
@@ -170,7 +173,7 @@
     },
 
     /**
-      Triggers full update of all dynamic elements in the report page.
+      Triggers full update of all dynamic elements in the input view
     **/
     render: function () {
       console.log("rendering ContributionInputView!");
