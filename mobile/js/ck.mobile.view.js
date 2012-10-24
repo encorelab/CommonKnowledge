@@ -23,8 +23,13 @@
 
     initialize: function () {
       console.log("Initializing ContributionListView...");
+      var view = this;
 
-      this.model.on('change', this.render);
+      // this.model.on('change', this.render);
+      Sail.app.contributionList.on('reset', function (collection) {
+        view.render();
+      });
+      Sail.app.contributionList.fetch();
     },
 
     open: function () {
@@ -35,6 +40,7 @@
     new: function () {
       console.log("Time for a new note!");
 
+      // clear the old contribution plus ui fields
       Sail.app.currentContribution.clear();
       Sail.app.contributionInputView.$el.find(".field").val(null);
     },
@@ -44,6 +50,16 @@
     **/
     render: function () {
       console.log("rendering ContributionListView!");
+
+      Sail.app.contributionList.each(function(contrib) {
+        console.log('headline: '+contrib.get('note-headline-entry'));
+        note = "<li class='note'><a><span class='headline'>" + contrib.get('note-headline-entry') + "</span>";
+        note += "<br /><i class='icon-chevron-right'></i>";
+        note += "<span class='author'>temp author</span><span class='date'> (temp date)</span></a></li>";
+        note = jQuery(note);
+        jQuery('#contribution-list .nav-list').append(note);
+      });
+
       // var view = Sail.app.contributionInputView;
       // _.each(this.attributes, function (attributeValue, attributeName) {
       //   console.log("Updating "+attributeName+" with val "+attributeValue);
@@ -58,7 +74,7 @@
   **/
   self.ContributionDetailsView = Backbone.View.extend({
     events: {
-      // for most fields
+      // for most fields - FIXME
       'change .field': function (ev) {
         var f = jQuery(ev.target);
 

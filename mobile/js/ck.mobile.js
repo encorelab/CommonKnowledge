@@ -36,19 +36,10 @@ CK.Mobile = function () {
       // get some feedback in the console log about the view chaning the model
       app.currentContribution.on('change', function(model) { console.log(model.changedAttributes()) });
 
-      app.contributionsList = new CK.Model.Contributions();
-      app.contributionsList.on('change', function(model) { console.log(model.changedAttributes()) });
+      app.contributionList = new CK.Model.Contributions();
+      app.contributionList.on('change', function(model) { console.log(model.changedAttributes()) });
       app.contributionDetails = new CK.Model.Contribution();
       app.contributionDetails.on('change', function(model) { console.log(model.changedAttributes()) });
-
-      // var collection = new CK.Model.Contributions();
-      // collection.on('reset', function (collection) {
-      //   collection.each(function(contrib) {
-      //     console.log(contrib);
-      //   });
-      // })
-      // collection.fetch();
-      // might be better to just do a restoreContributions on connected or whatever
 
   };
 
@@ -89,7 +80,7 @@ CK.Mobile = function () {
       },
       success: function (contributions) {
         contributions.each(function (contrib) {
-          new CK.Mobile.View.ContributionView({model: contrib}).render();
+          new CK.Mobile.View.ContributionListView({model: contrib}).render();         // TODO - check me, I'm not right
         });
       }
     });
@@ -103,7 +94,8 @@ CK.Mobile = function () {
     },
 
     authenticated: function (ev) {
-    
+      console.log('Authenticated...');
+  
     },
 
     'ui.initialized': function (ev) {
@@ -154,10 +146,10 @@ CK.Mobile = function () {
     console.log('creating ListView');
     app.contributionListView = new CK.Mobile.View.ContributionListView({
       el: jQuery('#contribution-list'),
-      model: app.contributionsList
+      model: app.contributionList
     });
     console.log('creating DetailsView');
-    app.contributionListView = new CK.Mobile.View.ContributionDetailsView({
+    app.contributionDetailsView = new CK.Mobile.View.ContributionDetailsView({
       el: jQuery('#contribution-details'),
       model: app.contributionDetails
     });    
@@ -167,6 +159,19 @@ CK.Mobile = function () {
       model: app.currentContribution
     });
   };
+
+
+  /* Incoming Sail events */
+
+  app.events.sail = {
+    test_event: function(sev) {
+      alert('heard the event');
+    }
+  };
+
+
+
+
 };
 
 CK.Mobile.prototype = new Sail.App();
