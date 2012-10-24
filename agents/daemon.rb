@@ -27,7 +27,7 @@ require 'choreographer'
 
 RUNS.each do |run|
   @daemon << EventLogger.new(:room => run, :password => AGENT_PASSWORD, :database => run)
-  #@daemon << Choreographer.new(:room => run, :password => AGENT_PASSWORD, :database => run)
+  @daemon << Choreographer.new(:room => run, :password => AGENT_PASSWORD, :database => run)
 end
 
 

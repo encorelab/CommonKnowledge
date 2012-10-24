@@ -23,16 +23,16 @@ class Choreographer < Sail::Agent
       join_room
       #join_log_room
 
-      @mongo.collection(:vidwall_user_tag_counts).find().each do |row|
-        # log "#{row.inspect}"
-        row.map do |key, values|
-          unless key == "_id" then
-            # log "key #{key}"
-            @vidwalls_user_tag_counts.merge!({key => values})
-          end
-        end
-      end
-      log "Restored vidwalls_user_tag_counts from MongoDB #{@vidwalls_user_tag_counts}"
+      # @mongo.collection(:vidwall_user_tag_counts).find().each do |row|
+      #   # log "#{row.inspect}"
+      #   row.map do |key, values|
+      #     unless key == "_id" then
+      #       # log "key #{key}"
+      #       @vidwalls_user_tag_counts.merge!({key => values})
+      #     end
+      #   end
+      # end
+      # log "Restored vidwalls_user_tag_counts from MongoDB #{@vidwalls_user_tag_counts}"
     end
     
     self_joined_log_room do |stanza|
@@ -47,39 +47,20 @@ class Choreographer < Sail::Agent
     end
     
     # Keep track of who is submitting what principle
-    event :student_principle_submit? do |stanza, data|
-      log "Received student_principles_submit #{data.inspect}"
-      if data['origin'] && data['payload']['location'] && data['payload']['principle'] then
-        # This couldn't hurt. We might have missed check_in, so why not record the precense
-        record_user_presence(data['origin'])
-        # And now count the submission
-        record_principle_submission(data['origin'], data['payload']['location'])
-      end
-    end
+    # event :student_principle_submit? do |stanza, data|
+    #   log "Received student_principles_submit #{data.inspect}"
+    #   if data['origin'] && data['payload']['location'] && data['payload']['principle'] then
+    #     # This couldn't hurt. We might have missed check_in, so why not record the precense
+    #     record_user_presence(data['origin'])
+    #     # And now count the submission
+    #     record_principle_submission(data['origin'], data['payload']['location'])
+    #   end
+    # end
 
-    event :start_sort? do |stanza, data|
-      log "Received student_principles_submit #{data.inspect}"
+    event :start_student_tagging? do |stanza, data|
+      log "Received start_student_tagging #{data.inspect}"
       # first sorting by principle submission ranking
-      if data && data['payload'] && data['payload']['step'] == "principle_sort" then
-        # call function to generate the location assignments
-        @user_wall_assignments = generate_location_assignments(@vidwalls_user_tag_counts)
-
-        # store user_wall_assignments in database so clients can use it
-        store_user_wall_assigments_principle(@user_wall_assignments)
-        # send out events
-        send_location_assignments(@user_wall_assignments)
-      elsif data && data['payload'] && data['payload']['step'] == "equation_step" then
-        # call function to generate old location assignments
-        user_wall_assignments_eq = generate_location_assignments(@vidwalls_user_tag_counts)
-        # reshuffle users
-        log "What I got for reshuffling #{user_wall_assignments_eq}"
-        @user_wall_assignments_eq = generate_location_assignments_eq(user_wall_assignments_eq)
-
-        # store user_wall_assignments in database so clients can use it
-        store_user_wall_assigments_equation(@user_wall_assignments_eq)
-        # send out events
-        send_location_assignments(@user_wall_assignments_eq)
-      end
+      
     end 
 
   end
