@@ -59,7 +59,26 @@ class Choreographer < Sail::Agent
 
     event :start_student_tagging? do |stanza, data|
       log "Received start_student_tagging #{data.inspect}"
-      # first sorting by principle submission ranking
+      # retrieve all contributions that make up the bucket of contribs to be tagged
+
+      count = 0
+
+      @mongo.collection(:contributions).find().each do |row|
+        log "#{row.inspect}"
+        count += 1
+        # row.map do |key, values|
+        #   unless key == "_id" then
+        #     # log "key #{key}"
+        #     @vidwalls_user_tag_counts.merge!({key => values})
+        #   end
+        # end
+      end
+
+      log "Found #{count} contributions to hand out to students"
+      
+      # Handout contributions to all present users
+
+      # check if there are more contributions to hand out (probably do this each time when students are done with tagging)
       
     end 
 
