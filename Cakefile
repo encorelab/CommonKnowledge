@@ -31,6 +31,14 @@ build = (callback) ->
     #       process.stderr.write err if err
     coffee.on 'exit', (code) ->
       callback?() if code is 0
+
+    less = spawn 'bash'
+    less.stderr.on 'data', (data) ->
+        process.stderr.write data.toString()
+
+    less.stdin.write 'source "$HOME/.rvm/scripts/rvm";'
+    less.stdin.write 'sass smartboard/css/scss/ck.smartboard.scss smartboard/css/ck.smartboard.css;'
+    less.stdin.end()
   
 
 task 'build', 'Compile coffee/* to js/*', ->
