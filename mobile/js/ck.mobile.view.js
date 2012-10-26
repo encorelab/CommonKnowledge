@@ -11,6 +11,9 @@
     events: {
       // for most fields
       'click .note': function (ev) {
+        jQuery('#contribution-list .note').removeClass('selected');         // TODO - am I fighting backbone here?
+        jQuery('#'+ev.target.id).addClass('selected');
+
         Sail.app.contributionDetails = Sail.app.contributionList.get(ev.target.id);
         console.log('Clicked contribution: ' + Sail.app.contributionDetails);
         Sail.app.contributionDetailsView.render();
@@ -38,9 +41,14 @@
     new: function () {
       console.log("Time for a new note!");
 
+      jQuery('#note-body-label').text('New Note');
+
       // clear the old contribution plus ui fields
       Sail.app.currentContribution.clear();
       Sail.app.contributionInputView.$el.find(".field").val(null);
+      // enable text entry
+      jQuery('#note-body-entry').removeClass('disabled');
+      jQuery('#note-headline-entry').removeClass('disabled');
     },
 
     /**
@@ -49,9 +57,11 @@
     render: function () {
       console.log("rendering ContributionListView!");
 
+
       // TODO - do I really need to attach the id to everything? Can I have the li or a be the only clickable thing?
       Sail.app.contributionList.each(function(contrib) {
         console.log('headline: '+contrib.get('note-headline-entry'));
+
         note = "<li><a class='note' id=" + contrib.id + "><span class='headline'>" + contrib.get('note-headline-entry') + "</span>";
         note += "<br /><i class='icon-chevron-right'></i>";
         note += "<span class='author'>temp author</span><span class='date'> (temp date)</span></a></li>";
@@ -93,8 +103,14 @@
     'build-on': function () {
       console.log("Creating a build-on note");
 
-      // Sail.app.currentContribution.clear();
-      // Sail.app.contributionInputView.$el.find(".field").val(null);
+      jQuery('#note-body-label').text('Build On Note');      
+
+      // clear the old contribution plus ui fields
+      Sail.app.currentContribution.clear();
+      Sail.app.contributionInputView.$el.find(".field").val(null);
+      // enable text entry
+      jQuery('#note-body-entry').removeClass('disabled');
+      jQuery('#note-headline-entry').removeClass('disabled');
     },
 
     /**
@@ -153,8 +169,13 @@
           success: function () {
             console.log('Model saved');
             //var note = self.model;
+            // clear the old contribution plus ui fields
             Sail.app.currentContribution.clear();
-            Sail.app.contributionInputView.$el.find(".field").val(null); 
+            Sail.app.contributionInputView.$el.find(".field").val(null);
+            // enable text entry
+            jQuery('#note-body-entry').addClass('disabled');
+            jQuery('#note-headline-entry').addClass('disabled');
+            alert('Contribution submitted');
           },
           failure: function(model, response) {
             console.log('Error submitting: ' + response);       // do we want this as an alert instead?
@@ -168,8 +189,12 @@
     cancel: function () {
       console.log("Cancelling contribution...");
 
+      // clear the old contribution plus ui fields
       Sail.app.currentContribution.clear();
-      Sail.app.contributionInputView.$el.find(".field").val(null);      // need these to clear fields, render is not sufficient the way it's currently set up
+      Sail.app.contributionInputView.$el.find(".field").val(null);
+      // enable text entry
+      jQuery('#note-body-entry').addClass('disabled');
+      jQuery('#note-headline-entry').addClass('disabled');
     },
 
     /**

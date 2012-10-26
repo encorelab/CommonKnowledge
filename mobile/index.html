@@ -27,6 +27,7 @@
                 .then('../shared/js/ck.model.js')
                 .then('js/ck.mobile.js')
                 .then('js/ck.mobile.view.js')
+                .then('js/toast.notify.js')
                 .thenRun(function() { return Sail.init(new CK.Mobile()); });  
         </script>
 
@@ -97,16 +98,16 @@
 
             <div id="contribution-input" class="span8 view-container">
                 <div class="control-group">
-                    <label for="note-body-entry">
-                        <b>Note</b>
+                    <label id="note-body-label" for="note-body-entry">
+                        Note
                     </label>
-                    <textarea class="field" id="note-body-entry" name="note-body-entry"></textarea>
+                    <textarea class="field disabled" id="note-body-entry" name="note-body-entry"></textarea>
                 </div>
                 <div class="control-group">
                     <label for="note-headline-entry">
                         <b>Headline</b>
                     </label>
-                    <input class="field" id="note-headline-entry" name="note-headline-entry" placeholder="Enter headline..."
+                    <input class="field disabled" id="note-headline-entry" name="note-headline-entry" placeholder="Enter headline..."
                     type="">
                 </div>
                 <!-- hidden until tablet hears event re synthesizing -->

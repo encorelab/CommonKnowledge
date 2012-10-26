@@ -28,6 +28,13 @@ i {
 	display: none;
 }
 
+/* since I don't like that disabled=disabled nonsense */
+.disabled {
+	pointer-events: none;
+  	cursor: default;
+  	background-color: #BDBDC1;					/* we probably want something a little more stark than this */
+}
+
 .view-container {
 	height: 380px;
 	border: 1px solid;
@@ -85,6 +92,10 @@ i {
 	padding-bottom: 10px;
 }
 
+.selected {
+	background-color: pink;
+}
+
 #selected-note {
 	padding: 6px 15px 0px 15px;
 
@@ -98,6 +109,10 @@ i {
 
 #selected-note .note-metadata {
 	float: right;
+}
+
+#note-body-label {
+	font-weight: bold;
 }
 
 #note-body-entry {
