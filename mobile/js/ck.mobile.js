@@ -17,7 +17,9 @@ CK.Mobile = function () {
     this.password = "roadshow";
 
     Sail.modules
-      .load('Strophe.AutoConnector', {mode: 'pseudo-anon'})
+      // Enable multi-picker login for CommonKnowledge curnit - asking for run (must be linked to curnit)
+      .load('Rollcall.Authenticator', {mode: 'multi-picker', askForRun: true, curnit: 'CommonKnowledge'})
+      .load('Strophe.AutoConnector')
       .load('AuthStatusWidget')
       .thenRun(function () {
         Sail.autobindEvents(app);
@@ -29,8 +31,12 @@ CK.Mobile = function () {
         return true;
       });
 
+      // Create a Rollcall instance so that sail.app has access to it later on
+      app.rollcall = new Rollcall.Client(app.config.rollcall.url);
+
 
       // THESE DON'T REALLY BELONG HERE - SORT THIS OUT
+// TODO Create function like initModels() and then call function in authenticated
       // do this again after submitting to backend
       app.currentContribution = new CK.Model.Contribution();
       // get some feedback in the console log about the view chaning the model
@@ -47,12 +53,19 @@ CK.Mobile = function () {
     // TODO: implement me... probalby just copy + modify code from washago?
 
     // TODO: for now we're hard-coding a run name... need to get this from auth
-    this.config.run = {name: "ck-alpha1"};
+    //this.config.run = {name: "ck-alpha1", id: 12};
+    if (!app.run) {
+      Rollcall.Authenticator.requestRun();
+    } else {
+      Rollcall.Authenticator.requestLogin();
+    }
+
+    
   };
 
   // TODO: copied from washago code
   app.restoreState = function () {
-    this.contributions = new this.model.Contributions();
+    this.contributions = new CK.Model.Contributions();
 
     this.contributions.on('add', function (contrib) {
       // addTagToList(contrib);
@@ -75,7 +88,7 @@ CK.Mobile = function () {
     this.contributions.fetch({
       data: { 
         selector: JSON.stringify({
-          session: CK.Mobile.run.name
+          session: app.run.name
         }) 
       },
       success: function (contributions) {
@@ -89,20 +102,23 @@ CK.Mobile = function () {
   app.events = {
     initialized: function (ev) {
       app.authenticate();
-
-      CK.Model.setup(app.config);
     },
 
     authenticated: function (ev) {
       console.log('Authenticated...');
-  
+      // this looks weird and is here since Sail.app looks for run in config
+      // so we add it here
+      app.config.run = app.run;
+      // now we call a class function (setup) and hand in app.config so we don't need
+      // to do this config again for each model instanciation
+      CK.Model.setup(app.config);
+      // moved the view init here so that backbone is configured with URLs
+      app.initViews();
     },
 
     'ui.initialized': function (ev) {
       console.log('ui.initialized!');
       jQuery('#connecting').hide();         // shouldn't this be handled by Sail?
-
-      app.initViews();
     },
 
     connected: function (ev) {
@@ -114,7 +130,7 @@ CK.Mobile = function () {
 
     sail: {
       contribution: function (sev) {
-        var contrib = new app.model.Contribution({
+        var contrib = new CK.Model.Contribution({
           author: sev.payload.author,
           text: sev.payload.text,
           tags: sev.payload.tags,

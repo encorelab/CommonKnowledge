@@ -143,3 +143,10 @@ i {
 	margin: 5px;
 }
 
+
+/* Overwriting and adding CSS rules for Sail.js elements (like Rollcall added login boxes)*/
+.auth-box {
+	background-color: whiteSmoke;
+	border-radius: 0.5em;
+	border: solid black;
+}
