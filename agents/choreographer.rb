@@ -10,9 +10,11 @@ class Choreographer < Sail::Agent
 
   def initialize(*args)
     super(*args)
-    @user_wall_assignments = {}
-    @user_wall_assignments_eq = {}
-    @vidwalls_user_tag_counts = {'A' => {}, 'B' => {}, 'C' => {}, 'D' => {}}
+    # @user_wall_assignments = {}
+    # @user_wall_assignments_eq = {}
+    # @vidwalls_user_tag_counts = {'A' => {}, 'B' => {}, 'C' => {}, 'D' => {}}
+
+    @students = {}
   end
 
   def behaviour
@@ -39,24 +41,15 @@ class Choreographer < Sail::Agent
       groupchat_logger_ready!
     end
 
-    event :check_in? do |stanza, data|
-      log "Received check_in #{data.inspect}"
-      if data['origin'] && data['payload']['location'] then
-        record_user_presence(data['origin'])
+    # This function monitors the chat room and registers any user that joins
+    # the goal is to only care for students
+    someone_joined_room do |stanza|
+      stu = lookup_student(Util.extract_login(stanza.from), true) unless stanza.from == agent_jid_in_room
+      if stu
+        log "#{stu} joined #{config[:room]}"
       end
     end
     
-    # Keep track of who is submitting what principle
-    # event :student_principle_submit? do |stanza, data|
-    #   log "Received student_principles_submit #{data.inspect}"
-    #   if data['origin'] && data['payload']['location'] && data['payload']['principle'] then
-    #     # This couldn't hurt. We might have missed check_in, so why not record the precense
-    #     record_user_presence(data['origin'])
-    #     # And now count the submission
-    #     record_principle_submission(data['origin'], data['payload']['location'])
-    #   end
-    # end
-
     event :start_student_tagging? do |stanza, data|
       log "Received start_student_tagging #{data.inspect}"
       # retrieve all contributions that make up the bucket of contribs to be tagged
@@ -84,11 +77,34 @@ class Choreographer < Sail::Agent
 
   end
 
-  def record_user_presence(user)
-    log "Recording user #{user} in all locations"
-    @vidwalls_user_tag_counts.map do |location, v|
-      record_principle_submission(user, location, 0)
+  # function to check if user joining chat-room is a student in Rollcall
+  def lookup_student(username)
+    # Check if student is already in the @student hash to avoid extra lookups
+    stu = @students[username]
+    
+    # do lookup if student is not in hash already
+    if stu.nil?
+      log "Looking up user #{username.inspect} in Rollcall..."
+      
+      begin
+        stu = Rollcall::User.find(username)
+      rescue ActiveResource::ResourceNotFound
+        log "#{username.inspect} not found in Rollcall..."
+        return nil
+      end
+
+      unless stu.kind == "Student"
+        log "#{username.inspect} is not a student; will be ignored."
+        return nil
+      end
+      
+      log "#{username.inspect} loaded in state #{stu.state}"
+      
+      # store student in hash to have faster lookup
+      @students[username] = stu
     end
+    
+    return stu
   end
 
   # This function stores the submitted principles for each student
