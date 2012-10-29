@@ -25,9 +25,6 @@ CK.Mobile = function () {
         Sail.autobindEvents(app);
         app.trigger('initialized');
 
-        jQuery('#connecting').hide();         // shouldn't this be handled by Sail? This is the wrong place (and maybe the wrong loader)
-
-
         return true;
       });
 
@@ -115,7 +112,6 @@ CK.Mobile = function () {
 
     'ui.initialized': function (ev) {
       console.log('ui.initialized!');
-      jQuery('#connecting').hide();         // shouldn't this be handled by Sail?
     },
 
     connected: function (ev) {
