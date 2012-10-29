@@ -60,9 +60,9 @@
 
       // TODO - do I really need to attach the id to everything? Can I have the li or a be the only clickable thing?
       Sail.app.contributionList.each(function(contrib) {
-        console.log('headline: '+contrib.get('note-headline-entry'));
+        console.log('headline: '+contrib.get('headline'));
 
-        note = "<li><a class='note' id=" + contrib.id + "><span class='headline'>" + contrib.get('note-headline-entry') + "</span>";
+        note = "<li><a class='note' id=" + contrib.id + "><span class='headline'>" + contrib.get('headline') + "</span>";
         note += "<br /><i class='icon-chevron-right'></i>";
         note += "<span class='author'>temp author</span><span class='date'> (temp date)</span></a></li>";
         note = jQuery(note);
@@ -118,9 +118,17 @@
     **/
     render: function () {
       console.log("rendering ContributionDetailsView!");
+      
+      var headline = Sail.app.contributionDetailsView.$el.find('.note-headline');
+      var content = Sail.app.contributionDetailsView.$el.find('.note-body');
+
+      // clearing fields
+      headline.text('');
+      content.text('');
+
       // note that if there are blank fields (which should never happen outside of testing), the previous title stays
-      Sail.app.contributionDetailsView.$el.find('.note-headline').text(Sail.app.contributionDetails.get('note-headline-entry'));
-      Sail.app.contributionDetailsView.$el.find('.note-body').text(Sail.app.contributionDetails.get('note-body-entry'));
+      headline.text(Sail.app.contributionDetails.get('headline'));
+      content.text(Sail.app.contributionDetails.get('content'));
 
       // var view = Sail.app.contributionInputView;
       // _.each(this.attributes, function (attributeValue, attributeName) {
