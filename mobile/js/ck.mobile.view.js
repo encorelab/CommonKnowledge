@@ -31,13 +31,14 @@
       console.log("Initializing ContributionListView...");
       var view = this;
 
-      // Armin: Why is this not working????
-      view.model.on('change sync', view.render);
 
-      Sail.app.contributionList.on('reset', function (collection) {
-        view.render();
-      });
-      Sail.app.contributionList.fetch();
+      view.render();
+
+      // this.model.on('change', this.render);
+      // Sail.app.contributionList.on('reset', function (collection) {
+      //   view.render();
+      // });
+      // Sail.app.contributionList.fetch();
     },
 
     new: function () {
@@ -60,17 +61,20 @@
       console.log("rendering ContributionListView!");
 
 
-      // TODO - do I really need to attach the id to everything? Can I have the li or a be the only clickable thing?
-      Sail.app.contributionList.each(function(contrib) {
-        var contribution = "";
-        console.log('headline: '+contrib.get('headline'));
+      Sail.app.contributionList.on('reset', function (collection) {
+        // TODO - do I really need to attach the id to everything? Can I have the li or a be the only clickable thing?
+        Sail.app.contributionList.each(function(contrib) {
+          console.log('headline: '+contrib.get('headline'));
 
-        contribution = "<li><a class='note' id=" + contrib.id + "><span class='headline'>" + contrib.get('headline') + "</span>";
-        contribution += "<br /><i class='icon-chevron-right'></i>";
-        contribution += "<span class='author'>temp author</span><span class='date'> (temp date)</span></a></li>";
-        
-        jQuery('#contribution-list .nav-list').append(jQuery(contribution));
+          note = "<li><a class='note' id=" + contrib.id + "><span class='headline'>" + contrib.get('headline') + "</span>";
+          note += "<br /><i class='icon-chevron-right'></i>";
+          note += "<span class='author'>temp author</span><span class='date'> (temp date)</span></a></li>";
+          note = jQuery(note);
+          jQuery('#contribution-list .nav-list').append(note);
+        });        
       });
+      Sail.app.contributionList.fetch();      
+
 
       // var view = Sail.app.contributionInputView;
       // _.each(this.attributes, function (attributeValue, attributeName) {
@@ -177,10 +181,13 @@
         Sail.app.currentContribution.save(null, {
           complete: function () {
             console.log('Submitted!');
+
           },
           success: function () {
             console.log('Model saved');
+            Sail.app.submitContribution();
             //var note = self.model;
+
             // clear the old contribution plus ui fields
             Sail.app.currentContribution.clear();
             Sail.app.contributionInputView.$el.find(".field").val(null);
@@ -213,7 +220,7 @@
       Triggers full update of all dynamic elements in the input view
     **/
     render: function () {
-      console.log("rendering ContributionInputView!");
+      console.log("rendering ContributionInputView...");
       var view = Sail.app.contributionInputView;
       _.each(this.attributes, function (attributeValue, attributeName) {
         console.log("Updating "+attributeName+" with val "+attributeValue);
