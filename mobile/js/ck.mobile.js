@@ -106,12 +106,9 @@ CK.Mobile = function () {
 
     authenticated: function (ev) {
       console.log('Authenticated...');
-      // this looks weird and is here since Sail.app looks for run in config
-      // so we add it here
-      app.config.run = app.run;
-      // now we call a class function (setup) and hand in app.config so we don't need
-      // to do this config again for each model instanciation
-      CK.Model.setup(app.config);
+      // now we call a class function (configure) and hand in the mongo url and the run name so we don't need
+      // to do this config again for each model instantiation
+      CK.Model.configure(app.config.mongo.url, app.run.name);
       // moved the view init here so that backbone is configured with URLs
       app.initViews();
     },
