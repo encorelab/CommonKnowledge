@@ -1,0 +1,111 @@
+@import url(http://fonts.googleapis.com/css?family=Ubuntu:400,700,400italic,700italic);
+
+$wall-color: #ab2;
+$balloon-color: #fff;
+
+body {
+    font-family: Ubuntu, sans-serif;
+    background-color: $wall-color;
+    overflow: hidden;
+}
+
+#wall {
+  position: absolute;
+  top: 10px;
+  bottom: 30px;
+  right: 30px;
+  left: 30px;
+}
+
+
+.balloon {
+    position: absolute;
+    width: 300px;
+    display: inline-block;
+
+    border-radius: 15px;
+    background-color: rgba($balloon-color, 0.9);
+    box-shadow: rgba(#000, 0.3) 0px 2px 10px;
+
+    h3.headline {
+        margin-top: 8px;
+        font-size: 16px;
+        padding-top: 4px;
+        padding-bottom: 0;
+        padding-left: 14px;
+        padding-right: 14px;
+        margin-bottom: 2px;
+    }
+
+    .tags {
+        font-size: 11px;
+        margin: 0 8px 6px;
+    }
+
+    .meta .author {
+        color: #999;
+        font-size: 11px;
+        margin-bottom: 1em;
+        padding: 2px;
+        position: absolute;
+        right: 6px;
+        top: 0;
+    }
+
+    .body {
+        margin-top: 0;
+        font-size: 14px;
+        padding-top: 0;
+        padding-bottom: 6px;
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+    .tag {
+        background: rgba(200,200,200, 0.75);
+        border-radius: 5px;
+        display: inline-block;
+        margin-right: 5px;
+        margin-bottom: 3px;
+        padding: 2px 4px;
+    }
+}
+
+.balloon:hover {
+  cursor: pointer;
+  cursor: -moz-grab;
+  cursor: -webkit-grab;
+  cursor: grab;
+}
+
+.balloon.ui-draggable-dragging {
+  cursor: move;
+  cursor: -moz-grabbing;
+  cursor: -webkit-grabbing;
+  cursor: grabbing;
+}
+
+.balloon.blurred {
+  opacity: 0.15;
+}
+
+@-webkit-keyframes teleportIn {
+    0% { -webkit-transform:scale(3.0); opacity: 0.0;}
+    100% {-webkit-transform:scale(1.0); opacity: 1.0; }
+}
+@-moz-keyframes teleportIn {
+    0% { -moz-transform:scale(3.0); opacity: 0.0;}
+    100% {-moz-transform:scale(1.0); opacity: 1.0; }
+}
+
+.balloon.new {
+  -webkit-animation-name: teleportIn;
+  -webkit-animation-duration: 0.5s;
+  -webkit-animation-iteration-count: 1;
+  -webkit-animation-timing-function: ease-out;
+
+  -moz-animation-name: teleportIn;
+  -moz-animation-duration: 0.5s;
+  -moz-animation-iteration-count: 1;
+  -moz-animation-timing-function: ease-out;
+}

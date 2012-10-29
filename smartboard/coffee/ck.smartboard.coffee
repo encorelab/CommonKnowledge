@@ -1,5 +1,5 @@
 class CK.Smartboard extends Sail.App
-    curnit: 'CK'
+    curnit: 'CommonKnowledge'
     name: 'CK.Smartboard'
 
     requiredConfig: {
@@ -22,7 +22,7 @@ class CK.Smartboard extends Sail.App
         if @run
             @groupchatRoom = @run.name + '@conference.' + @xmppDomain
 
-        userFilter = null
+        userFilter = (user) -> user.kind is 'Instructor'
 
         Sail.modules
             .load('Rollcall.Authenticator', {mode: 'picker', askForRun: true, curnit: @curnit, userFilter: userFilter})
@@ -31,3 +31,44 @@ class CK.Smartboard extends Sail.App
             .thenRun =>
                 Sail.autobindEvents(@)
                 @trigger('initialized')
+
+        @rollcall = new Rollcall.Client(@config.rollcall.url)
+
+        @contributions = new CK.Model.Contributions()
+        @contributions.on 'add', (contrib) ->
+            bubble = new CK.Smartboard.View.ContributionBubble {model: contrib}
+            contrib.on 'change', bubble.render
+            bubble.render()
+
+
+    authenticate: =>
+        if @run
+            Rollcall.Authenticator.requestLogin()
+        else
+            Rollcall.Authenticator.requestRun()
+
+    events:
+        initialized: (ev) ->
+            @authenticate()
+            console.log "Initialized..."
+            
+        authenticated: (ev) ->
+            console.log "Authenticated..."
+            CK.Model.configure(@config.mongo.url, @run.name)
+
+        'ui.initialized': (ev) ->
+            console.log "UI initialized..."
+
+        connected: (ev) ->
+            console.log "Connected..."
+
+        sail:
+            contribution: (sev) ->
+                c = @contributions.get(sev.payload._id)
+                if c?
+                    c.set(sev.payload)
+                else
+                    c = new CK.Model.Contribution(sev.payload)
+                    @contributions.add(c)
+
+    

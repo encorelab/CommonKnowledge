@@ -9,11 +9,13 @@
     __extends(Smartboard, _super);
 
     function Smartboard() {
+      this.authenticate = __bind(this.authenticate, this);
+
       this.init = __bind(this.init, this);
       return Smartboard.__super__.constructor.apply(this, arguments);
     }
 
-    Smartboard.prototype.curnit = 'CK';
+    Smartboard.prototype.curnit = 'CommonKnowledge';
 
     Smartboard.prototype.name = 'CK.Smartboard';
 
@@ -42,8 +44,10 @@
       if (this.run) {
         this.groupchatRoom = this.run.name + '@conference.' + this.xmppDomain;
       }
-      userFilter = null;
-      return Sail.modules.load('Rollcall.Authenticator', {
+      userFilter = function(user) {
+        return user.kind === 'Instructor';
+      };
+      Sail.modules.load('Rollcall.Authenticator', {
         mode: 'picker',
         askForRun: true,
         curnit: this.curnit,
@@ -55,6 +59,53 @@
         Sail.autobindEvents(_this);
         return _this.trigger('initialized');
       });
+      this.rollcall = new Rollcall.Client(this.config.rollcall.url);
+      this.contributions = new CK.Model.Contributions();
+      return this.contributions.on('add', function(contrib) {
+        var bubble;
+        bubble = new CK.Smartboard.View.ContributionBubble({
+          model: contrib
+        });
+        contrib.on('change', bubble.render);
+        return bubble.render();
+      });
+    };
+
+    Smartboard.prototype.authenticate = function() {
+      if (this.run) {
+        return Rollcall.Authenticator.requestLogin();
+      } else {
+        return Rollcall.Authenticator.requestRun();
+      }
+    };
+
+    Smartboard.prototype.events = {
+      initialized: function(ev) {
+        this.authenticate();
+        return console.log("Initialized...");
+      },
+      authenticated: function(ev) {
+        console.log("Authenticated...");
+        return CK.Model.configure(this.config.mongo.url, this.run.name);
+      },
+      'ui.initialized': function(ev) {
+        return console.log("UI initialized...");
+      },
+      connected: function(ev) {
+        return console.log("Connected...");
+      },
+      sail: {
+        contribution: function(sev) {
+          var c;
+          c = this.contributions.get(sev.payload._id);
+          if (c != null) {
+            return c.set(sev.payload);
+          } else {
+            c = new CK.Model.Contribution(sev.payload);
+            return this.contributions.add(c);
+          }
+        }
+      }
     };
 
     return Smartboard;
