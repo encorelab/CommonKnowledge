@@ -3,7 +3,7 @@
 
 window.CK = window.CK || {};
 
-CK.Mobile = function () {
+CK.Mobile = function() {
   var app = this;
 
   app.name = "CK.Mobile";
@@ -32,21 +32,9 @@ CK.Mobile = function () {
       app.rollcall = new Rollcall.Client(app.config.rollcall.url);
 
 
-      // THESE DON'T REALLY BELONG HERE - SORT THIS OUT
-// TODO Create function like initModels() and then call function in authenticated
-      // do this again after submitting to backend
-      app.currentContribution = new CK.Model.Contribution();
-      // get some feedback in the console log about the view chaning the model
-      app.currentContribution.on('change', function(model) { console.log(model.changedAttributes()) });
-
-      app.contributionList = new CK.Model.Contributions();
-      app.contributionList.on('change', function(model) { console.log(model.changedAttributes()) });
-      app.contributionDetails = new CK.Model.Contribution();
-      app.contributionDetails.on('change', function(model) { console.log(model.changedAttributes()) });
-
   };
 
-  app.authenticate = function () {
+  app.authenticate = function() {
     // TODO: implement me... probalby just copy + modify code from washago?
 
     // TODO: for now we're hard-coding a run name... need to get this from auth
@@ -97,72 +85,79 @@ CK.Mobile = function () {
   };
 
   app.events = {
-    initialized: function (ev) {
+    initialized: function(ev) {
       app.authenticate();
     },
 
-    authenticated: function (ev) {
+    authenticated: function(ev) {
       console.log('Authenticated...');
       // now we call a class function (configure) and hand in the mongo url and the run name so we don't need
       // to do this config again for each model instantiation
       CK.Model.configure(app.config.mongo.url, app.run.name);
       // moved the view init here so that backbone is configured with URLs
+      app.initModels();
       app.initViews();
     },
 
-    'ui.initialized': function (ev) {
+    'ui.initialized': function(ev) {
       console.log('ui.initialized!');
     },
 
-    connected: function (ev) {
+    connected: function(ev) {
       console.log("Connected...");
 
       app.restoreState();
 
     },
 
-      submitContribution: function () {
-        var sev = new Sail.Event('contribution', {
-          //author: data.account.login,
-          headline: Sail.app.currentContribution.headline,
-          content: Sail.app.currentContribution.content
-        });
-
-        Sail.app.groupchat.sendEvent(sev);
-
-      },    
-
     sail: {
+      // contribution: function(sev) {
+      //   console.log('I thought we werent doing it this way');
+
+      //   var contrib = new CK.Model.Contribution({
+      //     author: sev.payload.author,
+      //     text: sev.payload.text,
+      //     tags: sev.payload.tags,
+      //     about: sev.payload.about,
+      //     discourse: sev.payload.discourse,
+      //     timestamp: sev.timestamp,
+      //     id: sev.payload.id,
+      //     session: app.run.name
+      //   });
+
+      //   app.contributions.add(contrib);
+
+      //   // new app.view.ContributionView({model: contrib}).render();
+      //   // new CK.Mobile.View.ContributionView({model: contrib}).render();     // am I right?
+
+
+      //   //addTagToList(new_contribution);
+      //   //addAboutToList(new_contribution);                
+      //   //addTypeToList(new_contribution);
+      //   //writeToDB(new_contribution);
+      //   //storeTags(new_contribution.tags);
+      // },
+
       contribution: function (sev) {
-        var contrib = new CK.Model.Contribution({
-          author: sev.payload.author,
-          text: sev.payload.text,
-          tags: sev.payload.tags,
-          about: sev.payload.about,
-          discourse: sev.payload.discourse,
-          timestamp: sev.timestamp,
-          id: sev.payload.id,
-          session: app.run.name
-        });
+        console.log('heard a contribution');
 
-        app.contributions.add(contrib);
-
-        // new app.view.ContributionView({model: contrib}).render();
-        // new CK.Mobile.View.ContributionView({model: contrib}).render();     // am I right?
-
-
-        //addTagToList(new_contribution);
-        //addAboutToList(new_contribution);                
-        //addTypeToList(new_contribution);
-        //writeToDB(new_contribution);
-        //storeTags(new_contribution.tags);
-      },
-
+        Sail.app.contributionListView.render();
+      }
 
     }
   };
 
-  /* ck.mobile stuff */
+
+  /* setup functions */
+
+  app.initModels = function() {
+    app.currentContribution = new CK.Model.Contribution();
+    app.currentContribution.on('change', function(model) { console.log(model.changedAttributes()) });
+    app.contributionList = new CK.Model.Contributions();
+    app.contributionList.on('change', function(model) { console.log(model.changedAttributes()) });
+    app.contributionDetails = new CK.Model.Contribution();
+    app.contributionDetails.on('change', function(model) { console.log(model.changedAttributes()) });
+  };
 
   app.initViews = function() {
     console.log('creating ListView');
@@ -183,18 +178,34 @@ CK.Mobile = function () {
   };
 
 
+  /* Outgoing events */
+
+  app.submitContribution = function() {
+    var sev = new Sail.Event('contribution', {
+      //author: data.account.login,
+      headline: Sail.app.currentContribution.headline,
+      content: Sail.app.currentContribution.content
+    });
+
+    Sail.app.groupchat.sendEvent(sev);
+  };  
+
+
+
+
   /* Incoming Sail events */
 
-  app.events.sail = {
-    test_event: function (sev) {
-      alert('heard the event');
-    },
+  // app.events.sail = {
+  //   test_event: function (sev) {
+  //     alert('heard the event');
+  //   },
 
-    contribution: function (sev) {
-      console.log('heard a contribution');
-      Sail.app.contributionListView.render();
-    }
-  };
+  //   contribution: function (sev) {
+  //     console.log('heard a contribution');
+
+  //     Sail.app.contributionListView.render();
+  //   }
+  // };
 
 
 

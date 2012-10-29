@@ -31,11 +31,13 @@
       console.log("Initializing ContributionListView...");
       var view = this;
 
+      view.render();
+
       // this.model.on('change', this.render);
-      Sail.app.contributionList.on('reset', function (collection) {
-        view.render();
-      });
-      Sail.app.contributionList.fetch();
+      // Sail.app.contributionList.on('reset', function (collection) {
+      //   view.render();
+      // });
+      // Sail.app.contributionList.fetch();
     },
 
     new: function () {
@@ -57,17 +59,20 @@
     render: function () {
       console.log("rendering ContributionListView!");
 
+      Sail.app.contributionList.on('reset', function (collection) {
+        // TODO - do I really need to attach the id to everything? Can I have the li or a be the only clickable thing?
+        Sail.app.contributionList.each(function(contrib) {
+          console.log('headline: '+contrib.get('headline'));
 
-      // TODO - do I really need to attach the id to everything? Can I have the li or a be the only clickable thing?
-      Sail.app.contributionList.each(function(contrib) {
-        console.log('headline: '+contrib.get('headline'));
-
-        note = "<li><a class='note' id=" + contrib.id + "><span class='headline'>" + contrib.get('headline') + "</span>";
-        note += "<br /><i class='icon-chevron-right'></i>";
-        note += "<span class='author'>temp author</span><span class='date'> (temp date)</span></a></li>";
-        note = jQuery(note);
-        jQuery('#contribution-list .nav-list').append(note);
+          note = "<li><a class='note' id=" + contrib.id + "><span class='headline'>" + contrib.get('headline') + "</span>";
+          note += "<br /><i class='icon-chevron-right'></i>";
+          note += "<span class='author'>temp author</span><span class='date'> (temp date)</span></a></li>";
+          note = jQuery(note);
+          jQuery('#contribution-list .nav-list').append(note);
+        });        
       });
+      Sail.app.contributionList.fetch();      
+
 
       // var view = Sail.app.contributionInputView;
       // _.each(this.attributes, function (attributeValue, attributeName) {
@@ -177,7 +182,7 @@
           },
           success: function () {
             console.log('Model saved');
-            Sail.app.events.submitContribution();
+            Sail.app.submitContribution();
             //var note = self.model;
 
             // clear the old contribution plus ui fields
