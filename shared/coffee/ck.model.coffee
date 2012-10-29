@@ -1,14 +1,15 @@
 class CK.Model
-    @setup: (config) ->
-        unless config.run? and config.run.name?
-            throw "Cannot configure model because config does not have a run.name!"
+    @configure: (url, db) ->
+        unless url?
+            throw "Cannot configure model because no DrowsyDromedary URL was given!"
+        unless db?
+            throw "Cannot configure model because no database name was given!"
 
-        config.drowsyURL = config.mongo.url + "/" + config.run.name
+        @baseURL = url 
+        @dbURL= "#{url}/#{db}"
 
-        CK.Model.config = config
-
-        CK.Model.Contribution::urlRoot = config.drowsyURL + "/contributions"
-        CK.Model.Contributions::url = config.drowsyURL + "/contributions"
+        CK.Model.Contribution::urlRoot = "#{@dbURL}/contributions"
+        CK.Model.Contributions::url = "#{@dbURL}/contributions"
         CK.Model.DrowsyModel.createNecessaryCollections([
             'contributions'
         ])
@@ -36,33 +37,32 @@ class CK.Model.DrowsyModel extends Backbone.Model
         return time + (Array(randLength+1).join("0") + rand).slice(-randLength)
 
     @createNecessaryDatabase: (requiredDatabase, afterwards) ->
-        config = CK.Model.config
-        jQuery.ajax config.mongo.url,
+        jQuery.ajax CK.Model.baseURL,
             type: 'get'
             dataType: 'json'
             success: (existingDatabases) ->
                 if requiredDatabase in existingDatabases
                     afterwards()
                 else
-                    jQuery.post(config.mongo.url, {db: requiredDatabase}, afterwards)
+                    jQuery.post(CK.Model.baseURL, {db: requiredDatabase}, afterwards)
             error: (err) ->
                 console.error  "Couldn't fetch list of databases because: ", 
                     JSON.parse err.responseText
                 throw err.responseText
 
     @createNecessaryCollections: (requiredCollections) ->
-        config = CK.Model.config
-        jQuery.ajax config.drowsyURL,
+        dbUrl = 
+        jQuery.ajax CK.Model.dbURL,
             type: 'get',
             dataType: 'json',
             success: (existingCollections) =>
                 for col in requiredCollections
                     unless col in existingCollections
-                        console.log "Creating collection '#{col}' under #{config.drowsyURL}";
+                        console.log "Creating collection '#{col}' under #{CK.Model.dbURL}";
                         jQuery.post config.drowsyURL,
                             collection: col
             error: (err) =>
-                console.error "Couldn't fetch list of collections from #{config.drowsyURL} because: ", JSON.parse(err.responseText)
+                console.error "Couldn't fetch list of collections from #{CK.Model.dbURL} because: ", JSON.parse(err.responseText)
                 throw err.responseText
 
 # TODO: move this out to sail.js

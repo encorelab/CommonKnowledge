@@ -8,14 +8,17 @@
 
     function Model() {}
 
-    Model.setup = function(config) {
-      if (!((config.run != null) && (config.run.name != null))) {
-        throw "Cannot configure model because config does not have a run.name!";
+    Model.configure = function(url, db) {
+      if (url == null) {
+        throw "Cannot configure model because no DrowsyDromedary URL was given!";
       }
-      config.drowsyURL = config.mongo.url + "/" + config.run.name;
-      CK.Model.config = config;
-      CK.Model.Contribution.prototype.urlRoot = config.drowsyURL + "/contributions";
-      CK.Model.Contributions.prototype.url = config.drowsyURL + "/contributions";
+      if (db == null) {
+        throw "Cannot configure model because no database name was given!";
+      }
+      this.baseURL = url;
+      this.dbURL = "" + url + "/" + db;
+      CK.Model.Contribution.prototype.urlRoot = "" + this.dbURL + "/contributions";
+      CK.Model.Contributions.prototype.url = "" + this.dbURL + "/contributions";
       return CK.Model.DrowsyModel.createNecessaryCollections(['contributions']);
     };
 
@@ -57,16 +60,14 @@
     };
 
     DrowsyModel.createNecessaryDatabase = function(requiredDatabase, afterwards) {
-      var config;
-      config = CK.Model.config;
-      return jQuery.ajax(config.mongo.url, {
+      return jQuery.ajax(CK.Model.baseURL, {
         type: 'get',
         dataType: 'json',
         success: function(existingDatabases) {
           if (__indexOf.call(existingDatabases, requiredDatabase) >= 0) {
             return afterwards();
           } else {
-            return jQuery.post(config.mongo.url, {
+            return jQuery.post(CK.Model.baseURL, {
               db: requiredDatabase
             }, afterwards);
           }
@@ -79,10 +80,9 @@
     };
 
     DrowsyModel.createNecessaryCollections = function(requiredCollections) {
-      var config,
+      var dbUrl,
         _this = this;
-      config = CK.Model.config;
-      return jQuery.ajax(config.drowsyURL, {
+      return dbUrl = jQuery.ajax(CK.Model.dbURL, {
         type: 'get',
         dataType: 'json',
         success: function(existingCollections) {
@@ -91,7 +91,7 @@
           for (_i = 0, _len = requiredCollections.length; _i < _len; _i++) {
             col = requiredCollections[_i];
             if (__indexOf.call(existingCollections, col) < 0) {
-              console.log("Creating collection '" + col + "' under " + config.drowsyURL);
+              console.log("Creating collection '" + col + "' under " + CK.Model.dbURL);
               _results.push(jQuery.post(config.drowsyURL, {
                 collection: col
               }));
@@ -102,7 +102,7 @@
           return _results;
         },
         error: function(err) {
-          console.error("Couldn't fetch list of collections from " + config.drowsyURL + " because: ", JSON.parse(err.responseText));
+          console.error("Couldn't fetch list of collections from " + CK.Model.dbURL + " because: ", JSON.parse(err.responseText));
           throw err.responseText;
         }
       });
