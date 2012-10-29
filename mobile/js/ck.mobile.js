@@ -141,7 +141,10 @@ CK.Mobile = function() {
       contribution: function (sev) {
         console.log('heard a contribution');
 
-        Sail.app.contributionListView.render();
+        // contrib = new CK.Model.Contribution(sev.payload);
+        // Sail.app.contributionList.add(contrib);
+
+        Sail.app.contributionList.fetch();
       }
 
     }
@@ -153,8 +156,10 @@ CK.Mobile = function() {
   app.initModels = function() {
     app.currentContribution = new CK.Model.Contribution();
     app.currentContribution.on('change', function(model) { console.log(model.changedAttributes()) });
+    
     app.contributionList = new CK.Model.Contributions();
     app.contributionList.on('change', function(model) { console.log(model.changedAttributes()) });
+
     app.contributionDetails = new CK.Model.Contribution();
     app.contributionDetails.on('change', function(model) { console.log(model.changedAttributes()) });
   };
@@ -163,13 +168,17 @@ CK.Mobile = function() {
     console.log('creating ListView');
     app.contributionListView = new CK.Mobile.View.ContributionListView({
       el: jQuery('#contribution-list'),
-      model: app.contributionList
+      collection: app.contributionList
     });
+    app.contributionList.on('reset add', app.contributionListView.render);
+    app.contributionList.fetch();
+
     console.log('creating DetailsView');
     app.contributionDetailsView = new CK.Mobile.View.ContributionDetailsView({
       el: jQuery('#contribution-details'),
       model: app.contributionDetails
-    });    
+    });
+    
     console.log('creating InputView');
     app.contributionInputView = new CK.Mobile.View.ContributionInputView({
       el: jQuery('#contribution-input'),

@@ -12,10 +12,13 @@
       // for most fields
       'click .note': function (ev) {
         jQuery('#contribution-list .note').removeClass('selected');         // TODO - am I fighting backbone here?
-        jQuery('#'+ev.target.id).addClass('selected');
+        jQuery(ev.target).addClass('selected');
 
-        Sail.app.contributionDetails = Sail.app.contributionList.get(ev.target.id);
+        var contribId = jQuery(ev.target).attr('id');
+
+        Sail.app.contributionDetails = Sail.app.contributionList.get(contribId);
         console.log('Clicked contribution: ' + Sail.app.contributionDetails);
+        
         Sail.app.contributionDetailsView.render();
         
         // var f = jQuery(ev.target);
@@ -30,8 +33,6 @@
     initialize: function () {
       console.log("Initializing ContributionListView...");
       var view = this;
-
-      view.render();
 
       // this.model.on('change', this.render);
       // Sail.app.contributionList.on('reset', function (collection) {
@@ -59,19 +60,26 @@
     render: function () {
       console.log("rendering ContributionListView!");
 
-      Sail.app.contributionList.on('reset', function (collection) {
-        // TODO - do I really need to attach the id to everything? Can I have the li or a be the only clickable thing?
-        Sail.app.contributionList.each(function(contrib) {
+      
+      this.collection.each(function(contrib) {
           console.log('headline: '+contrib.get('headline'));
 
-          note = "<li><a class='note' id=" + contrib.id + "><span class='headline'>" + contrib.get('headline') + "</span>";
-          note += "<br /><i class='icon-chevron-right'></i>";
-          note += "<span class='author'>temp author</span><span class='date'> (temp date)</span></a></li>";
-          note = jQuery(note);
-          jQuery('#contribution-list .nav-list').append(note);
+          var note = jQuery('li#'+contrib.id);
+          if (note.length === 0) {
+            note = "<li id=" + contrib.id + " class='note'><a><span class='headline'></span>";
+            note += "<br /><i class='icon-chevron-right'></i>";
+            note += "<span class='author'>temp author</span><span class='date'> (temp date)</span></a></li>";
+            note = jQuery(note);
+
+            jQuery('#contribution-list .nav-list').append(note);
+          }
+
+          note.find('.headline').text(contrib.get('headline'));
+          // ...
+          
         });        
       });
-      Sail.app.contributionList.fetch();      
+          
 
 
       // var view = Sail.app.contributionInputView;
