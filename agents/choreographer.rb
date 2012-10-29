@@ -5,6 +5,7 @@ require 'rest_client'
 
 $: << 'sail.rb/lib'
 require 'sail/agent'
+require 'sail/rollcall/user'
 
 class Choreographer < Sail::Agent
 
@@ -44,9 +45,10 @@ class Choreographer < Sail::Agent
     # This function monitors the chat room and registers any user that joins
     # the goal is to only care for students
     someone_joined_room do |stanza|
-      stu = lookup_student(Util.extract_login(stanza.from), true) unless stanza.from == agent_jid_in_room
+      log "Stanza from #{stanza.from.inspect} received"
+      stu = lookup_student(Util.extract_login(stanza.from)) unless stanza.from == agent_jid_in_room
       if stu
-        log "#{stu} joined #{config[:room]}"
+        log "#{stu.inspect} joined "
       end
     end
     
@@ -98,7 +100,7 @@ class Choreographer < Sail::Agent
         return nil
       end
       
-      log "#{username.inspect} loaded in state #{stu.state}"
+      log "#{username.inspect} is a student and will be considered by agents"
       
       # store student in hash to have faster lookup
       @students[username] = stu
