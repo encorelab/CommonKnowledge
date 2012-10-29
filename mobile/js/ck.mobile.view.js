@@ -10,11 +10,11 @@
   self.ContributionListView = Backbone.View.extend({
     events: {
       // for most fields
-      'click .note': function (ev) {
+      'click .list-item': function (ev) {
         jQuery('#contribution-list .note').removeClass('selected');         // TODO - am I fighting backbone here?
         jQuery(ev.target).addClass('selected');
 
-        var contribId = jQuery(ev.target).attr('id');
+        var contribId = jQuery(ev.target.parentElement).attr('id');
 
         Sail.app.contributionDetails = Sail.app.contributionList.get(contribId);
         console.log('Clicked contribution: ' + Sail.app.contributionDetails);
@@ -32,7 +32,6 @@
 
     initialize: function () {
       console.log("Initializing ContributionListView...");
-      var view = this;
 
       // this.model.on('change', this.render);
       // Sail.app.contributionList.on('reset', function (collection) {
@@ -60,34 +59,26 @@
     render: function () {
       console.log("rendering ContributionListView!");
 
-      
-      this.collection.each(function(contrib) {
-          console.log('headline: '+contrib.get('headline'));
+      //this.collection.each(function(contrib) {
+      Sail.app.contributionList.each(function(contrib) {
+        console.log('headline: '+contrib.get('headline'));
 
-          var note = jQuery('li#'+contrib.id);
-          if (note.length === 0) {
-            note = "<li id=" + contrib.id + " class='note'><a><span class='headline'></span>";
-            note += "<br /><i class='icon-chevron-right'></i>";
-            note += "<span class='author'>temp author</span><span class='date'> (temp date)</span></a></li>";
-            note = jQuery(note);
+        var note = jQuery('li#'+contrib.id);
+        if (note.length === 0) {
+          note = "<li id=" + contrib.id + " class='list-item'><a class='note'><span class='headline'></span>";
+          note += "<br /><i class='icon-chevron-right'></i>";
+          note += "<span class='author'>temp author</span><span class='date'> (temp date)</span></a></li>";
+          note = jQuery(note);
 
-            jQuery('#contribution-list .nav-list').append(note);
-          }
+          jQuery('#contribution-list .nav-list').append(note);
+        }
 
-          note.find('.headline').text(contrib.get('headline'));
-          // ...
+        note.find('.headline').text(contrib.get('headline'));
+        // ...
           
-        });        
       });
-          
-
-
-      // var view = Sail.app.contributionInputView;
-      // _.each(this.attributes, function (attributeValue, attributeName) {
-      //   console.log("Updating "+attributeName+" with val "+attributeValue);
-      //   view.$el.find('.field['+attributeName+']').val(attributeValue);
-      // });
     }
+
   });
 
 
@@ -131,20 +122,26 @@
     **/
     render: function () {
       console.log("rendering ContributionDetailsView!");
-      
-      var headline = Sail.app.contributionDetailsView.$el.find('.note-headline');
-      var content = Sail.app.contributionDetailsView.$el.find('.note-body');
 
-      // clearing fields
-      headline.text('');
-      content.text('');
+      jQuery('#contribution-details .note-headline').text('');
+      jQuery('#contribution-details .note-body').text('');
 
-      // note that if there are blank fields (which should never happen outside of testing), the previous title stays
-      headline.text(Sail.app.contributionDetails.get('headline'));
-      content.text(Sail.app.contributionDetails.get('content'));
+      jQuery('#contribution-details .note-headline').text(Sail.app.contributionDetails.get('headline'));
+      jQuery('#contribution-details .note-body').text(Sail.app.contributionDetails.get('content'));
+
+      // var headline = Sail.app.contributionDetailsView.$el.find('#contribution-details .note-headline');
+      // var content = Sail.app.contributionDetailsView.$el.find('#contribution-details .note-body');
+
+      // // clearing fields
+      // headline.text('');
+      // content.text('');
+
+      // // note that if there are blank fields (which should never happen outside of testing), the previous title stays
+      // headline.text(Sail.app.contributionDetails.get('headline'));
+      // content.text(Sail.app.contributionDetails.get('content'));
 
       // var view = Sail.app.contributionInputView;
-      // _.each(this.attributes, function (attributeValue, attributeName) {
+      // _.each(this.model.attributes, function (attributeValue, attributeName) {
       //   console.log("Updating "+attributeName+" with val "+attributeValue);
       //   view.$el.find('.field['+attributeName+']').val(attributeValue);
       // });

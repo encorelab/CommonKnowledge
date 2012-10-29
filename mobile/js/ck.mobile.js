@@ -154,6 +154,7 @@ CK.Mobile = function() {
   /* setup functions */
 
   app.initModels = function() {
+    console.log('creating Models');
     app.currentContribution = new CK.Model.Contribution();
     app.currentContribution.on('change', function(model) { console.log(model.changedAttributes()) });
     
@@ -165,7 +166,7 @@ CK.Mobile = function() {
   };
 
   app.initViews = function() {
-    console.log('creating ListView');
+    console.log('creating ListViews');
     app.contributionListView = new CK.Mobile.View.ContributionListView({
       el: jQuery('#contribution-list'),
       collection: app.contributionList
