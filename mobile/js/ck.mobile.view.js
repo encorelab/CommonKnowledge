@@ -1,5 +1,5 @@
-/*jshint debug:true, noarg:true, noempty:true, eqeqeq:true, bitwise:true, undef:true, curly:true, browser: true, devel: true, jquery:true */
-/*global Backbone, _, jQuery */
+/*jshint debug:true, noarg:true, noempty:true, eqeqeq:true, bitwise:true, undef:true, curly:true, browser: true, devel: true, jquery:true, strict:false */
+/*global Backbone, _, jQuery, Sail */
 
 (function(CK) {
   var self = {};
@@ -31,7 +31,9 @@
       console.log("Initializing ContributionListView...");
       var view = this;
 
-      // this.model.on('change', this.render);
+      // Armin: Why is this not working????
+      view.model.on('change sync', view.render);
+
       Sail.app.contributionList.on('reset', function (collection) {
         view.render();
       });
@@ -60,13 +62,14 @@
 
       // TODO - do I really need to attach the id to everything? Can I have the li or a be the only clickable thing?
       Sail.app.contributionList.each(function(contrib) {
+        var contribution = "";
         console.log('headline: '+contrib.get('headline'));
 
-        note = "<li><a class='note' id=" + contrib.id + "><span class='headline'>" + contrib.get('headline') + "</span>";
-        note += "<br /><i class='icon-chevron-right'></i>";
-        note += "<span class='author'>temp author</span><span class='date'> (temp date)</span></a></li>";
-        note = jQuery(note);
-        jQuery('#contribution-list .nav-list').append(note);
+        contribution = "<li><a class='note' id=" + contrib.id + "><span class='headline'>" + contrib.get('headline') + "</span>";
+        contribution += "<br /><i class='icon-chevron-right'></i>";
+        contribution += "<span class='author'>temp author</span><span class='date'> (temp date)</span></a></li>";
+        
+        jQuery('#contribution-list .nav-list').append(jQuery(contribution));
       });
 
       // var view = Sail.app.contributionInputView;
@@ -91,7 +94,7 @@
       //   this.model.set(f.attr('name'), f.val());
       //},
 
-      'click #build-on-btn': 'build-on',
+      'click #build-on-btn': 'build-on'
     },
 
     initialize: function () {
@@ -166,7 +169,8 @@
     },
 
     share: function () {
-      if (jQuery('#note-body-entry').val() != '' && jQuery('#note-headline-entry').val() != '') {
+      // TODO: Could such a validation be done differently?? (armin asking)
+      if (jQuery('#note-body-entry').val() !== '' && jQuery('#note-headline-entry').val() !== '') {
         console.log("Submitting contribution...");
         // var self = this;
 
