@@ -1,5 +1,5 @@
-/*jshint debug:true, noarg:true, noempty:true, eqeqeq:true, bitwise:true, undef:true, curly:true, browser: true, devel: true, jquery:true */
-/*global Backbone, _, jQuery */
+/*jshint debug:true, noarg:true, noempty:true, eqeqeq:true, bitwise:true, undef:true, curly:true, browser: true, devel: true, jquery:true, strict:false */
+/*global Backbone, _, jQuery, Sail */
 
 (function(CK) {
   var self = {};
@@ -104,7 +104,7 @@
       //   this.model.set(f.attr('name'), f.val());
       //},
 
-      'click #build-on-btn': 'build-on',
+      'click #build-on-btn': 'build-on'
     },
 
     initialize: function () {
@@ -179,7 +179,8 @@
     },
 
     share: function () {
-      if (jQuery('#note-body-entry').val() != '' && jQuery('#note-headline-entry').val() != '') {
+      // TODO: Could such a validation be done differently?? (armin asking)
+      if (jQuery('#note-body-entry').val() !== '' && jQuery('#note-headline-entry').val() !== '') {
         console.log("Submitting contribution...");
         // var self = this;
 

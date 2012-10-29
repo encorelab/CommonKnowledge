@@ -58,8 +58,8 @@ class Choreographer < Sail::Agent
 
       count = 0
 
-      @mongo.collection(:contributions).find().each do |row|
-        log "#{row.inspect}"
+      @mongo.collection(:contributions).find().each do |contrib|
+        log "#{contrib.inspect}"
         count += 1
         # row.map do |key, values|
         #   unless key == "_id" then
