@@ -121,6 +121,17 @@ CK.Mobile = function () {
 
     },
 
+      submitContribution: function () {
+        var sev = new Sail.Event('contribution', {
+          //author: data.account.login,
+          headline: Sail.app.currentContribution.headline,
+          content: Sail.app.currentContribution.content
+        });
+
+        Sail.app.groupchat.sendEvent(sev);
+
+      },    
+
     sail: {
       contribution: function (sev) {
         var contrib = new CK.Model.Contribution({
@@ -136,8 +147,8 @@ CK.Mobile = function () {
 
         app.contributions.add(contrib);
 
-        //new app.view.ContributionView({model: contrib}).render();
-        new CK.Mobile.View.ContributionView({model: contrib}).render();     // am I right?
+        // new app.view.ContributionView({model: contrib}).render();
+        // new CK.Mobile.View.ContributionView({model: contrib}).render();     // am I right?
 
 
         //addTagToList(new_contribution);
@@ -145,7 +156,9 @@ CK.Mobile = function () {
         //addTypeToList(new_contribution);
         //writeToDB(new_contribution);
         //storeTags(new_contribution.tags);
-      }
+      },
+
+
     }
   };
 
@@ -173,8 +186,13 @@ CK.Mobile = function () {
   /* Incoming Sail events */
 
   app.events.sail = {
-    test_event: function(sev) {
+    test_event: function (sev) {
       alert('heard the event');
+    },
+
+    contribution: function (sev) {
+      console.log('heard a contribution');
+      Sail.app.contributionListView.render();
     }
   };
 

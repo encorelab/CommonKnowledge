@@ -165,10 +165,13 @@
         Sail.app.currentContribution.save(null, {
           complete: function () {
             console.log('Submitted!');
+
           },
           success: function () {
             console.log('Model saved');
+            Sail.app.events.submitContribution();
             //var note = self.model;
+
             // clear the old contribution plus ui fields
             Sail.app.currentContribution.clear();
             Sail.app.contributionInputView.$el.find(".field").val(null);
@@ -201,7 +204,7 @@
       Triggers full update of all dynamic elements in the input view
     **/
     render: function () {
-      console.log("rendering ContributionInputView!");
+      console.log("rendering ContributionInputView...");
       var view = Sail.app.contributionInputView;
       _.each(this.attributes, function (attributeValue, attributeName) {
         console.log("Updating "+attributeName+" with val "+attributeValue);
