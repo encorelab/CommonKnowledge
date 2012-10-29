@@ -13,9 +13,9 @@
     <script type="text/javascript">
         Sail.JS_ROOT_PATH = "/shared/js/sail.js";
         Sail.load()
-            .then(Sail.JS_ROOT_PATH+'/rollcall.js', 
-                Sail.JS_ROOT_PATH+'/deps/backbone-0.9.2.js')
-            .then('../shared/js/ck.js', '../shared/js/ck.model.js')
+            .then(Sail.JS_ROOT_PATH+'/rollcall.js')
+            .then('../shared/js/ck.js')
+            .then('../shared/js/ck.model.js')
             .then('/smartboard/js/ck.smartboard.js', '/smartboard/js/ck.smartboard.view.js')
             .thenRun(function() { return Sail.init(new CK.Smartboard()); });  
     </script>

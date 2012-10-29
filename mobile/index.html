@@ -8,7 +8,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="description" content="">
         <meta name="author" content="">
-        
+
         <link href="/shared/js/sail.js/css/sail.css" rel="stylesheet">
 
         <link href="css/bootstrap-responsive.css" rel="stylesheet">
@@ -26,8 +26,10 @@
             Sail.load()
                 .then(Sail.JS_ROOT_PATH+'/rollcall.js')
                 .then('js/bootstrap.js')
-                .then('../shared/js/ck.js', '../shared/js/ck.model.js')
-                .then('js/ck.mobile.js', 'js/ck.mobile.view.js')
+                .then('../shared/js/ck.js')
+                .then('../shared/js/ck.model.js')
+                .then('js/ck.mobile.js')
+                .then('js/ck.mobile.view.js')
                 .thenRun(function() { return Sail.init(new CK.Mobile()); });  
         </script>
 
