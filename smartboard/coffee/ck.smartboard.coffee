@@ -34,12 +34,19 @@ class CK.Smartboard extends Sail.App
 
         @rollcall = new Rollcall.Client(@config.rollcall.url)
 
-        @contributions = new CK.Model.Contributions()
-        @contributions.on 'add', (contrib) ->
+        bubbleContrib = (contrib) ->
             bubble = new CK.Smartboard.View.ContributionBubble {model: contrib}
             contrib.on 'change', bubble.render
             bubble.render()
 
+        @contributions = new CK.Model.Contributions()
+        @contributions.on 'add', (contrib) -> 
+            contrib.justAdded = true
+            bubbleContrib(contrib)
+        @contributions.on 'reset', (collection) -> 
+            collection.each bubbleContrib
+
+        @wall = new CK.Smartboard.View.Wall {collection: @contributions}
 
     authenticate: =>
         if @run
@@ -61,6 +68,7 @@ class CK.Smartboard extends Sail.App
 
         connected: (ev) ->
             console.log "Connected..."
+            @contributions.fetch()
 
         sail:
             contribution: (sev) ->

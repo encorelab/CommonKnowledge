@@ -7,24 +7,37 @@ class CK.Smartboard.View extends Sail.App
         return el
 
 
-class CK.Smartboard.View.ContributionBubble extends Backbone.View
+class CK.Smartboard.View.Base extends Backbone.View
+    findOrCreate: (selector, html) => 
+        CK.Smartboard.View.findOrCreate @$el, selector, html
+
+class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
+    tagName: 'div'
+    id: 'wall'
+    
+
+class CK.Smartboard.View.ContributionBubble extends CK.Smartboard.View.Base
     tagName: 'article'
+    className: 'contribution balloon'
+    id: => @domID()
 
     initialize: =>
         # make this View accessible from the element
         @$el.data('view', @)
 
     render: =>
-        @$el.addClass 'balloon contribution'
-        @$el.attr 'id', @domID()
-
         headline = @findOrCreate '.headline', 
             "<h3 class='headline'></h3>"
         headline.text @model.get('headline')
 
         body = @findOrCreate '.body', 
             "<div class='body'></div>"
-        body.text @model.get('body')
+
+        if @model.get('content_type') is 'text'
+            body.text @model.get('content')
+        else
+            body.text @model.get('content')
+            # console.warn "Contribution #{@model.id} has an unrecognized content type: ", @model.get('content_type'), " ... assuming 'text'."
 
         meta = @findOrCreate '.meta',
             "<div class='meta'><span class='author'></span></div>"
@@ -34,10 +47,14 @@ class CK.Smartboard.View.ContributionBubble extends Backbone.View
 
 
         @renderTags()
+        
+        @$el.hide() # hide until positioned
 
         # check if element is in DOM; if not, insert it
         unless @$el.parent().length > 0
-            @$el.addClass('new')
+            if @model.justAdded
+                @$el.addClass('new')
+                delete @model.justAdded
             @$el.draggable
                 stop: (ev, ui) =>
                     @model.save
@@ -45,11 +62,22 @@ class CK.Smartboard.View.ContributionBubble extends Backbone.View
                     return true # must return true, otherwise draggable is disabled
             jQuery('#wall').append(@$el)
 
+        if @model.has('pos')
+            @$el.css
+                left: @model.get('pos').left + 'px'
+                top: @model.get('pos').top + 'px'
+        else
+            @autoPosition()
+
+        @$el.show()
+
         return @ # return this for chaining
 
     renderTags: =>
         tagsContainer = @findOrCreate '.tags',
             "<div class='tags'></div>"
+
+        return unless @model.get('tags')?
 
         validTagClasses = []
         for tagText in @model.get('tags')
@@ -69,5 +97,15 @@ class CK.Smartboard.View.ContributionBubble extends Backbone.View
     domID: =>
         "contribution-#{@model.id}"
 
-    findOrCreate: (selector, html) => 
-        CK.Smartboard.View.findOrCreate @$el, selector, html
+    autoPosition: ->
+        wallWidth = jQuery('#wall').width()
+        wallHeight = jQuery('#wall').height()
+
+        left = Math.random() * (wallWidth - @$el.width())
+        top = Math.random() * (wallHeight - @$el.height())
+
+        @$el.css
+            left: left + 'px'
+            top: top + 'px'
+
+        @model.save {pos: {left: left, top: top}}

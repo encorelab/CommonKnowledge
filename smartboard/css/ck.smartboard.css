@@ -52,6 +52,37 @@ body {
     margin-bottom: 3px;
     padding: 2px 4px; }
 
+#tags-panel {
+  position: fixed;
+  width: 300px;
+  left: -300px;
+  top: 20px; }
+  #tags-panel #tags-tab {
+    display: inline-block;
+    padding: 4px 10px;
+    background-color: #c8271a;
+    color: #ffb433;
+    font-weight: bold;
+    font-size: 20px;
+    border-top-right-radius: 8px;
+    border-top-left-radius: 8px;
+    -webkit-transform: rotate(90deg);
+    -moz-transform: rotate(90deg);
+    transform: rotate(90deg);
+    position: absolute;
+    left: 283px;
+    top: 20px;
+    box-shadow: inset 0px -6px 6px rgba(0, 0, 0, 0.3); }
+    #tags-panel #tags-tab:hover {
+      cursor: pointer; }
+  #tags-panel #tags-editor {
+    background-color: #ffa100;
+    border: 3px solid #C8271A;
+    border-left: none;
+    padding: 10px;
+    min-height: 200px;
+    box-shadow: 6px 6px 6px rgba(0, 0, 0, 0.1); }
+
 .balloon:hover {
   cursor: pointer;
   cursor: -moz-grab;

@@ -36,7 +36,7 @@
     };
 
     Smartboard.prototype.init = function() {
-      var userFilter,
+      var bubbleContrib, userFilter,
         _this = this;
       Sail.verifyConfig(this.config, this.requiredConfig);
       console.log("Configuration is valid.");
@@ -60,14 +60,24 @@
         return _this.trigger('initialized');
       });
       this.rollcall = new Rollcall.Client(this.config.rollcall.url);
-      this.contributions = new CK.Model.Contributions();
-      return this.contributions.on('add', function(contrib) {
+      bubbleContrib = function(contrib) {
         var bubble;
         bubble = new CK.Smartboard.View.ContributionBubble({
           model: contrib
         });
         contrib.on('change', bubble.render);
         return bubble.render();
+      };
+      this.contributions = new CK.Model.Contributions();
+      this.contributions.on('add', function(contrib) {
+        contrib.justAdded = true;
+        return bubbleContrib(contrib);
+      });
+      this.contributions.on('reset', function(collection) {
+        return collection.each(bubbleContrib);
+      });
+      return this.wall = new CK.Smartboard.View.Wall({
+        collection: this.contributions
       });
     };
 
@@ -92,7 +102,8 @@
         return console.log("UI initialized...");
       },
       connected: function(ev) {
-        return console.log("Connected...");
+        console.log("Connected...");
+        return this.contributions.fetch();
       },
       sail: {
         contribution: function(sev) {
