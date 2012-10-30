@@ -77,8 +77,7 @@
           note.find('.headline').text(contrib.get('headline'));
           // ...
           
-        });        
-      });
+      });        
           
 
 
