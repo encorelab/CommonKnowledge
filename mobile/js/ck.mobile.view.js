@@ -75,8 +75,15 @@
 
         note.find('.headline').text(contrib.get('headline'));
         // ...
+      });        
           
-      });
+
+
+      // var view = Sail.app.contributionInputView;
+      // _.each(this.attributes, function (attributeValue, attributeName) {
+      //   console.log("Updating "+attributeName+" with val "+attributeValue);
+      //   view.$el.find('.field['+attributeName+']').val(attributeValue);
+      // });
     }
 
   });

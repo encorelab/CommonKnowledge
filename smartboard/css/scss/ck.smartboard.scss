@@ -3,6 +3,9 @@
 $wall-color: #ab2;
 $balloon-color: #fff;
 
+$widget-background-color: #ffa100;
+$widget-accent-color: #c8271a;
+
 body {
     font-family: Ubuntu, sans-serif;
     background-color: $wall-color;
@@ -68,6 +71,57 @@ body {
         margin-right: 5px;
         margin-bottom: 3px;
         padding: 2px 4px;
+    }
+}
+
+#tags-panel {
+    $width: 300px;
+
+    position: fixed;
+    width: $width;
+    left: -$width;
+    top: 20px;
+
+    #tags-tab {
+
+        &:hover {
+            cursor: pointer;
+        }
+
+        display: inline-block;
+        padding: 4px 10px;
+        background-color: $widget-accent-color;
+        color: lighten($widget-background-color, 10%);
+        font-weight: bold;
+        font-size: 20px;
+        // border-left: 3px solid $widget-accent-color;
+        // border-top: 3px solid $widget-accent-color;
+        // border-right: 3px solid $widget-accent-color;
+        border-top-right-radius: 8px;
+        border-top-left-radius: 8px;
+
+        -webkit-transform: rotate(90deg);
+        -moz-transform: rotate(90deg);
+        transform: rotate(90deg);
+
+        position: absolute;
+        left: 283px;
+        top: 20px;
+
+        box-shadow: inset 0px -6px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    #tags-editor {
+        background-color: $widget-background-color;
+        border: 3px solid #C8271A;
+        border-left: none;
+
+        // border-radius: 8px;
+        padding: 10px;
+
+        min-height: 200px;
+
+        box-shadow: 6px 6px 6px rgba(0, 0, 0, 0.1);
     }
 }
 

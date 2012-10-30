@@ -1,5 +1,5 @@
-/*jshint browser: true, devel: true */
-/*globals jQuery, _, Sail, CK */
+/*jshint browser: true, devel: true, strict: false, unused:false */
+/*globals jQuery, _, Sail, CK, Rollcall */
 
 window.CK = window.CK || {};
 
@@ -156,13 +156,13 @@ CK.Mobile = function() {
   app.initModels = function() {
     console.log('creating Models');
     app.currentContribution = new CK.Model.Contribution();
-    app.currentContribution.on('change', function(model) { console.log(model.changedAttributes()) });
+    app.currentContribution.on('change', function(model) { console.log(model.changedAttributes()); });
     
     app.contributionList = new CK.Model.Contributions();
-    app.contributionList.on('change', function(model) { console.log(model.changedAttributes()) });
+    app.contributionList.on('change', function(model) { console.log(model.changedAttributes()); });
 
     app.contributionDetails = new CK.Model.Contribution();
-    app.contributionDetails.on('change', function(model) { console.log(model.changedAttributes()) });
+    app.contributionDetails.on('change', function(model) { console.log(model.changedAttributes()); });
   };
 
   app.initViews = function() {

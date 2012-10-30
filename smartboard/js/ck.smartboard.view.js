@@ -27,13 +27,44 @@
 
   })(Sail.App);
 
+  CK.Smartboard.View.Base = (function(_super) {
+
+    __extends(Base, _super);
+
+    function Base() {
+      this.findOrCreate = __bind(this.findOrCreate, this);
+      return Base.__super__.constructor.apply(this, arguments);
+    }
+
+    Base.prototype.findOrCreate = function(selector, html) {
+      return CK.Smartboard.View.findOrCreate(this.$el, selector, html);
+    };
+
+    return Base;
+
+  })(Backbone.View);
+
+  CK.Smartboard.View.Wall = (function(_super) {
+
+    __extends(Wall, _super);
+
+    function Wall() {
+      return Wall.__super__.constructor.apply(this, arguments);
+    }
+
+    Wall.prototype.tagName = 'div';
+
+    Wall.prototype.id = 'wall';
+
+    return Wall;
+
+  })(CK.Smartboard.View.Base);
+
   CK.Smartboard.View.ContributionBubble = (function(_super) {
 
     __extends(ContributionBubble, _super);
 
     function ContributionBubble() {
-      this.findOrCreate = __bind(this.findOrCreate, this);
-
       this.domID = __bind(this.domID, this);
 
       this.renderTags = __bind(this.renderTags, this);
@@ -41,10 +72,18 @@
       this.render = __bind(this.render, this);
 
       this.initialize = __bind(this.initialize, this);
+
+      this.id = __bind(this.id, this);
       return ContributionBubble.__super__.constructor.apply(this, arguments);
     }
 
     ContributionBubble.prototype.tagName = 'article';
+
+    ContributionBubble.prototype.className = 'contribution balloon';
+
+    ContributionBubble.prototype.id = function() {
+      return this.domID();
+    };
 
     ContributionBubble.prototype.initialize = function() {
       return this.$el.data('view', this);
@@ -53,17 +92,23 @@
     ContributionBubble.prototype.render = function() {
       var body, headline, meta,
         _this = this;
-      this.$el.addClass('balloon contribution');
-      this.$el.attr('id', this.domID());
       headline = this.findOrCreate('.headline', "<h3 class='headline'></h3>");
       headline.text(this.model.get('headline'));
       body = this.findOrCreate('.body', "<div class='body'></div>");
-      body.text(this.model.get('body'));
+      if (this.model.get('content_type') === 'text') {
+        body.text(this.model.get('content'));
+      } else {
+        body.text(this.model.get('content'));
+      }
       meta = this.findOrCreate('.meta', "<div class='meta'><span class='author'></span></div>");
       meta.find('.author').text(this.model.get('author')).addClass("author-" + (this.model.get('author')));
       this.renderTags();
+      this.$el.hide();
       if (!(this.$el.parent().length > 0)) {
-        this.$el.addClass('new');
+        if (this.model.justAdded) {
+          this.$el.addClass('new');
+          delete this.model.justAdded;
+        }
         this.$el.draggable({
           stop: function(ev, ui) {
             _this.model.save({
@@ -74,12 +119,24 @@
         });
         jQuery('#wall').append(this.$el);
       }
+      if (this.model.has('pos')) {
+        this.$el.css({
+          left: this.model.get('pos').left + 'px',
+          top: this.model.get('pos').top + 'px'
+        });
+      } else {
+        this.autoPosition();
+      }
+      this.$el.show();
       return this;
     };
 
     ContributionBubble.prototype.renderTags = function() {
       var md5tag, tagClass, tagSpan, tagText, tagsContainer, validTagClasses, _i, _len, _ref;
       tagsContainer = this.findOrCreate('.tags', "<div class='tags'></div>");
+      if (this.model.get('tags') == null) {
+        return;
+      }
       validTagClasses = [];
       _ref = this.model.get('tags');
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -98,12 +155,26 @@
       return "contribution-" + this.model.id;
     };
 
-    ContributionBubble.prototype.findOrCreate = function(selector, html) {
-      return CK.Smartboard.View.findOrCreate(this.$el, selector, html);
+    ContributionBubble.prototype.autoPosition = function() {
+      var left, top, wallHeight, wallWidth;
+      wallWidth = jQuery('#wall').width();
+      wallHeight = jQuery('#wall').height();
+      left = Math.random() * (wallWidth - this.$el.width());
+      top = Math.random() * (wallHeight - this.$el.height());
+      this.$el.css({
+        left: left + 'px',
+        top: top + 'px'
+      });
+      return this.model.save({
+        pos: {
+          left: left,
+          top: top
+        }
+      });
     };
 
     return ContributionBubble;
 
-  })(Backbone.View);
+  })(CK.Smartboard.View.Base);
 
 }).call(this);
