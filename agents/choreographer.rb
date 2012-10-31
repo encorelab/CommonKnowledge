@@ -16,6 +16,7 @@ class Choreographer < Sail::Agent
     # @vidwalls_user_tag_counts = {'A' => {}, 'B' => {}, 'C' => {}, 'D' => {}}
 
     @students = {}
+    @bucket = []
   end
 
   def behaviour
@@ -25,17 +26,6 @@ class Choreographer < Sail::Agent
 
       join_room
       #join_log_room
-
-      # @mongo.collection(:vidwall_user_tag_counts).find().each do |row|
-      #   # log "#{row.inspect}"
-      #   row.map do |key, values|
-      #     unless key == "_id" then
-      #       # log "key #{key}"
-      #       @vidwalls_user_tag_counts.merge!({key => values})
-      #     end
-      #   end
-      # end
-      # log "Restored vidwalls_user_tag_counts from MongoDB #{@vidwalls_user_tag_counts}"
     end
     
     self_joined_log_room do |stanza|
@@ -59,8 +49,12 @@ class Choreographer < Sail::Agent
       count = 0
 
       @mongo.collection(:contributions).find().each do |contrib|
-        log "#{contrib.inspect}"
+        #log "#{contrib.inspect}"
+        contributionId = contrib['_id'].to_s
         count += 1
+
+        @bucket.push(contributionId)
+
         # row.map do |key, values|
         #   unless key == "_id" then
         #     # log "key #{key}"
@@ -72,6 +66,22 @@ class Choreographer < Sail::Agent
       log "Found #{count} contributions to hand out to students"
       
       # Handout contributions to all present users
+      tagAssignments = {}
+
+      @students.each do |student|
+        contributionId = @bucket.pop
+        studentName = student.first
+        
+        log "#{studentName} is assigned to tag contribution #{contributionId}"
+        unless contributionId.nil? then
+          tagAssignments[studentName] = contributionId
+        else
+          log "We assigned all contributions and have students left without work"
+        end
+      end
+
+      # send out the events
+      send_tag_assignments(tagAssignments)
 
       # check if there are more contributions to hand out (probably do this each time when students are done with tagging)
       
@@ -108,6 +118,33 @@ class Choreographer < Sail::Agent
     
     return stu
   end
+
+  def send_tag_assignments(user_to_contribution_id_assignments)
+    # find a problem with assigned 'false'
+    user_to_contribution_id_assignments.map do |user, contributionId|
+      log "Sending tag_assignment for user '#{user.inspect}' for contributionId '#{contributionId.inspect}'"
+      event!(:tag_assignment, {:student => user, :contributionId => contributionId})
+    end
+  end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   # This function stores the submitted principles for each student
   def record_principle_submission(user, location, count=1)
