@@ -54,6 +54,17 @@ i {
 
 /****** containers ******/
 
+#screen-lock {
+	height: 100%;
+	width: 100%;
+	background-color: black;
+	z-index: 1;
+	position: fixed;
+	left: 0;
+	top: 0;
+	overflow: hidden;
+}
+
 #contribution-details, #tag-selection {
 	margin-left: 0;
 	border-left-width: 0px;				/* overwritting .view-container to prevent dup borders btw 1/2 */
@@ -85,6 +96,14 @@ i {
 
 
 /******* elements *******/
+
+#lock-image {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	margin-left: -128px;
+	margin-top: -128px;
+}
 
 .note {
 	border-bottom: 1px solid black;

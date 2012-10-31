@@ -8,6 +8,11 @@ CK.Mobile = function() {
 
   app.name = "CK.Mobile";
 
+  // Global vars
+  app.userData = null;
+  app.tagArray = [];
+  app.buildOnArray = [];  
+
   // TODO: copied from washago code
   app.init = function() {
     //Sail.app.groupchatRoom = 'washago@conference.' + Sail.app.xmppDomain;
@@ -28,9 +33,8 @@ CK.Mobile = function() {
         return true;
       });
 
-      // Create a Rollcall instance so that sail.app has access to it later on
-      app.rollcall = new Rollcall.Client(app.config.rollcall.url);
-
+    // Create a Rollcall instance so that sail.app has access to it later on
+    app.rollcall = new Rollcall.Client(app.config.rollcall.url);
 
   };
 
@@ -89,18 +93,28 @@ CK.Mobile = function() {
       app.authenticate();
     },
 
+    'ui.initialized': function(ev) {
+      console.log('ui.initialized!');
+    },    
+
     authenticated: function(ev) {
       console.log('Authenticated...');
       // now we call a class function (configure) and hand in the mongo url and the run name so we don't need
       // to do this config again for each model instantiation
       CK.Model.configure(app.config.mongo.url, app.run.name);
+
+      // I need to do this call, right? There's no easier way to grab username?
+      Sail.app.rollcall.request(Sail.app.rollcall.url + "/users/"+Sail.app.session.account.login+".json", "GET", {}, function(data) {
+        console.log("Authenticated user is: ", data);
+
+        app.userData = data;
+      });
+
       // moved the view init here so that backbone is configured with URLs
       app.initModels();
       app.initViews();
-    },
 
-    'ui.initialized': function(ev) {
-      console.log('ui.initialized!');
+      // jQuery('#screen-lock').addClass('hide');
     },
 
     connected: function(ev) {
@@ -138,20 +152,46 @@ CK.Mobile = function() {
       //   //storeTags(new_contribution.tags);
       // },
 
+      toggle_screen_lock: function (sev) {
+        console.log('freezing display');
+
+        jQuery('#screen-lock').toggle();
+        // do we want to lock down all the screen elements as well
+        // TODO - test on tablet... keyboard will make things awkward - maybe use unfocus to solve all these problems? Disabling all fields might work too
+      },
+
       contribution: function (sev) {
         console.log('heard a contribution');
 
         // contrib = new CK.Model.Contribution(sev.payload);
         // Sail.app.contributionList.add(contrib);
-
-        Sail.app.contributionList.fetch();
+        var sort = ['timestamp', 'ASC'];
+        // var selector = {"author": "matt"};
+        app.contributionList.fetch({
+          data: { sort: JSON.stringify(sort) }
+        });
       }
 
     }
   };
 
+  /* Outgoing events */
 
-  /* setup functions */
+  app.submitContribution = function() {
+    var sev = new Sail.Event('contribution', {
+      //author: data.account.login,
+      headline: app.currentContribution.headline,
+      content: app.currentContribution.content,
+      author: app.userData.account.login//,
+      //tags: Sail.app.tagArray,
+      //build_ons: Sail.app.buildOnArry
+    });
+
+    Sail.app.groupchat.sendEvent(sev);
+  };
+
+
+  /* Helper functions */
 
   app.initModels = function() {
     console.log('creating Models');
@@ -172,7 +212,11 @@ CK.Mobile = function() {
       collection: app.contributionList
     });
     app.contributionList.on('reset add', app.contributionListView.render);
-    app.contributionList.fetch();
+    var sort = ['timestamp', 'ASC'];
+    // var selector = {"author": "matt"};
+    app.contributionList.fetch({
+      data: { sort: JSON.stringify(sort) }
+    });
 
     console.log('creating DetailsView');
     app.contributionDetailsView = new CK.Mobile.View.ContributionDetailsView({
@@ -186,38 +230,6 @@ CK.Mobile = function() {
       model: app.currentContribution
     });
   };
-
-
-  /* Outgoing events */
-
-  app.submitContribution = function() {
-    var sev = new Sail.Event('contribution', {
-      //author: data.account.login,
-      headline: Sail.app.currentContribution.headline,
-      content: Sail.app.currentContribution.content
-    });
-
-    Sail.app.groupchat.sendEvent(sev);
-  };  
-
-
-
-
-  /* Incoming Sail events */
-
-  // app.events.sail = {
-  //   test_event: function (sev) {
-  //     alert('heard the event');
-  //   },
-
-  //   contribution: function (sev) {
-  //     console.log('heard a contribution');
-
-  //     Sail.app.contributionListView.render();
-  //   }
-  // };
-
-
 
 
 };

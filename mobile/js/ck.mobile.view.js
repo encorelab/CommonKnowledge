@@ -179,14 +179,23 @@
     initialize: function () {
       console.log("Initializing ContributionInputView...");
 
+
       this.model.on('change', this.render);
     },
 
     share: function () {
       // TODO: Could such a validation be done differently?? (armin asking)
+      // [C] - right, maybe it's better to check the model instead of what's on the screen
       if (jQuery('#note-body-entry').val() !== '' && jQuery('#note-headline-entry').val() !== '') {
         console.log("Submitting contribution...");
         // var self = this;
+
+        // adding the author and timestamp - do I need to do some kind of manual thing to add the timestamp TODO
+        var timestamp = new Date();
+        this.model.set('author', Sail.app.userData.account.login);
+        this.model.set('timestamp', timestamp);
+        this.model.set('tags', Sail.app.tagArray);
+        this.model.set('build_ons', Sail.app.buildOnArray);
 
         Sail.app.currentContribution.save(null, {
           complete: function () {
