@@ -8,14 +8,13 @@ CK.Mobile = function() {
 
   app.name = "CK.Mobile";
 
+  // Global vars
+  app.userData = null;
+  app.tagArray = [];
+  app.buildOnArray = [];  
+
   // TODO: copied from washago code
   app.init = function() {
-    //Sail.app.groupchatRoom = 'washago@conference.' + Sail.app.xmppDomain;
-
-    // TODO: move this out to config.json
-    this.username = "roadshow";
-    this.password = "roadshow";
-
     Sail.modules
       // Enable multi-picker login for CommonKnowledge curnit - asking for run (must be linked to curnit)
       .load('Rollcall.Authenticator', {mode: 'multi-picker', askForRun: true, curnit: 'CommonKnowledge'})
@@ -28,9 +27,8 @@ CK.Mobile = function() {
         return true;
       });
 
-      // Create a Rollcall instance so that sail.app has access to it later on
-      app.rollcall = new Rollcall.Client(app.config.rollcall.url);
-
+    // Create a Rollcall instance so that sail.app has access to it later on
+    app.rollcall = new Rollcall.Client(app.config.rollcall.url);
 
   };
 
@@ -89,18 +87,28 @@ CK.Mobile = function() {
       app.authenticate();
     },
 
+    'ui.initialized': function(ev) {
+      console.log('ui.initialized!');
+    },    
+
     authenticated: function(ev) {
       console.log('Authenticated...');
       // now we call a class function (configure) and hand in the mongo url and the run name so we don't need
       // to do this config again for each model instantiation
       CK.Model.configure(app.config.mongo.url, app.run.name);
+
+      // I need to do this call, right? There's no easier way to grab username?
+      Sail.app.rollcall.request(Sail.app.rollcall.url + "/users/"+Sail.app.session.account.login+".json", "GET", {}, function(data) {
+        console.log("Authenticated user is: ", data);
+
+        app.userData = data;
+      });
+
       // moved the view init here so that backbone is configured with URLs
       app.initModels();
       app.initViews();
-    },
 
-    'ui.initialized': function(ev) {
-      console.log('ui.initialized!');
+      // jQuery('#screen-lock').addClass('hide');
     },
 
     connected: function(ev) {
@@ -138,22 +146,69 @@ CK.Mobile = function() {
       //   //storeTags(new_contribution.tags);
       // },
 
-      contribution: function (sev) {
+      toggle_screen_lock: function(sev) {
+        console.log('freezing display');
+
+        jQuery('#screen-lock').toggle();
+        // do we want to lock down all the screen elements as well
+        // TODO - test on tablet... keyboard will make things awkward - maybe use unfocus to solve all these problems? Disabling all fields might work too
+      },
+
+      contribution: function(sev) {
         console.log('heard a contribution');
 
         // contrib = new CK.Model.Contribution(sev.payload);
         // Sail.app.contributionList.add(contrib);
+        var sort = ['created_at', 'DESC'];
+        // var selector = {"author": "matt"};
+        app.contributionList.fetch({
+          data: { sort: JSON.stringify(sort) }
+        });
+      },
 
-        Sail.app.contributionList.fetch();
+      start_student_tagging: function(sev) {
+        // console.log('UI: tagging-selection appears');
+        console.log('creating TagView');
+
+        // app.tagList = new CK.Model.Tags();
+        // app.tagList.on('change', function(model) { console.log(model.changedAttributes()); });        
+
+        // app.contributionList.on('reset add', app.tagListView.render);       // probably unnecessary, maybe even a bad idea?
+
+        //app.contributionList.fetch({
+          // data: { 
+          //   selector: JSON.stringify({
+          //     session: app.run.name
+          //   }) 
+          // },
+          //success: function (tags) {
+          // app.tagList = tags; // unlikely to work right - clone?
+          // app.tagListView = new CK.Mobile.View.tagListView({
+          //   el: jQuery('#tag-list'),
+          //   collection: app.tagList
+          // });
+          //}
+        //});
+
+        jQuery('#contribution-list').addClass('hide');
+        jQuery('#tag-list').removeClass('hide');
       }
 
     }
   };
 
+  /* Outgoing events */
 
-  /* setup functions */
+  app.sendContribution = function() {
+    var sev = new Sail.Event('contribution', app.currentContribution)
+    Sail.app.groupchat.sendEvent(sev);
+  };
+
+
+  /* Helper functions */
 
   app.initModels = function() {
+    console.log('creating Models');
     app.currentContribution = new CK.Model.Contribution();
     app.currentContribution.on('change', function(model) { console.log(model.changedAttributes()); });
     
@@ -170,8 +225,12 @@ CK.Mobile = function() {
       el: jQuery('#contribution-list'),
       collection: app.contributionList
     });
-    app.contributionList.on('reset add', app.contributionListView.render);
-    app.contributionList.fetch();
+    app.contributionList.on('reset add', app.contributionListView.render);        // TODO - damned backbone being too sneak and efficient
+    var sort = ['created_at', 'DESC'];
+    // var selector = {"author": "matt"};
+    app.contributionList.fetch({
+      data: { sort: JSON.stringify(sort) }
+    });
 
     console.log('creating DetailsView');
     app.contributionDetailsView = new CK.Mobile.View.ContributionDetailsView({
@@ -185,38 +244,6 @@ CK.Mobile = function() {
       model: app.currentContribution
     });
   };
-
-
-  /* Outgoing events */
-
-  app.submitContribution = function() {
-    var sev = new Sail.Event('contribution', {
-      //author: data.account.login,
-      headline: Sail.app.currentContribution.headline,
-      content: Sail.app.currentContribution.content
-    });
-
-    Sail.app.groupchat.sendEvent(sev);
-  };  
-
-
-
-
-  /* Incoming Sail events */
-
-  // app.events.sail = {
-  //   test_event: function (sev) {
-  //     alert('heard the event');
-  //   },
-
-  //   contribution: function (sev) {
-  //     console.log('heard a contribution');
-
-  //     Sail.app.contributionListView.render();
-  //   }
-  // };
-
-
 
 
 };

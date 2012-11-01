@@ -35,16 +35,6 @@ i {
   	background-color: #BDBDC1;					/* we probably want something a little more stark than this */
 }
 
-.view-container {
-	height: 380px;
-	border: 1px solid;
-	padding: 5px;
-	margin-bottom: 10px;
-	margin-left: 18px;
-	position: relative;
-	background-color: white;
-}
-
 .btn-container {
 	position: absolute;
 	bottom: 3px;
@@ -54,16 +44,37 @@ i {
 
 /****** containers ******/
 
-#contribution-details, #tag-selection {
+.view-container {
+	height: 380px;
+	border: 1px solid;
+	padding: 5px;
+	margin-bottom: 10px;
+	margin-left: 18px;							/* TODO - fix left margins to deal with UI change to #tag-list */
+	position: relative;
+	background-color: white;
+}
+
+#screen-lock {
+	height: 100%;
+	width: 100%;
+	background-color: black;
+	z-index: 1;
+	position: fixed;
+	left: 0;
+	top: 0;
+	overflow: hidden;
+}
+
+#contribution-details, #tag-list {
 	margin-left: 0;
 	border-left-width: 0px;				/* overwritting .view-container to prevent dup borders btw 1/2 */
 }
 
-#tag-selection {
+#tag-list {
 	text-align: center;
 }
 
-#tag-selection .tag-btn-group {
+#tag-list .tag-btn-group {
 	width: 50%;
 }
 
@@ -85,6 +96,14 @@ i {
 
 
 /******* elements *******/
+
+#lock-image {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	margin-left: -128px;
+	margin-top: -128px;
+}
 
 .note {
 	border-bottom: 1px solid black;
@@ -124,7 +143,7 @@ i {
 	width: 90%;
 }
 
-#tag-selection .tag-btn, #tag-submission-container .tag-btn {
+#tag-list .tag-btn, #tag-submission-container .tag-btn {
   	-webkit-border-radius: 4px 4px 4px 4px;
     -moz-border-radius: 4px 4px 4px 4px;
     border-radius: 4px 4px 4px 4px;		
@@ -134,7 +153,7 @@ i {
 	background-color: #5BB75B;
 }
 
-#tag-selection .tag-btn {
+#tag-list .tag-btn {
 	font-size: 18px;
 	margin-top: 20%;	
 }

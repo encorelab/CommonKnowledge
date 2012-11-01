@@ -10,11 +10,11 @@
   self.ContributionListView = Backbone.View.extend({
     events: {
       // for most fields
-      'click .note': function (ev) {
-        jQuery('#contribution-list .note').removeClass('selected');         // TODO - am I fighting backbone here?
+      'click .list-item': function (ev) {
+        jQuery('#contribution-list .note').removeClass('selected');
         jQuery(ev.target).addClass('selected');
 
-        var contribId = jQuery(ev.target).attr('id');
+        var contribId = jQuery(ev.target.parentElement).attr('id');
 
         Sail.app.contributionDetails = Sail.app.contributionList.get(contribId);
         console.log('Clicked contribution: ' + Sail.app.contributionDetails);
@@ -27,12 +27,11 @@
         // this.model.set(f.attr('name'), f.val());
       },
 
-      'click #new-note-btn': 'new'
+      'click #new-note-btn': 'new-note'
     },
 
     initialize: function () {
       console.log("Initializing ContributionListView...");
-      var view = this;
 
       // this.model.on('change', this.render);
       // Sail.app.contributionList.on('reset', function (collection) {
@@ -41,17 +40,9 @@
       // Sail.app.contributionList.fetch();
     },
 
-    new: function () {
-      console.log("Time for a new note!");
-
-      jQuery('#note-body-label').text('New Note');
-
-      // clear the old contribution plus ui fields
-      Sail.app.currentContribution.clear();
-      Sail.app.contributionInputView.$el.find(".field").val(null);
-      // enable text entry
-      jQuery('#note-body-entry').removeClass('disabled');
-      jQuery('#note-headline-entry').removeClass('disabled');
+    'new-note': function () {
+      console.log("Creating a new note");
+      self.addNote('new');
     },
 
     /**
@@ -60,23 +51,22 @@
     render: function () {
       console.log("rendering ContributionListView!");
 
-      
-      this.collection.each(function(contrib) {
-          console.log('headline: '+contrib.get('headline'));
+      Sail.app.contributionList.each(function(contrib) {
+        console.log('headline: ' + contrib.get('headline'));
 
-          var note = jQuery('li#'+contrib.id);
-          if (note.length === 0) {
-            note = "<li id=" + contrib.id + " class='note'><a><span class='headline'></span>";
-            note += "<br /><i class='icon-chevron-right'></i>";
-            note += "<span class='author'>temp author</span><span class='date'> (temp date)</span></a></li>";
-            note = jQuery(note);
+        var note = jQuery('li#'+contrib.id);
+        if (note.length === 0) {
+          note = "<li id=" + contrib.id + " class='list-item'><a class='note'><span class='headline'></span>";
+          note += "<br /><i class='icon-chevron-right'></i>";
+          note += "<span class='author'></span><span class='date'></span></a></li>";
+          note = jQuery(note);
 
-            jQuery('#contribution-list .nav-list').append(note);
-          }
+          jQuery('#contribution-list .nav-list').append(note);
+        }
 
-          note.find('.headline').text(contrib.get('headline'));
-          // ...
-          
+        note.find('.headline').text(contrib.get('headline'));
+        note.find('.author').text(contrib.get('author'));
+        note.find('.date').text(' (' + contrib.get('created_at') + ')');
       });        
           
 
@@ -87,6 +77,7 @@
       //   view.$el.find('.field['+attributeName+']').val(attributeValue);
       // });
     }
+
   });
 
 
@@ -103,7 +94,7 @@
       //   this.model.set(f.attr('name'), f.val());
       //},
 
-      'click #build-on-btn': 'build-on'
+      'click #contribution-details-build-on-btn': 'build-on'
     },
 
     initialize: function () {
@@ -114,15 +105,7 @@
 
     'build-on': function () {
       console.log("Creating a build-on note");
-
-      jQuery('#note-body-label').text('Build On Note');      
-
-      // clear the old contribution plus ui fields
-      Sail.app.currentContribution.clear();
-      Sail.app.contributionInputView.$el.find(".field").val(null);
-      // enable text entry
-      jQuery('#note-body-entry').removeClass('disabled');
-      jQuery('#note-headline-entry').removeClass('disabled');
+      self.addNote('build-on');
     },
 
     /**
@@ -130,20 +113,26 @@
     **/
     render: function () {
       console.log("rendering ContributionDetailsView!");
-      
-      var headline = Sail.app.contributionDetailsView.$el.find('.note-headline');
-      var content = Sail.app.contributionDetailsView.$el.find('.note-body');
 
-      // clearing fields
-      headline.text('');
-      content.text('');
+      jQuery('#contribution-details .note-headline').text('');
+      jQuery('#contribution-details .note-body').text('');
 
-      // note that if there are blank fields (which should never happen outside of testing), the previous title stays
-      headline.text(Sail.app.contributionDetails.get('headline'));
-      content.text(Sail.app.contributionDetails.get('content'));
+      jQuery('#contribution-details .note-headline').text(Sail.app.contributionDetails.get('headline'));
+      jQuery('#contribution-details .note-body').text(Sail.app.contributionDetails.get('content'));
+
+      // var headline = Sail.app.contributionDetailsView.$el.find('#contribution-details .note-headline');
+      // var content = Sail.app.contributionDetailsView.$el.find('#contribution-details .note-body');
+
+      // // clearing fields
+      // headline.text('');
+      // content.text('');
+
+      // // note that if there are blank fields (which should never happen outside of testing), the previous title stays
+      // headline.text(Sail.app.contributionDetails.get('headline'));
+      // content.text(Sail.app.contributionDetails.get('content'));
 
       // var view = Sail.app.contributionInputView;
-      // _.each(this.attributes, function (attributeValue, attributeName) {
+      // _.each(this.model.attributes, function (attributeValue, attributeName) {
       //   console.log("Updating "+attributeName+" with val "+attributeValue);
       //   view.$el.find('.field['+attributeName+']').val(attributeValue);
       // });
@@ -174,11 +163,13 @@
     initialize: function () {
       console.log("Initializing ContributionInputView...");
 
+
       this.model.on('change', this.render);
     },
 
     share: function () {
       // TODO: Could such a validation be done differently?? (armin asking)
+      // [C] - right, maybe it's better to check the model instead of what's on the screen
       if (jQuery('#note-body-entry').val() !== '' && jQuery('#note-headline-entry').val() !== '') {
         console.log("Submitting contribution...");
         // var self = this;
@@ -190,7 +181,7 @@
           },
           success: function () {
             console.log('Model saved');
-            Sail.app.submitContribution();
+            Sail.app.sendContribution();
             //var note = self.model;
 
             // clear the old contribution plus ui fields
@@ -233,6 +224,109 @@
       });
     }
   });
+
+
+  /**
+    TagListView
+  **/
+  self.TagListView = Backbone.View.extend({
+    events: {
+      // for most fields
+      // 'click .list-item': function (ev) {
+      //   jQuery('#contribution-list .note').removeClass('selected');
+      //   jQuery(ev.target).addClass('selected');
+
+      //   var contribId = jQuery(ev.target.parentElement).attr('id');
+
+      //   Sail.app.contributionDetails = Sail.app.contributionList.get(contribId);
+      //   console.log('Clicked contribution: ' + Sail.app.contributionDetails);
+        
+      //   Sail.app.contributionDetailsView.render();
+        
+      //   // var f = jQuery(ev.target);
+
+      //   // console.log("Setting "+f.attr("name")+" to "+f.val());
+      //   // this.model.set(f.attr('name'), f.val());
+      // },
+
+      'click #tag-list-build-on-btn': 'build-on'
+    },
+
+    initialize: function () {
+      console.log("Initializing TagListView...");
+
+      // this.model.on('change', this.render);
+      // Sail.app.contributionList.on('reset', function (collection) {
+      //   view.render();
+      // });
+      // Sail.app.contributionList.fetch();
+    },
+
+    'build-on': function () {
+      console.log("Creating a build-on note");
+      self.addNote('build-on');
+    },
+
+    /**
+      Triggers full update of all dynamic elements in the list view
+    **/
+    render: function () {
+      console.log("rendering TagListView!");
+
+      // TODO - hide the Details view Build-On button
+
+      //this.collection.each(function(contrib) {
+      Sail.app.tagList.each(function(tag) {
+        console.log('tag: '+tag.get('tag'));
+
+        var tag = jQuery('<button type="button" class="btn tag-btn btn-warning"></button>');
+        if (tag.length === 0) {
+          tag.addClass('tag-'+tag.get('name'));     // may be superfluous, potentially dangerous?
+          tag = jQuery(tag);                // can cut this?
+
+          jQuery('#tag-list .tag-btn-group').append(tag);
+        }
+
+        tag.text(tag.get('name'));
+
+      });
+    }
+
+  });
+
+  /**
+    Helper functions
+  **/
+
+  self.addNote = function(type) {
+    console.log('Preping to add a note...');
+
+    // clear the old contribution plus ui fields
+    Sail.app.currentContribution.clear();
+    Sail.app.contributionInputView.$el.find(".field").val(null);
+    // enable text entry
+    jQuery('#note-body-entry').removeClass('disabled');
+    jQuery('#note-headline-entry').removeClass('disabled');
+
+    var date = new Date();
+    date = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+    
+    Sail.app.currentContribution.set('created_at', date);
+    Sail.app.currentContribution.set('author', Sail.app.userData.account.login);
+    Sail.app.currentContribution.set('tags', Sail.app.tagArray);
+    Sail.app.currentContribution.set('build_ons', Sail.app.buildOnArray);    
+
+    if (type === 'new') {
+      jQuery('#note-body-label').text('New Note');
+
+    } else if (type === 'build-on') {
+      jQuery('#note-body-label').text('Build On Note');
+
+    } else {
+      console.log('unknown note type');
+    }
+  };
+
 
   CK.Mobile.View = self;
 })(window.CK);
