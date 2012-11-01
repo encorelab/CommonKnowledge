@@ -11,7 +11,7 @@
     events: {
       // for most fields
       'click .list-item': function (ev) {
-        jQuery('#contribution-list .note').removeClass('selected');         // TODO - am I fighting backbone here?
+        jQuery('#contribution-list .note').removeClass('selected');
         jQuery(ev.target).addClass('selected');
 
         var contribId = jQuery(ev.target.parentElement).attr('id');
@@ -102,7 +102,7 @@
       //   this.model.set(f.attr('name'), f.val());
       //},
 
-      'click #build-on-btn': 'build-on'
+      'click .build-on-btn': 'build-on'
     },
 
     initialize: function () {
@@ -114,7 +114,7 @@
     'build-on': function () {
       console.log("Creating a build-on note");
 
-      jQuery('#note-body-label').text('Build On Note');      
+      jQuery('#note-body-label').text('Build On Note');
 
       // clear the old contribution plus ui fields
       Sail.app.currentContribution.clear();
@@ -247,6 +247,83 @@
       });
     }
   });
+
+
+  /**
+    TagListView
+  **/
+  self.TagListView = Backbone.View.extend({
+    events: {
+      // for most fields
+      // 'click .list-item': function (ev) {
+      //   jQuery('#contribution-list .note').removeClass('selected');
+      //   jQuery(ev.target).addClass('selected');
+
+      //   var contribId = jQuery(ev.target.parentElement).attr('id');
+
+      //   Sail.app.contributionDetails = Sail.app.contributionList.get(contribId);
+      //   console.log('Clicked contribution: ' + Sail.app.contributionDetails);
+        
+      //   Sail.app.contributionDetailsView.render();
+        
+      //   // var f = jQuery(ev.target);
+
+      //   // console.log("Setting "+f.attr("name")+" to "+f.val());
+      //   // this.model.set(f.attr('name'), f.val());
+      // },
+
+      'click .build-on-btn': 'build-on'
+    },
+
+    initialize: function () {
+      console.log("Initializing TagListView...");
+
+      // this.model.on('change', this.render);
+      // Sail.app.contributionList.on('reset', function (collection) {
+      //   view.render();
+      // });
+      // Sail.app.contributionList.fetch();
+    },
+
+    'build-on': function () {
+      // TODO - not nearly finished
+      console.log("Creating a build-on note");
+
+      jQuery('#note-body-label').text('Build On Note');
+
+      // clear the old contribution plus ui fields
+      Sail.app.currentContribution.clear();
+      Sail.app.contributionInputView.$el.find(".field").val(null);
+      // enable text entry
+      jQuery('#note-body-entry').removeClass('disabled');
+      jQuery('#note-headline-entry').removeClass('disabled');
+    },
+
+    /**
+      Triggers full update of all dynamic elements in the list view
+    **/
+    render: function () {
+      console.log("rendering TagListView!");
+
+      //this.collection.each(function(contrib) {
+      Sail.app.tagList.each(function(tag) {
+        console.log('tag: '+tag.get('tag'));
+
+        var tag = jQuery('<button type="button" class="btn tag-btn btn-warning"></button>');
+        if (tag.length === 0) {
+          tag.addClass('tag-'+tag.get('name'));     // may be superfluous, potentially dangerous?
+          tag = jQuery(tag);                // can cut this?
+
+          jQuery('#tag-list .tag-btn-group').append(tag);
+        }
+
+        tag.text(tag.get('name'));
+
+      });
+    }
+
+  });
+
 
   CK.Mobile.View = self;
 })(window.CK);

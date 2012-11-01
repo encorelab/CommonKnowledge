@@ -152,7 +152,7 @@ CK.Mobile = function() {
       //   //storeTags(new_contribution.tags);
       // },
 
-      toggle_screen_lock: function (sev) {
+      toggle_screen_lock: function(sev) {
         console.log('freezing display');
 
         jQuery('#screen-lock').toggle();
@@ -160,7 +160,7 @@ CK.Mobile = function() {
         // TODO - test on tablet... keyboard will make things awkward - maybe use unfocus to solve all these problems? Disabling all fields might work too
       },
 
-      contribution: function (sev) {
+      contribution: function(sev) {
         console.log('heard a contribution');
 
         // contrib = new CK.Model.Contribution(sev.payload);
@@ -170,6 +170,34 @@ CK.Mobile = function() {
         app.contributionList.fetch({
           data: { sort: JSON.stringify(sort) }
         });
+      },
+
+      start_student_tagging: function(sev) {
+        // console.log('UI: tagging-selection appears');
+        console.log('creating TagView');
+
+        // app.tagList = new CK.Model.Tags();
+        // app.tagList.on('change', function(model) { console.log(model.changedAttributes()); });        
+
+        // app.contributionList.on('reset add', app.tagListView.render);       // probably unnecessary, maybe even a bad idea?
+
+        //app.contributionList.fetch({
+          // data: { 
+          //   selector: JSON.stringify({
+          //     session: app.run.name
+          //   }) 
+          // },
+          //success: function (tags) {
+          // app.tagList = tags; // unlikely to work right - clone?
+          // app.tagListView = new CK.Mobile.View.tagListView({
+          //   el: jQuery('#tag-list'),
+          //   collection: app.tagList
+          // });
+          //}
+        //});
+
+        jQuery('#contribution-list').addClass('hide');
+        jQuery('#tag-list').removeClass('hide');
       }
 
     }
@@ -182,7 +210,8 @@ CK.Mobile = function() {
       //author: data.account.login,
       headline: app.currentContribution.headline,
       content: app.currentContribution.content,
-      author: app.userData.account.login//,
+      author: app.userData.account.login,
+      timestamp: app.currentContribution.timestamp//,
       //tags: Sail.app.tagArray,
       //build_ons: Sail.app.buildOnArry
     });
@@ -206,7 +235,7 @@ CK.Mobile = function() {
   };
 
   app.initViews = function() {
-    console.log('creating ListViews');
+    console.log('creating ListView');
     app.contributionListView = new CK.Mobile.View.ContributionListView({
       el: jQuery('#contribution-list'),
       collection: app.contributionList
