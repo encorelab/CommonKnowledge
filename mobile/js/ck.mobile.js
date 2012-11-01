@@ -159,7 +159,7 @@ CK.Mobile = function() {
 
         // contrib = new CK.Model.Contribution(sev.payload);
         // Sail.app.contributionList.add(contrib);
-        var sort = ['timestamp', 'ASC'];
+        var sort = ['created_at', 'DESC'];
         // var selector = {"author": "matt"};
         app.contributionList.fetch({
           data: { sort: JSON.stringify(sort) }
@@ -199,17 +199,8 @@ CK.Mobile = function() {
 
   /* Outgoing events */
 
-  app.submitContribution = function() {
-    var sev = new Sail.Event('contribution', {
-      //author: data.account.login,
-      headline: app.currentContribution.headline,
-      content: app.currentContribution.content,
-      author: app.userData.account.login,
-      timestamp: app.currentContribution.timestamp//,
-      //tags: Sail.app.tagArray,
-      //build_ons: Sail.app.buildOnArry
-    });
-
+  app.sendContribution = function() {
+    var sev = new Sail.Event('contribution', app.currentContribution)
     Sail.app.groupchat.sendEvent(sev);
   };
 
@@ -234,8 +225,8 @@ CK.Mobile = function() {
       el: jQuery('#contribution-list'),
       collection: app.contributionList
     });
-    app.contributionList.on('reset add', app.contributionListView.render);
-    var sort = ['timestamp', 'ASC'];
+    app.contributionList.on('reset add', app.contributionListView.render);        // TODO - damned backbone being too sneak and efficient
+    var sort = ['created_at', 'DESC'];
     // var selector = {"author": "matt"};
     app.contributionList.fetch({
       data: { sort: JSON.stringify(sort) }
