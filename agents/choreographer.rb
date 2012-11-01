@@ -44,26 +44,16 @@ class Choreographer < Sail::Agent
     
     event :start_student_tagging? do |stanza, data|
       log "Received start_student_tagging #{data.inspect}"
+      
       # retrieve all contributions that make up the bucket of contribs to be tagged
-
-      count = 0
-
       @mongo.collection(:contributions).find().each do |contrib|
         #log "#{contrib.inspect}"
         contributionId = contrib['_id'].to_s
-        count += 1
 
         @bucket.push(contributionId)
-
-        # row.map do |key, values|
-        #   unless key == "_id" then
-        #     # log "key #{key}"
-        #     @vidwalls_user_tag_counts.merge!({key => values})
-        #   end
-        # end
       end
 
-      log "Found #{count} contributions to hand out to students"
+      log "Found #{@bucket.count} contributions to hand out to students"
       
       # Handout contributions to all present users
       tagAssignments = {}
@@ -80,11 +70,44 @@ class Choreographer < Sail::Agent
         end
       end
 
-      # send out the events
+      log "Sending out first wave of tagging events"
       send_tag_assignments(tagAssignments)
 
-      # check if there are more contributions to hand out (probably do this each time when students are done with tagging)
+      # check if there are more contributions to hand out (probably do this each time when students are done with tagging)      
+    end
+
+    event :start_student_tagging? do |stanza, data|
+      log "Received start_student_tagging #{data.inspect}"
       
+      # retrieve all contributions that make up the bucket of contribs to be tagged
+      @mongo.collection(:contributions).find().each do |contrib|
+        #log "#{contrib.inspect}"
+        contributionId = contrib['_id'].to_s
+
+        @bucket.push(contributionId)
+      end
+
+      log "Found #{@bucket.count} contributions to hand out to students"
+      
+      # Handout contributions to all present users
+      tagAssignments = {}
+
+      @students.each do |student|
+        contributionId = @bucket.pop
+        studentName = student.first
+        
+        log "#{studentName} is assigned to tag contribution #{contributionId}"
+        unless contributionId.nil? then
+          tagAssignments[studentName] = contributionId
+        else
+          log "We assigned all contributions and have students left without work"
+        end
+      end
+
+      log "Sending out first wave of tagging events"
+      send_tag_assignments(tagAssignments)
+
+      # check if there are more contributions to hand out (probably do this each time when students are done with tagging)      
     end 
 
   end
@@ -123,7 +146,7 @@ class Choreographer < Sail::Agent
     # find a problem with assigned 'false'
     user_to_contribution_id_assignments.map do |user, contributionId|
       log "Sending tag_assignment for user '#{user.inspect}' for contributionId '#{contributionId.inspect}'"
-      event!(:tag_assignment, {:student => user, :contributionId => contributionId})
+      event!(:tag_assignment, {:username => user, :contribution_id => contributionId})
     end
   end
 
