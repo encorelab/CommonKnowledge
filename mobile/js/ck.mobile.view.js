@@ -27,7 +27,7 @@
         // this.model.set(f.attr('name'), f.val());
       },
 
-      'click #new-note-btn': 'new'
+      'click #new-note-btn': 'new-note'
     },
 
     initialize: function () {
@@ -40,7 +40,7 @@
       // Sail.app.contributionList.fetch();
     },
 
-    new: function () {
+    'new-note': function () {
       console.log("Time for a new note!");
 
       jQuery('#note-body-label').text('New Note');
