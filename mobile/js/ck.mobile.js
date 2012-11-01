@@ -15,12 +15,6 @@ CK.Mobile = function() {
 
   // TODO: copied from washago code
   app.init = function() {
-    //Sail.app.groupchatRoom = 'washago@conference.' + Sail.app.xmppDomain;
-
-    // TODO: move this out to config.json
-    this.username = "roadshow";
-    this.password = "roadshow";
-
     Sail.modules
       // Enable multi-picker login for CommonKnowledge curnit - asking for run (must be linked to curnit)
       .load('Rollcall.Authenticator', {mode: 'multi-picker', askForRun: true, curnit: 'CommonKnowledge'})
