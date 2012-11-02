@@ -204,12 +204,11 @@ CK.Mobile = function() {
         console.log('id: '+sev.payload.contribution_id);
         console.log('name: '+sev.payload.recipient);
 
-        if (sev.payload.recipient === app.userData.account.login);
-        app.tagList.fetch({
-          data: {
-            selector: JSON.stringify(sev.payload.contribution_id)
-          }
-        });
+        if (sev.payload.recipient === app.userData.account.login) {
+          app.contributionDetails.id = sev.payload.contribution_id;
+          app.contributionDetails.fetch();
+        }
+
       }
 
     }
@@ -261,6 +260,26 @@ CK.Mobile = function() {
       el: jQuery('#contribution-input'),
       model: app.currentContribution
     });
+  };
+
+  app.addNote = function(kind) {
+    console.log('Preping to add a note...');
+
+    app.currentContribution = new CK.Model.Contribution();
+    app.contributionInputView.model = app.currentContribution;
+    app.contributionInputView.undelegateEvents();
+    app.contributionInputView.delegateEvents();
+
+    app.currentContribution.justAdded = true;
+    app.currentContribution.kind = kind;
+
+    app.currentContribution.on('change sync', app.contributionInputView.render);
+
+    app.currentContribution.set('author', app.userData.account.login);
+    app.currentContribution.set('tags', app.tagArray);
+    app.currentContribution.set('build_ons', app.buildOnArray);
+
+    app.contributionInputView.render();
   };
 
 

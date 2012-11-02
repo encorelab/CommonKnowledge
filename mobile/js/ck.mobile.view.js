@@ -36,7 +36,7 @@
 
     'new-note': function () {
       console.log("Creating a new note");
-      self.addNote('new');
+      Sail.app.addNote('new');
     },
 
     /**
@@ -45,22 +45,22 @@
     render: function () {
       console.log("rendering ContributionListView!");
 
+      jQuery('#contribution-list li').remove();
+
       Sail.app.contributionList.each(function(contrib) {
         console.log('headline: ' + contrib.get('headline'));
 
-        var note = jQuery('li#'+contrib.id);
-        if (note.length === 0) {
-          note = "<li id=" + contrib.id + " class='list-item'><a class='note'><span class='headline'></span>";
-          note += "<br /><i class='icon-chevron-right'></i>";
-          note += "<span class='author'></span><span class='date'></span></a></li>";
-          note = jQuery(note);
+        //var note = jQuery('li#'+contrib.id);
+        note = "<li id=" + contrib.id + " class='list-item'><a class='note'><span class='headline'></span>";
+        note += "<br /><i class='icon-chevron-right'></i>";
+        note += "<span class='author'></span><span class='date'></span></a></li>";
+        note = jQuery(note);
 
-          jQuery('#contribution-list .nav-list').append(note);
-        }
+        jQuery('#contribution-list .nav-list').append(note);
 
         note.find('.headline').text(contrib.get('headline'));
         note.find('.author').text(contrib.get('author'));
-        note.find('.date').text(' (' + contrib.get('created_at').toLocaleDateString() + ' ' + date.toLocaleTimeString() + ')');
+        note.find('.date').text(' (' + contrib.get('created_at').toLocaleDateString() + ' ' + contrib.get('created_at').toLocaleTimeString() + ')');
       });        
           
 
@@ -99,7 +99,7 @@
 
     'build-on': function () {
       console.log("Creating a build-on note");
-      self.addNote('build-on');
+      Sail.app.addNote('build-on');
     },
 
     /**
@@ -113,7 +113,7 @@
       jQuery('#contribution-details .note-headline').text(Sail.app.contributionDetails.get('headline'));
       jQuery('#contribution-details .note-body').text(Sail.app.contributionDetails.get('content'));
       jQuery('#contribution-details .note-author').text(Sail.app.contributionDetails.get('author'));
-      jQuery('#contribution-details .note-created-at').text(' (' + contrib.get('created_at').toLocaleDateString() + ' ' + date.toLocaleTimeString() + ')');
+      jQuery('#contribution-details .note-created-at').text(' (' + Sail.app.contributionDetails.get('created_at').toLocaleDateString() + ' ' + Sail.app.contributionDetails.get('created_at').toLocaleTimeString() + ')');
 
       // var view = Sail.app.contributionDetailsView;
       // _.each(Sail.app.contributionDetails.attributes, function (attributeValue, attributeName) {
@@ -147,7 +147,6 @@
     initialize: function () {
       console.log("Initializing ContributionInputView...");
 
-
       this.model.on('change', this.render);
     },
 
@@ -171,9 +170,8 @@
             // clear the old contribution plus ui fields
             Sail.app.currentContribution.clear();
             Sail.app.contributionInputView.$el.find(".field").val(null);
-            // enable text entry
-            jQuery('#note-body-entry').addClass('disabled');
-            jQuery('#note-headline-entry').addClass('disabled');
+            Sail.app.currentContribution.justAdded = false;
+
             alert('Contribution submitted');
           },
           failure: function(model, response) {
@@ -201,6 +199,28 @@
     **/
     render: function () {
       console.log("rendering ContributionInputView...");
+
+      if (Sail.app.currentContribution.justAdded) {
+        jQuery('#note-body-entry').removeClass('disabled');
+        jQuery('#note-headline-entry').removeClass('disabled');
+
+        if (Sail.app.currentContribution.kind === 'new') {
+          jQuery('#note-body-label').text('New Note');
+
+        } else if (Sail.app.currentContribution.kind === 'build-on') {
+          jQuery('#note-body-label').text('Build On Note');
+          // TODO - make buildons actually build on
+
+        } else {
+          console.log('unknown note type');
+        }  
+      } else {
+        jQuery('#note-body-entry').addClass('disabled');
+        jQuery('#note-headline-entry').addClass('disabled');
+      }
+
+
+
       var view = Sail.app.contributionInputView;
       _.each(this.attributes, function (attributeValue, attributeName) {
         console.log("Updating "+attributeName+" with val "+attributeValue);
@@ -241,7 +261,7 @@
 
     'build-on': function () {
       console.log("Creating a build-on note");
-      self.addNote('build-on');
+      Sail.app.addNote('build-on');
     },
 
     /**
@@ -272,31 +292,34 @@
     Helper functions
   **/
 
-  self.addNote = function(type) {
-    console.log('Preping to add a note...');
+  // self.addNote = function(type) {
+  //   console.log('Preping to add a note...');
 
-    // clear the old contribution plus ui fields
-    Sail.app.currentContribution.clear();
-    Sail.app.contributionInputView.$el.find(".field").val(null);
-    // enable text entry
-    jQuery('#note-body-entry').removeClass('disabled');
-    jQuery('#note-headline-entry').removeClass('disabled');
+  //   Sail.app.currentContribution = new CK.Model.Contribution();
+  //   do bindings
+
+  //   // clear the old contribution plus ui fields
+  //   Sail.app.currentContribution.clear();
+  //   Sail.app.contributionInputView.$el.find(".field").val(null);
+  //   // enable text entry
+  //   jQuery('#note-body-entry').removeClass('disabled');
+  //   jQuery('#note-headline-entry').removeClass('disabled');
     
-    Sail.app.currentContribution.set('author', Sail.app.userData.account.login);
-    Sail.app.currentContribution.set('tags', Sail.app.tagArray);
-    Sail.app.currentContribution.set('build_ons', Sail.app.buildOnArray);    
+  //   Sail.app.currentContribution.set('author', Sail.app.userData.account.login);
+  //   Sail.app.currentContribution.set('tags', Sail.app.tagArray);
+  //   Sail.app.currentContribution.set('build_ons', Sail.app.buildOnArray);    
 
-    if (type === 'new') {
-      jQuery('#note-body-label').text('New Note');
+  //   if (type === 'new') {
+  //     jQuery('#note-body-label').text('New Note');
 
-    } else if (type === 'build-on') {
-      jQuery('#note-body-label').text('Build On Note');
-      // TODO - make buildons actually build on
+  //   } else if (type === 'build-on') {
+  //     jQuery('#note-body-label').text('Build On Note');
+  //     // TODO - make buildons actually build on
 
-    } else {
-      console.log('unknown note type');
-    }
-  };
+  //   } else {
+  //     console.log('unknown note type');
+  //   }
+  // };
 
 
   CK.Mobile.View = self;
