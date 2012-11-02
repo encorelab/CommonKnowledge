@@ -165,7 +165,9 @@ CK.Mobile = function() {
         var sort = ['created_at', 'DESC'];
         // var selector = {"author": "matt"};
         app.contributionList.fetch({
-          data: { sort: JSON.stringify(sort) }
+          data: {
+            sort: JSON.stringify(sort)
+          }
         });
       },
 
@@ -199,9 +201,15 @@ CK.Mobile = function() {
 
       contribution_to_tag: function(sev) {
         console.log('contribution_to_tag heard');
-        console.log('id: '+sev.contribution_id);
-        console.log('name: '+sev.recipient);
+        console.log('id: '+sev.payload.contribution_id);
+        console.log('name: '+sev.payload.recipient);
 
+        if (sev.payload.recipient === app.userData.account.login);
+        app.tagList.fetch({
+          data: {
+            selector: JSON.stringify(sev.payload.contribution_id)
+          }
+        });
       }
 
     }
@@ -210,7 +218,7 @@ CK.Mobile = function() {
   /* Outgoing events */
 
   app.sendContribution = function() {
-    var sev = new Sail.Event('contribution', app.currentContribution)
+    var sev = new Sail.Event('contribution', app.currentContribution.toJSON())
     Sail.app.groupchat.sendEvent(sev);
   };
 
