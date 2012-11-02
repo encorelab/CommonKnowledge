@@ -6,6 +6,7 @@ require 'rest_client'
 $: << 'sail.rb/lib'
 require 'sail/agent'
 require 'sail/rollcall/user'
+require 'sail/rollcall/group'
 
 class Choreographer < Sail::Agent
 
@@ -53,7 +54,7 @@ class Choreographer < Sail::Agent
         @bucket.push(contributionId)
       end
 
-      log "Found #{@bucket.count} contributions to hand out to students"
+      log "Found #{@bucket.count} contributions to hand out to #{@students.count} students"
       
       # Handout contributions to all present users
       tagAssignments = {}
@@ -76,38 +77,8 @@ class Choreographer < Sail::Agent
       # check if there are more contributions to hand out (probably do this each time when students are done with tagging)      
     end
 
-    event :start_student_tagging? do |stanza, data|
-      log "Received start_student_tagging #{data.inspect}"
-      
-      # retrieve all contributions that make up the bucket of contribs to be tagged
-      @mongo.collection(:contributions).find().each do |contrib|
-        #log "#{contrib.inspect}"
-        contributionId = contrib['_id'].to_s
-
-        @bucket.push(contributionId)
-      end
-
-      log "Found #{@bucket.count} contributions to hand out to students"
-      
-      # Handout contributions to all present users
-      tagAssignments = {}
-
-      @students.each do |student|
-        contributionId = @bucket.pop
-        studentName = student.first
-        
-        log "#{studentName} is assigned to tag contribution #{contributionId}"
-        unless contributionId.nil? then
-          tagAssignments[studentName] = contributionId
-        else
-          log "We assigned all contributions and have students left without work"
-        end
-      end
-
-      log "Sending out first wave of tagging events"
-      send_tag_assignments(tagAssignments)
-
-      # check if there are more contributions to hand out (probably do this each time when students are done with tagging)      
+    event :contribution_tagged? do |stanza, data|
+      log "#{stanza.inspect}"
     end 
 
   end
@@ -124,11 +95,17 @@ class Choreographer < Sail::Agent
       begin
         stu = Rollcall::User.find(username)
       rescue ActiveResource::ResourceNotFound
-        log "#{username.inspect} not found in Rollcall..."
-        return nil
+        log "#{username.inspect} not found in Rollcall users, trying in groups..."
+        begin
+          stu = Rollcall::Group.find(username)
+        rescue ActiveResource::ResourceNotFound
+          log "#{username.inspect} not found in Rollcall groups, so we are done..."
+          return nil
+        end
       end
 
-      unless stu.kind == "Student"
+      unless (stu.kind == "Student" || (stu.is_a?(Rollcall::Group) && stu.members.all?{|s| s.kind == "Student"})) then
+      # unless (stu.kind == "Student" || stu.kind.nil?) then
         log "#{username.inspect} is not a student; will be ignored."
         return nil
       end
