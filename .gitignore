@@ -10,3 +10,5 @@ npm-debug.log
 config.json
 
 mobile/js/sail.js
+
+.sass-cache

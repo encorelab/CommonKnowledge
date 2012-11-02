@@ -46,14 +46,8 @@ class Choreographer < Sail::Agent
     event :start_student_tagging? do |stanza, data|
       log "Received start_student_tagging #{data.inspect}"
       
-      # retrieve all contributions that make up the bucket of contribs to be tagged
-      @mongo.collection(:contributions).find().each do |contrib|
-        #log "#{contrib.inspect}"
-        contributionId = contrib['_id'].to_s
-
-        @bucket.push(contributionId)
-      end
-
+      # Retrieve contributions to consider for tagging
+      @bucket = fill_contribution_bucket()
       log "Found #{@bucket.count} contributions to hand out to #{@students.count} students"
       
       # Handout contributions to all present users
@@ -117,6 +111,36 @@ class Choreographer < Sail::Agent
     end
     
     return stu
+  end
+
+  def fill_contribution_bucket()
+    #empty bucket
+    bucket = []
+    notag = []
+    na = []
+    
+    # retrieve all contributions that make up the bucket of contribs to be tagged
+    # @mongo.collection(:contributions).find("tags" => { "$exists" => true}, "author" => { "$exists" => true }, "headline" => { "$exists" => true }, "content" => { "$exists" => true }).each do |contrib|
+    @mongo.collection(:contributions).find("tags" => { "$exists" => true}).each do |contrib|
+      contributionId = contrib['_id'].to_s
+
+      if (!contrib['tags'].empty? && contrib['tags'].any?{|t| t['name'] == "N/A"})
+        log "#{contrib.inspect}"
+      end
+
+      # only work on contributions that are not tagged yet or that have n/a tag
+      if contrib['tags'].empty?
+        notag.push(contributionId)
+      elsif (!contrib['tags'].empty? && contrib['tags'].any?{|t| t['name'] == "N/A"})
+        na.push(contributionId)
+      end
+    end
+
+    bucket += notag
+    bucket += na
+    log "notag #{notag.count} / na #{na.count} / bucket #{bucket.count}"
+
+    return bucket
   end
 
   def send_tag_assignments(user_to_contribution_id_assignments)

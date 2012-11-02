@@ -11,6 +11,13 @@ $tag-text-color: black;
 $widget-background-color: #ffa100;
 $widget-accent-color: #c8271a;
 
+
+@mixin transition($duration, $property: all, $timing: ease, $delay: 0) {
+    -webkit-transition: $property $duration $timing $delay;
+    -moz-transition: $property $duration $timing $delay;
+    transition: $property $duration $timing $delay;
+}
+
 body {
     font-family: Ubuntu, sans-serif;
     background-color: $wall-color;
@@ -176,10 +183,7 @@ body {
         white-space: nowrap;
         z-index: 1;
 
-        $transition: all 0.5s ease;
-        -webkit-transition: $transition;
-        -moz-transition: $transition;
-        transition: $transition;
+        @include transition(0.5s);
     }
 
     #add-tag-opener:hover {
@@ -203,10 +207,7 @@ body {
 
         visibility: hidden;
 
-        $transition: all 0.5s ease;
-        -webkit-transition: $transition;
-        -moz-transition: $transition;
-        transition: $transition;
+        @include transition(0.5s);
     }
 
     #new-tag {
@@ -215,10 +216,7 @@ body {
         margin-left: 10px;
         margin-right: 1em;
 
-        $transition: all 1s ease;
-        -webkit-transition: $transition;
-        -moz-transition: $transition;
-        transition: $transition;
+        @include transition(0.5s);
 
         width: 0;
     }
