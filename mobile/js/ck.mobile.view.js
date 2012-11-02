@@ -9,7 +9,6 @@
   **/
   self.ContributionListView = Backbone.View.extend({
     events: {
-      // for most fields
       'click .list-item': function (ev) {
         jQuery('#contribution-list .note').removeClass('selected');
         jQuery(ev.target).addClass('selected');
@@ -20,11 +19,6 @@
         console.log('Clicked contribution: ' + Sail.app.contributionDetails);
         
         Sail.app.contributionDetailsView.render();
-        
-        // var f = jQuery(ev.target);
-
-        // console.log("Setting "+f.attr("name")+" to "+f.val());
-        // this.model.set(f.attr('name'), f.val());
       },
 
       'click #new-note-btn': 'new-note'
@@ -66,7 +60,7 @@
 
         note.find('.headline').text(contrib.get('headline'));
         note.find('.author').text(contrib.get('author'));
-        note.find('.date').text(' (' + contrib.get('created_at') + ')');
+        note.find('.date').text(' (' + contrib.get('created_at').toLocaleDateString() + ' ' + date.toLocaleTimeString() + ')');
       });        
           
 
@@ -119,7 +113,7 @@
       jQuery('#contribution-details .note-headline').text(Sail.app.contributionDetails.get('headline'));
       jQuery('#contribution-details .note-body').text(Sail.app.contributionDetails.get('content'));
       jQuery('#contribution-details .note-author').text(Sail.app.contributionDetails.get('author'));
-      jQuery('#contribution-details .note-created-at').text(' ('+Sail.app.contributionDetails.get('created_at')+')');
+      jQuery('#contribution-details .note-created-at').text(' (' + contrib.get('created_at').toLocaleDateString() + ' ' + date.toLocaleTimeString() + ')');
 
       // var view = Sail.app.contributionDetailsView;
       // _.each(Sail.app.contributionDetails.attributes, function (attributeValue, attributeName) {
@@ -220,24 +214,22 @@
     TagListView
   **/
   self.TagListView = Backbone.View.extend({
+    // FIX THE LIs SO THAT THEY'RE ALL CLICKABLE IN CONTLISTVIEW
     events: {
-      // for most fields
-      // 'click .list-item': function (ev) {
-      //   jQuery('#contribution-list .note').removeClass('selected');
-      //   jQuery(ev.target).addClass('selected');
+      'click .tag-btn': function (ev) {
+        console.log('ev: '+ev);
+        //var contribId = jQuery(ev.target.parentElement).attr('id');
 
-      //   var contribId = jQuery(ev.target.parentElement).attr('id');
-
-      //   Sail.app.contributionDetails = Sail.app.contributionList.get(contribId);
-      //   console.log('Clicked contribution: ' + Sail.app.contributionDetails);
+        //Sail.app.contributionDetails = Sail.app.contributionList.get(contribId);
+        ///console.log('Clicked contribution: ' + Sail.app.contributionDetails);
         
-      //   Sail.app.contributionDetailsView.render();
+        //Sail.app.contributionDetailsView.render();
         
-      //   // var f = jQuery(ev.target);
+        // var f = jQuery(ev.target);
 
-      //   // console.log("Setting "+f.attr("name")+" to "+f.val());
-      //   // this.model.set(f.attr('name'), f.val());
-      // },
+        // console.log("Setting "+f.attr("name")+" to "+f.val());
+        // this.model.set(f.attr('name'), f.val());
+      },
 
       'click #tag-list-build-on-btn': 'build-on'
     },
@@ -245,11 +237,6 @@
     initialize: function () {
       console.log("Initializing TagListView...");
 
-      // this.model.on('change', this.render);
-      // Sail.app.contributionList.on('reset', function (collection) {
-      //   view.render();
-      // });
-      // Sail.app.contributionList.fetch();
     },
 
     'build-on': function () {
@@ -263,21 +250,18 @@
     render: function () {
       console.log("rendering TagListView!");
 
-      // TODO - hide the Details view Build-On button
-
-      //this.collection.each(function(contrib) {
       Sail.app.tagList.each(function(tag) {
         console.log('tag: '+tag.get('tag'));
 
-        var tag = jQuery('<button type="button" class="btn tag-btn btn-warning"></button>');
-        if (tag.length === 0) {
-          tag.addClass('tag-'+tag.get('name'));     // may be superfluous, potentially dangerous?
-          tag = jQuery(tag);                // can cut this?
-
-          jQuery('#tag-list .tag-btn-group').append(tag);
+        var tagButton = jQuery('button#'+tag.id);
+        // length avoids duplicating (probably a better way to do this in backbone?)
+        if (tagButton.length === 0) {
+          tagButton = jQuery('<button id='+tag.id+' type="button" class="btn tag-btn btn-warning"></button>');
+          tagButton = jQuery(tagButton);
+          jQuery('#tag-list .tag-btn-group').append(tagButton);
         }
 
-        tag.text(tag.get('name'));
+        tagButton.text(tag.get('name'));
 
       });
     }
@@ -297,11 +281,7 @@
     // enable text entry
     jQuery('#note-body-entry').removeClass('disabled');
     jQuery('#note-headline-entry').removeClass('disabled');
-
-    var date = new Date();
-    date = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
     
-    Sail.app.currentContribution.set('created_at', date);
     Sail.app.currentContribution.set('author', Sail.app.userData.account.login);
     Sail.app.currentContribution.set('tags', Sail.app.tagArray);
     Sail.app.currentContribution.set('build_ons', Sail.app.buildOnArray);    

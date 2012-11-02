@@ -167,31 +167,38 @@ CK.Mobile = function() {
       },
 
       start_student_tagging: function(sev) {
-        // console.log('UI: tagging-selection appears');
-        console.log('creating TagView');
+        console.log('start_student_tagging heard, creating TagView');
 
-        // app.tagList = new CK.Model.Tags();
-        // app.tagList.on('change', function(model) { console.log(model.changedAttributes()); });        
+        app.tagList = new CK.Model.Tags();
+        app.tagList.on('change', function(model) { console.log(model.changedAttributes()); });        
 
-        // app.contributionList.on('reset add', app.tagListView.render);       // probably unnecessary, maybe even a bad idea?
+        app.tagListView = new CK.Mobile.View.TagListView({
+          el: jQuery('#tag-list'),
+          collection: app.tagList
+        });
+        app.tagList.on('reset add', app.tagListView.render);       // probably unnecessary, maybe even a bad idea?
 
-        //app.contributionList.fetch({
+        app.tagList.fetch({
           // data: { 
           //   selector: JSON.stringify({
           //     session: app.run.name
           //   }) 
           // },
-          //success: function (tags) {
-          // app.tagList = tags; // unlikely to work right - clone?
-          // app.tagListView = new CK.Mobile.View.tagListView({
-          //   el: jQuery('#tag-list'),
-          //   collection: app.tagList
-          // });
-          //}
-        //});
+          // success: function (tags) {
+          //   app.tagList = tags;
+          // }
+        });
 
         jQuery('#contribution-list').addClass('hide');
         jQuery('#tag-list').removeClass('hide');
+        jQuery('#contribution-details-build-on-btn').addClass('hide');
+      },
+
+      contribution_to_tag: function(sev) {
+        console.log('contribution_to_tag heard');
+        console.log('id: '+sev.contribution_id);
+        console.log('name: '+sev.recipient);
+
       }
 
     }
