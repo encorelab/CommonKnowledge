@@ -25,6 +25,10 @@ class CK.Model.DrowsyModel extends Backbone.Model
 
     parse: (data) ->
         data._id = data._id.$oid
+        if data.created_at?
+            parsedCreatedAt = new Date(data.created_at)
+            unless isNaN parsedCreatedAt.getTime()
+                data.created_at = parsedCreatedAt
         return data
 
     initialize: ->
@@ -77,6 +81,35 @@ class CK.Model.DrowsyCollection extends Backbone.Collection
 
 class CK.Model.Contribution extends CK.Model.DrowsyModel
     urlRoot: undefined # set in CK.Model.setup()
+
+    addTag: (tag, tagger) ->
+        unless tag instanceof CK.Model.Tag
+            # we're assuming `tag` is a string (i.e. the tag name)
+            tag = Sail.app.tags.find (t) -> t.get('name') is tag
+
+        unless tag.id
+            console.error("Cannot addTag ", tag ," to contribution ", @ ," because it does not have an id!")
+            throw "Cannot add tag to contribution because the tag does not have an id!"
+
+        existingTagRelationships = @get('tags') || []
+
+        if _.any(existingTagRelationships, (tr) -> tr.id is tag.id)
+            console.warn("Cannot addTag ", tag ," to contribution ", @ , " because it already has this tag.")
+            return @
+
+        tagRel = 
+            id: tag.id
+            name: tag.get('name')
+            tagger: tagger
+            tagged_at: new Date()
+
+
+        existingTagRelationships.push(tagRel)
+
+        @set 'tags', existingTagRelationships
+
+        return @
+
 
 class CK.Model.Contributions extends CK.Model.DrowsyCollection
     model: CK.Model.Contribution
