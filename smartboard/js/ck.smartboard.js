@@ -9,6 +9,8 @@
     __extends(Smartboard, _super);
 
     function Smartboard() {
+      this.createNewTag = __bind(this.createNewTag, this);
+
       this.authenticate = __bind(this.authenticate, this);
 
       this.init = __bind(this.init, this);
@@ -36,7 +38,7 @@
     };
 
     Smartboard.prototype.init = function() {
-      var bubbleContrib, userFilter,
+      var bubbleContrib, tagContrib, userFilter,
         _this = this;
       Sail.verifyConfig(this.config, this.requiredConfig);
       console.log("Configuration is valid.");
@@ -68,6 +70,14 @@
         contrib.on('change', bubble.render);
         return bubble.render();
       };
+      tagContrib = function(tag) {
+        var bubble;
+        bubble = new CK.Smartboard.View.TagBubble({
+          model: tag
+        });
+        tag.on('change', bubble.render);
+        return bubble.render();
+      };
       this.contributions = new CK.Model.Contributions();
       this.contributions.on('add', function(contrib) {
         contrib.justAdded = true;
@@ -76,7 +86,16 @@
       this.contributions.on('reset', function(collection) {
         return collection.each(bubbleContrib);
       });
+      this.tags = new CK.Model.Tags();
+      this.tags.on('add', function(tag) {
+        tag.justAdded = true;
+        return bubbleTag(tag);
+      });
+      this.tags.on('reset', function(collection) {
+        return collection.each(tagContrib);
+      });
       return this.wall = new CK.Smartboard.View.Wall({
+        el: jQuery('#wall'),
         collection: this.contributions
       });
     };
@@ -87,6 +106,21 @@
       } else {
         return Rollcall.Authenticator.requestRun();
       }
+    };
+
+    Smartboard.prototype.createNewTag = function(name) {
+      var tag,
+        _this = this;
+      tag = new CK.Model.Tag({
+        name: name
+      });
+      return tag.save({}, {
+        success: function() {
+          var sev;
+          sev = new Sail.Event('new_tag', tag.toJSON());
+          return _this.groupchat.sendEvent(sev);
+        }
+      });
     };
 
     Smartboard.prototype.events = {
@@ -103,7 +137,8 @@
       },
       connected: function(ev) {
         console.log("Connected...");
-        return this.contributions.fetch();
+        this.contributions.fetch();
+        return this.tags.fetch();
       },
       sail: {
         contribution: function(sev) {
@@ -114,6 +149,16 @@
           } else {
             c = new CK.Model.Contribution(sev.payload);
             return this.contributions.add(c);
+          }
+        },
+        new_tag: function(sev) {
+          var t;
+          t = this.tags.get(sev.payload._id);
+          if (t != null) {
+            return t.set(sev.payload);
+          } else {
+            t = new CK.Model.Tag(sev.payload);
+            return this.contributions.add(t);
           }
         }
       }

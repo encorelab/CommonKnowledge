@@ -19,7 +19,9 @@
       this.dbURL = "" + url + "/" + db;
       CK.Model.Contribution.prototype.urlRoot = "" + this.dbURL + "/contributions";
       CK.Model.Contributions.prototype.url = "" + this.dbURL + "/contributions";
-      return CK.Model.DrowsyModel.createNecessaryCollections(['contributions']);
+      CK.Model.Tag.prototype.urlRoot = "" + this.dbURL + "/tags";
+      CK.Model.Tags.prototype.url = "" + this.dbURL + "/tags";
+      return CK.Model.DrowsyModel.createNecessaryCollections(['contributions', 'tags']);
     };
 
     return Model;
@@ -45,8 +47,8 @@
       if (!this.get(this.idAttribute)) {
         this.set(this.idAttribute, CK.Model.DrowsyModel.generateMongoObjectId());
       }
-      if (!this.get('timestamp')) {
-        return this.set('timestamp', Date());
+      if (!this.get('created_at')) {
+        return this.set('created_at', Date());
       }
     };
 
@@ -92,7 +94,7 @@
             col = requiredCollections[_i];
             if (__indexOf.call(existingCollections, col) < 0) {
               console.log("Creating collection '" + col + "' under " + CK.Model.dbURL);
-              _results.push(jQuery.post(config.drowsyURL, {
+              _results.push(jQuery.post(CK.Model.dbURL, {
                 collection: col
               }));
             } else {
@@ -153,6 +155,36 @@
     Contributions.prototype.url = void 0;
 
     return Contributions;
+
+  })(CK.Model.DrowsyCollection);
+
+  CK.Model.Tag = (function(_super) {
+
+    __extends(Tag, _super);
+
+    function Tag() {
+      return Tag.__super__.constructor.apply(this, arguments);
+    }
+
+    Tag.prototype.urlRoot = void 0;
+
+    return Tag;
+
+  })(CK.Model.DrowsyModel);
+
+  CK.Model.Tags = (function(_super) {
+
+    __extends(Tags, _super);
+
+    function Tags() {
+      return Tags.__super__.constructor.apply(this, arguments);
+    }
+
+    Tags.prototype.model = CK.Model.Tag;
+
+    Tags.prototype.url = void 0;
+
+    return Tags;
 
   })(CK.Model.DrowsyCollection);
 
