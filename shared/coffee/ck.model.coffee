@@ -10,8 +10,13 @@ class CK.Model
 
         CK.Model.Contribution::urlRoot = "#{@dbURL}/contributions"
         CK.Model.Contributions::url = "#{@dbURL}/contributions"
+        
+        CK.Model.Tag::urlRoot = "#{@dbURL}/tags"
+        CK.Model.Tags::url = "#{@dbURL}/tags"
+
         CK.Model.DrowsyModel.createNecessaryCollections([
-            'contributions'
+            'contributions',
+            'tags'
         ])
 
 # TODO: move this out to sail.js
@@ -26,8 +31,8 @@ class CK.Model.DrowsyModel extends Backbone.Model
         unless @get(@idAttribute)
             @set @idAttribute, CK.Model.DrowsyModel.generateMongoObjectId()
 
-        unless @get('timestamp')
-            @set 'timestamp', Date()
+        unless @get('created_at')
+            @set 'created_at', Date()
 
     @generateMongoObjectId: ->
         base = 16 # hex
@@ -59,7 +64,7 @@ class CK.Model.DrowsyModel extends Backbone.Model
                 for col in requiredCollections
                     unless col in existingCollections
                         console.log "Creating collection '#{col}' under #{CK.Model.dbURL}";
-                        jQuery.post config.drowsyURL,
+                        jQuery.post CK.Model.dbURL,
                             collection: col
             error: (err) =>
                 console.error "Couldn't fetch list of collections from #{CK.Model.dbURL} because: ", JSON.parse(err.responseText)
@@ -76,4 +81,12 @@ class CK.Model.Contribution extends CK.Model.DrowsyModel
 class CK.Model.Contributions extends CK.Model.DrowsyCollection
     model: CK.Model.Contribution
     url: undefined  # set in CK.Model.setup()
+
+class CK.Model.Tag extends CK.Model.DrowsyModel
+    urlRoot: undefined # set in CK.Model.setup()
+
+class CK.Model.Tags extends CK.Model.DrowsyCollection
+    model: CK.Model.Tag
+    url: undefined  # set in CK.Model.setup()
+
     

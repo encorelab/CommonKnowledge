@@ -39,6 +39,11 @@ class CK.Smartboard extends Sail.App
             contrib.on 'change', bubble.render
             bubble.render()
 
+        tagContrib = (tag) ->
+            bubble = new CK.Smartboard.View.TagBubble {model: tag}
+            tag.on 'change', bubble.render
+            bubble.render()
+
         @contributions = new CK.Model.Contributions()
         @contributions.on 'add', (contrib) -> 
             contrib.justAdded = true
@@ -46,13 +51,27 @@ class CK.Smartboard extends Sail.App
         @contributions.on 'reset', (collection) -> 
             collection.each bubbleContrib
 
-        @wall = new CK.Smartboard.View.Wall {collection: @contributions}
+        @tags = new CK.Model.Tags()
+        @tags.on 'add', (tag) ->
+            tag.justAdded = true
+            bubbleTag(tag)
+        @tags.on 'reset', (collection) ->
+            collection.each tagContrib
+
+        @wall = new CK.Smartboard.View.Wall {el: jQuery('#wall'), collection: @contributions}
 
     authenticate: =>
         if @run
             Rollcall.Authenticator.requestLogin()
         else
             Rollcall.Authenticator.requestRun()
+
+    createNewTag: (name) =>
+        tag = new CK.Model.Tag({name: name})
+        tag.save {},
+            success: =>
+                sev = new Sail.Event 'new_tag', tag.toJSON()
+                @groupchat.sendEvent sev
 
     events:
         initialized: (ev) ->
@@ -69,6 +88,7 @@ class CK.Smartboard extends Sail.App
         connected: (ev) ->
             console.log "Connected..."
             @contributions.fetch()
+            @tags.fetch()
 
         sail:
             contribution: (sev) ->
@@ -79,4 +99,10 @@ class CK.Smartboard extends Sail.App
                     c = new CK.Model.Contribution(sev.payload)
                     @contributions.add(c)
 
-    
+            new_tag: (sev) ->
+                t = @tags.get(sev.payload._id)
+                if t?
+                    t.set(sev.payload)
+                else
+                    t = new CK.Model.Tag(sev.payload)
+                    @contributions.add(t)
