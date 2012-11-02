@@ -39,7 +39,14 @@
     DrowsyModel.prototype.idAttribute = "_id";
 
     DrowsyModel.prototype.parse = function(data) {
+      var parsedCreatedAt;
       data._id = data._id.$oid;
+      if (data.created_at != null) {
+        parsedCreatedAt = new Date(data.created_at);
+        if (!isNaN(parsedCreatedAt.getTime())) {
+          data.created_at = parsedCreatedAt;
+        }
+      }
       return data;
     };
 
@@ -137,6 +144,48 @@
     }
 
     Contribution.prototype.urlRoot = void 0;
+
+    Contribution.prototype.addTag = function(tag, tagger) {
+      var existingTagRelationships, tagRel;
+      if (!(tag instanceof CK.Model.Tag)) {
+        console.error("Cannot addTag ", tag, " because it is not a CK.Model.Tag instance!");
+        throw "Invalid tag (doesn't exist)";
+      }
+      if (!tag.id) {
+        console.error("Cannot addTag ", tag, " to contribution ", this, " because it doesn't have an id!");
+        throw "Invalid tag (no id)";
+      }
+      existingTagRelationships = this.get('tags') || [];
+      if (_.any(existingTagRelationships, function(tr) {
+        return tr.id === tag.id;
+      })) {
+        console.warn("Cannot addTag ", tag, " to contribution ", this, " because it already has this tag.");
+        return this;
+      }
+      tagRel = {
+        id: tag.id,
+        name: tag.get('name'),
+        tagger: tagger,
+        tagged_at: new Date()
+      };
+      existingTagRelationships.push(tagRel);
+      this.set('tags', existingTagRelationships);
+      return this;
+    };
+
+    Contribution.prototype.removeTag = function(tag, tagger) {
+      var reducedTags;
+      reducedTags = _.reject(this.get('tags'), function(t) {
+        return (t.id === tag.id || t.name === tag.get('name')) && (!(tagger != null) || t.tagger === tagger);
+      });
+      return this.set('tags', reducedTags);
+    };
+
+    Contribution.prototype.hasTag = function(tag, tagger) {
+      return _.any(this.get('tags'), function(t) {
+        return t.id === tag.id && (!(tagger != null) || t.tagger === tagger);
+      });
+    };
 
     return Contribution;
 

@@ -1,3 +1,9 @@
+@import url(http://fonts.googleapis.com/css?family=Ubuntu:400,700,400italic,700italic);
+
+body {
+  font-family: Ubuntu, sans-serif;
+}
+
 body {
 	padding-top: 70px; /* from bootstrap: 60px to make the container go all the way to the bottom of the topbar.
 						  but we actually need 70px for tablet rotation */
@@ -8,8 +14,9 @@ i {
 	float: right;
 }
 
-.brand {
+.navbar .brand {
 	margin-left: 12px !important;
+	font-weight: 700 !important;
 }
 
 .row {

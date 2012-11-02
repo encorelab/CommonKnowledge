@@ -165,36 +165,50 @@ CK.Mobile = function() {
         var sort = ['created_at', 'DESC'];
         // var selector = {"author": "matt"};
         app.contributionList.fetch({
-          data: { sort: JSON.stringify(sort) }
+          data: {
+            sort: JSON.stringify(sort)
+          }
         });
       },
 
       start_student_tagging: function(sev) {
-        // console.log('UI: tagging-selection appears');
-        console.log('creating TagView');
+        console.log('start_student_tagging heard, creating TagView');
 
-        // app.tagList = new CK.Model.Tags();
-        // app.tagList.on('change', function(model) { console.log(model.changedAttributes()); });        
+        app.tagList = new CK.Model.Tags();
+        app.tagList.on('change', function(model) { console.log(model.changedAttributes()); });        
 
-        // app.contributionList.on('reset add', app.tagListView.render);       // probably unnecessary, maybe even a bad idea?
+        app.tagListView = new CK.Mobile.View.TagListView({
+          el: jQuery('#tag-list'),
+          collection: app.tagList
+        });
+        app.tagList.on('reset add', app.tagListView.render);       // probably unnecessary, maybe even a bad idea?
 
-        //app.contributionList.fetch({
+        app.tagList.fetch({
           // data: { 
           //   selector: JSON.stringify({
           //     session: app.run.name
           //   }) 
           // },
-          //success: function (tags) {
-          // app.tagList = tags; // unlikely to work right - clone?
-          // app.tagListView = new CK.Mobile.View.tagListView({
-          //   el: jQuery('#tag-list'),
-          //   collection: app.tagList
-          // });
-          //}
-        //});
+          // success: function (tags) {
+          //   app.tagList = tags;
+          // }
+        });
 
         jQuery('#contribution-list').addClass('hide');
         jQuery('#tag-list').removeClass('hide');
+        jQuery('#contribution-details-build-on-btn').addClass('hide');
+      },
+
+      contribution_to_tag: function(sev) {
+        console.log('contribution_to_tag heard');
+        console.log('id: '+sev.payload.contribution_id);
+        console.log('name: '+sev.payload.recipient);
+
+        if (sev.payload.recipient === app.userData.account.login) {
+          app.contributionDetails.id = sev.payload.contribution_id;
+          app.contributionDetails.fetch();
+        }
+
       }
 
     }
@@ -203,7 +217,7 @@ CK.Mobile = function() {
   /* Outgoing events */
 
   app.sendContribution = function() {
-    var sev = new Sail.Event('contribution', app.currentContribution)
+    var sev = new Sail.Event('contribution', app.currentContribution.toJSON())
     Sail.app.groupchat.sendEvent(sev);
   };
 
@@ -246,6 +260,26 @@ CK.Mobile = function() {
       el: jQuery('#contribution-input'),
       model: app.currentContribution
     });
+  };
+
+  app.addNote = function(kind) {
+    console.log('Preping to add a note...');
+
+    app.currentContribution = new CK.Model.Contribution();
+    app.contributionInputView.model = app.currentContribution;
+    app.contributionInputView.undelegateEvents();
+    app.contributionInputView.delegateEvents();
+
+    app.currentContribution.justAdded = true;
+    app.currentContribution.kind = kind;
+
+    app.currentContribution.on('change sync', app.contributionInputView.render);
+
+    app.currentContribution.set('author', app.userData.account.login);
+    app.currentContribution.set('tags', app.tagArray);
+    app.currentContribution.set('build_ons', app.buildOnArray);
+
+    app.contributionInputView.render();
   };
 
 

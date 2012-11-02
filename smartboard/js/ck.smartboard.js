@@ -38,7 +38,7 @@
     };
 
     Smartboard.prototype.init = function() {
-      var bubbleContrib, tagContrib, userFilter,
+      var bubbleContrib, bubbleTag, userFilter,
         _this = this;
       Sail.verifyConfig(this.config, this.requiredConfig);
       console.log("Configuration is valid.");
@@ -64,15 +64,15 @@
       this.rollcall = new Rollcall.Client(this.config.rollcall.url);
       bubbleContrib = function(contrib) {
         var bubble;
-        bubble = new CK.Smartboard.View.ContributionBubble({
+        bubble = new CK.Smartboard.View.ContributionBalloon({
           model: contrib
         });
         contrib.on('change', bubble.render);
         return bubble.render();
       };
-      tagContrib = function(tag) {
+      bubbleTag = function(tag) {
         var bubble;
-        bubble = new CK.Smartboard.View.TagBubble({
+        bubble = new CK.Smartboard.View.TagBalloon({
           model: tag
         });
         tag.on('change', bubble.render);
@@ -92,7 +92,7 @@
         return bubbleTag(tag);
       });
       this.tags.on('reset', function(collection) {
-        return collection.each(tagContrib);
+        return collection.each(bubbleTag);
       });
       return this.wall = new CK.Smartboard.View.Wall({
         el: jQuery('#wall'),
@@ -158,7 +158,7 @@
             return t.set(sev.payload);
           } else {
             t = new CK.Model.Tag(sev.payload);
-            return this.contributions.add(t);
+            return this.tags.add(t);
           }
         }
       }

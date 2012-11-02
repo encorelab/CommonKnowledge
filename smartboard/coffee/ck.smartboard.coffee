@@ -35,12 +35,12 @@ class CK.Smartboard extends Sail.App
         @rollcall = new Rollcall.Client(@config.rollcall.url)
 
         bubbleContrib = (contrib) ->
-            bubble = new CK.Smartboard.View.ContributionBubble {model: contrib}
+            bubble = new CK.Smartboard.View.ContributionBalloon {model: contrib}
             contrib.on 'change', bubble.render
             bubble.render()
 
-        tagContrib = (tag) ->
-            bubble = new CK.Smartboard.View.TagBubble {model: tag}
+        bubbleTag = (tag) ->
+            bubble = new CK.Smartboard.View.TagBalloon {model: tag}
             tag.on 'change', bubble.render
             bubble.render()
 
@@ -56,7 +56,7 @@ class CK.Smartboard extends Sail.App
             tag.justAdded = true
             bubbleTag(tag)
         @tags.on 'reset', (collection) ->
-            collection.each tagContrib
+            collection.each bubbleTag
 
         @wall = new CK.Smartboard.View.Wall {el: jQuery('#wall'), collection: @contributions}
 
@@ -105,4 +105,4 @@ class CK.Smartboard extends Sail.App
                     t.set(sev.payload)
                 else
                     t = new CK.Model.Tag(sev.payload)
-                    @contributions.add(t)
+                    @tags.add(t)
