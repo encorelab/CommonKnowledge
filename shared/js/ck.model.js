@@ -39,7 +39,14 @@
     DrowsyModel.prototype.idAttribute = "_id";
 
     DrowsyModel.prototype.parse = function(data) {
+      var parsedCreatedAt;
       data._id = data._id.$oid;
+      if (data.created_at != null) {
+        parsedCreatedAt = new Date(data.created_at);
+        if (!isNaN(parsedCreatedAt.getTime())) {
+          data.created_at = parsedCreatedAt;
+        }
+      }
       return data;
     };
 
@@ -137,6 +144,35 @@
     }
 
     Contribution.prototype.urlRoot = void 0;
+
+    Contribution.prototype.addTag = function(tag, tagger) {
+      var existingTagRelationships, tagRel;
+      if (!(tag instanceof CK.Model.Tag)) {
+        tag = Sail.app.tags.find(function(t) {
+          return t.get('name') === tag;
+        });
+      }
+      if (!tag.id) {
+        console.error("Cannot addTag ", tag, " to contribution ", this, " because it does not have an id!");
+        throw "Cannot add tag to contribution because the tag does not have an id!";
+      }
+      existingTagRelationships = this.get('tags') || [];
+      if (_.any(existingTagRelationships, function(tr) {
+        return tr.id === tag.id;
+      })) {
+        console.warn("Cannot addTag ", tag, " to contribution ", this, " because it already has this tag.");
+        return this;
+      }
+      tagRel = {
+        id: tag.id,
+        name: tag.get('name'),
+        tagger: tagger,
+        tagged_at: new Date()
+      };
+      existingTagRelationships.push(tagRel);
+      this.set('tags', existingTagRelationships);
+      return this;
+    };
 
     return Contribution;
 

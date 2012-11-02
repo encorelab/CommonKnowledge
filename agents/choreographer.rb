@@ -123,7 +123,7 @@ class Choreographer < Sail::Agent
     # find a problem with assigned 'false'
     user_to_contribution_id_assignments.map do |user, contributionId|
       log "Sending tag_assignment for user '#{user.inspect}' for contributionId '#{contributionId.inspect}'"
-      event!(:tag_assignment, {:username => user, :contribution_id => contributionId})
+      event!(:contribution_to_tag, {:recipient => user, :contribution_id => contributionId})
     end
   end
 
