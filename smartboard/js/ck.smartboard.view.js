@@ -28,6 +28,8 @@
     __extends(Base, _super);
 
     function Base() {
+      this.domID = __bind(this.domID, this);
+
       this.findOrCreate = __bind(this.findOrCreate, this);
       return Base.__super__.constructor.apply(this, arguments);
     }
@@ -84,6 +86,10 @@
       });
     };
 
+    Base.prototype.domID = function() {
+      return this.model.id;
+    };
+
     return Base;
 
   })(Backbone.View);
@@ -99,14 +105,6 @@
     Wall.prototype.tagName = 'div';
 
     Wall.prototype.id = 'wall';
-
-    Wall.prototype.submitNewTag = function() {
-      var newTag;
-      newTag = this.$el.find('#new-tag').val();
-      Sail.app.createNewTag(newTag);
-      this.$el.find('#add-tag-container').removeClass('opened').blur();
-      return this.$el.find('#new-tag').val('');
-    };
 
     Wall.prototype.events = {
       'click #add-tag-opener': function(ev) {
@@ -130,32 +128,109 @@
       }
     };
 
+    Wall.prototype.submitNewTag = function() {
+      var newTag;
+      newTag = this.$el.find('#new-tag').val();
+      Sail.app.createNewTag(newTag);
+      this.$el.find('#add-tag-container').removeClass('opened').blur();
+      return this.$el.find('#new-tag').val('');
+    };
+
+    Wall.prototype.cloudify = function() {
+      var contributionBalloon, fill, force, height, i, length, links, nodes, radius, tags, tick, transform, vis, width;
+      this.$el.find('.balloon.tag.ui-draggable, .balloon.contribution.ui-draggable').draggable('disable');
+      tick = function() {
+        return contributionBalloon.style('left', function(d) {
+          if (d.classList.contains('ui-draggable-dragging')) {
+            return d;
+          } else {
+            return (d.x = Math.max(radius, Math.min(width - radius, d.x))) + "px";
+          }
+        }).style('top', function(d) {
+          if (d.classList.contains('ui-draggable-dragging')) {
+            return d;
+          } else {
+            return (d.y = Math.max(radius, Math.min(height - radius, d.y))) + "px";
+          }
+        });
+      };
+      transform = function(d) {
+        return "rotate(" + Math.atan2(d.target.y - d.source.y, d.target.x - d.source.x) * 180 / Math.PI + "deg)";
+      };
+      length = function(d) {
+        var dx, dy;
+        dx = d.target.x - d.source.x;
+        dy = d.target.y - d.source.y;
+        return Math.sqrt(dx * dx + dy * dy) + "px";
+      };
+      width = this.$el.innerWidth();
+      height = this.$el.innerHeight();
+      radius = 50;
+      fill = d3.scale.category20();
+      force = d3.layout.force().charge(-500).linkDistance(30).size([width, height]);
+      vis = d3.select("#" + this.id);
+      i = 0;
+      tags = {};
+      Sail.app.tags.each(function(tag) {
+        var t;
+        t = jQuery('#' + tag.id)[0];
+        t.index = i;
+        tags[tag.id] = t;
+        return i++;
+      });
+      nodes = this.$el.find('.balloon').toArray();
+      links = [];
+      jQuery('.balloon.contribution').each(function() {
+        var c, contribBalloon, t, _i, _len, _ref, _results;
+        contribBalloon = jQuery(this);
+        if (!contribBalloon.data('tags')) {
+          return;
+        }
+        c = contribBalloon[0];
+        c.index = i;
+        i++;
+        _ref = contribBalloon.data('tags').split(' ');
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          t = _ref[_i];
+          _results.push(links.push({
+            source: tags[t],
+            target: c
+          }));
+        }
+        return _results;
+      });
+      this.$el.find('.balloon').each(function() {});
+      contributionBalloon = vis.selectAll('.balloon').data(nodes).call(force.drag);
+      return force.nodes(nodes).links(links).on('tick', tick).start();
+    };
+
     return Wall;
 
   })(CK.Smartboard.View.Base);
 
-  CK.Smartboard.View.ContributionBubble = (function(_super) {
+  CK.Smartboard.View.ContributionBalloon = (function(_super) {
 
-    __extends(ContributionBubble, _super);
+    __extends(ContributionBalloon, _super);
 
-    function ContributionBubble() {
-      this.domID = __bind(this.domID, this);
+    function ContributionBalloon() {
+      this.renderTags = __bind(this.renderTags, this);
 
       this.render = __bind(this.render, this);
 
       this.id = __bind(this.id, this);
-      return ContributionBubble.__super__.constructor.apply(this, arguments);
+      return ContributionBalloon.__super__.constructor.apply(this, arguments);
     }
 
-    ContributionBubble.prototype.tagName = 'article';
+    ContributionBalloon.prototype.tagName = 'article';
 
-    ContributionBubble.prototype.className = 'contribution balloon';
+    ContributionBalloon.prototype.className = 'contribution balloon';
 
-    ContributionBubble.prototype.id = function() {
+    ContributionBalloon.prototype.id = function() {
       return this.domID();
     };
 
-    ContributionBubble.prototype.render = function() {
+    ContributionBalloon.prototype.render = function() {
       var body, headline, meta;
       headline = this.findOrCreate('.headline', "<h3 class='headline'></h3>");
       headline.text(this.model.get('headline'));
@@ -167,40 +242,54 @@
       }
       meta = this.findOrCreate('.meta', "<div class='meta'><span class='author'></span></div>");
       meta.find('.author').text(this.model.get('author')).addClass("author-" + (this.model.get('author')));
+      this.renderTags();
       this.corporealize();
       return this;
     };
 
-    ContributionBubble.prototype.domID = function() {
-      return "contribution-" + this.model.id;
+    ContributionBalloon.prototype.renderTags = function() {
+      var tag, tagIds;
+      if (this.model.get('tags') == null) {
+        return;
+      }
+      tagIds = (function() {
+        var _i, _len, _ref, _results;
+        _ref = this.model.get('tags');
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          tag = _ref[_i];
+          _results.push(tag.id);
+        }
+        return _results;
+      }).call(this);
+      this.$el.attr('data-tags', tagIds.join(" "));
+      return this;
     };
 
-    return ContributionBubble;
+    return ContributionBalloon;
 
   })(CK.Smartboard.View.Base);
 
-  CK.Smartboard.View.TagBubble = (function(_super) {
+  CK.Smartboard.View.TagBalloon = (function(_super) {
 
-    __extends(TagBubble, _super);
+    __extends(TagBalloon, _super);
 
-    function TagBubble() {
-      this.domID = __bind(this.domID, this);
-
+    function TagBalloon() {
       this.render = __bind(this.render, this);
 
       this.id = __bind(this.id, this);
-      return TagBubble.__super__.constructor.apply(this, arguments);
+      return TagBalloon.__super__.constructor.apply(this, arguments);
     }
 
-    TagBubble.prototype.tagName = 'div';
+    TagBalloon.prototype.tagName = 'div';
 
-    TagBubble.prototype.className = 'tag balloon';
+    TagBalloon.prototype.className = 'tag balloon';
 
-    TagBubble.prototype.id = function() {
+    TagBalloon.prototype.id = function() {
       return this.domID();
     };
 
-    TagBubble.prototype.render = function() {
+    TagBalloon.prototype.render = function() {
       var name;
       name = this.findOrCreate('.name', "<h3 class='name'></h3>");
       name.text(this.model.get('name'));
@@ -209,11 +298,7 @@
       return this;
     };
 
-    TagBubble.prototype.domID = function() {
-      return "tag-" + this.model.id;
-    };
-
-    return TagBubble;
+    return TagBalloon;
 
   })(CK.Smartboard.View.Base);
 
