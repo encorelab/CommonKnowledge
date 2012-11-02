@@ -83,25 +83,23 @@ class CK.Model.Contribution extends CK.Model.DrowsyModel
     urlRoot: undefined # set in CK.Model.setup()
 
     addTag: (tag, tagger) ->
-        tagModel = @getTag(tag, tagger)
-
-        unless tagModel
-            console.error("Cannot addTag ", tag ," because it doesn't exist in the tags collection!")
+        unless tag instanceof CK.Model.Tag
+            console.error("Cannot addTag ", tag ," because it is not a CK.Model.Tag instance!")
             throw "Invalid tag (doesn't exist)"
 
-        unless tagModel.id
+        unless tag.id
             console.error("Cannot addTag ", tag ," to contribution ", @ ," because it doesn't have an id!")
             throw "Invalid tag (no id)"
 
         existingTagRelationships = @get('tags') || []
 
-        if _.any(existingTagRelationships, (tr) -> tr.id is tagModel.id)
+        if _.any(existingTagRelationships, (tr) -> tr.id is tag.id)
             console.warn("Cannot addTag ", tag ," to contribution ", @ , " because it already has this tag.")
             return @
 
         tagRel = 
-            id: tagModel.id
-            name: tagModel.get('name')
+            id: tag.id
+            name: tag.get('name')
             tagger: tagger
             tagged_at: new Date()
 
@@ -113,28 +111,16 @@ class CK.Model.Contribution extends CK.Model.DrowsyModel
         return @
 
     removeTag: (tag, tagger) ->
-        # FIXME: what if tag.get('tagger') != tagger
-        tagModel = @getTag(tag, tagger)
-
-        return unless tagModel?
-
         reducedTags = _.reject @get('tags'), (t) ->
-            t.name is tagModel.get('name') and
+            (t.id is tag.id || t.name is tag.get('name')) and
                 (not tagger? || t.tagger is tagger)
 
         @set('tags', reducedTags)
 
     hasTag: (tag, tagger) ->
-        @getTag(tag, tagger)?
-
-    getTag: (tag, tagger) ->
-        unless tag instanceof CK.Model.Tag
-            # we're assuming `tag` is a string (i.e. the tag name)
-            tag = Sail.app.tags.find (t) -> 
-                t.get('name') is tag and
-                    (not tagger? || t.tagger is tagger)
-
-        return tag
+        _.any @get('tags'), (t) ->
+            t.id is tag.id and
+                (not tagger? || t.tagger is tagger)
 
 
 class CK.Model.Contributions extends CK.Model.DrowsyCollection

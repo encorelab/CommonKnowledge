@@ -146,26 +146,25 @@
     Contribution.prototype.urlRoot = void 0;
 
     Contribution.prototype.addTag = function(tag, tagger) {
-      var existingTagRelationships, tagModel, tagRel;
-      tagModel = this.getTag(tag, tagger);
-      if (!tagModel) {
-        console.error("Cannot addTag ", tag, " because it doesn't exist in the tags collection!");
+      var existingTagRelationships, tagRel;
+      if (!(tag instanceof CK.Model.Tag)) {
+        console.error("Cannot addTag ", tag, " because it is not a CK.Model.Tag instance!");
         throw "Invalid tag (doesn't exist)";
       }
-      if (!tagModel.id) {
+      if (!tag.id) {
         console.error("Cannot addTag ", tag, " to contribution ", this, " because it doesn't have an id!");
         throw "Invalid tag (no id)";
       }
       existingTagRelationships = this.get('tags') || [];
       if (_.any(existingTagRelationships, function(tr) {
-        return tr.id === tagModel.id;
+        return tr.id === tag.id;
       })) {
         console.warn("Cannot addTag ", tag, " to contribution ", this, " because it already has this tag.");
         return this;
       }
       tagRel = {
-        id: tagModel.id,
-        name: tagModel.get('name'),
+        id: tag.id,
+        name: tag.get('name'),
         tagger: tagger,
         tagged_at: new Date()
       };
@@ -175,28 +174,17 @@
     };
 
     Contribution.prototype.removeTag = function(tag, tagger) {
-      var reducedTags, tagModel;
-      tagModel = this.getTag(tag, tagger);
-      if (tagModel == null) {
-        return;
-      }
+      var reducedTags;
       reducedTags = _.reject(this.get('tags'), function(t) {
-        return t.name === tagModel.get('name') && (!(tagger != null) || t.tagger === tagger);
+        return (t.id === tag.id || t.name === tag.get('name')) && (!(tagger != null) || t.tagger === tagger);
       });
       return this.set('tags', reducedTags);
     };
 
     Contribution.prototype.hasTag = function(tag, tagger) {
-      return this.getTag(tag, tagger) != null;
-    };
-
-    Contribution.prototype.getTag = function(tag, tagger) {
-      if (!(tag instanceof CK.Model.Tag)) {
-        tag = Sail.app.tags.find(function(t) {
-          return t.get('name') === tag && (!(tagger != null) || t.tagger === tagger);
-        });
-      }
-      return tag;
+      return _.any(this.get('tags'), function(t) {
+        return t.id === tag.id && (!(tagger != null) || t.tagger === tagger);
+      });
     };
 
     return Contribution;
