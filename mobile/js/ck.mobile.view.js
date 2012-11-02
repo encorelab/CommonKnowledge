@@ -114,25 +114,15 @@
     render: function () {
       console.log("rendering ContributionDetailsView!");
 
-      jQuery('#contribution-details .note-headline').text('');
-      jQuery('#contribution-details .note-body').text('');
+      jQuery('#contribution-details .field').text('');
 
       jQuery('#contribution-details .note-headline').text(Sail.app.contributionDetails.get('headline'));
       jQuery('#contribution-details .note-body').text(Sail.app.contributionDetails.get('content'));
+      jQuery('#contribution-details .note-author').text(Sail.app.contributionDetails.get('author'));
+      jQuery('#contribution-details .note-created-at').text(' ('+Sail.app.contributionDetails.get('created_at')+')');
 
-      // var headline = Sail.app.contributionDetailsView.$el.find('#contribution-details .note-headline');
-      // var content = Sail.app.contributionDetailsView.$el.find('#contribution-details .note-body');
-
-      // // clearing fields
-      // headline.text('');
-      // content.text('');
-
-      // // note that if there are blank fields (which should never happen outside of testing), the previous title stays
-      // headline.text(Sail.app.contributionDetails.get('headline'));
-      // content.text(Sail.app.contributionDetails.get('content'));
-
-      // var view = Sail.app.contributionInputView;
-      // _.each(this.model.attributes, function (attributeValue, attributeName) {
+      // var view = Sail.app.contributionDetailsView;
+      // _.each(Sail.app.contributionDetails.attributes, function (attributeValue, attributeName) {
       //   console.log("Updating "+attributeName+" with val "+attributeValue);
       //   view.$el.find('.field['+attributeName+']').val(attributeValue);
       // });
@@ -321,6 +311,7 @@
 
     } else if (type === 'build-on') {
       jQuery('#note-body-label').text('Build On Note');
+      // TODO - make buildons actually build on
 
     } else {
       console.log('unknown note type');
