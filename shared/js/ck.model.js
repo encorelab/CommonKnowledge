@@ -146,32 +146,57 @@
     Contribution.prototype.urlRoot = void 0;
 
     Contribution.prototype.addTag = function(tag, tagger) {
-      var existingTagRelationships, tagRel;
-      if (!(tag instanceof CK.Model.Tag)) {
-        tag = Sail.app.tags.find(function(t) {
-          return t.get('name') === tag;
-        });
+      var existingTagRelationships, tagModel, tagRel;
+      tagModel = this.getTag(tag, tagger);
+      if (!tagModel) {
+        console.error("Cannot addTag ", tag, " because it doesn't exist in the tags collection!");
+        throw "Invalid tag (doesn't exist)";
       }
-      if (!tag.id) {
-        console.error("Cannot addTag ", tag, " to contribution ", this, " because it does not have an id!");
-        throw "Cannot add tag to contribution because the tag does not have an id!";
+      if (!tagModel.id) {
+        console.error("Cannot addTag ", tag, " to contribution ", this, " because it doesn't have an id!");
+        throw "Invalid tag (no id)";
       }
       existingTagRelationships = this.get('tags') || [];
       if (_.any(existingTagRelationships, function(tr) {
-        return tr.id === tag.id;
+        return tr.id === tagModel.id;
       })) {
         console.warn("Cannot addTag ", tag, " to contribution ", this, " because it already has this tag.");
         return this;
       }
       tagRel = {
-        id: tag.id,
-        name: tag.get('name'),
+        id: tagModel.id,
+        name: tagModel.get('name'),
         tagger: tagger,
         tagged_at: new Date()
       };
       existingTagRelationships.push(tagRel);
       this.set('tags', existingTagRelationships);
       return this;
+    };
+
+    Contribution.prototype.removeTag = function(tag, tagger) {
+      var reducedTags, tagModel;
+      tagModel = this.getTag(tag, tagger);
+      if (tagModel == null) {
+        return;
+      }
+      reducedTags = _.reject(this.get('tags'), function(t) {
+        return t.name === tagModel.get('name') && (!(tagger != null) || t.tagger === tagger);
+      });
+      return this.set('tags', reducedTags);
+    };
+
+    Contribution.prototype.hasTag = function(tag, tagger) {
+      return this.getTag(tag, tagger) != null;
+    };
+
+    Contribution.prototype.getTag = function(tag, tagger) {
+      if (!(tag instanceof CK.Model.Tag)) {
+        tag = Sail.app.tags.find(function(t) {
+          return t.get('name') === tag && (!(tagger != null) || t.tagger === tagger);
+        });
+      }
+      return tag;
     };
 
     return Contribution;
