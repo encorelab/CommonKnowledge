@@ -237,7 +237,9 @@
     // FIX THE LIs SO THAT THEY'RE ALL CLICKABLE IN CONTLISTVIEW
     events: {
       'click .tag-btn': function (ev) {
-        console.log('ev: '+ev);
+        console.log('id: '+ev.target.id);
+        console.log(jQuery(ev.target).data('tag'));
+        //Sail.app.taggedContribution.addTag('booyaka2',Sail.app.userData.account.login);       // START HERE
         //var contribId = jQuery(ev.target.parentElement).attr('id');
 
         //Sail.app.contributionDetails = Sail.app.contributionList.get(contribId);
@@ -282,6 +284,7 @@
         }
 
         tagButton.text(tag.get('name'));
+        tagButton.data('tag',tag);
 
       });
     }

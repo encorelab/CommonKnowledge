@@ -207,6 +207,9 @@ CK.Mobile = function() {
         if (sev.payload.recipient === app.userData.account.login) {
           app.contributionDetails.id = sev.payload.contribution_id;
           app.contributionDetails.fetch();
+
+          app.taggedContribution = new CK.Model.Contribution();
+          // pretty much sidestepping backbone here :/
         }
 
       }
