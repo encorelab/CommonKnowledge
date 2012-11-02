@@ -98,11 +98,14 @@ CK.Mobile = function() {
       CK.Model.configure(app.config.mongo.url, app.run.name);
 
       // I need to do this call, right? There's no easier way to grab username?
-      Sail.app.rollcall.request(Sail.app.rollcall.url + "/users/"+Sail.app.session.account.login+".json", "GET", {}, function(data) {
-        console.log("Authenticated user is: ", data);
+      // Sail.app.rollcall.request(Sail.app.rollcall.url + "/users/"+Sail.app.session.account.login+".json", "GET", {}, function(data) {
+      //   console.log("Authenticated user is: ", data);
 
-        app.userData = data;
-      });
+      //   app.userData = data;
+      // });
+
+      // Colin there is already data about the user available
+      app.userData = Sail.app.session;
 
       // moved the view init here so that backbone is configured with URLs
       app.initModels();
