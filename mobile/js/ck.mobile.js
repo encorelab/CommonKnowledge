@@ -206,10 +206,15 @@ CK.Mobile = function() {
         console.log('name: '+sev.payload.recipient);
 
         if (sev.payload.recipient === app.userData.account.login) {
-          app.contributionDetails.id = sev.payload.contribution_id;
-          app.contributionDetails.fetch();
-
           app.taggedContribution = new CK.Model.Contribution();
+
+          app.contributionDetails.id = sev.payload.contribution_id;
+          app.contributionDetails.fetch({
+            success: function () {
+              app.taggedContribution = app.contributionDetails;
+            }
+          });
+
         }
 
       }

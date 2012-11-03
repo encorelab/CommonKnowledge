@@ -137,9 +137,6 @@
         this.model.set(f.attr('name'), f.val());
       },
 
-      // 'click #share-note-btn': this.share,
-      // 'click #cancel-note-btn': this.cancel
-      // OR CK.Mobile.View.cancel?
       'click #share-note-btn': 'share',
       //'click #cancel-note-btn': 'cancel'
     },
@@ -151,9 +148,6 @@
     },
 
     share: function () {
-      // TODO: Could such a validation be done differently?? (armin asking)
-      // [C] - right, maybe it's better to check the model instead of what's on the screen
-      //if (jQuery('#note-body-entry').val() !== '' && jQuery('#note-headline-entry').val() !== '') {      
       if (Sail.app.currentContribution.has('content') && Sail.app.currentContribution.has('headline')) {
         console.log("Submitting contribution...");
         // var self = this;
@@ -202,10 +196,9 @@
         });
       }
 
-      // START HERE!
-      // if (!(Sail.app.currentContribution.has('content') && Sail.app.currentContribution.has('headline'))) {
-      //   alert('Please enter both a note and a headline');           // should we switch these all to the nice toasts that MikeM was using in Washago?
-      // }
+      if (!(Sail.app.currentContribution.has('content') && Sail.app.currentContribution.has('headline')) && (Sail.app.currentContribution.justAdded === true)) {
+        alert('Please enter both a note and a headline');           // should we switch these all to the nice toasts that MikeM was using in Washago?
+      }
     },
 
     // cancel: function () {
