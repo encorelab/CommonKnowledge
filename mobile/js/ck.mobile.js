@@ -194,9 +194,10 @@ CK.Mobile = function() {
           // }
         });
 
+        // TODO - move this to the render
         jQuery('#contribution-list').addClass('hide');
         jQuery('#tag-list').removeClass('hide');
-        jQuery('#contribution-details-build-on-btn').addClass('hide');
+        jQuery('#share-note-btn').addClass('disabled');
       },
 
       contribution_to_tag: function(sev) {
@@ -209,7 +210,6 @@ CK.Mobile = function() {
           app.contributionDetails.fetch();
 
           app.taggedContribution = new CK.Model.Contribution();
-          // pretty much sidestepping backbone here :/
         }
 
       }
@@ -219,8 +219,15 @@ CK.Mobile = function() {
 
   /* Outgoing events */
 
-  app.sendContribution = function() {
-    var sev = new Sail.Event('contribution', app.currentContribution.toJSON())
+  app.sendContribution = function(kind) {
+    if (kind === 'newNote') {
+      var sev = new Sail.Event('contribution', app.currentContribution.toJSON());
+    } else if (kind === 'taggedNote') {
+      var sev = new Sail.Event('contribution', app.taggedContribution.toJSON());
+    } else {
+      console('unknown type of submission, cant send contribution');
+    }
+
     Sail.app.groupchat.sendEvent(sev);
   };
 
