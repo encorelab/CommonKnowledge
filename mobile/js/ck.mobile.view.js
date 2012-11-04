@@ -259,13 +259,14 @@
         if (Sail.app.taggedContribution.hasTag(tag)) {
           Sail.app.taggedContribution.removeTag(tag);
         } else {
+          // this is all hideous, and fighting backbone, due to deadlines... TODO - fixme when there's more time
           if (tag.get('name') === "N/A") {
-            // Sail.app.taggedContribution.attributes.tags.each(function(t) {
-            //   Sail.app.taggedContribution.removeTag(t);
-            // });
-            _.each(Sail.app.taggedContribution.attributes.tags, function(t) {       // START HERE, test the remove
-              Sail.app.taggedContribution.removeTag(t);
-            });
+            Sail.app.taggedContribution.attributes.tags = [];                       // eeeewwwwwwww
+            jQuery('.tag-btn').removeClass('active');
+          } else {
+            naTag = Sail.app.tagList.find(function(t) { return t.get('name') === "N/A" } );
+            Sail.app.taggedContribution.removeTag(naTag);
+            jQuery("button:contains('N/A')").removeClass('active');
           }
           Sail.app.taggedContribution.addTag(tag, Sail.app.userData.account.login);
         }
@@ -277,6 +278,8 @@
         } else {
           jQuery('#share-note-btn').addClass('disabled');
         }
+
+        // Sail.app.tagListView.render();
       },
 
       //'click #tag-list-build-on-btn': 'build-on'
