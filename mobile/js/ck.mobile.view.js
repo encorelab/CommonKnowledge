@@ -110,16 +110,13 @@
 
       jQuery('#contribution-details .field').text('');
 
-      jQuery('#contribution-details .note-headline').text(Sail.app.contributionDetails.get('headline'));
-      jQuery('#contribution-details .note-body').text(Sail.app.contributionDetails.get('content'));
-      jQuery('#contribution-details .note-author').text('~'+Sail.app.contributionDetails.get('author'));
-      jQuery('#contribution-details .note-created-at').text(' (' + Sail.app.contributionDetails.get('created_at').toLocaleDateString() + ' ' + Sail.app.contributionDetails.get('created_at').toLocaleTimeString() + ')');
-
-      // var view = Sail.app.contributionDetailsView;
-      // _.each(Sail.app.contributionDetails.attributes, function (attributeValue, attributeName) {
-      //   console.log("Updating "+attributeName+" with val "+attributeValue);
-      //   view.$el.find('.field['+attributeName+']').val(attributeValue);
-      // });
+      // created_at will return undefined, so need to check it exists...
+      if (Sail.app.contributionDetails.get('created_at')) {
+        jQuery('#contribution-details .note-headline').text(Sail.app.contributionDetails.get('headline'));
+        jQuery('#contribution-details .note-body').text(Sail.app.contributionDetails.get('content'));
+        jQuery('#contribution-details .note-author').text('~'+Sail.app.contributionDetails.get('author'));
+        jQuery('#contribution-details .note-created-at').text(' (' + Sail.app.contributionDetails.get('created_at').toLocaleDateString() + ' ' + Sail.app.contributionDetails.get('created_at').toLocaleTimeString() + ')');
+      }
     }
   });
 
@@ -187,6 +184,7 @@
             Sail.app.sendContribution('taggedNote');
 
             Sail.app.taggedContribution.clear();
+            Sail.app.TagListView.render();
 
             alert('Tagged note submitted');
           },
@@ -286,7 +284,11 @@
 
     initialize: function () {
       console.log("Initializing TagListView...");
-
+      
+      // metadata up the N/A button if it doesn't already exist, done in init since only want to do it once
+      var naTag = new CK.Model.Tag();
+      naTag.set('name', 'N/A');
+      jQuery('#na-btn').data('tag',naTag);
     },
 
     // 'build-on': function () {
@@ -300,18 +302,12 @@
     render: function () {
       console.log("rendering TagListView!");
 
-      // metadata up the N/A button
-      var naTag = new CK.Model.Tag();
-      naTag.set('name', 'N/A');
-      jQuery('#na-btn').data('tag',naTag);
-
-
       Sail.app.tagList.each(function(tag) {
-        console.log('tag: '+tag.get('tag'));
+        console.log('tag: '+tag.get('name'));
 
         var tagButton = jQuery('button#'+tag.id);
         // length avoids duplicating (probably a better way to do this in backbone?)
-        if (tagButton.length === 0) {
+        if (tagButton.length === 0 && tag.get('name') != "N/A") {
           tagButton = jQuery('<button id='+tag.id+' type="button" class="btn tag-btn btn-warning"></button>');
           tagButton = jQuery(tagButton);
           jQuery('#tag-list .tag-btn-group').append(tagButton);
@@ -324,6 +320,9 @@
         tagButton.data('tag',tag);
 
       });
+
+      // clear all buttons
+      jQuery('.tag-btn').removeClass('active')
     }
 
   });

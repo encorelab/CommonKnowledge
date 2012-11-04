@@ -183,16 +183,7 @@ CK.Mobile = function() {
         });
         app.tagList.on('reset add', app.tagListView.render);       // probably unnecessary, maybe even a bad idea?
 
-        app.tagList.fetch({
-          // data: { 
-          //   selector: JSON.stringify({
-          //     session: app.run.name
-          //   }) 
-          // },
-          // success: function (tags) {
-          //   app.tagList = tags;
-          // }
-        });
+        app.tagList.fetch();
 
         // TODO - move this to the render
         jQuery('#contribution-list').addClass('hide');
@@ -203,21 +194,23 @@ CK.Mobile = function() {
       contribution_to_tag: function(sev) {
         console.log('contribution_to_tag heard');
         console.log('id: '+sev.payload.contribution_id);
-        console.log('name: '+sev.payload.recipient);
-
+        
         if (sev.payload.recipient === app.userData.account.login) {
+          console.log('name: '+sev.payload.recipient);
           app.taggedContribution = new CK.Model.Contribution();
 
           app.contributionDetails.id = sev.payload.contribution_id;
           app.contributionDetails.fetch({
             success: function () {
               app.taggedContribution = app.contributionDetails;
+              Sail.app.contributionDetailsView.render();            // why do I need to call render here? Already bound to reset
             }
           });
-
         }
 
       }
+
+
 
     }
   };
@@ -269,6 +262,7 @@ CK.Mobile = function() {
       el: jQuery('#contribution-details'),
       model: app.contributionDetails
     });
+    app.contributionDetails.on('reset add', app.contributionDetailsView.render);
     
     console.log('creating InputView');
     app.contributionInputView = new CK.Mobile.View.ContributionInputView({
