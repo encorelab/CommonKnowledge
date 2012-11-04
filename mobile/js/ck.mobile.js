@@ -173,6 +173,7 @@ CK.Mobile = function() {
 
       start_student_tagging: function(sev) {
         console.log('start_student_tagging heard, creating TagView');
+        app.taggedContribution = new CK.Model.Contribution();
 
         app.tagList = new CK.Model.Tags();
         app.tagList.on('change', function(model) { console.log(model.changedAttributes()); });        
@@ -183,12 +184,16 @@ CK.Mobile = function() {
         });
         app.tagList.on('reset add', app.tagListView.render);       // probably unnecessary, maybe even a bad idea?
 
-        app.tagList.fetch();
-
-        // TODO - move this to the render
-        jQuery('#contribution-list').addClass('hide');
-        jQuery('#tag-list').removeClass('hide');
-        jQuery('#share-note-btn').addClass('disabled');
+        var sort = ['created_at', 'ASC'];
+        app.tagList.fetch({
+          data: {
+            sort: JSON.stringify(sort)
+          }
+          // },
+          // success: function() {
+          //   app.flag = true;
+          // }
+        });
       },
 
       contribution_to_tag: function(sev) {
@@ -197,13 +202,12 @@ CK.Mobile = function() {
         
         if (sev.payload.recipient === app.userData.account.login) {
           console.log('name: '+sev.payload.recipient);
-          app.taggedContribution = new CK.Model.Contribution();
 
           app.contributionDetails.id = sev.payload.contribution_id;
           app.contributionDetails.fetch({
             success: function () {
               app.taggedContribution = app.contributionDetails;
-              Sail.app.contributionDetailsView.render();            // why do I need to call render here? Already bound to reset
+              //Sail.app.contributionDetailsView.render();            // why do I need to call render here? Already bound to reset
             }
           });
         }
