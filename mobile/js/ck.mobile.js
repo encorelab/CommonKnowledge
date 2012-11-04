@@ -221,7 +221,7 @@ CK.Mobile = function() {
     if (kind === 'newNote') {
       var sev = new Sail.Event('contribution', app.currentContribution.toJSON());
     } else if (kind === 'taggedNote') {
-      var sev = new Sail.Event('contribution', app.taggedContribution.toJSON());
+      var sev = new Sail.Event('contribution_tagged', app.taggedContribution.toJSON());
     } else {
       console('unknown type of submission, cant send contribution');
     }
