@@ -68,11 +68,28 @@ class Choreographer < Sail::Agent
       log "Sending out first wave of tagging events"
       send_tag_assignments(tagAssignments)
 
+      log "There are #{@bucket.count} contributions left for tagging"
+
       # check if there are more contributions to hand out (probably do this each time when students are done with tagging)      
     end
 
     event :contribution_tagged? do |stanza, data|
-      log "#{stanza.inspect}"
+      log "Recieved contribution_tagged #{data.inspect}"
+      tagAssignments = {}
+      @bucket = []
+
+      @bucket = fill_contribution_bucket()
+      log "Found #{@bucket.count} contributions to hand out to student #{data['origin'].inspect}"
+
+      unless @bucket.empty?
+        log "Assigning contribution #{@bucket.pop} to user #{data['origin'].inspect}"
+        tagAssignments[data['origin']] = @bucket.pop
+        send_tag_assignments(tagAssignments)
+      else
+        log "Nothing in bucket, tell user that he is done"
+        send_no_more_contributions(data['origin'])
+      end
+        
     end 
 
   end
@@ -136,8 +153,8 @@ class Choreographer < Sail::Agent
       end
     end
 
-    bucket += notag
     bucket += na
+    bucket += notag
     log "notag #{notag.count} / na #{na.count} / bucket #{bucket.count}"
 
     return bucket
@@ -149,6 +166,11 @@ class Choreographer < Sail::Agent
       log "Sending tag_assignment for user '#{user.inspect}' for contributionId '#{contributionId.inspect}'"
       event!(:contribution_to_tag, {:recipient => user, :contribution_id => contributionId})
     end
+  end
+
+  def send_no_more_contributions(user)
+    log "Sending tag_assignment for user '#{user.inspect}' for contributionId '#{contributionId.inspect}'"
+    event!(:no_more_contributions, {:recipient => user})    
   end
 
 
