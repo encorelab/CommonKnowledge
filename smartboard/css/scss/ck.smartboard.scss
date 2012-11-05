@@ -59,7 +59,7 @@ body {
     font-weight: bold;
     text-transform: uppercase;
     color: white;
-    opacity: 0.2;
+    opacity: 0.4;
   }
 }
 
@@ -89,7 +89,7 @@ body {
     // }
 
     .meta .author {
-        color: rgba(black, 0.3);
+        color: rgba(black, 0.4);
         font-size: 11px;
         margin-bottom: 1em;
         padding: 2px;
@@ -133,7 +133,7 @@ body {
             border-left: 4px solid rgba($widget-accent-color, 0.5);
         
             .author {
-                color: rgba(black, 0.3);
+                color: rgba(black, 0.4);
                 font-size: 11px;
             }
 

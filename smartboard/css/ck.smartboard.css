@@ -32,7 +32,7 @@ body {
     font-weight: bold;
     text-transform: uppercase;
     color: white;
-    opacity: 0.2; }
+    opacity: 0.4; }
 
 .contribution.balloon {
   position: absolute;
@@ -53,7 +53,7 @@ body {
     padding-right: 14px;
     margin-bottom: 2px; }
   .contribution.balloon .meta .author {
-    color: rgba(0, 0, 0, 0.3);
+    color: rgba(0, 0, 0, 0.4);
     font-size: 11px;
     margin-bottom: 1em;
     padding: 2px;
@@ -89,7 +89,7 @@ body {
       margin-bottom: 5px;
       border-left: 4px solid rgba(200, 39, 26, 0.5); }
       .contribution.balloon .buildons .buildon .author {
-        color: rgba(0, 0, 0, 0.3);
+        color: rgba(0, 0, 0, 0.4);
         font-size: 11px; }
       .contribution.balloon .buildons .buildon .content {
         font-size: 13px; }
