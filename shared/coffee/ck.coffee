@@ -19,3 +19,13 @@ CK.getStateForUser = (type, username, callback) ->
         callback(state)
 
     states.fetch()
+
+CK.setState = (type, state) ->
+    CK.getState type, (s)->
+        if s?
+            #create new state
+            s = new CK.Model.State()
+            s.set('type', type)
+        
+        s.set('state', state)
+        s.save()
