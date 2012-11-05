@@ -211,21 +211,20 @@
             success: function () {
               console.log('Model saved');
               Sail.app.sendContribution('newNote');
+              jQuery().toastmessage('showSuccessToast', "Contribution submitted");
 
               // clear the old contribution plus ui fields
               Sail.app.currentContribution.clear();
               Sail.app.contributionInputView.$el.find(".field").val(null);
               Sail.app.currentContribution.justAdded = false;
               Sail.app.contributionInputView.render();
-
-              alert('Contribution submitted');
             },
             failure: function(model, response) {
-              console.log('Error submitting: ' + response);       // do we want this as an alert instead?
+              console.log('Error submitting: ' + response);
             }
           });
         } else {
-          alert('Please enter both a note and a headline');
+          jQuery().toastmessage('showErrorToast', "Please enter both a note and a headline");
         }        
       }
       // tagged contribution - this can only be an else as long as no New Notes on tagging phase
@@ -244,7 +243,7 @@
               Sail.app.tagListView.render();
               Sail.app.contributionDetailsView.render();
 
-              alert('Tagged note submitted');
+              jQuery().toastmessage('showSuccessToast', "Tagged note submitted");
             },
             failure: function(model, response) {
               console.log('Error submitting: ' + response);
