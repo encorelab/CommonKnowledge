@@ -271,7 +271,7 @@ CK.Mobile = function() {
           });
 
           // store contribution_id for restore state
-          var stateObj = {"type":"tablet","username":sev.payload.recipient,"state":"start_student_tagging"};
+          // var stateObj = {"type":"tablet","username":sev.payload.recipient,"state":"start_student_tagging"};
           // app.retrieveState(stateObj,
           //   function(data) {
           //     console.log('Success retrieving state from DB '+data);
@@ -450,6 +450,7 @@ CK.Mobile = function() {
 
   app.startSynthesis = function() {
     jQuery('.brand').text('Common Knowledge - Synthesis');
+    Sail.app.contributionInputView.render();                  // do I need to do fetch? 
   }
 
   app.storeState = function(stateObj) {

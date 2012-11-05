@@ -104,7 +104,7 @@
       jQuery('#contribution-details .field').text('');
 
       // created_at will return undefined, so need to check it exists...
-      if (Sail.app.contributionDetails.get('created_at')) {
+      if (Sail.app.contributionDetails.get('id')) {       /// MAYBE START HERE? RENDER NOT WORKING WITH CONT_TO_TAG
         // TODO - do this with a loop instead of manually
         jQuery('#contribution-details-build-on-btn').removeClass('hide');
         jQuery('#contribution-details .note-headline').text(Sail.app.contributionDetails.get('headline'));
@@ -336,6 +336,7 @@
       // hook in the done_tagging state here
       CK.getState('phase', function(s) {
         if (s && s.get('state') === 'done_tagging') {
+          jQuery('#contribution-details-build-on-btn').addClass('hide');
           // TODO - do this right: make sure model is actually syncing with view instead of manually doing this
           jQuery('#tag-submission-container .tag-btn').removeClass('active');
 
