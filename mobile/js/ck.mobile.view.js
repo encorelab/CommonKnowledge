@@ -120,8 +120,10 @@
         jQuery('#contribution-details .note-created-at').text(' (' + Sail.app.contributionDetails.get('created_at').toLocaleDateString() + ' ' + Sail.app.contributionDetails.get('created_at').toLocaleTimeString() + ')');
 
         var buildOnEl = "<hr /><div>";
-        _.each(Sail.app.contributionDetails.get('build_ons'), function(o) {
-          buildOnEl += o.content + "<br />~" + o.author + " (" + o.created_at + ")" +  "<hr />";
+        _.each(Sail.app.contributionDetails.get('build_ons'), function(b) {
+          var date = new Date(b.created_at);
+          buildOnEl += b.content + "<br />~" + b.author;
+          buildOnEl += " (" + date.toLocaleDateString() + ' ' + date.toLocaleTimeString() + ")" +  "<hr />";
         });
 
         buildOnEl += "</div>"
@@ -147,7 +149,9 @@
           console.log('setting build-on values');
           Sail.app.currentBuildOn.content = jQuery('#note-body-entry').val();
           Sail.app.currentBuildOn.author = Sail.app.userData.account.login;
-          Sail.app.currentBuildOn.created_at = new Date();
+          var d = new Date()
+          Sail.app.currentBuildOn.created_at = d;
+          console.log(d);
         } else {
           console.log('unknown note type');
         }
@@ -192,11 +196,6 @@
     },
 
     share: function () {
-
-      // if (!(Sail.app.currentContribution.has('content') && Sail.app.currentContribution.has('headline')) && (Sail.app.currentContribution.justAdded === true)) {
-      //   alert('Please enter both a note and a headline');           // should we switch these all to the nice toasts that MikeM was using in Washago?
-      // }
-
       // new note
       if (Sail.app.currentContribution.kind === 'new') {
         if (Sail.app.currentContribution.has('content') && Sail.app.currentContribution.has('headline')) {
@@ -254,11 +253,17 @@
 
       // build-on note
       if (Sail.app.currentContribution.kind === 'buildOn') {
-        var buildOnArray = Sail.app.contributionDetails.get('build_ons');
-        buildOnArray.push(Sail.app.currentBuildOn);
-        //contrib.set('build_ons', buildons)
+        // this if shouldn't be necessary (the first condition should always be met), but just in case...
+        if (Sail.app.contributionDetails.get('build_ons')) {
+          var buildOnArray = Sail.app.contributionDetails.get('build_ons');
+          buildOnArray.push(Sail.app.currentBuildOn);
+          Sail.app.contributionDetails.set('build_ons', buildOnArray);          
+        } else {
+          var buildOnArray = []
+          buildOnArray.push(Sail.app.currentBuildOn);
+          Sail.app.contributionDetails.set('build_ons', buildOnArray);
+        }
 
-        Sail.app.contributionDetails.set('build_ons', buildOnArray);
         Sail.app.contributionDetails.save(null, {
           complete: function () {
             console.log('Build on submitted!');
@@ -272,8 +277,9 @@
             Sail.app.contributionInputView.$el.find(".field").val(null);
             Sail.app.currentContribution.justAdded = false;
             Sail.app.contributionInputView.render();
+            Sail.app.contributionDetailsView.render();
 
-            alert('Contribution submitted');
+            jQuery().toastmessage('showSuccessToast', "Contribution submitted");
           },
           failure: function(model, response) {
             console.log('Error submitting: ' + response);       // do we want this as an alert instead?
@@ -451,39 +457,6 @@
     }
 
   });
-
-  /**
-    Helper functions
-  **/
-
-  // self.addNote = function(type) {
-  //   console.log('Preping to add a note...');
-
-  //   Sail.app.currentContribution = new CK.Model.Contribution();
-  //   do bindings
-
-  //   // clear the old contribution plus ui fields
-  //   Sail.app.currentContribution.clear();
-  //   Sail.app.contributionInputView.$el.find(".field").val(null);
-  //   // enable text entry
-  //   jQuery('#note-body-entry').removeClass('disabled');
-  //   jQuery('#note-headline-entry').removeClass('disabled');
-    
-  //   Sail.app.currentContribution.set('author', Sail.app.userData.account.login);
-  //   Sail.app.currentContribution.set('tags', Sail.app.tagArray);
-  //   Sail.app.currentContribution.set('build_ons', Sail.app.buildOnArray);    
-
-  //   if (type === 'new') {
-  //     jQuery('#note-body-label').text('New Note');
-
-  //   } else if (type === 'build-on') {
-  //     jQuery('#note-body-label').text('Build On Note');
-  //     // TODO - make buildons actually build on
-
-  //   } else {
-  //     console.log('unknown note type');
-  //   }
-  // };
 
 
   CK.Mobile.View = self;

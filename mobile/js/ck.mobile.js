@@ -346,6 +346,9 @@ CK.Mobile = function() {
 
     app.contributionDetails = new CK.Model.Contribution();
     app.contributionDetails.on('change', function(model) { console.log(model.changedAttributes()); });
+
+    app.tagList = new CK.Model.Tags();
+    app.tagList.on('change', function(model) { console.log(model.changedAttributes()); });    
   };
 
   app.initViews = function() {
@@ -401,9 +404,6 @@ CK.Mobile = function() {
 
   app.startStudentTagging = function() {
     app.taggedContribution = new CK.Model.Contribution();
-
-    app.tagList = new CK.Model.Tags();
-    app.tagList.on('change', function(model) { console.log(model.changedAttributes()); });        
 
     app.tagListView = new CK.Mobile.View.TagListView({
       el: jQuery('#tag-list'),
