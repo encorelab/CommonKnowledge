@@ -11,7 +11,8 @@ CK.Mobile = function() {
   // Global vars
   app.userData = null;
   app.tagArray = [];
-  app.buildOnArray = [];  
+  app.buildOnArray = [];
+  app.currentState = {"type":"tablet"};
 
   // TODO: copied from washago code
   app.init = function() {
@@ -65,6 +66,32 @@ CK.Mobile = function() {
     });
 
     this.restoreContributions();
+
+
+    app.retrieveState(
+      function(data) {
+        console.log('Success retrieving state from DB '+data);
+        if (data.length >= 1) {                            
+          console.log("Current state of tablets: "+data[0].state);
+          app.currentState = data[0];
+          if (app.currentState.state === "start_student_tagging") {
+            // TODO go to the right position, aka call a function?
+            Sail.app.startPhase2();
+          }
+          return true;
+        }
+        else {
+          console.log("No state found");
+          app.currentState.state = "beginning";
+          app.storeState(app.currentState);
+          return true;
+        }
+      },
+      function (data) {
+        console.log("Call to Drowsy failed with error: "+data);
+        return false;
+      }
+    );
   };
 
   app.restoreContributions = function () {
@@ -173,27 +200,33 @@ CK.Mobile = function() {
 
       start_student_tagging: function(sev) {
         console.log('start_student_tagging heard, creating TagView');
-        app.taggedContribution = new CK.Model.Contribution();
-
-        app.tagList = new CK.Model.Tags();
-        app.tagList.on('change', function(model) { console.log(model.changedAttributes()); });        
-
-        app.tagListView = new CK.Mobile.View.TagListView({
-          el: jQuery('#tag-list'),
-          collection: app.tagList
-        });
-        app.tagList.on('reset add', app.tagListView.render);       // probably unnecessary, maybe even a bad idea?
-
-        var sort = ['created_at', 'ASC'];
-        app.tagList.fetch({
-          data: {
-            sort: JSON.stringify(sort)
+        // TODO make sure the state is only stored once per user
+        app.retrieveState(
+          function(data) {
+            console.log('Success retrieving state from DB '+data);
+            if (data.length >= 1) {                            
+              console.log("Current state of tablets: "+data[0].state);
+              app.currentState = data[0];
+              if (app.currentState.state !== "start_student_tagging") {
+                app.currentState.state = "start_student_tagging";
+                app.storeState(app.currentState);
+              }
+              return true;
+            }
+            else {
+              console.log("No state found");
+              app.currentState.state = "start_student_tagging";
+              app.storeState(app.currentState);
+              return true;
+            }
+          },
+          function (data) {
+            console.log("Call to Drowsy failed with error: "+data);
+            return false;
           }
-          // },
-          // success: function() {
-          //   app.flag = true;
-          // }
-        });
+        );
+
+        Sail.app.startPhase2();
       },
 
       contribution_to_tag: function(sev) {
@@ -222,15 +255,18 @@ CK.Mobile = function() {
   /* Outgoing events */
 
   app.sendContribution = function(kind) {
+    var sev;
     if (kind === 'newNote') {
-      var sev = new Sail.Event('contribution', app.currentContribution.toJSON());
+      sev = new Sail.Event('contribution', app.currentContribution.toJSON());
     } else if (kind === 'taggedNote') {
-      var sev = new Sail.Event('contribution_tagged', app.taggedContribution.toJSON());
+      sev = new Sail.Event('contribution_tagged', app.taggedContribution.toJSON());
     } else {
       console('unknown type of submission, cant send contribution');
+      return false;
     }
 
     Sail.app.groupchat.sendEvent(sev);
+    return true;
   };
 
 
@@ -293,6 +329,68 @@ CK.Mobile = function() {
     app.currentContribution.set('build_ons', app.buildOnArray);
 
     app.contributionInputView.render();
+  };
+
+  app.startPhase2 = function() {
+    app.taggedContribution = new CK.Model.Contribution();
+
+    app.tagList = new CK.Model.Tags();
+    app.tagList.on('change', function(model) { console.log(model.changedAttributes()); });        
+
+    app.tagListView = new CK.Mobile.View.TagListView({
+      el: jQuery('#tag-list'),
+      collection: app.tagList
+    });
+    app.tagList.on('reset add', app.tagListView.render);       // probably unnecessary, maybe even a bad idea?
+
+    var sort = ['created_at', 'ASC'];
+    app.tagList.fetch({
+      data: {
+        sort: JSON.stringify(sort)
+      }
+      // },
+      // success: function() {
+      //   app.flag = true;
+      // }
+    });
+  };
+
+  app.storeState = function(stateObj) {
+    console.log('Storing state '+stateObj.state+' for tablet');
+
+    jQuery.ajax({
+      type: "POST",
+      url: Sail.app.config.mongo.url +'/'+ Sail.app.run.name +'/states/',
+      data: JSON.stringify(stateObj),
+      // handing in the context is very important to fill the
+      // right table cell with the corresponding result - async
+      // call in loop!!
+      context: this,
+      success: function(data) {
+        console.log('Success storing state in DB');
+        return true;
+      },
+      error: function(data) {
+        console.log("Call to Drowsy failed with error: "+data);
+        return false;
+      }
+    }); // end of ajax
+  };
+
+  app.retrieveState = function(successCallback, errorCallback) {
+    console.log('Retrieving state for tablet');
+
+    jQuery.ajax({
+      type: "GET",
+      url: Sail.app.config.mongo.url +'/'+ Sail.app.run.name +'/states/?selector={"type":"tablet"}',
+      // data: JSON.stringify({"username":username, "type":"tablet", "state":state}),
+      // handing in the context is very important to fill the
+      // right table cell with the corresponding result - async
+      // call in loop!!
+      context: this,
+      success: successCallback,
+      error: errorCallback
+    }); // end of ajax
   };
 
 
