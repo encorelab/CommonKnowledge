@@ -14,9 +14,13 @@ class CK.Model
         CK.Model.Tag::urlRoot = "#{@dbURL}/tags"
         CK.Model.Tags::url = "#{@dbURL}/tags"
 
+        CK.Model.State::urlRoot = "#{@dbURL}/states"
+        CK.Model.States::url = "#{@dbURL}/states"
+
         CK.Model.DrowsyModel.createNecessaryCollections([
             'contributions',
-            'tags'
+            'tags',
+            'states'
         ])
 
 # TODO: move this out to sail.js
@@ -125,13 +129,19 @@ class CK.Model.Contribution extends CK.Model.DrowsyModel
 
 class CK.Model.Contributions extends CK.Model.DrowsyCollection
     model: CK.Model.Contribution
-    url: undefined  # set in CK.Model.setup()
+    url: undefined  # set in CK.Model.configure()
 
 class CK.Model.Tag extends CK.Model.DrowsyModel
-    urlRoot: undefined # set in CK.Model.setup()
+    urlRoot: undefined # set in CK.Model.configure()
 
 class CK.Model.Tags extends CK.Model.DrowsyCollection
     model: CK.Model.Tag
-    url: undefined  # set in CK.Model.setup()
+    url: undefined  # set in CK.Model.configure()
 
+class CK.Model.State extends CK.Model.DrowsyModel
+    urlRoot: undefined # set in CK.Model.configure()
+
+class CK.Model.States extends CK.Model.DrowsyCollection
+    model: CK.Model.State
+    url: undefined # set in CK.Model.configure()
     

@@ -21,7 +21,9 @@
       CK.Model.Contributions.prototype.url = "" + this.dbURL + "/contributions";
       CK.Model.Tag.prototype.urlRoot = "" + this.dbURL + "/tags";
       CK.Model.Tags.prototype.url = "" + this.dbURL + "/tags";
-      return CK.Model.DrowsyModel.createNecessaryCollections(['contributions', 'tags']);
+      CK.Model.State.prototype.urlRoot = "" + this.dbURL + "/states";
+      CK.Model.States.prototype.url = "" + this.dbURL + "/states";
+      return CK.Model.DrowsyModel.createNecessaryCollections(['contributions', 'tags', 'states']);
     };
 
     return Model;
@@ -234,6 +236,36 @@
     Tags.prototype.url = void 0;
 
     return Tags;
+
+  })(CK.Model.DrowsyCollection);
+
+  CK.Model.State = (function(_super) {
+
+    __extends(State, _super);
+
+    function State() {
+      return State.__super__.constructor.apply(this, arguments);
+    }
+
+    State.prototype.urlRoot = void 0;
+
+    return State;
+
+  })(CK.Model.DrowsyModel);
+
+  CK.Model.States = (function(_super) {
+
+    __extends(States, _super);
+
+    function States() {
+      return States.__super__.constructor.apply(this, arguments);
+    }
+
+    States.prototype.model = CK.Model.State;
+
+    States.prototype.url = void 0;
+
+    return States;
 
   })(CK.Model.DrowsyCollection);
 
