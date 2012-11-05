@@ -9,6 +9,7 @@
     function Model() {}
 
     Model.configure = function(url, db) {
+      var tags;
       if (url == null) {
         throw "Cannot configure model because no DrowsyDromedary URL was given!";
       }
@@ -23,7 +24,23 @@
       CK.Model.Tags.prototype.url = "" + this.dbURL + "/tags";
       CK.Model.State.prototype.urlRoot = "" + this.dbURL + "/states";
       CK.Model.States.prototype.url = "" + this.dbURL + "/states";
-      return CK.Model.DrowsyModel.createNecessaryCollections(['contributions', 'tags', 'states']);
+      CK.Model.DrowsyModel.createNecessaryCollections(['contributions', 'tags', 'states']);
+      tags = new CK.Model.Tags();
+      return tags.fetch({
+        success: function(tags) {
+          var tag;
+          if (tags.find(function(t) {
+            return t.get('name') === "N/A";
+          })) {
+            return console.log("Not create 'N/A' tag because it already exists");
+          } else {
+            console.log("Creating 'N/A' tag...");
+            tag = new CK.Model.Tag();
+            tag.set('name');
+            return tag.save();
+          }
+        }
+      });
     };
 
     return Model;

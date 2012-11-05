@@ -23,6 +23,19 @@ class CK.Model
             'states'
         ])
 
+        # create required items
+        tags = new CK.Model.Tags()
+        tags.fetch
+            success: (tags) ->
+                if tags.find( (t) -> t.get('name') is "N/A" )
+                    console.log("Not creating 'N/A' tag because it already exists")
+                else
+                    console.log("Creating 'N/A' tag...")
+                    tag = new CK.Model.Tag()
+                    tag.set('name')
+                    tag.save()
+
+
 # TODO: move this out to sail.js
 class CK.Model.DrowsyModel extends Backbone.Model
     idAttribute: "_id"
