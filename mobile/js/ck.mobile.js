@@ -13,7 +13,7 @@ CK.Mobile = function() {
   app.currentBuildOn = {};
   app.tagArray = [];
   app.buildOnArray = [];
-  app.currentState = {"type":"tablet"};
+  // app.currentState = {"type":"tablet"};
 
   // TODO: copied from washago code
   app.init = function() {
@@ -68,23 +68,50 @@ CK.Mobile = function() {
 
     this.restoreContributions();
 
-
-    app.retrieveState(
+    var stateObj = {"type":"phase"};
+    app.retrieveState(stateObj, 
       function(data) {
         console.log('Success retrieving state from DB '+data);
         if (data.length >= 1) {                            
-          console.log("Current state of tablets: "+data[0].state);
-          app.currentState = data[0];
-          if (app.currentState.state === "start_student_tagging") {
+          console.log("Current phase: "+data[0].state);
+          // app.currentState = data[0];
+          if (_.first(data).state === "start_student_tagging") {
             // TODO go to the right position, aka call a function?
             Sail.app.startPhase2();
+
+            var stateObjContrib = {"type":"tablet","username":Sail.app.userData.account.login,"state":_.first(data).state};
+            app.retrieveState(stateObjContrib,
+              function(data) {
+                console.log('Success retrieving state from DB '+data);
+                if (data.length >= 1) {                            
+                  console.log("Contribution ID to work on: "+_.first(data).contribution_id);
+                  
+                  app.contributionDetails.id = _.first(data).contribution_id;
+                  app.contributionDetails.fetch({
+                    success: function () {
+                      app.taggedContribution = app.contributionDetails;
+                      //Sail.app.contributionDetailsView.render();            // why do I need to call render here? Already bound to reset
+                    }
+                  });
+                  return true;
+                }
+                else {
+                  console.log("No state found");
+                  return true;
+                }
+              },
+              function (data) {
+                console.log("Call to Drowsy failed with error: "+data);
+                return false;
+              }
+            );
           }
           return true;
         }
         else {
           console.log("No state found");
-          app.currentState.state = "beginning";
-          app.storeState(app.currentState);
+          // stateObj.state = "beginning";
+          // app.storeState(stateObj);
           return true;
         }
       },
@@ -208,22 +235,23 @@ CK.Mobile = function() {
       start_student_tagging: function(sev) {
         console.log('start_student_tagging heard, creating TagView');
         // TODO make sure the state is only stored once per user
-        app.retrieveState(
+        var stateObj = {"type":"phase"};
+        app.retrieveState(stateObj,
           function(data) {
             console.log('Success retrieving state from DB '+data);
             if (data.length >= 1) {                            
-              console.log("Current state of tablets: "+data[0].state);
-              app.currentState = data[0];
-              if (app.currentState.state !== "start_student_tagging") {
-                app.currentState.state = "start_student_tagging";
-                app.storeState(app.currentState);
+              console.log("Current state of tablets: "+_.first(data).state);
+              // app.currentState = data[0];
+              if (_.first(data).state !== "start_student_tagging") {
+                _.first(data).state = "start_student_tagging";
+                app.storeState(_.first(data));
               }
               return true;
             }
             else {
               console.log("No state found");
-              app.currentState.state = "start_student_tagging";
-              app.storeState(app.currentState);
+              stateObj.state = "start_student_tagging";
+              app.storeState(stateObj);
               return true;
             }
           },
@@ -250,6 +278,32 @@ CK.Mobile = function() {
               //Sail.app.contributionDetailsView.render();            // why do I need to call render here? Already bound to reset
             }
           });
+
+          // store contribution_id for restore state
+          var stateObj = {"type":"tablet","username":sev.payload.recipient,"state":"start_student_tagging"};
+          app.retrieveState(stateObj,
+            function(data) {
+              console.log('Success retrieving state from DB '+data);
+              if (data.length >= 1) {                            
+                console.log("Current state of tablets: "+_.first(data).state);
+                // app.currentState = data[0];
+                _.first(data).contribution_id = sev.payload.contribution_id;
+                app.storeState(_.first(data));
+                
+                return true;
+              }
+              else {
+                console.log("No state found");
+                stateObj.contribution_id = sev.payload.contribution_id;
+                app.storeState(stateObj);
+                return true;
+              }
+            },
+            function (data) {
+              console.log("Call to Drowsy failed with error: "+data);
+              return false;
+            }
+          );
         }
 
       }
@@ -387,12 +441,12 @@ CK.Mobile = function() {
     }); // end of ajax
   };
 
-  app.retrieveState = function(successCallback, errorCallback) {
+  app.retrieveState = function(selector, successCallback, errorCallback) {
     console.log('Retrieving state for tablet');
 
     jQuery.ajax({
       type: "GET",
-      url: Sail.app.config.mongo.url +'/'+ Sail.app.run.name +'/states/?selector={"type":"tablet"}',
+      url: Sail.app.config.mongo.url +'/'+ Sail.app.run.name +'/states/?selector='+JSON.stringify(selector),
       // data: JSON.stringify({"username":username, "type":"tablet", "state":state}),
       // handing in the context is very important to fill the
       // right table cell with the corresponding result - async
