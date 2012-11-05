@@ -52,6 +52,8 @@ class Choreographer < Sail::Agent
     
     event :start_student_tagging? do |stanza, data|
       log "Received start_student_tagging #{data.inspect}"
+
+      store_phase()
       
       # Retrieve contributions to consider for tagging
       @bucket = fill_contribution_bucket()
@@ -89,12 +91,13 @@ class Choreographer < Sail::Agent
       log "Found #{@bucket.count} contributions to hand out to student #{data['origin'].inspect}"
 
       unless @bucket.empty?
-        log "Assigning contribution #{@bucket.pop} to user #{data['origin'].inspect}"
-        tagAssignments[data['origin']] = @bucket.pop
+        contrib = @bucket.pop
+        log "Assigning contribution #{contrib.inspect} to user #{data['origin'].inspect}"
+        tagAssignments[data['origin']] = contrib
         send_tag_assignments(tagAssignments)
       else
         log "Nothing in bucket, tell user that he is done"
-        send_no_more_contributions(data['origin'])
+        send_done_tagging(data['origin'])
       end
         
     end 
@@ -176,8 +179,19 @@ class Choreographer < Sail::Agent
   end
 
   def send_done_tagging(user)
-    log "Sending tag_assignment for user '#{user.inspect}' for contributionId '#{contributionId.inspect}'"
+    log "Sending done_tagging for user '#{user.inspect}'"
     event!(:done_tagging, {:recipient => user})    
+  end
+
+  def store_phase()
+    phase = @mongo.collection(:states).find("type" => "phase").each do |state|
+      state['state'] = "start_student_tagging"
+      @mongo.collection(:states).save(state)
+      return true
+    end
+
+    @mongo.collection(:states).save("type" => "phase", "state" => "start_student_tagging")
+    return true
   end
 
 
