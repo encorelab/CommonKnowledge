@@ -2,14 +2,37 @@
 body {
   font-family: Ubuntu, sans-serif;
   background-color: #aabb22;
-  overflow: hidden; }
+  overflow: hidden;
+  -webkit-transition: background-color 3s ease 0;
+  -moz-transition: background-color 3s ease 0;
+  transition: background-color 3s ease 0; }
+  body.mode-analysis {
+    background-color: #51ba34; }
+  body.mode-synthesis {
+    background-color: #34ba70; }
+  body.paused {
+    background-color: #aaa; }
 
 #wall {
   position: absolute;
   top: 10px;
   bottom: 50px;
   right: 30px;
-  left: 30px; }
+  left: 30px;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  user-select: none; }
+  #wall #watermark {
+    z-index: -1;
+    position: absolute;
+    width: 100%;
+    top: 35%;
+    text-align: center;
+    font-size: 120px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: white;
+    opacity: 0.4; }
 
 .contribution.balloon {
   position: absolute;
@@ -30,13 +53,21 @@ body {
     padding-right: 14px;
     margin-bottom: 2px; }
   .contribution.balloon .meta .author {
-    color: #999;
+    color: rgba(0, 0, 0, 0.4);
     font-size: 11px;
     margin-bottom: 1em;
     padding: 2px;
     position: absolute;
-    right: 6px;
+    right: 14px;
     top: 0; }
+  .contribution.balloon .meta .buildon-counter {
+    color: rgba(200, 39, 26, 0.5);
+    font-size: 13px;
+    margin-bottom: 1em;
+    position: absolute;
+    left: 14px;
+    top: 0;
+    padding-top: 1px; }
   .contribution.balloon .body {
     display: none;
     margin-top: 0;
@@ -45,8 +76,29 @@ body {
     padding-bottom: 6px;
     padding-left: 14px;
     padding-right: 14px; }
+  .contribution.balloon .buildons {
+    display: none;
+    margin-top: 0;
+    font-size: 14px;
+    padding-top: 0;
+    padding-bottom: 6px;
+    padding-left: 14px;
+    padding-right: 14px; }
+    .contribution.balloon .buildons .buildon {
+      padding-left: 5px;
+      margin-bottom: 5px;
+      border-left: 4px solid rgba(200, 39, 26, 0.5); }
+      .contribution.balloon .buildons .buildon .author {
+        color: rgba(0, 0, 0, 0.4);
+        font-size: 11px; }
+      .contribution.balloon .buildons .buildon .content {
+        font-size: 13px; }
   .contribution.balloon.opened .body {
     display: block; }
+  .contribution.balloon.opened .buildons {
+    display: block; }
+  .contribution.balloon.riseabove {
+    background-color: rgba(255, 255, 0, 0.9); }
 
 .tag.balloon {
   position: absolute;
@@ -91,10 +143,61 @@ body {
     min-height: 200px;
     box-shadow: 6px 6px 6px rgba(0, 0, 0, 0.1); }
 
+button {
+  display: inline-block;
+  border: none;
+  padding: 4px 10px;
+  background-color: #c8271a;
+  color: #ffa100;
+  font-weight: bold;
+  box-shadow: inset -1px -2px 8px rgba(0, 0, 0, 0.6), 2px 1px 8px rgba(0, 0, 0, 0.3);
+  border-radius: 1em;
+  font-size: 20px; }
+  button:hover {
+    cursor: pointer; }
+
+#action-buttons-container {
+  position: fixed;
+  bottom: 10px;
+  right: 10px; }
+
+#toggle-pause {
+  margin-right: 60px;
+  width: 140px; }
+  #toggle-pause.paused {
+    -webkit-animation-name: pulseFade;
+    -webkit-animation-duration: 1s;
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-timing-function: ease-out;
+    -moz-animation-name: pulseFade;
+    -moz-animation-duration: 1s;
+    -moz-animation-iteration-count: infinite;
+    -moz-animation-timing-function: ease-out; }
+
+@-webkit-keyframes pulseFade {
+  0% {
+    opacity: 1.0; }
+
+  50% {
+    opacity: 0.2; }
+
+  100% {
+    opacity: 1.0; } }
+
+@-moz-keyframes pulseFade {
+  0% {
+    opacity: 1,0; }
+
+  50% {
+    opacity: 0.2; }
+
+  100% {
+    opacity: 1.0; } }
+
 #add-tag-container {
   position: fixed;
-  bottom: 15px;
-  left: 15px;
+  bottom: 10px;
+  left: 10px;
   border-radius: 1em;
   background-color: #ffa100;
   padding: 0;
@@ -104,18 +207,11 @@ body {
   #add-tag-container #add-tag-opener {
     position: absolute;
     left: 0;
-    border: none;
-    display: inline-block;
-    padding: 4px 10px;
-    background-color: #c8271a;
-    color: #ffa100;
-    font-weight: bold;
     font-size: 20px;
-    border-radius: 1em;
-    box-shadow: inset -1px -2px 8px rgba(0, 0, 0, 0.6);
     margin: 0;
     white-space: nowrap;
     z-index: 1;
+    box-shadow: inset -1px -2px 8px rgba(0, 0, 0, 0.6);
     -webkit-transition: all 0.5s ease 0;
     -moz-transition: all 0.5s ease 0;
     transition: all 0.5s ease 0; }
@@ -158,6 +254,11 @@ body {
     width: 14em;
     margin-left: 106px; }
 
+.balloon {
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  user-select: none; }
+
 .balloon:hover {
   cursor: pointer;
   cursor: -moz-grab;
@@ -178,26 +279,32 @@ body {
     -webkit-transform: scale(0.3);
     opacity: 0.0; }
 
+  70% {
+    -webkit-transform: scale(2);
+    opacity: 1.0; }
+
   100% {
-    -webkit-transform: scale(1);
-    opacity: 1.0; } }
+    -webkit-transform: scale(1); } }
 
 @-moz-keyframes teleportIn {
   0% {
     -moz-transform: scale(0.3);
     opacity: 0.0; }
 
+  70% {
+    -moz-transform: scale(2);
+    opacity: 1.0; }
+
   100% {
-    -moz-transform: scale(1);
-    opacity: 1.0; } }
+    -moz-transform: scale(1); } }
 
 .balloon.new {
   -webkit-animation-name: teleportIn;
-  -webkit-animation-duration: 0.5s;
+  -webkit-animation-duration: 1s;
   -webkit-animation-iteration-count: 1;
   -webkit-animation-timing-function: ease-out;
   -moz-animation-name: teleportIn;
-  -moz-animation-duration: 0.5s;
+  -moz-animation-duration: 1s;
   -moz-animation-iteration-count: 1;
   -moz-animation-timing-function: ease-out; }
 
