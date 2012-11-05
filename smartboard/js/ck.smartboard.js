@@ -136,9 +136,25 @@
         return console.log("UI initialized...");
       },
       connected: function(ev) {
+        var deferC, deferT;
         console.log("Connected...");
-        this.contributions.fetch();
-        return this.tags.fetch();
+        deferC = Q.defer();
+        deferT = Q.defer();
+        this.contributions.fetch({
+          success: function() {
+            return deferC.resolve();
+          }
+        });
+        this.tags.fetch({
+          success: function() {
+            return deferT.resolve();
+          }
+        });
+        return Q.all([deferC, deferT]).then(function() {
+          return setTimeout((function() {
+            return Sail.app.wall.cloudify();
+          }), 1000);
+        });
       },
       sail: {
         contribution: function(sev) {

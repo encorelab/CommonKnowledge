@@ -87,8 +87,18 @@ class CK.Smartboard extends Sail.App
 
         connected: (ev) ->
             console.log "Connected..."
-            @contributions.fetch()
-            @tags.fetch()
+
+            deferC = Q.defer()
+            deferT = Q.defer()
+
+            @contributions.fetch(success: -> deferC.resolve())
+            @tags.fetch(success: -> deferT.resolve())
+
+            Q.all([deferC, deferT])
+                .then ->
+                    # give some time for rendering to finish.. 
+                    setTimeout((-> Sail.app.wall.cloudify())
+                        , 1000)
 
         sail:
             contribution: (sev) ->
