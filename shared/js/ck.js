@@ -43,4 +43,16 @@
     });
   };
 
+  CK.setStateForUser = function(type, username, state) {
+    return CK.getStateForUser(type, username, function(s) {
+      if (s != null) {
+        s = new CK.Model.State();
+        s.set('type', type);
+        s.set('username', username);
+      }
+      s.set('state', state);
+      return s.save();
+    });
+  };
+
 }).call(this);

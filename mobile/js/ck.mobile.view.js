@@ -12,6 +12,8 @@
       'click .list-item': function (ev) {
         jQuery('#contribution-list .note').removeClass('selected');
 
+        // The problem here was that ev.target referes to a differently
+        // deep nested element 
         $target = jQuery(ev.target);
         if (!$target.is('.list-item')) {
            $target = $target.parents('.list-item').first();
@@ -110,7 +112,9 @@
       jQuery('#contribution-details .field').text('');
 
       // created_at will return undefined, so need to check it exists...
-      if (Sail.app.contributionDetails.get('created_at')) {
+      // Armin: Sail.app.contributionDetails was sometimes undefined. Should be fixed in the click event,
+      // but checking for undefined would still be good.
+      if (Sail.app.contributionDetails && Sail.app.contributionDetails.get('created_at')) {
         // TODO - do this with a loop instead of manually
         jQuery('#contribution-details-build-on-btn').removeClass('hide');
         jQuery('#contribution-details .note-headline').text(Sail.app.contributionDetails.get('headline'));
@@ -128,6 +132,8 @@
         buildOnEl += "</div>"
         buildOnEl = jQuery(buildOnEl);
         jQuery('#contribution-details .note-build-ons').append(buildOnEl);
+      } else {
+        console.warn("ContributionDetailsView render is not working due to ")
       }
     }
   });
@@ -342,6 +348,7 @@
       // hook in the done_tagging state here
       CK.getState('phase', function(s) {
         if (s && s.get('state') === 'done_tagging') {
+          jQuery('#contribution-details-build-on-btn').addClass('hide');
           // TODO - do this right: make sure model is actually syncing with view instead of manually doing this
           jQuery('#tag-submission-container .tag-btn').removeClass('active');
 

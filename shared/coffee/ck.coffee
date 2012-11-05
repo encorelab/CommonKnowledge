@@ -29,3 +29,14 @@ CK.setState = (type, state) ->
         
         s.set('state', state)
         s.save()
+
+CK.setStateForUser = (type, username, state) ->
+    CK.getStateForUser type, username, (s)->
+        if s?
+            #create new state
+            s = new CK.Model.State()
+            s.set('type', type)
+            s.set('username', username)
+        
+        s.set('state', state)
+        s.save()
