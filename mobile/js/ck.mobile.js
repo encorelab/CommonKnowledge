@@ -69,57 +69,58 @@ CK.Mobile = function() {
     this.restoreContributions();
 
     var stateObj = {"type":"phase"};
-    app.retrieveState(stateObj, 
-      function(data) {
-        console.log('Success retrieving state from DB '+data);
-        if (data.length >= 1) {                            
-          console.log("Current phase: "+data[0].state);
-          // app.currentState = data[0];
-          if (_.first(data).state === "start_student_tagging") {
-            // TODO go to the right position, aka call a function?
-            app.startStudentTagging();
 
-            var stateObjContrib = {"type":"tablet","username":Sail.app.userData.account.login,"state":_.first(data).state};
-            app.retrieveState(stateObjContrib,
-              function(data) {
-                console.log('Success retrieving state from DB '+data);
-                if (data.length >= 1) {                            
-                  console.log("Contribution ID to work on: "+_.first(data).contribution_id);
+
+    // app.retrieveState(stateObj, 
+    //   function(data) {
+    //     console.log('Success retrieving state from DB '+data);
+    //     if (data.length >= 1) {                            
+    //       console.log("Current phase: "+data[0].state);
+    //       // app.currentState = data[0];
+    //       if (_.first(data).state === "start_student_tagging") {
+    //         // TODO go to the right position, aka call a function?
+    //         app.startStudentTagging();
+
+    //         var stateObjContrib = {"type":"tablet","username":Sail.app.userData.account.login,"state":_.first(data).state};
+    //         app.retrieveState(stateObjContrib,
+    //           function(data) {
+    //             console.log('Success retrieving state from DB '+data);
+    //             if (data.length >= 1) {                            
+    //               console.log("Contribution ID to work on: "+_.first(data).contribution_id.$oid);
                   
-                  app.contributionDetails.id = _.first(data).contribution_id;
-                  app.contributionDetails.fetch({
-                    success: function () {
-                      app.taggedContribution = app.contributionDetails;
-                      //Sail.app.contributionDetailsView.render();            // why do I need to call render here? Already bound to reset
-                    }
-                  });
-                  return true;
-                }
-                else {
-                  console.log("No state found");
-                  return true;
-                }
-              },
-              function (data) {
-                console.log("Call to Drowsy failed with error: "+data);
-                return false;
-              }
-            );
-          }
-          return true;
-        }
-        else {
-          console.log("No state found");
-          // stateObj.state = "beginning";
-          // app.storeState(stateObj);
-          return true;
-        }
-      },
-      function (data) {
-        console.log("Call to Drowsy failed with error: "+data);
-        return false;
-      }
-    );
+    //               app.contributionDetails.id = _.first(data).contribution_id;
+    //               app.contributionDetails.fetch({
+    //                 success: function () {
+    //                   app.taggedContribution = app.contributionDetails;
+    //                 }
+    //               });
+    //               return true;
+    //             }
+    //             else {
+    //               console.log("No state found");
+    //               return true;
+    //             }
+    //           },
+    //           function (data) {
+    //             console.log("Call to Drowsy failed with error: "+data);
+    //             return false;
+    //           }
+    //         );
+    //       }
+    //       return true;
+    //     }
+    //     else {
+    //       console.log("No state found");
+    //       // stateObj.state = "beginning";
+    //       // app.storeState(stateObj);
+    //       return true;
+    //     }
+    //   },
+    //   function (data) {
+    //     console.log("Call to Drowsy failed with error: "+data);
+    //     return false;
+    //   }
+    // );
   };
 
   app.restoreContributions = function () {
@@ -271,29 +272,29 @@ CK.Mobile = function() {
 
           // store contribution_id for restore state
           var stateObj = {"type":"tablet","username":sev.payload.recipient,"state":"start_student_tagging"};
-          app.retrieveState(stateObj,
-            function(data) {
-              console.log('Success retrieving state from DB '+data);
-              if (data.length >= 1) {                            
-                console.log("Current state of tablets: "+_.first(data).state);
-                // app.currentState = data[0];
-                _.first(data).contribution_id = sev.payload.contribution_id;
-                app.storeState(_.first(data));
+          // app.retrieveState(stateObj,
+          //   function(data) {
+          //     console.log('Success retrieving state from DB '+data);
+          //     if (data.length >= 1) {                            
+          //       console.log("Current state of tablets: "+_.first(data).state);
+          //       // app.currentState = data[0];
+          //       _.first(data).contribution_id = sev.payload.contribution_id;
+          //       app.storeState(_.first(data));
                 
-                return true;
-              }
-              else {
-                console.log("No state found");
-                stateObj.contribution_id = sev.payload.contribution_id;
-                app.storeState(stateObj);
-                return true;
-              }
-            },
-            function (data) {
-              console.log("Call to Drowsy failed with error: "+data);
-              return false;
-            }
-          );
+          //       return true;
+          //     }
+          //     else {
+          //       console.log("No state found");
+          //       stateObj.contribution_id = sev.payload.contribution_id;
+          //       app.storeState(stateObj);
+          //       return true;
+          //     }
+          //   },
+          //   function (data) {
+          //     console.log("Call to Drowsy failed with error: "+data);
+          //     return false;
+          //   }
+          // );
         }
 
       },
@@ -321,7 +322,7 @@ CK.Mobile = function() {
     if (kind === 'newNote') {
       sev = new Sail.Event('contribution', app.currentContribution.toJSON());
     } else if (kind === 'buildOn') {
-      sev = new Sail.Event('contribution', app.contributionDetails.toJSON());
+      sev = new Sail.Event('build_on', app.contributionDetails.toJSON());
     } else if (kind === 'taggedNote') {
       sev = new Sail.Event('contribution_tagged', app.taggedContribution.toJSON());
     } else {
@@ -381,11 +382,8 @@ CK.Mobile = function() {
   app.addNote = function(kind) {
     console.log('Preping to add a note...');
 
-    // clear all the old garbage out of the model, rebind
-    app.currentContribution = new CK.Model.Contribution();
-    app.contributionInputView.model = app.currentContribution;
-    app.contributionInputView.undelegateEvents();
-    app.contributionInputView.delegateEvents();
+    // just in case
+    app.clearModels();
 
     app.currentContribution.justAdded = true;
     app.currentContribution.kind = kind;
@@ -398,6 +396,16 @@ CK.Mobile = function() {
 
     app.contributionInputView.render();
   };
+
+  app.clearModels = function() {
+    // clear all the old garbage out of the model, rebind
+    app.currentContribution = new CK.Model.Contribution();
+    app.contributionInputView.model = app.currentContribution;
+    app.contributionInputView.undelegateEvents();
+    app.contributionInputView.delegateEvents();
+
+    app.currentBuildOn = {};
+  }
 
 
   /* State related function */
@@ -421,6 +429,8 @@ CK.Mobile = function() {
       //   app.flag = true;
       // }
     });
+
+    app.contributionInputView.render();
   };
 
   app.doneTagging = function() {
@@ -467,17 +477,19 @@ CK.Mobile = function() {
   app.retrieveState = function(selector, successCallback, errorCallback) {
     console.log('Retrieving state for tablet');
 
-    jQuery.ajax({
-      type: "GET",
-      url: Sail.app.config.mongo.url +'/'+ Sail.app.run.name +'/states/?selector='+JSON.stringify(selector),
-      // data: JSON.stringify({"username":username, "type":"tablet", "state":state}),
-      // handing in the context is very important to fill the
-      // right table cell with the corresponding result - async
-      // call in loop!!
-      context: this,
-      success: successCallback,
-      error: errorCallback
-    }); // end of ajax
+    // jQuery.ajax({
+    //   type: "GET",
+    //   url: Sail.app.config.mongo.url +'/'+ Sail.app.run.name +'/states/?selector='+JSON.stringify(selector),
+    //   // data: JSON.stringify({"username":username, "type":"tablet", "state":state}),
+    //   // handing in the context is very important to fill the
+    //   // right table cell with the corresponding result - async
+    //   // call in loop!!
+    //   context: this,
+    //   success: successCallback,
+    //   error: errorCallback
+    // }); // end of ajax
+    type = selector.type;
+    CK.getState(type, successCallback);
   };
 
 

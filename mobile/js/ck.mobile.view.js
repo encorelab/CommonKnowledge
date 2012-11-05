@@ -206,7 +206,8 @@
               jQuery().toastmessage('showSuccessToast', "Contribution submitted");
 
               // clear the old contribution plus ui fields
-              Sail.app.currentContribution.clear();
+              //Sail.app.currentContribution.clear();
+              Sail.app.clearModels();
               Sail.app.contributionInputView.$el.find(".field").val(null);
               Sail.app.currentContribution.justAdded = false;
               Sail.app.contributionInputView.render();
@@ -266,7 +267,8 @@
             Sail.app.sendContribution('buildOn');
 
             // clear the old contribution plus ui fields
-            Sail.app.currentContribution.clear();
+            //Sail.app.currentContribution.clear();
+            Sail.app.clearModels();
             Sail.app.contributionInputView.$el.find(".field").val(null);
             Sail.app.currentContribution.justAdded = false;
             Sail.app.contributionInputView.render();
@@ -307,7 +309,8 @@
 
         } else if (Sail.app.currentContribution.kind === 'buildOn') {
           jQuery('#note-body-label').text('Build On Note');
-          jQuery('#note-body-entry').removeClass('disabled');          
+          jQuery('#note-body-entry').removeClass('disabled');
+          jQuery('#note-headline-entry').addClass('disabled');          
 
         } else {
           console.log('unknown note type');
@@ -317,41 +320,48 @@
         jQuery('#note-headline-entry').addClass('disabled');
       }
 
-      var view = Sail.app.contributionInputView;
-      _.each(this.attributes, function (attributeValue, attributeName) {
-        console.log("Updating "+attributeName+" with val "+attributeValue);
-        view.$el.find('.field['+attributeName+']').val(attributeValue);
+      // TODO: make another view for buildon so I don't have to do all this nonsense
+      jQuery('#note-body-entry').val('');
+      jQuery('#note-headline-entry').val('');
+
+      if (Sail.app.currentContribution.kind === 'new') {
+        jQuery('#note-body-entry').val(Sail.app.currentContribution.get('content'));
+        jQuery('#note-headline-entry').val(Sail.app.currentContribution.get('headline'));
+      } else if (Sail.app.currentContribution.kind === 'buildOn') {
+        jQuery('#note-body-entry').val(Sail.app.currentBuildOn.content);
+      } else {
+        console.log('trying to render, but unknown note type');
+      }
+
+      // hook in the done_tagging state here
+      CK.getState('phase', function(s) {
+        if (s && s.get('state') === 'done_tagging') {
+          // TODO - do this right: make sure model is actually syncing with view instead of manually doing this
+          jQuery('#tag-submission-container .tag-btn').removeClass('active');
+
+          Sail.app.tagList.each(function(tag) {
+            var tagButton = jQuery('button#note-tag-'+tag.id);
+            // length avoids duplicating (probably a better way to do this in backbone?)
+            //if (tagButton.length === 0 && tag.get('name') != "N/A") {
+            if (tagButton.length === 0) {
+              tagButton = jQuery('<button id=note-tag-'+tag.id+' type="button" class="btn tag-btn"></button>');
+              tagButton = jQuery(tagButton);
+              jQuery('#tag-submission-container').append(tagButton);
+            }
+
+            tagButton.text(tag.get('name'));
+
+            // add tagger and store the tag object in the button for later
+            tag.set('tagger',Sail.app.userData.account.login);
+            tagButton.data('tag',tag);
+
+            // turn button on if previously tagged with this tag
+            if (Sail.app.currentContribution.hasTag(tag)) {
+              tagButton.addClass('active');
+            }
+          });
+        }
       });
-
-      // TODO - implement me after model is pulled
-      // CK.getState('done_tagging', {
-      //   callback: function() {
-      //     // TODO - do this right: make sure model is actually syncing with view instead of manually doing this
-      //     jQuery('#tag-submission-container .tag-btn').removeClass('active');
-
-      //     Sail.app.tagList.each(function(tag) {
-      //       var tagButton = jQuery('button#note-tag-'+tag.id);
-      //       // length avoids duplicating (probably a better way to do this in backbone?)
-      //       //if (tagButton.length === 0 && tag.get('name') != "N/A") {
-      //       if (tagButton.length === 0) {
-      //         tagButton = jQuery('<button id=note-tag-'+tag.id+' type="button" class="btn tag-btn"></button>');
-      //         tagButton = jQuery(tagButton);
-      //         jQuery('#tag-submission-container').append(tagButton);
-      //       }
-
-      //       tagButton.text(tag.get('name'));
-
-      //       // add tagger and store the tag object in the button for later
-      //       tag.set('tagger',Sail.app.userData.account.login);
-      //       tagButton.data('tag',tag);
-
-      //       // turn button on if previously tagged with this tag
-      //       if (Sail.app.currentContribution.hasTag(tag)) {
-      //         tagButton.addClass('active');
-      //       }
-      //     });
-      //   }
-      // });
 
 
     }
