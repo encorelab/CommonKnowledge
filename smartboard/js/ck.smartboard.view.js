@@ -39,21 +39,12 @@
     };
 
     Base.prototype.corporealize = function() {
-      var _this = this;
       this.$el.hide();
       if (!(this.$el.parent().length > 0)) {
         if (this.model.justAdded) {
           this.$el.addClass('new');
           delete this.model.justAdded;
         }
-        this.$el.draggable({
-          stop: function(ev, ui) {
-            _this.model.save({
-              pos: ui.position
-            });
-            return true;
-          }
-        });
         this.$el.css('position', 'absolute');
         jQuery('#wall').append(this.$el);
       }
@@ -137,37 +128,116 @@
     };
 
     Wall.prototype.cloudify = function() {
-      var contributionBalloon, fill, force, height, i, length, links, nodes, radius, tags, tick, transform, vis, width;
+      var $n, connector, connectorTransform, contributionBalloon, detectCollision, fill, force, i, linkDistance, links, n, nodes, tags, tick, vis, wallHeight, wallWidth, _i, _len;
+      console.log("Cloudifying the wall...");
       this.$el.find('.balloon.tag.ui-draggable, .balloon.contribution.ui-draggable').draggable('disable');
       tick = function() {
-        return contributionBalloon.style('left', function(d) {
-          if (d.classList.contains('ui-draggable-dragging')) {
-            return d;
-          } else {
-            return (d.x = Math.max(radius, Math.min(width - radius, d.x))) + "px";
+        var i, n, q, _i;
+        contributionBalloon.style('left', function(d) {
+          var balloonWidth;
+          balloonWidth = jQuery(d).outerWidth();
+          if (d.x + balloonWidth / 2 > wallWidth) {
+            d.x = wallWidth - balloonWidth / 2;
+          } else if (d.x - balloonWidth / 2 < 0) {
+            d.x = 0 + balloonWidth / 2;
           }
+          return (d.x - balloonWidth / 2) + 'px';
         }).style('top', function(d) {
-          if (d.classList.contains('ui-draggable-dragging')) {
-            return d;
-          } else {
-            return (d.y = Math.max(radius, Math.min(height - radius, d.y))) + "px";
+          var balloonHeight;
+          balloonHeight = jQuery(d).outerHeight();
+          if (d.y + balloonHeight / 2 > wallHeight) {
+            d.y = wallHeight - balloonHeight / 2;
+          } else if (d.y - balloonHeight / 2 < 0) {
+            d.y = 0 + balloonHeight / 2;
           }
+          return (d.y - balloonHeight / 2) + 'px';
         });
+        q = d3.geom.quadtree(nodes);
+        i = 0;
+        n = nodes.length;
+        for (i = _i = 0; 0 <= n ? _i < n : _i > n; i = 0 <= n ? ++_i : --_i) {
+          q.visit(detectCollision(nodes[i]));
+        }
+        return connector.style("z-index", -1).style("left", function(d) {
+          return d.source.x + "px";
+        }).style("top", function(d) {
+          return d.source.y + "px";
+        }).style("width", function(d) {
+          var dx, dy;
+          dx = d.target.x - d.source.x;
+          dy = d.target.y - d.source.y;
+          return Math.sqrt(dx * dx + dy * dy) + "px";
+        }).style("-webkit-transform", connectorTransform).style("-moz-transform", connectorTransform).style("transform", connectorTransform);
       };
-      transform = function(d) {
-        return "rotate(" + Math.atan2(d.target.y - d.source.y, d.target.x - d.source.x) * 180 / Math.PI + "deg)";
+      detectCollision = function(b) {
+        var $b, bHeight, bIsTag, bWidth, nx1, nx2, ny1, ny2;
+        $b = jQuery(b);
+        bWidth = b.width;
+        bHeight = b.height;
+        nx1 = b.x - bWidth / 2;
+        nx2 = b.x + bWidth / 2;
+        ny1 = b.y - bHeight / 2;
+        ny2 = b.y + bHeight / 2;
+        bIsTag = $b.hasClass('tag');
+        return function(quad, x1, y1, x2, y2) {
+          var $q, h, qHeight, qIsTag, qWidth, w, xDist, xNudge, xOverlap, yDist, yNudge, yOverlap;
+          if (quad.point && quad.point !== b) {
+            qWidth = quad.point.width;
+            qHeight = quad.point.height;
+            w = bWidth / 2 + qWidth / 2;
+            h = bHeight / 2 + qHeight / 2;
+            xDist = Math.abs(b.x - quad.point.x);
+            yDist = Math.abs(b.y - quad.point.y);
+            if (xDist < w && yDist < h) {
+              $q = jQuery(quad.point);
+              qIsTag = $q.hasClass('tag');
+              yOverlap = h - yDist;
+              xOverlap = w - xDist;
+              if (xDist / w < yDist / h) {
+                yNudge = yOverlap / 2;
+                if (b.y < quad.point.y) {
+                  b.y -= yNudge;
+                  quad.point.y += yNudge;
+                } else {
+                  b.y += yNudge;
+                  quad.point.y -= yNudge;
+                }
+              } else {
+                xNudge = xOverlap / 2;
+                if (b.x < quad.point.x) {
+                  b.x -= xNudge * (qIsTag != null ? qIsTag : {
+                    1.1: force.alpha()
+                  });
+                  quad.point.x += xNudge * (bIsTag != null ? bIsTag : {
+                    1.1: force.alpha()
+                  });
+                } else {
+                  b.x += xNudge * (qIsTag != null ? qIsTag : {
+                    1.1: force.alpha()
+                  });
+                  quad.point.x -= xNudge * (bIsTag != null ? bIsTag : {
+                    1.1: force.alpha()
+                  });
+                }
+              }
+            }
+          }
+          return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
+        };
       };
-      length = function(d) {
-        var dx, dy;
-        dx = d.target.x - d.source.x;
-        dy = d.target.y - d.source.y;
-        return Math.sqrt(dx * dx + dy * dy) + "px";
+      linkDistance = function(link, i) {
+        return (jQuery(link.source).outerHeight() / 2 + jQuery(link.target).outerHeight() / 2) + 40;
       };
-      width = this.$el.innerWidth();
-      height = this.$el.innerHeight();
-      radius = 50;
+      wallWidth = this.$el.innerWidth();
+      wallHeight = this.$el.innerHeight();
       fill = d3.scale.category20();
-      force = d3.layout.force().charge(-500).linkDistance(30).size([width, height]);
+      force = d3.layout.force().charge(function(d) {
+        if (jQuery(d).hasClass('tag')) {
+          return -4500;
+        } else {
+          return -2000;
+        }
+      }).linkDistance(linkDistance).linkStrength(0.2).gravity(0).friction(0.2).size([wallWidth, wallHeight]);
       vis = d3.select("#" + this.id);
       i = 0;
       tags = {};
@@ -193,19 +263,56 @@
         _results = [];
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           t = _ref[_i];
-          _results.push(links.push({
-            source: tags[t],
-            target: c
-          }));
+          if (tags[t]) {
+            (tags[t].contribs != null) || (tags[t].contribs = []);
+            tags[t].contribs.push(c.id);
+            _results.push(links.push({
+              source: tags[t],
+              target: c
+            }));
+          } else {
+            _results.push(void 0);
+          }
         }
         return _results;
       });
-      this.$el.find('.balloon').each(function() {});
       contributionBalloon = vis.selectAll('.balloon').data(nodes).call(force.drag);
-      return force.nodes(nodes).links(links).on('tick', tick).start();
+      force.nodes(nodes).links(links).on('tick', tick).start();
+      for (_i = 0, _len = nodes.length; _i < _len; _i++) {
+        n = nodes[_i];
+        $n = jQuery(n);
+        n.width = $n.outerWidth();
+        n.height = $n.outerHeight();
+      }
+      connector = vis.selectAll(".connector").data(links).enter().append("div").attr("class", "connector");
+      connectorTransform = function(d) {
+        return "rotate(" + (Math.atan2(d.target.y - d.source.y, d.target.x - d.source.x) * 180 / Math.PI) + "deg)";
+      };
+      return Sail.app.force = force;
     };
 
     return Wall;
+
+  })(CK.Smartboard.View.Base);
+
+  CK.Smartboard.View.Balloon = (function(_super) {
+
+    __extends(Balloon, _super);
+
+    function Balloon() {
+      this.moveToTop = __bind(this.moveToTop, this);
+      return Balloon.__super__.constructor.apply(this, arguments);
+    }
+
+    Balloon.prototype.moveToTop = function() {
+      var maxZ;
+      maxZ = _.max(jQuery('.balloon').map(function() {
+        return parseInt(jQuery(this).zIndex()) + 1;
+      }));
+      return this.$el.zIndex(maxZ);
+    };
+
+    return Balloon;
 
   })(CK.Smartboard.View.Base);
 
@@ -228,6 +335,15 @@
 
     ContributionBalloon.prototype.id = function() {
       return this.domID();
+    };
+
+    ContributionBalloon.prototype.events = {
+      'mousedown': function(ev) {
+        return this.moveToTop();
+      },
+      'click': function(ev) {
+        return this.$el.toggleClass('opened');
+      }
     };
 
     ContributionBalloon.prototype.render = function() {
@@ -268,7 +384,7 @@
 
     return ContributionBalloon;
 
-  })(CK.Smartboard.View.Base);
+  })(CK.Smartboard.View.Balloon);
 
   CK.Smartboard.View.TagBalloon = (function(_super) {
 
@@ -289,6 +405,12 @@
       return this.domID();
     };
 
+    TagBalloon.prototype.events = {
+      'mousedown': function(ev) {
+        return this.moveToTop();
+      }
+    };
+
     TagBalloon.prototype.render = function() {
       var name;
       name = this.findOrCreate('.name', "<h3 class='name'></h3>");
@@ -300,6 +422,6 @@
 
     return TagBalloon;
 
-  })(CK.Smartboard.View.Base);
+  })(CK.Smartboard.View.Balloon);
 
 }).call(this);
