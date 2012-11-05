@@ -304,9 +304,12 @@ CK.Mobile = function() {
           // app.currentState.state = "done_tagging";                        // Armin, check me - this is the place to set state?
           app.doneTagging();
         }
+      },
+
+      start_synthesis: function(sev) {
+        console.log('start_synthesis heard');
+        app.startSynthesis();
       }
-
-
 
     }
   };
@@ -434,6 +437,10 @@ CK.Mobile = function() {
     //app.contributionDetailsView.delegateEvents();    
     //app.contributionDetailsView.render();
   };
+
+  app.startSynthesis = function() {
+    jQuery('.brand').text('Common Knowledge - Synthesis');
+  }
 
   app.storeState = function(stateObj) {
     console.log('Storing state '+stateObj.state+' for tablet');
