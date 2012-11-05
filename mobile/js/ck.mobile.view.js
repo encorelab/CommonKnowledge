@@ -11,9 +11,15 @@
     events: {
       'click .list-item': function (ev) {
         jQuery('#contribution-list .note').removeClass('selected');
-        jQuery(ev.target).addClass('selected');
 
-        var contribId = jQuery(ev.target.parentElement).attr('id');
+        $target = jQuery(ev.target);
+        if (!$target.is('.list-item')) {
+           $target = $target.parents('.list-item').first();
+        }
+
+        $target.addClass('selected');
+
+        var contribId = $target.attr('id');
 
         Sail.app.contributionDetails = Sail.app.contributionList.get(contribId);
         console.log('Clicked contribution: ' + Sail.app.contributionDetails);
