@@ -63,13 +63,6 @@
         note.find('.date').text(' (' + contrib.get('created_at').toLocaleDateString() + ' ' + contrib.get('created_at').toLocaleTimeString() + ')');
       });        
           
-
-
-      // var view = Sail.app.contributionInputView;
-      // _.each(this.attributes, function (attributeValue, attributeName) {
-      //   console.log("Updating "+attributeName+" with val "+attributeValue);
-      //   view.$el.find('.field['+attributeName+']').val(attributeValue);
-      // });
     }
 
   });
@@ -330,30 +323,36 @@
         view.$el.find('.field['+attributeName+']').val(attributeValue);
       });
 
-      // TODO - do this right: make sure model is actually syncing with view instead of manually doing this
-      jQuery('#tag-submission-container .tag-btn').removeClass('active');      
+      // TODO - implement me after model is pulled
+      // CK.getState('done_tagging', {
+      //   callback: function() {
+      //     // TODO - do this right: make sure model is actually syncing with view instead of manually doing this
+      //     jQuery('#tag-submission-container .tag-btn').removeClass('active');
 
-      Sail.app.tagList.each(function(tag) {
-        var tagButton = jQuery('button#note-tag-'+tag.id);
-        // length avoids duplicating (probably a better way to do this in backbone?)
-        //if (tagButton.length === 0 && tag.get('name') != "N/A") {
-        if (tagButton.length === 0) {
-          tagButton = jQuery('<button id=note-tag-'+tag.id+' type="button" class="btn tag-btn btn-warning"></button>');
-          tagButton = jQuery(tagButton);
-          jQuery('#tag-submission-container').append(tagButton);
-        }
+      //     Sail.app.tagList.each(function(tag) {
+      //       var tagButton = jQuery('button#note-tag-'+tag.id);
+      //       // length avoids duplicating (probably a better way to do this in backbone?)
+      //       //if (tagButton.length === 0 && tag.get('name') != "N/A") {
+      //       if (tagButton.length === 0) {
+      //         tagButton = jQuery('<button id=note-tag-'+tag.id+' type="button" class="btn tag-btn"></button>');
+      //         tagButton = jQuery(tagButton);
+      //         jQuery('#tag-submission-container').append(tagButton);
+      //       }
 
-        tagButton.text(tag.get('name'));
+      //       tagButton.text(tag.get('name'));
 
-        // add tagger and store the tag object in the button for later
-        tag.set('tagger',Sail.app.userData.account.login);
-        tagButton.data('tag',tag);
+      //       // add tagger and store the tag object in the button for later
+      //       tag.set('tagger',Sail.app.userData.account.login);
+      //       tagButton.data('tag',tag);
 
-        // turn button on if previously tagged with this tag
-        if (Sail.app.currentContribution.hasTag(tag)) {
-          tagButton.addClass('active');
-        }
-      });
+      //       // turn button on if previously tagged with this tag
+      //       if (Sail.app.currentContribution.hasTag(tag)) {
+      //         tagButton.addClass('active');
+      //       }
+      //     });
+      //   }
+      // });
+
 
     }
   });
@@ -431,7 +430,7 @@
         // length avoids duplicating (probably a better way to do this in backbone?)
         //if (tagButton.length === 0 && tag.get('name') != "N/A") {
         if (tagButton.length === 0) {
-          tagButton = jQuery('<button id='+tag.id+' type="button" class="btn tag-btn btn-warning"></button>');
+          tagButton = jQuery('<button id='+tag.id+' type="button" class="btn tag-btn"></button>');
           tagButton = jQuery(tagButton);
           jQuery('#tag-list .tag-btn-group').append(tagButton);
         }

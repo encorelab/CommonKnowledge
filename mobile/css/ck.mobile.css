@@ -7,7 +7,9 @@ body {
 body {
 	padding-top: 70px; /* from bootstrap: 60px to make the container go all the way to the bottom of the topbar.
 						  but we actually need 70px for tablet rotation */
-	background-color: #F5F5F5;
+	padding-left: 18px;
+	/*background-color: #F5F5F5;*/
+	background-color: #585B7F;
 }
 
 i {
@@ -22,7 +24,7 @@ i {
 .row {
 	/*margin: 0 !important;*/
 	/*margin: -10px -10px 0px -10px !important;*/
-	margin-left: -10px;
+	/*margin-left: -10px;*/
 	margin-top: -10px;
 }
 
@@ -40,6 +42,7 @@ i {
 	pointer-events: none;
   	cursor: default;
   	background-color: #BDBDC1;					/* we probably want something a little more stark than this */
+  	/*TODO*/
 }
 
 .btn-container {
@@ -56,9 +59,9 @@ i {
 	border: 1px solid;
 	padding: 5px;
 	margin-bottom: 10px;
-	margin-left: 18px;							/* TODO - fix left margins to deal with UI change to #tag-list */
+	/*margin-left: 18px;*/
 	position: relative;
-	background-color: white;
+	background-color: #FCFCFF;
 }
 
 #screen-lock {
@@ -87,7 +90,7 @@ i {
 
 #contribution-input {
 	width: 611px;						/* sigh - still fighting bootstrap */
-	background-color: #C3E4ED;
+	background-color: #AEB6FE;
 }
 
 #contribution-input .control-group {
@@ -156,8 +159,13 @@ i {
     border-radius: 4px 4px 4px 4px;		
 }
 
+.row .tag-btn {
+	color: white;
+	background-color: #324995;
+}
+
 .row .tag-btn.active {
-	background-color: #5BB75B;
+	background-color: #FD1654;
 }
 
 #tag-list .tag-btn {
