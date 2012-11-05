@@ -1,6 +1,6 @@
 class CK.Smartboard.View
     @findOrCreate: (parent, selector, html) ->
-        el = parent.find(selector)
+        el = jQuery(parent).find(selector)
         return el if el.length > 0
         el = jQuery(html)
         parent.append(el)
@@ -56,8 +56,6 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
     id: 'wall'
 
     events:
-        # 'click #tags-tab': (ev) ->
-        #     jQuery('#tags-panel').css('left', '0px')
 
         'click #add-tag-opener': (ev) ->
             addTagContainer = @$el.find('#add-tag-container')
@@ -72,7 +70,22 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
 
         'keydown #new-tag': (ev) -> @submitNewTag() if ev.keyCode is 13
 
-    submitNewTag: ->
+        'click #toggle-pause': (ev) ->
+            $p = jQuery(ev.target)
+            if $p.hasClass('paused')
+                Sail.app.unpause()
+            else
+                Sail.app.pause()
+            # note that we don't call the view's pause/unpause methods here;
+            # those are triggered by sail events in CK.Smartboard
+
+        'click #go-analyze': (ev) ->
+            Sail.app.startAnalysis()
+
+        'click #go-synthesize': (ev) ->
+            Sail.app.startSynthesis()
+
+    submitNewTag: =>
         newTag = @$el.find('#new-tag').val()
         Sail.app.createNewTag(newTag)
         @$el.find('#add-tag-container')
@@ -80,48 +93,95 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             .blur()
         @$el.find('#new-tag').val('')
 
-    cloudify: ->
+    pause: =>
+        @cloud.force.stop()
+        jQuery('body').addClass('paused')
+        @$el.find('#toggle-pause')
+            .addClass('paused')
+            .text('Resume')
+
+        @changeWatermark("Paused")
+
+    unpause: =>
+        @cloud.force.resume()
+        jQuery('body').removeClass('paused')
+        @$el.find('#toggle-pause')
+            .removeClass('paused')
+            .text('Pause')
+
+        @changeWatermark(@mode || "Brainstorm")
+
+    changeWatermark: (text) =>
+        jQuery('#watermark').fadeOut 800, ->
+                jQuery(@).text(text)
+                    .fadeIn 800
+
+    setMode: (mode) =>
+        mode = "Brainstorm" unless mode
+        @mode = mode
+
+        if mode is 'analysis'
+            jQuery('body')
+                .removeClass('mode-synthesis')
+                .addClass('mode-analysis')
+            @changeWatermark("Analysis")
+
+        else if mode is 'synthesis'
+            jQuery('body')
+                .removeClass('mode-analysis')
+                .addClass('mode-synthesis')
+            @changeWatermark("Synthesis")
+
+        else
+            jQuery('body')
+                .removeClass('mode-analysis')
+                .removeClass('mode-synthesis')
+            @changeWatermark("Brainstorm")
+
+
+    cloudify: =>
         console.log("Cloudifying the wall...")
 
-        # need to disable jQuery UI's draggable first, otherwise it
-        # conflicts with d3's stuff
-        @$el.find('.balloon.tag.ui-draggable, .balloon.contribution.ui-draggable')
-        #@$el.find('.balloon.contribution.ui-draggable')
-            .draggable('disable')
+        cloud = {}
+        @cloud = cloud
 
+        cloud.wallWidth = @$el.innerWidth()
+        cloud.wallHeight = @$el.innerHeight()
 
-        tick = ->
-            contributionBalloon
+        cloud.linkDistance = (link, i) ->
+            ( jQuery(link.source).outerHeight()/2 +
+                jQuery(link.target).outerHeight()/2 ) + 40
+
+        cloud.tick = ->
+            cloud.balloon
                 .style 'left', (d) ->
                     balloonWidth = jQuery(d).outerWidth()
-                    if d.x + balloonWidth/2 > wallWidth
-                        d.x = wallWidth - balloonWidth/2
+                    if d.x + balloonWidth/2 > cloud.wallWidth
+                        d.x = cloud.wallWidth - balloonWidth/2
                     else if d.x - balloonWidth/2 < 0
                         d.x = 0 + balloonWidth/2
                     return (d.x - balloonWidth/2) + 'px'
                 .style 'top', (d) ->
                     balloonHeight = jQuery(d).outerHeight()
-                    if d.y + balloonHeight/2 > wallHeight
-                        d.y = wallHeight - balloonHeight/2
+                    if d.y + balloonHeight/2 > cloud.wallHeight
+                        d.y = cloud.wallHeight - balloonHeight/2
                     else if d.y - balloonHeight/2 < 0
                         d.y = 0 + balloonHeight/2
                     return (d.y - balloonHeight/2) + 'px'
 
             # collision detection
-            q = d3.geom.quadtree(nodes)
-            i = 0
-            n = nodes.length
+            q = d3.geom.quadtree(cloud.nodes)
 
-            #if Sail.app.detectCollisions
-            for i in [0...n]
-                q.visit(detectCollision(nodes[i]))
+            #if Sail.app.cloud.detectCollisions
+            for i in [0...cloud.nodes.length]
+                q.visit(cloud.detectCollision(cloud.nodes[i]))
             
 
             # locator
             #     .style("left", (d) -> d.x + 'px')
             #     .style("top", (d) -> d.y + 'px') 
 
-            connector
+            cloud.connector
                 .style("z-index", -1)
                 .style("left", (d) -> 
                     d.source.x + "px")
@@ -131,9 +191,9 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                     dx = d.target.x - d.source.x
                     dy = d.target.y - d.source.y
                     Math.sqrt(dx * dx + dy * dy) + "px")
-                .style("-webkit-transform", connectorTransform)
-                .style("-moz-transform", connectorTransform)
-                .style("transform", connectorTransform)
+                .style("-webkit-transform", cloud.connectorTransform)
+                .style("-moz-transform", cloud.connectorTransform)
+                .style("transform", cloud.connectorTransform)
 
             # source
             #     .style("left", (d) -> d.source.x + 'px')
@@ -141,9 +201,121 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
 
             # target
             #     .style("left", (d) -> d.target.x + 'px')
-            #     .style("top", (d) -> d.target.y + 'px')                
+            #     .style("top", (d) -> d.target.y + 'px')
 
-        detectCollision = (b) ->
+        cloud.nodes = @$el.find('.balloon').toArray()
+        cloud.links = []
+
+        for n,i in cloud.nodes
+            $n = jQuery(n)
+            n.index = i
+
+        cloud.force = d3.layout.force()
+            .charge((d) -> if jQuery(d).hasClass('tag') then -4500 else -1000)
+            .linkDistance(cloud.linkDistance)
+            .linkStrength(0.2)
+            .gravity(0)
+            #.theta(0.1)
+            .friction(0.2)
+            .size([cloud.wallWidth, cloud.wallHeight])
+            .nodes(cloud.nodes)
+            .links(cloud.links)
+            .on('tick', cloud.tick)
+
+        cloud.tags = {}
+        Sail.app.tags.each (tag) ->
+            t = jQuery('#'+tag.id)[0]
+            cloud.tags[tag.id] = t
+            
+        #jQuery('.balloon').not('#509424717e59cb16c1000003, #509426227e59cb16c1000006').remove()
+        
+        jQuery('.balloon.contribution').each ->
+            contribBalloon = jQuery(@)
+            return unless contribBalloon.data('tags')
+            c = contribBalloon[0]
+            for tid in contribBalloon.data('tags').split(' ')
+                if cloud.tags[tid] # FIXME: why would t not be in cloud.tags?
+                    tag = cloud.tags[tid]
+                    tag.contribs? || tag.contribs = []
+                    tag.contribs.push(c.id)
+                    cloud.links.push
+                        source: tag
+                        target: c
+
+        cloud.vis = d3.select("#"+@id)
+
+        cloud.addContribution = (c) =>
+            if c.jquery
+                id = c.attr('id')
+                $c = c
+            else if c.id
+                id = c.id
+                $c = @$el.find('#'+id)
+            else
+                console.error("Contribution given to cloud.addContribution must have an id!")
+                throw "Invalid Contributiona"
+
+            c = $c[0]
+
+            c.index = cloud.nodes.length
+            cloud.nodes.push(c)
+            cloud.update()
+
+        cloud.addTag = (t) =>
+            if t.jquery
+                id = t.attr('id')
+                $t = t
+            else if t.id
+                id = t.id
+                $t = @$el.find('#'+id)
+            else
+                console.error("Tag given to cloud.addTag must have an id!")
+                throw "Invalid Tag"
+
+            t = $t[0]
+
+            t.index = cloud.nodes.length
+            cloud.tags[t.id] = t
+            cloud.nodes.push(t)
+            cloud.update()
+
+        cloud.addLinks = (c, ts) =>
+            if c.jquery
+                    id = c.attr('id')
+                    $c = c
+                else if c.id
+                    id = c.id
+                    $c = @$el.find('#'+id)
+                else
+                    console.error("Contribution given to cloud.addContribution must have an id!")
+                    throw "Invalid Contributiona"
+
+                c = $c[0]
+
+            for t in ts
+                if t.jquery
+                    id = t.attr('id')
+                    $t = t
+                else if t.id
+                    id = t.id
+                    $t = @$el.find('#'+id)
+                else
+                    console.error("Tag given to cloud.addTag must have an id!")
+                    throw "Invalid Tag"
+
+                t = $t[0]
+                
+
+                t.contribs? || t.contribs = []
+                t.contribs.push(c.id)
+                cloud.links.push
+                    source: t
+                    target: c
+
+            cloud.update()
+
+
+        cloud.detectCollision = (b) ->
             # based on collision detection example 
             #   from https://gist.github.com/3116713
 
@@ -220,125 +392,89 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                             
                             xNudge = (xOverlap/2)
                             if b.x < quad.point.x
-                                b.x -= xNudge * (qIsTag ? 1.1 : force.alpha())
-                                quad.point.x += xNudge * (bIsTag ? 1.1 : force.alpha())
+                                b.x -= xNudge
+                                quad.point.x += xNudge 
                             else
-                                b.x += xNudge * (qIsTag ? 1.1 : force.alpha())
-                                quad.point.x -= xNudge * (bIsTag ? 1.1 : force.alpha())
+                                b.x += xNudge 
+                                quad.point.x -= xNudge 
 
                 return x1 > nx2 || 
                     x2 < nx1 || 
                     y1 > ny2 || 
                     y2 < ny1
 
-        linkDistance = (link, i) ->
-            ( jQuery(link.source).outerHeight()/2 +
-                jQuery(link.target).outerHeight()/2 ) + 40
-
-        wallWidth = @$el.innerWidth()
-        wallHeight = @$el.innerHeight()
-
-        fill = d3.scale.category20()
-
-        force = d3.layout.force()
-            .charge((d) -> if jQuery(d).hasClass('tag') then -4500 else -2000)
-            .linkDistance(linkDistance)
-            .linkStrength(0.2)
-            .gravity(0)
-            #.theta(0.1)
-            .friction(0.2)
-            .size([wallWidth, wallHeight])
-
-        # force2 = d3.layout.force()
-        #     .charge(-300)
-        #     .gravity(0)
-        #     .friction(0.9)
-        #     .size([wallWidth, wallHeight])
-
-
-        vis = d3.select("#"+@id)
-
-        i = 0
-        tags = {}
-        Sail.app.tags.each (tag) ->
-            t = jQuery('#'+tag.id)[0]
-            t.index = i
-            tags[tag.id] = t
-            i++
-
-        #jQuery('.balloon').not('#509424717e59cb16c1000003, #509426227e59cb16c1000006').remove()
-        nodes = @$el.find('.balloon').toArray()
-        links = []
-        jQuery('.balloon.contribution').each ->
-            contribBalloon = jQuery(@)
-            return unless contribBalloon.data('tags')
-            c = contribBalloon[0]
-            c.index = i
-            i++
-            for t in contribBalloon.data('tags').split(' ')
-                if tags[t] # FIXME: why would t not be in tags?
-                    tags[t].contribs? || tags[t].contribs = []
-                    tags[t].contribs.push(c.id)
-                    links.push
-                        source: tags[t]
-                        target: c
-
-        #@$el.find('.balloon').each -> # nothing yet
-
-        contributionBalloon = vis.selectAll('.balloon')
-            .data(nodes)
-            .call(force.drag)
-
-
-        # tagBalloons = @$el.find('.tag').toArray()
-        # jQuery(nodes).on('mousedown', force2.resume)
-        # force2.nodes(tagBalloons)
-        #     .links([])
-        #     .start()
-
-        force.nodes(nodes)
-            .links(links)
-            .on('tick', tick)
-            .start()
-
-        # Sail.app.force2 = force2
-
-        for n in nodes
-            $n = jQuery(n)
-            n.width = $n.outerWidth()
-            n.height = $n.outerHeight()
-
-
-        connector = vis.selectAll(".connector")
-            .data(links)
-            .enter()
-            .append("div")
-                .attr("class", "connector")
-        
-        # source = vis.selectAll('.source')
-        #     .data(links)
-        #     .enter()
-        #     .append("div")
-        #         .attr("class", "source")
-
-        # target = vis.selectAll('.target')
-        #     .data(links)
-        #     .enter()
-        #     .append("div")
-        #         .attr("class", "target")
-
-        # locator = vis.selectAll('.locator')
-        #     .data(nodes)
-        #     .enter()
-        #     .append("div")
-        #         .attr("class", "locator")
-
-        #force.on('drag.force', -> force2.resume(); console.log('drag!'))
-
-        connectorTransform = (d) ->
+        cloud.connectorTransform = (d) ->
             "rotate(" + ((Math.atan2(d.target.y - d.source.y, d.target.x - d.source.x) * 180 / Math.PI) ) + "deg)"
 
-        Sail.app.force = force
+        #Sail.app.force = cloud.force
+
+        cloud.update = (ev) ->
+
+            # force2 = d3.layout.force()
+            #     .charge(-300)
+            #     .gravity(0)
+            #     .friction(0.9)
+            #     .size([cloud.wallWidth, cloud.wallHeight])
+
+
+            #@$el.find('.balloon').each -> # nothing yet
+
+            for n,i in cloud.nodes
+                $n = jQuery(n)
+                pos = $n.position()
+                n.x = pos.left + $n.outerWidth()/2 unless n.x?
+                n.y = pos.top + $n.outerHeight()/2 unless n.y?
+                n.width = $n.outerWidth()
+                n.height = $n.outerHeight()
+
+            cloud.balloon = cloud.vis.selectAll('.balloon')
+                .data(cloud.nodes)
+                .call(cloud.force.drag)
+
+            # tagBalloons = @$el.find('.tag').toArray()
+            # jQuery(cloud.nodes).on('mousedown', force2.resume)
+            # force2.nodes(tagBalloons)
+            #     .links([])
+            #     .start()
+
+            cloud.connector = cloud.vis.selectAll(".connector")
+                .data(cloud.links)
+
+            cloud.connector
+                .enter()
+                .append("div")
+                    .attr("class", "connector")
+            
+
+            cloud.force
+                .start()
+
+            # Sail.app.force2 = force2
+
+
+            
+            
+            # source = cloud.vis.selectAll('.source')
+            #     .data(links)
+            #     .enter()
+            #     .append("div")
+            #         .attr("class", "source")
+
+            # target = cloud.vis.selectAll('.target')
+            #     .data(links)
+            #     .enter()
+            #     .append("div")
+            #         .attr("class", "target")
+
+            # locator = cloud.vis.selectAll('.locator')
+            #     .data(cloud.nodes)
+            #     .enter()
+            #     .append("div")
+            #         .attr("class", "locator")
+
+            #force.on('drag.force', -> force2.resume(); console.log('drag!'))
+
+        cloud.update()
 
 class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
     moveToTop: =>
@@ -356,6 +492,10 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
         'mousedown': (ev) -> @moveToTop()
         'click': (ev) ->
             @$el.toggleClass('opened')
+            if @$el.hasClass('opened')
+                if Sail.app.wall.cloud? && Sail.app.wall.cloud.force?
+                    Sail.app.wall.cloud.force.stop()
+                    
 
 
     # initialize: =>
@@ -363,6 +503,9 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
     #     @$el.data('view', @)
 
     render: =>
+        if @model.get('kind') is 'riseabove'
+            @$el.addClass('riseabove')
+
         headline = @findOrCreate '.headline', 
             "<h3 class='headline'></h3>"
         headline.text @model.get('headline')
@@ -384,6 +527,8 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
 
 
         @renderTags()
+
+        @renderBuildons()
         
         @corporealize()
 
@@ -393,7 +538,7 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
         # tagsContainer = @findOrCreate '.tags',
         #     "<div class='tags'></div>"
 
-        return unless @model.get('tags')?
+        return unless @model.has('tags')
 
         # validTagClasses = []
         # for tagText in @model.get('tags')
@@ -414,6 +559,34 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
 
 
         return @ # return this for chaining
+
+    renderBuildons: =>
+        return unless @model.has('build_ons')
+
+        buildons = @model.get('build_ons')
+
+        container = @findOrCreate '.buildons',
+            "<div class='buildons'></div>"
+
+        container.remove('div.buildon')
+
+        counter = CK.Smartboard.View.findOrCreate @$el.find('.meta'), '.buildon-counter',
+            "<div class='buildon-counter'></div>"
+        counter.html('')
+
+        for b in buildons
+            counter.append("•")
+
+            $b = jQuery("
+                <div class='buildon'>
+                    <div class='author'></div>
+                    <div class='content'></div>
+                </div>
+            ")
+            $b.find('.author').text(b.author)
+            $b.find('.content').text(b.content)
+            container.append $b
+
 
 
 class CK.Smartboard.View.TagBalloon extends CK.Smartboard.View.Balloon
