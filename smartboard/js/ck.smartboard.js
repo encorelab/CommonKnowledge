@@ -271,14 +271,21 @@
           var addLink, c,
             _this = this;
           c = this.contributions.get(sev.payload._id);
+          console.log("contribution_tagged, c is: ", c);
           addLink = function() {
-            var tr, ts, _i, _len, _ref;
+            var tr, ts;
             c.set(sev.payload);
-            _ref = c.get('tags');
-            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-              tr = _ref[_i];
-              ts = _this.tags.get(tr.id);
-            }
+            ts = (function() {
+              var _i, _len, _ref, _results;
+              _ref = c.get('tags');
+              _results = [];
+              for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+                tr = _ref[_i];
+                _results.push(this.tags.get(tr.id));
+              }
+              return _results;
+            }).call(_this);
+            console.log("adding links from ", c, " to ", ts);
             return _this.wall.cloud.addLinks(c, ts);
           };
           if (c) {

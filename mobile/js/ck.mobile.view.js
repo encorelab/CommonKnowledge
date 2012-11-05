@@ -348,6 +348,7 @@
       // hook in the done_tagging state here
       CK.getState('phase', function(s) {
         if (s && s.get('state') === 'done_tagging') {
+          jQuery('#contribution-details-build-on-btn').addClass('hide');
           // TODO - do this right: make sure model is actually syncing with view instead of manually doing this
           jQuery('#tag-submission-container .tag-btn').removeClass('active');
 

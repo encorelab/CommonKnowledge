@@ -74,7 +74,9 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             $p = jQuery(ev.target)
             if $p.hasClass('paused')
                 Sail.app.unpause()
+                $p.removeClass('paused').text('Pause')
             else
+                $p.addClass('paused').text('Resume')
                 Sail.app.pause()
             # note that we don't call the view's pause/unpause methods here;
             # those are triggered by sail events in CK.Smartboard

@@ -132,8 +132,10 @@
         var $p;
         $p = jQuery(ev.target);
         if ($p.hasClass('paused')) {
-          return Sail.app.unpause();
+          Sail.app.unpause();
+          return $p.removeClass('paused').text('Pause');
         } else {
+          $p.addClass('paused').text('Resume');
           return Sail.app.pause();
         }
       },
