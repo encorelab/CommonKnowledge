@@ -51,7 +51,7 @@
         console.log('headline: ' + contrib.get('headline'));
 
         //var note = jQuery('li#'+contrib.id);
-        note = "<li id=" + contrib.id + " class='list-item'><a class='note'><span class='headline'></span>";
+        var note = "<li id=" + contrib.id + " class='list-item'><a class='note'><span class='headline'></span>";
         note += "<br /><i class='icon-chevron-right'></i>";
         note += "<span class='author'></span><span class='date'></span></a></li>";
         note = jQuery(note);
@@ -99,7 +99,7 @@
 
     'build-on': function () {
       console.log("Creating a build-on note");
-      Sail.app.addNote('build-on');
+      Sail.app.addNote('buildOn');
     },
 
     /**
@@ -112,10 +112,21 @@
 
       // created_at will return undefined, so need to check it exists...
       if (Sail.app.contributionDetails.get('created_at')) {
+        // TODO - do this with a loop instead of manually
+        jQuery('#contribution-details-build-on-btn').removeClass('hide');
         jQuery('#contribution-details .note-headline').text(Sail.app.contributionDetails.get('headline'));
         jQuery('#contribution-details .note-body').text(Sail.app.contributionDetails.get('content'));
         jQuery('#contribution-details .note-author').text('~'+Sail.app.contributionDetails.get('author'));
         jQuery('#contribution-details .note-created-at').text(' (' + Sail.app.contributionDetails.get('created_at').toLocaleDateString() + ' ' + Sail.app.contributionDetails.get('created_at').toLocaleTimeString() + ')');
+
+        var buildOnEl = "<hr /><div>";
+        _.each(Sail.app.contributionDetails.get('build_ons'), function(o) {
+          buildOnEl += o.content + "<br />~" + o.author + " (" + o.created_at + ")" +  "<hr />";
+        });
+
+        buildOnEl += "</div>"
+        buildOnEl = jQuery(buildOnEl);
+        jQuery('#contribution-details .note-build-ons').append(buildOnEl);
       }
     }
   });
@@ -128,13 +139,22 @@
     events: {
       // for most fields
       'change .field': function (ev) {
-        var f = jQuery(ev.target);
+        if (Sail.app.currentContribution.kind === 'new') {
+          var f = jQuery(ev.target);
+          console.log("Setting "+f.attr("name")+" to "+f.val());
+          this.model.set(f.attr('name'), f.val());          
+        } else if (Sail.app.currentContribution.kind === 'buildOn') {
+          console.log('setting build-on values');
+          Sail.app.currentBuildOn.content = jQuery('#note-body-entry').val();
+          Sail.app.currentBuildOn.author = Sail.app.userData.account.login;
+          Sail.app.currentBuildOn.created_at = new Date();
 
-        console.log("Setting "+f.attr("name")+" to "+f.val());
-        this.model.set(f.attr('name'), f.val());
+        } else {
+          console.log('unknown note type');
+        }
       },
 
-      'click #share-note-btn': 'share',
+      'click #share-note-btn': 'share'
       //'click #cancel-note-btn': 'cancel'
     },
 
@@ -145,19 +165,57 @@
     },
 
     share: function () {
-      if (Sail.app.currentContribution.has('content') && Sail.app.currentContribution.has('headline')) {
-        console.log("Submitting contribution...");
-        // var self = this;
 
-        Sail.app.currentContribution.save(null, {
+      // if (!(Sail.app.currentContribution.has('content') && Sail.app.currentContribution.has('headline')) && (Sail.app.currentContribution.justAdded === true)) {
+      //   alert('Please enter both a note and a headline');           // should we switch these all to the nice toasts that MikeM was using in Washago?
+      // }
+
+      // new note
+      if (Sail.app.currentContribution.kind === 'new') {
+        if (Sail.app.currentContribution.has('content') && Sail.app.currentContribution.has('headline')) {
+          console.log("Submitting contribution...");
+          // var self = this;
+
+          Sail.app.currentContribution.save(null, {
+            complete: function () {
+              console.log('New note submitted!');
+
+            },
+            success: function () {
+              console.log('Model saved');
+              Sail.app.sendContribution('newNote');
+
+              // clear the old contribution plus ui fields
+              Sail.app.currentContribution.clear();
+              Sail.app.contributionInputView.$el.find(".field").val(null);
+              Sail.app.currentContribution.justAdded = false;
+              Sail.app.contributionInputView.render();
+
+              alert('Contribution submitted');
+            },
+            failure: function(model, response) {
+              console.log('Error submitting: ' + response);       // do we want this as an alert instead?
+            }
+          });
+        } else {
+          alert('Please enter both a note and a headline');
+        }        
+      }
+
+      // build-on note
+      if (Sail.app.currentContribution.kind === 'buildOn') {
+        var buildOnArray = Sail.app.contributionDetails.get('build_ons');
+        buildOnArray.push(Sail.app.currentBuildOn);
+        //contrib.set('build_ons', buildons)
+
+        Sail.app.contributionDetails.set('build_ons', buildOnArray);
+        Sail.app.contributionDetails.save(null, {
           complete: function () {
-            console.log('Submitted!');
-
+            console.log('Build on submitted!');
           },
           success: function () {
             console.log('Model saved');
-            Sail.app.sendContribution('newNote');
-            //var note = self.model;
+            Sail.app.sendContribution('buildOn');
 
             // clear the old contribution plus ui fields
             Sail.app.currentContribution.clear();
@@ -173,30 +231,29 @@
         });
       }
 
-      if (Sail.app.taggedContribution.attributes.tags.length > 0) {
-        console.log("Submitting tagged contribution...");
-        Sail.app.taggedContribution.save(null, {
-          complete: function () {
-            console.log('Submitted!');
-          },
-          success: function () {
-            console.log('Model saved');
-            Sail.app.sendContribution('taggedNote');
+      // tagged contribution - maybe added tagged as a kind?
+      if (Sail.app.taggedContribution) {
+        if (Sail.app.taggedContribution.attributes.tags.length > 0) {
+          console.log("Submitting tagged contribution...");
+          Sail.app.taggedContribution.save(null, {
+            complete: function () {
+              console.log('Submitted!');
+            },
+            success: function () {
+              console.log('Model saved');
+              Sail.app.sendContribution('taggedNote');
 
-            Sail.app.taggedContribution.clear();
-            Sail.app.tagListView.render();
-            Sail.app.contributionDetailsView.render();
+              Sail.app.taggedContribution.clear();
+              Sail.app.tagListView.render();
+              Sail.app.contributionDetailsView.render();
 
-            alert('Tagged note submitted');
-          },
-          failure: function(model, response) {
-            console.log('Error submitting: ' + response);
-          }
-        });
-      }
-
-      if (!(Sail.app.currentContribution.has('content') && Sail.app.currentContribution.has('headline')) && (Sail.app.currentContribution.justAdded === true)) {
-        alert('Please enter both a note and a headline');           // should we switch these all to the nice toasts that MikeM was using in Washago?
+              alert('Tagged note submitted');
+            },
+            failure: function(model, response) {
+              console.log('Error submitting: ' + response);
+            }
+          });
+        }
       }
     },
 
@@ -218,15 +275,15 @@
       console.log("rendering ContributionInputView...");
 
       if (Sail.app.currentContribution.justAdded) {
-        jQuery('#note-body-entry').removeClass('disabled');
-        jQuery('#note-headline-entry').removeClass('disabled');
 
         if (Sail.app.currentContribution.kind === 'new') {
           jQuery('#note-body-label').text('New Note');
+          jQuery('#note-body-entry').removeClass('disabled');
+          jQuery('#note-headline-entry').removeClass('disabled');          
 
-        } else if (Sail.app.currentContribution.kind === 'build-on') {
+        } else if (Sail.app.currentContribution.kind === 'buildOn') {
           jQuery('#note-body-label').text('Build On Note');
-          // TODO - make buildons actually build on
+          jQuery('#note-body-entry').removeClass('disabled');          
 
         } else {
           console.log('unknown note type');
@@ -253,7 +310,7 @@
     events: {
       'click .tag-btn': function (ev) {
         // console.log('id: '+ev.target.id);
-        var tag = jQuery(ev.target).data('tag')
+        var tag = jQuery(ev.target).data('tag');
 
         // toggle the clicked tag in the model
         if (Sail.app.taggedContribution.hasTag(tag)) {
@@ -264,13 +321,12 @@
             Sail.app.taggedContribution.attributes.tags = [];                       // eeeewwwwwwww
             jQuery('.tag-btn').removeClass('active');
           } else {
-            naTag = Sail.app.tagList.find(function(t) { return t.get('name') === "N/A" } );
+            var naTag = Sail.app.tagList.find(function(t) { return t.get('name') === "N/A"; } );
             Sail.app.taggedContribution.removeTag(naTag);
             jQuery("button:contains('N/A')").removeClass('active');
           }
           Sail.app.taggedContribution.addTag(tag, Sail.app.userData.account.login);
         }
-
 
         // enable/disable the Share button - dup'd in the render, probably a better way to do this
         if (Sail.app.taggedContribution.attributes.tags.length > 0) {
@@ -279,8 +335,7 @@
           jQuery('#share-note-btn').addClass('disabled');
         }
 
-        // Sail.app.tagListView.render();
-      },
+      }
 
       //'click #tag-list-build-on-btn': 'build-on'
     },

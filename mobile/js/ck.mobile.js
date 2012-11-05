@@ -10,6 +10,7 @@ CK.Mobile = function() {
 
   // Global vars
   app.userData = null;
+  app.currentBuildOn = {};
   app.tagArray = [];
   app.buildOnArray = [];  
 
@@ -149,12 +150,18 @@ CK.Mobile = function() {
       //   //storeTags(new_contribution.tags);
       // },
 
-      toggle_screen_lock: function(sev) {
+      screen_lock: function(sev) {
         console.log('freezing display');
 
-        jQuery('#screen-lock').toggle();
+        jQuery('#screen-lock').removeClass('hide');
         // do we want to lock down all the screen elements as well
         // TODO - test on tablet... keyboard will make things awkward - maybe use unfocus to solve all these problems? Disabling all fields might work too
+      },
+
+      screen_unlock: function(sev) {
+        console.log('unfreezing display');
+
+        jQuery('#screen-lock').addClass('hide');
       },
 
       contribution: function(sev) {
@@ -224,6 +231,8 @@ CK.Mobile = function() {
   app.sendContribution = function(kind) {
     if (kind === 'newNote') {
       var sev = new Sail.Event('contribution', app.currentContribution.toJSON());
+    } else if (kind === 'buildOn') {
+      var sev = new Sail.Event('contribution', app.contributionDetails.toJSON());
     } else if (kind === 'taggedNote') {
       var sev = new Sail.Event('contribution_tagged', app.taggedContribution.toJSON());
     } else {
@@ -254,7 +263,7 @@ CK.Mobile = function() {
       el: jQuery('#contribution-list'),
       collection: app.contributionList
     });
-    app.contributionList.on('reset add', app.contributionListView.render);        // TODO - damned backbone being too sneak and efficient
+    app.contributionList.on('reset add', app.contributionListView.render);
     var sort = ['created_at', 'DESC'];
     // var selector = {"author": "matt"};
     app.contributionList.fetch({
@@ -278,6 +287,7 @@ CK.Mobile = function() {
   app.addNote = function(kind) {
     console.log('Preping to add a note...');
 
+    // clear all the old garbage out of the model, rebind
     app.currentContribution = new CK.Model.Contribution();
     app.contributionInputView.model = app.currentContribution;
     app.contributionInputView.undelegateEvents();
