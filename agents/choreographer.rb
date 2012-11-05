@@ -18,6 +18,7 @@ class Choreographer < Sail::Agent
 
     @students = {}
     @bucket = []
+    @na_bucket = []
   end
 
   def behaviour
@@ -53,53 +54,29 @@ class Choreographer < Sail::Agent
     event :start_student_tagging? do |stanza, data|
       log "Received start_student_tagging #{data.inspect}"
 
-      store_phase()
+      # this is done to help restore state for UI and others
+      store_phase("start_student_tagging")
       
       # Retrieve contributions to consider for tagging
-      @bucket = fill_contribution_bucket()
-      log "Found #{@bucket.count} contributions to hand out to #{@students.count} students"
+      fill_contribution_buckets()
+      log "Found #{@bucket.count} contributions with no tags and #{@na_bucket.count} contributions with N/A tags to hand out to #{@students.inspect}"
       
       # Handout contributions to all present users
-      tagAssignments = {}
-
+      log "Sending out first wave of tagging events"
       @students.each do |student|
-        contributionId = @bucket.pop
         studentName = student.first
-        
-        log "#{studentName} is assigned to tag contribution #{contributionId}"
-        unless contributionId.nil? then
-          tagAssignments[studentName] = contributionId
-        else
-          log "We assigned all contributions and have students left without work"
-        end
+        hand_out_assignment(studentName)        
       end
 
-      log "Sending out first wave of tagging events"
-      send_tag_assignments(tagAssignments)
-
-      log "There are #{@bucket.count} contributions left for tagging"
-
-      # check if there are more contributions to hand out (probably do this each time when students are done with tagging)      
+      log "There are #{@bucket.count} contributions with no tags and #{@na_bucket.count} contributions with N/A tags left for tagging"      
     end
 
     event :contribution_tagged? do |stanza, data|
-      log "Recieved contribution_tagged #{data.inspect}"
-      tagAssignments = {}
-      @bucket = []
-
-      @bucket = fill_contribution_bucket()
-      log "Found #{@bucket.count} contributions to hand out to student #{data['origin'].inspect}"
-
-      unless @bucket.empty?
-        contrib = @bucket.pop
-        log "Assigning contribution #{contrib.inspect} to user #{data['origin'].inspect}"
-        tagAssignments[data['origin']] = contrib
-        send_tag_assignments(tagAssignments)
-      else
-        log "Nothing in bucket, tell user that he is done"
-        send_done_tagging(data['origin'])
-      end
-        
+      log "Recieved contribution_tagged #{data.inspect}" 
+      fill_contribution_buckets()
+      log "Found #{@bucket.count} contributions with no tags and #{@na_bucket.count} contributions with N/A tags to hand out"
+      # goes through buckets of contributions to tag and sends out contribution_to_tag or done_tagging
+      hand_out_assignment(data['origin'])  
     end 
 
   end
@@ -140,11 +117,10 @@ class Choreographer < Sail::Agent
     return stu
   end
 
-  def fill_contribution_bucket()
+  def fill_contribution_buckets()
     #empty bucket
-    bucket = []
-    notag = []
-    na = []
+    @bucket = []
+    @na_bucket = []
     
     # retrieve all contributions that make up the bucket of contribs to be tagged
     # @mongo.collection(:contributions).find("tags" => { "$exists" => true}, "author" => { "$exists" => true }, "headline" => { "$exists" => true }, "content" => { "$exists" => true }).each do |contrib|
@@ -157,25 +133,51 @@ class Choreographer < Sail::Agent
 
       # only work on contributions that are not tagged yet or that have n/a tag
       if contrib['tags'].empty?
-        notag.push(contributionId)
+        @bucket.push(contributionId)
       elsif (!contrib['tags'].empty? && contrib['tags'].any?{|t| t['name'] == "N/A"})
-        na.push(contributionId)
+        na_tag = contrib['tags'].select{|v| v['name'] == "N/A"}
+        log "na_tag content #{na_tag}"
+        @na_bucket.push({"contribution_id" => contributionId, "tagger" => na_tag.first['tagger']})
       end
     end
 
-    bucket += na
-    bucket += notag
-    log "notag #{notag.count} / na #{na.count} / bucket #{bucket.count}"
-
-    return bucket
+    log "bucket #{@bucket.count} / na bucket #{@na_bucket.count}"
   end
 
-  def send_tag_assignments(user_to_contribution_id_assignments)
+  # important: Run fill_contribution_buckets first
+  def hand_out_assignment(username)
+    tagAssignments = {}
+
+    if !@bucket.empty?
+      contributionId = @bucket.pop
+      log "Assigning contribution #{contrib.inspect} to user #{username.inspect}"
+      # tagAssignments[username] = contrib
+      send_tag_assignment(username, contributionId)
+    elsif !@na_bucket.empty?
+      # only assign an N/A tagged contribution if the N/A tag was added by another user
+      contrib = @na_bucket.select{|v| v['tagger'] != username}
+      unless contrib.empty?
+        log "Reassigning contribution #{contrib.inspect} to user #{username.inspect}"
+        contributionId = contrib.first['contribution_id']
+        send_tag_assignment(username, contributionId)
+        log "Bucket before deleting #{@na_bucket.count} #{@na_bucket.inspect}"
+        @na_bucket.delete(contrib.first)
+        log "Bucket after deleting #{@na_bucket.count} #{@na_bucket.inspect}"
+      else
+        send_done_tagging(username)
+      end
+    else
+      log "Nothing in buckets, tell user that he is done"
+      send_done_tagging(username)
+    end
+  end
+
+  def send_tag_assignment(user, contributionId)
     # find a problem with assigned 'false'
-    user_to_contribution_id_assignments.map do |user, contributionId|
+    # user_to_contribution_id_assignments.map do |user, contributionId|
       log "Sending tag_assignment for user '#{user.inspect}' for contributionId '#{contributionId.inspect}'"
       event!(:contribution_to_tag, {:recipient => user, :contribution_id => contributionId})
-    end
+    # end
   end
 
   def send_done_tagging(user)
@@ -183,14 +185,14 @@ class Choreographer < Sail::Agent
     event!(:done_tagging, {:recipient => user})    
   end
 
-  def store_phase()
+  def store_phase(phaseName)
     phase = @mongo.collection(:states).find("type" => "phase").each do |state|
-      state['state'] = "start_student_tagging"
+      state['state'] = phaseName
       @mongo.collection(:states).save(state)
       return true
     end
 
-    @mongo.collection(:states).save("type" => "phase", "state" => "start_student_tagging")
+    @mongo.collection(:states).save("type" => "phase", "state" => phaseName)
     return true
   end
 
