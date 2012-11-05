@@ -32,6 +32,10 @@ CK.Mobile = function() {
     // Create a Rollcall instance so that sail.app has access to it later on
     app.rollcall = new Rollcall.Client(app.config.rollcall.url);
 
+    // configure the toasts
+    jQuery().toastmessage({
+      position : 'middle-center'
+    });
   };
 
   app.authenticate = function() {
@@ -200,14 +204,14 @@ CK.Mobile = function() {
         console.log('freezing display');
 
         jQuery('#screen-lock').removeClass('hide');
-        // do we want to lock down all the screen elements as well
-        // TODO - test on tablet... keyboard will make things awkward - maybe use unfocus to solve all these problems? Disabling all fields might work too
+        jQuery('.row').addClass('disabled');
       },
 
       screen_unlock: function(sev) {
         console.log('unfreezing display');
 
         jQuery('#screen-lock').addClass('hide');
+        jQuery('.row').removeClass('disabled');
       },
 
       contribution: function(sev) {
@@ -434,7 +438,6 @@ CK.Mobile = function() {
   };
 
   app.doneTagging = function() {
-    // I don't create a new view for this, right? I just want to go back to the first view, really....
     jQuery('.brand').text('Common Knowledge - Notes');
     jQuery('#tag-list').addClass('hide');
     jQuery('#contribution-list').removeClass('hide');

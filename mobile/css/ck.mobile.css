@@ -12,12 +12,6 @@ body {
 	background-color: #585B7F;
 }
 
-* {
-	-moz-user-select: none;
- 	-webkit-user-select: none;
- 	user-select: none;
-}
-
 i {
 	float: right;
 }
