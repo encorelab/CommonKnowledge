@@ -12,14 +12,13 @@
       'click .list-item': function (ev) {
         jQuery('#contribution-list .note').removeClass('selected');
 
-        // The problem here was that ev.target referes to a differently
-        // deep nested element 
+        // The problem here was that ev.target referes to a differently deep nested element 
         $target = jQuery(ev.target);
         if (!$target.is('.list-item')) {
            $target = $target.parents('.list-item').first();
         }
 
-        $target.addClass('selected');
+        $target.children().first().addClass('selected');
 
         var contribId = $target.attr('id');
 
