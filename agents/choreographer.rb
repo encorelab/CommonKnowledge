@@ -91,12 +91,13 @@ class Choreographer < Sail::Agent
       log "Found #{@bucket.count} contributions to hand out to student #{data['origin'].inspect}"
 
       unless @bucket.empty?
-        log "Assigning contribution #{@bucket.pop} to user #{data['origin'].inspect}"
-        tagAssignments[data.origin] = @bucket.pop
+        contrib = @bucket.pop
+        log "Assigning contribution #{contrib.inspect} to user #{data['origin'].inspect}"
+        tagAssignments[data['origin']] = contrib
         send_tag_assignments(tagAssignments)
       else
         log "Nothing in bucket, tell user that he is done"
-        send_no_more_contributions(data.origin)
+        send_done_tagging(data['origin'])
       end
         
     end 
@@ -178,7 +179,7 @@ class Choreographer < Sail::Agent
   end
 
   def send_done_tagging(user)
-    log "Sending tag_assignment for user '#{user.inspect}' for contributionId '#{contributionId.inspect}'"
+    log "Sending done_tagging for user '#{user.inspect}'"
     event!(:done_tagging, {:recipient => user})    
   end
 
