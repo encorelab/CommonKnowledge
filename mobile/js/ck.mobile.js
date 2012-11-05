@@ -13,7 +13,7 @@ CK.Mobile = function() {
   app.currentBuildOn = {};
   app.tagArray = [];
   app.buildOnArray = [];
-  app.currentState = {"type":"tablet"};
+  // app.currentState = {"type":"tablet"};
 
   // TODO: copied from washago code
   app.init = function() {
@@ -68,23 +68,50 @@ CK.Mobile = function() {
 
     this.restoreContributions();
 
-
-    app.retrieveState(
+    var stateObj = {"type":"phase"};
+    app.retrieveState(stateObj, 
       function(data) {
         console.log('Success retrieving state from DB '+data);
         if (data.length >= 1) {                            
-          console.log("Current state of tablets: "+data[0].state);
-          app.currentState = data[0];
-          if (app.currentState.state === "start_student_tagging") {
+          console.log("Current phase: "+data[0].state);
+          // app.currentState = data[0];
+          if (_.first(data).state === "start_student_tagging") {
             // TODO go to the right position, aka call a function?
-            Sail.app.startPhase2();
+            app.startStudentTagging();
+
+            var stateObjContrib = {"type":"tablet","username":Sail.app.userData.account.login,"state":_.first(data).state};
+            app.retrieveState(stateObjContrib,
+              function(data) {
+                console.log('Success retrieving state from DB '+data);
+                if (data.length >= 1) {                            
+                  console.log("Contribution ID to work on: "+_.first(data).contribution_id);
+                  
+                  app.contributionDetails.id = _.first(data).contribution_id;
+                  app.contributionDetails.fetch({
+                    success: function () {
+                      app.taggedContribution = app.contributionDetails;
+                      //Sail.app.contributionDetailsView.render();            // why do I need to call render here? Already bound to reset
+                    }
+                  });
+                  return true;
+                }
+                else {
+                  console.log("No state found");
+                  return true;
+                }
+              },
+              function (data) {
+                console.log("Call to Drowsy failed with error: "+data);
+                return false;
+              }
+            );
           }
           return true;
         }
         else {
           console.log("No state found");
-          app.currentState.state = "beginning";
-          app.storeState(app.currentState);
+          // stateObj.state = "beginning";
+          // app.storeState(stateObj);
           return true;
         }
       },
@@ -125,21 +152,12 @@ CK.Mobile = function() {
       // to do this config again for each model instantiation
       CK.Model.configure(app.config.mongo.url, app.run.name);
 
-      // I need to do this call, right? There's no easier way to grab username?
-      // Sail.app.rollcall.request(Sail.app.rollcall.url + "/users/"+Sail.app.session.account.login+".json", "GET", {}, function(data) {
-      //   console.log("Authenticated user is: ", data);
-
-      //   app.userData = data;
-      // });
-
       // Colin there is already data about the user available
       app.userData = Sail.app.session;
 
       // moved the view init here so that backbone is configured with URLs
       app.initModels();
       app.initViews();
-
-      // jQuery('#screen-lock').addClass('hide');
     },
 
     connected: function(ev) {
@@ -208,22 +226,23 @@ CK.Mobile = function() {
       start_student_tagging: function(sev) {
         console.log('start_student_tagging heard, creating TagView');
         // TODO make sure the state is only stored once per user
-        app.retrieveState(
+        var stateObj = {"type":"phase"};
+        app.retrieveState(stateObj,
           function(data) {
             console.log('Success retrieving state from DB '+data);
             if (data.length >= 1) {                            
-              console.log("Current state of tablets: "+data[0].state);
-              app.currentState = data[0];
-              if (app.currentState.state !== "start_student_tagging") {
-                app.currentState.state = "start_student_tagging";
-                app.storeState(app.currentState);
+              console.log("Current state of tablets: "+_.first(data).state);
+              // app.currentState = data[0];
+              if (_.first(data).state !== "start_student_tagging") {
+                _.first(data).state = "start_student_tagging";
+                app.storeState(_.first(data));
               }
               return true;
             }
             else {
               console.log("No state found");
-              app.currentState.state = "start_student_tagging";
-              app.storeState(app.currentState);
+              stateObj.state = "start_student_tagging";
+              app.storeState(stateObj);
               return true;
             }
           },
@@ -233,7 +252,7 @@ CK.Mobile = function() {
           }
         );
 
-        Sail.app.startPhase2();
+        app.startStudentTagging();
       },
 
       contribution_to_tag: function(sev) {
@@ -247,14 +266,50 @@ CK.Mobile = function() {
           app.contributionDetails.fetch({
             success: function () {
               app.taggedContribution = app.contributionDetails;
-              //Sail.app.contributionDetailsView.render();            // why do I need to call render here? Already bound to reset
             }
           });
+
+          // store contribution_id for restore state
+          var stateObj = {"type":"tablet","username":sev.payload.recipient,"state":"start_student_tagging"};
+          app.retrieveState(stateObj,
+            function(data) {
+              console.log('Success retrieving state from DB '+data);
+              if (data.length >= 1) {                            
+                console.log("Current state of tablets: "+_.first(data).state);
+                // app.currentState = data[0];
+                _.first(data).contribution_id = sev.payload.contribution_id;
+                app.storeState(_.first(data));
+                
+                return true;
+              }
+              else {
+                console.log("No state found");
+                stateObj.contribution_id = sev.payload.contribution_id;
+                app.storeState(stateObj);
+                return true;
+              }
+            },
+            function (data) {
+              console.log("Call to Drowsy failed with error: "+data);
+              return false;
+            }
+          );
         }
 
+      },
+
+      done_tagging: function(sev) {
+        console.log('done_tagging event heard');
+        if (sev.payload.recipient === app.userData.account.login) {
+          // app.currentState.state = "done_tagging";                        // Armin, check me - this is the place to set state?
+          app.doneTagging();
+        }
+      },
+
+      start_synthesis: function(sev) {
+        console.log('start_synthesis heard');
+        app.startSynthesis();
       }
-
-
 
     }
   };
@@ -291,6 +346,9 @@ CK.Mobile = function() {
 
     app.contributionDetails = new CK.Model.Contribution();
     app.contributionDetails.on('change', function(model) { console.log(model.changedAttributes()); });
+
+    app.tagList = new CK.Model.Tags();
+    app.tagList.on('change', function(model) { console.log(model.changedAttributes()); });    
   };
 
   app.initViews = function() {
@@ -341,11 +399,11 @@ CK.Mobile = function() {
     app.contributionInputView.render();
   };
 
-  app.startPhase2 = function() {
-    app.taggedContribution = new CK.Model.Contribution();
 
-    app.tagList = new CK.Model.Tags();
-    app.tagList.on('change', function(model) { console.log(model.changedAttributes()); });        
+  /* State related function */
+
+  app.startStudentTagging = function() {
+    app.taggedContribution = new CK.Model.Contribution();
 
     app.tagListView = new CK.Mobile.View.TagListView({
       el: jQuery('#tag-list'),
@@ -364,6 +422,25 @@ CK.Mobile = function() {
       // }
     });
   };
+
+  app.doneTagging = function() {
+    // I don't create a new view for this, right? I just want to go back to the first view, really....
+    jQuery('.brand').text('Common Knowledge - Notes');
+    jQuery('#tag-list').addClass('hide');
+    jQuery('#contribution-list').removeClass('hide');
+
+    app.contributionInputView.render();
+
+    //app.contributionDetails = new CK.Model.Contribution();
+    //app.contributionDetailsView.model = app.contributionDetails;
+    //app.contributionDetailsView.undelegateEvents();
+    //app.contributionDetailsView.delegateEvents();    
+    //app.contributionDetailsView.render();
+  };
+
+  app.startSynthesis = function() {
+    jQuery('.brand').text('Common Knowledge - Synthesis');
+  }
 
   app.storeState = function(stateObj) {
     console.log('Storing state '+stateObj.state+' for tablet');
@@ -387,12 +464,12 @@ CK.Mobile = function() {
     }); // end of ajax
   };
 
-  app.retrieveState = function(successCallback, errorCallback) {
+  app.retrieveState = function(selector, successCallback, errorCallback) {
     console.log('Retrieving state for tablet');
 
     jQuery.ajax({
       type: "GET",
-      url: Sail.app.config.mongo.url +'/'+ Sail.app.run.name +'/states/?selector={"type":"tablet"}',
+      url: Sail.app.config.mongo.url +'/'+ Sail.app.run.name +'/states/?selector='+JSON.stringify(selector),
       // data: JSON.stringify({"username":username, "type":"tablet", "state":state}),
       // handing in the context is very important to fill the
       // right table cell with the corresponding result - async
