@@ -148,10 +148,37 @@
           Sail.app.currentBuildOn.content = jQuery('#note-body-entry').val();
           Sail.app.currentBuildOn.author = Sail.app.userData.account.login;
           Sail.app.currentBuildOn.created_at = new Date();
-
         } else {
           console.log('unknown note type');
         }
+      },
+
+      'click .tag-btn': function (ev) {
+        var tag = jQuery(ev.target).data('tag');
+
+        // toggle the clicked tag in the model
+        if (Sail.app.currentContribution.hasTag(tag)) {
+          Sail.app.currentContribution.removeTag(tag);
+        } else {
+          // due to our deadlines, this is all hideous, and fighting backbone... TODO - fixme when there's more time
+          if (tag.get('name') === "N/A") {
+            Sail.app.currentContribution.attributes.tags = [];                       // eeeewwwwwwww
+            jQuery('.tag-btn').removeClass('active');
+          } else {
+            var naTag = Sail.app.tagList.find(function(t) { return t.get('name') === "N/A"; } );
+            Sail.app.currentContribution.removeTag(naTag);
+            jQuery("button:contains('N/A')").removeClass('active');
+          }
+          Sail.app.currentContribution.addTag(tag, Sail.app.userData.account.login);
+        }
+
+        // enable/disable the Share button - dup'd in the render, probably a better way to do this
+        if (Sail.app.currentContribution.attributes.tags.length > 0) {
+          jQuery('#share-note-btn').removeClass('disabled');
+        } else {
+          jQuery('#share-note-btn').addClass('disabled');
+        }
+
       },
 
       'click #share-note-btn': 'share'
@@ -201,6 +228,30 @@
           alert('Please enter both a note and a headline');
         }        
       }
+      // tagged contribution - this can only be an else as long as no New Notes on tagging phase
+      else if (Sail.app.taggedContribution) {
+        if (Sail.app.taggedContribution.attributes.tags.length > 0) {
+          console.log("Submitting tagged contribution...");
+          Sail.app.taggedContribution.save(null, {
+            complete: function () {
+              console.log('Submitted!');
+            },
+            success: function () {
+              console.log('Model saved');
+              Sail.app.sendContribution('taggedNote');
+
+              Sail.app.taggedContribution.clear();
+              Sail.app.tagListView.render();
+              Sail.app.contributionDetailsView.render();
+
+              alert('Tagged note submitted');
+            },
+            failure: function(model, response) {
+              console.log('Error submitting: ' + response);
+            }
+          });
+        }
+      }
 
       // build-on note
       if (Sail.app.currentContribution.kind === 'buildOn') {
@@ -229,31 +280,6 @@
             console.log('Error submitting: ' + response);       // do we want this as an alert instead?
           }
         });
-      }
-
-      // tagged contribution - maybe added tagged as a kind?
-      if (Sail.app.taggedContribution) {
-        if (Sail.app.taggedContribution.attributes.tags.length > 0) {
-          console.log("Submitting tagged contribution...");
-          Sail.app.taggedContribution.save(null, {
-            complete: function () {
-              console.log('Submitted!');
-            },
-            success: function () {
-              console.log('Model saved');
-              Sail.app.sendContribution('taggedNote');
-
-              Sail.app.taggedContribution.clear();
-              Sail.app.tagListView.render();
-              Sail.app.contributionDetailsView.render();
-
-              alert('Tagged note submitted');
-            },
-            failure: function(model, response) {
-              console.log('Error submitting: ' + response);
-            }
-          });
-        }
       }
     },
 
@@ -298,6 +324,32 @@
         console.log("Updating "+attributeName+" with val "+attributeValue);
         view.$el.find('.field['+attributeName+']').val(attributeValue);
       });
+
+      // TODO - do this right: make sure model is actually syncing with view instead of manually doing this
+      jQuery('#tag-submission-container .tag-btn').removeClass('active');      
+
+      Sail.app.tagList.each(function(tag) {
+        var tagButton = jQuery('button#note-tag-'+tag.id);
+        // length avoids duplicating (probably a better way to do this in backbone?)
+        //if (tagButton.length === 0 && tag.get('name') != "N/A") {
+        if (tagButton.length === 0) {
+          tagButton = jQuery('<button id=note-tag-'+tag.id+' type="button" class="btn tag-btn btn-warning"></button>');
+          tagButton = jQuery(tagButton);
+          jQuery('#tag-submission-container').append(tagButton);
+        }
+
+        tagButton.text(tag.get('name'));
+
+        // add tagger and store the tag object in the button for later
+        tag.set('tagger',Sail.app.userData.account.login);
+        tagButton.data('tag',tag);
+
+        // turn button on if previously tagged with this tag
+        if (Sail.app.currentContribution.hasTag(tag)) {
+          tagButton.addClass('active');
+        }
+      });
+
     }
   });
 
@@ -316,7 +368,7 @@
         if (Sail.app.taggedContribution.hasTag(tag)) {
           Sail.app.taggedContribution.removeTag(tag);
         } else {
-          // this is all hideous, and fighting backbone, due to deadlines... TODO - fixme when there's more time
+          // due to our deadlines, this is all hideous, and fighting backbone... TODO - fixme when there's more time
           if (tag.get('name') === "N/A") {
             Sail.app.taggedContribution.attributes.tags = [];                       // eeeewwwwwwww
             jQuery('.tag-btn').removeClass('active');
@@ -344,6 +396,7 @@
       console.log("Initializing TagListView...");
 
       // TODO - move this to the render?
+      jQuery('.brand').text('Common Knowledge - Tagging');
       jQuery('#contribution-list').addClass('hide');
       jQuery('#tag-list').removeClass('hide');
       jQuery('#share-note-btn').addClass('disabled');      
@@ -366,11 +419,9 @@
       console.log("rendering TagListView!");
 
       // clear all buttons
-      jQuery('.tag-btn').removeClass('active');      
+      jQuery('.tag-btn').removeClass('active');
 
       Sail.app.tagList.each(function(tag) {
-        console.log('tag: '+tag.get('name'));
-
         var tagButton = jQuery('button#'+tag.id);
         // length avoids duplicating (probably a better way to do this in backbone?)
         //if (tagButton.length === 0 && tag.get('name') != "N/A") {

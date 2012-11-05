@@ -77,7 +77,7 @@ CK.Mobile = function() {
           app.currentState = data[0];
           if (app.currentState.state === "start_student_tagging") {
             // TODO go to the right position, aka call a function?
-            Sail.app.startPhase2();
+            app.startStudentTagging();
           }
           return true;
         }
@@ -125,21 +125,12 @@ CK.Mobile = function() {
       // to do this config again for each model instantiation
       CK.Model.configure(app.config.mongo.url, app.run.name);
 
-      // I need to do this call, right? There's no easier way to grab username?
-      // Sail.app.rollcall.request(Sail.app.rollcall.url + "/users/"+Sail.app.session.account.login+".json", "GET", {}, function(data) {
-      //   console.log("Authenticated user is: ", data);
-
-      //   app.userData = data;
-      // });
-
       // Colin there is already data about the user available
       app.userData = Sail.app.session;
 
       // moved the view init here so that backbone is configured with URLs
       app.initModels();
       app.initViews();
-
-      // jQuery('#screen-lock').addClass('hide');
     },
 
     connected: function(ev) {
@@ -233,7 +224,7 @@ CK.Mobile = function() {
           }
         );
 
-        Sail.app.startPhase2();
+        app.startStudentTagging();
       },
 
       contribution_to_tag: function(sev) {
@@ -247,11 +238,18 @@ CK.Mobile = function() {
           app.contributionDetails.fetch({
             success: function () {
               app.taggedContribution = app.contributionDetails;
-              //Sail.app.contributionDetailsView.render();            // why do I need to call render here? Already bound to reset
             }
           });
         }
 
+      },
+
+      done_tagging: function(sev) {
+        console.log('done_tagging event heard');
+        if (sev.payload.recipient === app.userData.account.login) {
+          // app.currentState.state = "done_tagging";                        // Armin, check me - this is the place to set state?
+          app.doneTagging();
+        }
       }
 
 
@@ -341,7 +339,10 @@ CK.Mobile = function() {
     app.contributionInputView.render();
   };
 
-  app.startPhase2 = function() {
+
+  /* State related function */
+
+  app.startStudentTagging = function() {
     app.taggedContribution = new CK.Model.Contribution();
 
     app.tagList = new CK.Model.Tags();
@@ -363,6 +364,21 @@ CK.Mobile = function() {
       //   app.flag = true;
       // }
     });
+  };
+
+  app.doneTagging = function() {
+    // I don't create a new view for this, right? I just want to go back to the first view, really....
+    jQuery('.brand').text('Common Knowledge - Notes');
+    jQuery('#tag-list').addClass('hide');
+    jQuery('#contribution-list').removeClass('hide');
+
+    app.contributionInputView.render();
+
+    //app.contributionDetails = new CK.Model.Contribution();
+    //app.contributionDetailsView.model = app.contributionDetails;
+    //app.contributionDetailsView.undelegateEvents();
+    //app.contributionDetailsView.delegateEvents();    
+    //app.contributionDetailsView.render();
   };
 
   app.storeState = function(stateObj) {
