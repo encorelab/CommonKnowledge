@@ -42,6 +42,13 @@ class Choreographer < Sail::Agent
         log "#{stu.inspect} joined "
       end
     end
+
+    someone_left_room do |stanza|
+      log "Stanza from #{stanza.from.inspect} received"
+      log "Student hash before removing #{@students.inspect}"
+      student_to_remove = @students.delete(Util.extract_login(stanza.from))
+      log "Student hash after removing #{@students.inspect}"
+    end
     
     event :start_student_tagging? do |stanza, data|
       log "Received start_student_tagging #{data.inspect}"
@@ -168,9 +175,9 @@ class Choreographer < Sail::Agent
     end
   end
 
-  def send_no_more_contributions(user)
+  def send_done_tagging(user)
     log "Sending tag_assignment for user '#{user.inspect}' for contributionId '#{contributionId.inspect}'"
-    event!(:no_more_contributions, {:recipient => user})    
+    event!(:done_tagging, {:recipient => user})    
   end
 
 
