@@ -46,14 +46,8 @@ class Choreographer < Sail::Agent
     event :start_student_tagging? do |stanza, data|
       log "Received start_student_tagging #{data.inspect}"
       
-      # retrieve all contributions that make up the bucket of contribs to be tagged
-      @mongo.collection(:contributions).find().each do |contrib|
-        #log "#{contrib.inspect}"
-        contributionId = contrib['_id'].to_s
-
-        @bucket.push(contributionId)
-      end
-
+      # Retrieve contributions to consider for tagging
+      @bucket = fill_contribution_bucket()
       log "Found #{@bucket.count} contributions to hand out to #{@students.count} students"
       
       # Handout contributions to all present users
@@ -74,11 +68,28 @@ class Choreographer < Sail::Agent
       log "Sending out first wave of tagging events"
       send_tag_assignments(tagAssignments)
 
+      log "There are #{@bucket.count} contributions left for tagging"
+
       # check if there are more contributions to hand out (probably do this each time when students are done with tagging)      
     end
 
     event :contribution_tagged? do |stanza, data|
-      log "#{stanza.inspect}"
+      log "Recieved contribution_tagged #{data.inspect}"
+      tagAssignments = {}
+      @bucket = []
+
+      @bucket = fill_contribution_bucket()
+      log "Found #{@bucket.count} contributions to hand out to student #{data['origin'].inspect}"
+
+      unless @bucket.empty?
+        log "Assigning contribution #{@bucket.pop} to user #{data['origin'].inspect}"
+        tagAssignments[data['origin']] = @bucket.pop
+        send_tag_assignments(tagAssignments)
+      else
+        log "Nothing in bucket, tell user that he is done"
+        send_no_more_contributions(data['origin'])
+      end
+        
     end 
 
   end
@@ -119,12 +130,47 @@ class Choreographer < Sail::Agent
     return stu
   end
 
+  def fill_contribution_bucket()
+    #empty bucket
+    bucket = []
+    notag = []
+    na = []
+    
+    # retrieve all contributions that make up the bucket of contribs to be tagged
+    # @mongo.collection(:contributions).find("tags" => { "$exists" => true}, "author" => { "$exists" => true }, "headline" => { "$exists" => true }, "content" => { "$exists" => true }).each do |contrib|
+    @mongo.collection(:contributions).find("tags" => { "$exists" => true}).each do |contrib|
+      contributionId = contrib['_id'].to_s
+
+      if (!contrib['tags'].empty? && contrib['tags'].any?{|t| t['name'] == "N/A"})
+        log "#{contrib.inspect}"
+      end
+
+      # only work on contributions that are not tagged yet or that have n/a tag
+      if contrib['tags'].empty?
+        notag.push(contributionId)
+      elsif (!contrib['tags'].empty? && contrib['tags'].any?{|t| t['name'] == "N/A"})
+        na.push(contributionId)
+      end
+    end
+
+    bucket += na
+    bucket += notag
+    log "notag #{notag.count} / na #{na.count} / bucket #{bucket.count}"
+
+    return bucket
+  end
+
   def send_tag_assignments(user_to_contribution_id_assignments)
     # find a problem with assigned 'false'
     user_to_contribution_id_assignments.map do |user, contributionId|
       log "Sending tag_assignment for user '#{user.inspect}' for contributionId '#{contributionId.inspect}'"
       event!(:contribution_to_tag, {:recipient => user, :contribution_id => contributionId})
     end
+  end
+
+  def send_no_more_contributions(user)
+    log "Sending tag_assignment for user '#{user.inspect}' for contributionId '#{contributionId.inspect}'"
+    event!(:no_more_contributions, {:recipient => user})    
   end
 
 

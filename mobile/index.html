@@ -49,7 +49,7 @@
             </div>
         </div>
 
-        <div id="screen-lock" style="display: none">
+        <div id="screen-lock" class="hide">
             <img src="img/lock-icon.png" id="lock-image"/>
         </div>
 
@@ -78,9 +78,12 @@
                     <div class="note-metadata">
                         <span class="note-author field" name="author"> </span><span class="note-created-at field" name="created_at"></span>
                     </div>
+                    <br />
+                    <div class="note-build-ons field" name="build_ons">
+                    </div>
                 </div>
                 <div class="btn-container">
-                    <a id="contribution-details-build-on-btn" class="btn btn-primary">
+                    <a id="contribution-details-build-on-btn" class="btn btn-primary hide">
                         Build On
                     </a>
                 </div>
@@ -93,13 +96,13 @@
                     <button type="button" class="btn tag-btn btn-warning">Running</button>
                     <button type="button" class="btn tag-btn btn-warning">Economy</button>
                     <button type="button" class="btn tag-btn btn-warning">Athletes</button>
-                    <button type="button" class="btn tag-btn btn-warning">N/A</button> -->
+                    <button id="na-btn" type="button" class="btn tag-btn btn-warning">N/A</button>-->
                 </div>                
-                <div class="btn-container">
+<!--                 <div class="btn-container">
                     <a id="tag-list-build-on-btn" class="btn btn-primary build-on-btn">
                         Build On
                     </a>
-                </div>
+                </div> -->
             </div>        
 
             <div id="contribution-input" class="span8 view-container">
@@ -127,9 +130,9 @@
                     </div>
                 </div>
                 <div class="btn-container btn-group action-btn-group">
-                    <a id="cancel-note-btn" class="btn btn-danger">
+<!--                     <a id="cancel-note-btn" class="btn btn-danger">
                         Cancel
-                    </a>
+                    </a> -->
                     <a id="share-note-btn" class="btn btn-success">
                         Share
                     </a>

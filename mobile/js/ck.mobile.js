@@ -10,6 +10,7 @@ CK.Mobile = function() {
 
   // Global vars
   app.userData = null;
+  app.currentBuildOn = {};
   app.tagArray = [];
   app.buildOnArray = [];  
 
@@ -149,12 +150,18 @@ CK.Mobile = function() {
       //   //storeTags(new_contribution.tags);
       // },
 
-      toggle_screen_lock: function(sev) {
+      screen_lock: function(sev) {
         console.log('freezing display');
 
-        jQuery('#screen-lock').toggle();
+        jQuery('#screen-lock').removeClass('hide');
         // do we want to lock down all the screen elements as well
         // TODO - test on tablet... keyboard will make things awkward - maybe use unfocus to solve all these problems? Disabling all fields might work too
+      },
+
+      screen_unlock: function(sev) {
+        console.log('unfreezing display');
+
+        jQuery('#screen-lock').addClass('hide');
       },
 
       contribution: function(sev) {
@@ -173,6 +180,7 @@ CK.Mobile = function() {
 
       start_student_tagging: function(sev) {
         console.log('start_student_tagging heard, creating TagView');
+        app.taggedContribution = new CK.Model.Contribution();
 
         app.tagList = new CK.Model.Tags();
         app.tagList.on('change', function(model) { console.log(model.changedAttributes()); });        
@@ -183,41 +191,54 @@ CK.Mobile = function() {
         });
         app.tagList.on('reset add', app.tagListView.render);       // probably unnecessary, maybe even a bad idea?
 
+        var sort = ['created_at', 'ASC'];
         app.tagList.fetch({
-          // data: { 
-          //   selector: JSON.stringify({
-          //     session: app.run.name
-          //   }) 
+          data: {
+            sort: JSON.stringify(sort)
+          }
           // },
-          // success: function (tags) {
-          //   app.tagList = tags;
+          // success: function() {
+          //   app.flag = true;
           // }
         });
-
-        jQuery('#contribution-list').addClass('hide');
-        jQuery('#tag-list').removeClass('hide');
-        jQuery('#contribution-details-build-on-btn').addClass('hide');
       },
 
       contribution_to_tag: function(sev) {
         console.log('contribution_to_tag heard');
         console.log('id: '+sev.payload.contribution_id);
-        console.log('name: '+sev.payload.recipient);
-
+        
         if (sev.payload.recipient === app.userData.account.login) {
+          console.log('name: '+sev.payload.recipient);
+
           app.contributionDetails.id = sev.payload.contribution_id;
-          app.contributionDetails.fetch();
+          app.contributionDetails.fetch({
+            success: function () {
+              app.taggedContribution = app.contributionDetails;
+              //Sail.app.contributionDetailsView.render();            // why do I need to call render here? Already bound to reset
+            }
+          });
         }
 
       }
+
+
 
     }
   };
 
   /* Outgoing events */
 
-  app.sendContribution = function() {
-    var sev = new Sail.Event('contribution', app.currentContribution.toJSON())
+  app.sendContribution = function(kind) {
+    if (kind === 'newNote') {
+      var sev = new Sail.Event('contribution', app.currentContribution.toJSON());
+    } else if (kind === 'buildOn') {
+      var sev = new Sail.Event('contribution', app.contributionDetails.toJSON());
+    } else if (kind === 'taggedNote') {
+      var sev = new Sail.Event('contribution_tagged', app.taggedContribution.toJSON());
+    } else {
+      console('unknown type of submission, cant send contribution');
+    }
+
     Sail.app.groupchat.sendEvent(sev);
   };
 
@@ -242,7 +263,7 @@ CK.Mobile = function() {
       el: jQuery('#contribution-list'),
       collection: app.contributionList
     });
-    app.contributionList.on('reset add', app.contributionListView.render);        // TODO - damned backbone being too sneak and efficient
+    app.contributionList.on('reset add', app.contributionListView.render);
     var sort = ['created_at', 'DESC'];
     // var selector = {"author": "matt"};
     app.contributionList.fetch({
@@ -254,6 +275,7 @@ CK.Mobile = function() {
       el: jQuery('#contribution-details'),
       model: app.contributionDetails
     });
+    app.contributionDetails.on('reset add', app.contributionDetailsView.render);
     
     console.log('creating InputView');
     app.contributionInputView = new CK.Mobile.View.ContributionInputView({
@@ -265,6 +287,7 @@ CK.Mobile = function() {
   app.addNote = function(kind) {
     console.log('Preping to add a note...');
 
+    // clear all the old garbage out of the model, rebind
     app.currentContribution = new CK.Model.Contribution();
     app.contributionInputView.model = app.currentContribution;
     app.contributionInputView.undelegateEvents();
