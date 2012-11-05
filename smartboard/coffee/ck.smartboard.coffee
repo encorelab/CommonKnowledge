@@ -173,10 +173,12 @@ class CK.Smartboard extends Sail.App
 
             contribution_tagged: (sev) ->
                 c = @contributions.get(sev.payload._id)
+                console.log("contribution_tagged, c is: ", c)
 
                 addLink = =>
                     c.set(sev.payload)
-                    ts = @tags.get(tr.id) for tr in c.get('tags')
+                    ts = ( @tags.get(tr.id) for tr in c.get('tags') )
+                    console.log("adding links from ", c, " to ", ts)
                     @wall.cloud.addLinks(c, ts)
 
                 if c
