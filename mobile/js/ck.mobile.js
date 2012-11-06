@@ -127,7 +127,7 @@ CK.Mobile = function() {
       // Colin there is already data about the user available
       app.userData = Sail.app.session;
 
-      jQuery('#logout-button').addClass('btn btn-warning').html('<a href="#">Logout</a>');
+      //jQuery('#logout-button').addClass('btn btn-warning').html('<a href="#">Logout</a>');
 
       // moved the view init here so that backbone is configured with URLs
       app.initModels();
