@@ -608,26 +608,6 @@
             return console.log("Couldn't save pinned tag's position -- couldn't find a tag with id: ", tid);
           }
         }
-      },
-      'click': function(ev) {
-        var tag, tid;
-        this.model.set('pinned', !this.model.get('pinned'));
-        if (this.$el.get('pinned')) {
-          this.$el[0].fixed = true;
-        } else {
-          this.$el[0].fixed = false;
-          return;
-        }
-        console.log("Saving pinned tag's position");
-        tid = this.$el.attr('id');
-        tag = Sail.app.tags.get(tid);
-        if (tag) {
-          return tag.save({}, {
-            silent: true
-          });
-        } else {
-          return console.log("Couldn't save pinned tag's position -- couldn't find a tag with id: ", tid);
-        }
       }
     };
 
