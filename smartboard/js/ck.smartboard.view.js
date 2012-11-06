@@ -607,7 +607,7 @@
           }
         }
       },
-      'click': function(ev) {
+      'dblclick': function(ev) {
         this.model.set('pinned', !this.model.get('pinned'), {
           silent: true
         });

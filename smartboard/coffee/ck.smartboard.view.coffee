@@ -617,7 +617,7 @@ class CK.Smartboard.View.TagBalloon extends CK.Smartboard.View.Balloon
                 else
                     console.log("Couldn't save pinned tag's position -- couldn't find a tag with id: ", tid)
 
-        'click': (ev) ->
+        'dblclick': (ev) ->
             @model.set('pinned', !@model.get('pinned'), {silent:true})
 
             if @model.get('pinned')
