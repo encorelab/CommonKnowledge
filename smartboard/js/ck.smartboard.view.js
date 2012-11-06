@@ -140,10 +140,14 @@
         }
       },
       'click #go-analyze': function(ev) {
-        return Sail.app.startAnalysis();
+        if (this.mode === 'brainstorm') {
+          return Sail.app.startAnalysis();
+        }
       },
       'click #go-synthesize': function(ev) {
-        return Sail.app.startSynthesis();
+        if (this.mode === 'analysis') {
+          return Sail.app.startSynthesis();
+        }
       }
     };
 
@@ -166,7 +170,7 @@
       this.cloud.force.resume();
       jQuery('body').removeClass('paused');
       this.$el.find('#toggle-pause').removeClass('paused').text('Pause');
-      return this.changeWatermark(this.mode || "Brainstorm");
+      return this.changeWatermark(this.mode || "brainstorm");
     };
 
     Wall.prototype.changeWatermark = function(text) {
@@ -177,18 +181,18 @@
 
     Wall.prototype.setMode = function(mode) {
       if (!mode) {
-        mode = "Brainstorm";
+        mode = "brainstorm";
       }
       this.mode = mode;
       if (mode === 'analysis') {
         jQuery('body').removeClass('mode-synthesis').addClass('mode-analysis');
-        return this.changeWatermark("Analysis");
+        return this.changeWatermark("analysis");
       } else if (mode === 'synthesis') {
         jQuery('body').removeClass('mode-analysis').addClass('mode-synthesis');
-        return this.changeWatermark("Synthesis");
+        return this.changeWatermark("synthesis");
       } else {
         jQuery('body').removeClass('mode-analysis').removeClass('mode-synthesis');
-        return this.changeWatermark("Brainstorm");
+        return this.changeWatermark("brainstorm");
       }
     };
 
@@ -201,7 +205,7 @@
       cloud.wallWidth = this.$el.innerWidth();
       cloud.wallHeight = this.$el.innerHeight();
       cloud.linkDistance = function(link, i) {
-        return (jQuery(link.source).outerHeight() / 2 + jQuery(link.target).outerHeight() / 2) + 40;
+        return (jQuery(link.source).outerWidth() / 2 + jQuery(link.target).outerWidth() / 2) + 10;
       };
       cloud.tick = function() {
         var i, q, _i, _ref;
@@ -223,6 +227,10 @@
             d.y = 0 + balloonHeight / 2;
           }
           return (d.y - balloonHeight / 2) + 'px';
+        }).each(function(d) {
+          if (jQuery(d).hasClass('pinned')) {
+            return d.fixed = true;
+          }
         });
         q = d3.geom.quadtree(cloud.nodes);
         for (i = _i = 0, _ref = cloud.nodes.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
@@ -247,13 +255,7 @@
         $n = jQuery(n);
         n.index = i;
       }
-      cloud.force = d3.layout.force().charge(function(d) {
-        if (jQuery(d).hasClass('tag')) {
-          return -4500;
-        } else {
-          return -1000;
-        }
-      }).linkDistance(cloud.linkDistance).linkStrength(0.2).gravity(0).friction(0.2).size([cloud.wallWidth, cloud.wallHeight]).nodes(cloud.nodes).links(cloud.links).on('tick', cloud.tick);
+      cloud.force = d3.layout.force().charge(0).linkDistance(cloud.linkDistance).linkStrength(0.2).gravity(0).friction(0.2).size([cloud.wallWidth, cloud.wallHeight]).nodes(cloud.nodes).links(cloud.links).on('tick', cloud.tick);
       cloud.tags = {};
       Sail.app.tags.each(function(tag) {
         var t;
@@ -495,8 +497,8 @@
 
     ContributionBalloon.prototype.render = function() {
       var body, headline, meta;
-      if (this.model.get('kind') === 'riseabove') {
-        this.$el.addClass('riseabove');
+      if (this.model.get('kind') === 'synthesis') {
+        this.$el.addClass('synthesis');
       }
       headline = this.findOrCreate('.headline', "<h3 class='headline'></h3>");
       headline.text(this.model.get('headline'));
@@ -581,6 +583,51 @@
     TagBalloon.prototype.events = {
       'mousedown': function(ev) {
         return this.moveToTop();
+      },
+      'mouseout': function(ev) {
+        var pos, tag, tid;
+        if (this.model.get('pinned')) {
+          console.log("Saving pinned tag's position");
+          pos = this.$el.position();
+          tid = this.$el.attr('id');
+          tag = Sail.app.tags.get(tid);
+          if (tag) {
+            tag.set({
+              pos: {
+                left: pos.left,
+                top: pos.top,
+                pinned: true
+              }
+            }, {
+              silent: true
+            });
+            return tag.save({}, {
+              silent: true
+            });
+          } else {
+            return console.log("Couldn't save pinned tag's position -- couldn't find a tag with id: ", tid);
+          }
+        }
+      },
+      'click': function(ev) {
+        var tag, tid;
+        this.model.set('pinned', !this.model.get('pinned'));
+        if (this.$el.get('pinned')) {
+          this.$el[0].fixed = true;
+        } else {
+          this.$el[0].fixed = false;
+          return;
+        }
+        console.log("Saving pinned tag's position");
+        tid = this.$el.attr('id');
+        tag = Sail.app.tags.get(tid);
+        if (tag) {
+          return tag.save({}, {
+            silent: true
+          });
+        } else {
+          return console.log("Couldn't save pinned tag's position -- couldn't find a tag with id: ", tid);
+        }
       }
     };
 
@@ -588,6 +635,11 @@
       var name;
       name = this.findOrCreate('.name', "<h3 class='name'></h3>");
       name.text(this.model.get('name'));
+      if (this.model.get('pinned')) {
+        this.$el.addClass('pinned');
+      } else {
+        this.$el.removeClass('pinned');
+      }
       this.corporealize();
       this.$el.show();
       return this;
