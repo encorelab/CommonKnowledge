@@ -65,6 +65,7 @@ i {
 
 #logout-button {
 	margin-top: 0px !important;
+	color: inherit;
 }
 
 #auth-as {
