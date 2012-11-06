@@ -13,8 +13,9 @@ body {
 }
 
 /*
-maybe add these for the lis? And others? */
-li {
+maybe add these for the lis? And others?
+li*/
+#contribution-list * {
 	-moz-user-select: none;
  	-webkit-user-select: none;
  	user-select: none;
@@ -64,7 +65,7 @@ i {
 }
 
 #logout-button {
-	margin-top: 0px !important;
+	/*margin-top: 0px !important;*/
 	color: inherit;
 }
 
