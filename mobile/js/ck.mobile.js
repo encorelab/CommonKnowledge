@@ -16,6 +16,13 @@ CK.Mobile = function() {
   app.synthesisFlag = false;
   // app.currentState = {"type":"tablet"};
 
+
+app.hideAddressBar = function() {
+  if(document.documentElement.scrollHeight<window.outerHeight/window.devicePixelRatio)
+    document.documentElement.style.height=(window.outerHeight/window.devicePixelRatio)+'px';
+  setTimeout(window.scrollTo(1,1),0);
+}
+
   // TODO: copied from washago code
   app.init = function() {
     Sail.modules
@@ -37,6 +44,11 @@ CK.Mobile = function() {
     jQuery().toastmessage({
       position : 'middle-center'
     });
+
+    app.hideAddressBar();
+
+
+//window.addEventListener("orientationchange",function(){hideAddressBar();});    
   };
 
   app.authenticate = function() {
