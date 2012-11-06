@@ -15,10 +15,22 @@ body {
 /*
 maybe add these for the lis? And others?
 li*/
-#contribution-list * {
+* {
 	-moz-user-select: none;
  	-webkit-user-select: none;
  	user-select: none;
+}
+
+textarea {
+	-moz-user-select: text;
+ 	-webkit-user-select: text;
+ 	user-select: text;	
+}
+
+input {
+	-moz-user-select: text;
+ 	-webkit-user-select: text;
+ 	user-select: text;	
 }
 
 i {
