@@ -608,6 +608,16 @@
             return console.log("Couldn't save pinned tag's position -- couldn't find a tag with id: ", tid);
           }
         }
+      },
+      'click': function(ev) {
+        this.model.set('pinned', !this.model.get('pinned'), {
+          silent: true
+        });
+        if (this.model.get('pinned')) {
+          return this.$el.addClass('pinned');
+        } else {
+          return this.$el.removeClass('pinned');
+        }
       }
     };
 

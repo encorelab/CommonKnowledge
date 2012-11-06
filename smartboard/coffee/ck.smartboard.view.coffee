@@ -619,26 +619,31 @@ class CK.Smartboard.View.TagBalloon extends CK.Smartboard.View.Balloon
                 else
                     console.log("Couldn't save pinned tag's position -- couldn't find a tag with id: ", tid)
 
-        # 'click': (ev) ->
-        #     @model.set('pinned', !@model.get('pinned'))
+        'click': (ev) ->
+            @model.set('pinned', !@model.get('pinned'), {silent:true})
 
-        #     # FIXME: seems to always be evaluating to false
+            if @model.get('pinned')
+                @$el.addClass('pinned')
+            else
+                @$el.removeClass('pinned')
 
-        #     if @$el.get('pinned')
-        #         # NOTE: this gets set again based on the 'pinned' class in cloud.tick()
-        #         @$el[0].fixed = true
-        #     else
-        #         @$el[0].fixed = false
-        #         return
+            # FIXME: seems to always be evaluating to false
 
-        #     console.log("Saving pinned tag's position")
+            # if @$el.get('pinned')
+            #     # NOTE: this gets set again based on the 'pinned' class in cloud.tick()
+            #     @$el[0].fixed = true
+            # else
+            #     @$el[0].fixed = false
+            #     return
 
-        #     tid = @$el.attr('id')
-        #     tag = Sail.app.tags.get(tid)
-        #     if tag
-        #         tag.save({}, {silent: true})
-        #     else
-        #         console.log("Couldn't save pinned tag's position -- couldn't find a tag with id: ", tid)
+            # console.log("Saving pinned tag's position")
+
+            # tid = @$el.attr('id')
+            # tag = Sail.app.tags.get(tid)
+            # if tag
+            #     tag.save({}, {silent: true})
+            # else
+            #     console.log("Couldn't save pinned tag's position -- couldn't find a tag with id: ", tid)
 
     render: => 
         name = @findOrCreate '.name', 
