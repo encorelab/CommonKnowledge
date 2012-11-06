@@ -59,6 +59,18 @@ i {
 	right: 3px;
 }
 
+#logout-container * {
+	display: inline-block;
+}
+
+#logout-button {
+	margin-top: 0px !important;
+}
+
+#auth-as {
+	margin-right: 10px;
+}
+
 
 /****** containers ******/
 

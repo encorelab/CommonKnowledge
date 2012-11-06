@@ -22,7 +22,7 @@ CK.Mobile = function() {
       // Enable multi-picker login for CommonKnowledge curnit - asking for run (must be linked to curnit)
       .load('Rollcall.Authenticator', {mode: 'multi-picker', askForRun: true, curnit: 'CommonKnowledge'})
       .load('Strophe.AutoConnector')
-      .load('AuthStatusWidget')
+      .load('AuthStatusWidget', {indicatorContainer: '#logout-container'})
       .thenRun(function () {
         Sail.autobindEvents(app);
         app.trigger('initialized');
@@ -102,6 +102,8 @@ CK.Mobile = function() {
       // Colin there is already data about the user available
       app.userData = Sail.app.session;
 
+      jQuery('#logout-button').addClass('btn btn-warning').text('Logout');
+
       // moved the view init here so that backbone is configured with URLs
       app.initModels();
       app.initViews();
@@ -112,6 +114,10 @@ CK.Mobile = function() {
 
       app.restoreState();
 
+    },
+
+    'unauthenticated': function(ev) {
+      app.authenticte();
     },
 
     sail: {
