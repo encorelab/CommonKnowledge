@@ -76,13 +76,15 @@ CK.Mobile = function() {
         });
       } if (s && s.get('state') === "start_synthesis") {
         console.log('phase is start_synthesis');
+        app.startStudentTagging();
+
         CK.getStateForUser("tablet", Sail.app.userData.account.login, "contribution_to_tag", function(user_state){
           var data_from_state = user_state.get('data');
           if (data_from_state.done_tagging === true) {
             CK.getStateForUser("tablet", Sail.app.userData.account.login, "done_tagging", function(s3) {
               console.log('state is start_synthesis and we are done_tagging so call doneTagging and startSynthesis');
 // TODO for Colin: Figure out the side effects that are necessary to have everything in place for this restore to work.
-              Sail.app.startStudentTagging();
+              
               Sail.app.doneTagging();
               Sail.app.startSynthesis();
             });
