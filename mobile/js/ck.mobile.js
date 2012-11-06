@@ -455,6 +455,7 @@ CK.Mobile = function() {
   };
 
   app.startSynthesis = function() {
+    // TODO - set done_tagging just in case
     app.synthesisFlag = true;
     jQuery('.brand').text('Common Knowledge - Synthesis');
     Sail.app.contributionInputView.render();                  // do I need to do fetch? 

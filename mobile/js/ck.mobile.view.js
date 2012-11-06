@@ -165,7 +165,7 @@
         }
       },
 
-      'click .tag-btn': function (ev) {
+      'click #tag-submission-container .tag-btn': function (ev) {
         var tag = jQuery(ev.target).data('tag');
 
         // toggle the clicked tag in the model
@@ -354,11 +354,11 @@
         console.log('trying to render, but unknown note type');
       }
 
-      //CK.getState('phase', function(s) {
+      //CK.getState('phase', function(s) {                      // TODO - fix me when model is done
         //if (s && s.get('state') === 'done_tagging') {
           jQuery('#contribution-details-build-on-btn').addClass('hide');
           // TODO - do this right: make sure model is actually syncing with view instead of manually doing this
-          jQuery('#tag-submission-container .tag-btn').removeClass('active');
+          // jQuery('#tag-submission-container .tag-btn').removeClass('active');
 
           Sail.app.tagList.each(function(tag) {
             var tagButton = jQuery('button#note-tag-'+tag.id);
@@ -393,9 +393,8 @@
     TagListView
   **/
   self.TagListView = Backbone.View.extend({
-    // FIX THE LIs SO THAT THEY'RE ALL CLICKABLE IN CONTLISTVIEW
     events: {
-      'click .tag-btn': function (ev) {
+      'click #tag-list-btn-container .tag-btn': function (ev) {
         // console.log('id: '+ev.target.id);
         var tag = jQuery(ev.target).data('tag');
 
