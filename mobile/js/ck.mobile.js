@@ -55,112 +55,33 @@ CK.Mobile = function() {
 
   // TODO: copied from washago code
   app.restoreState = function () {
-    this.contributions = new CK.Model.Contributions();
-
-    this.contributions.on('add', function (contrib) {
-      // addTagToList(contrib);
-      // addTypeToList(contrib);
-      // addAboutToList(contrib);
-    });
-
-    this.contributions.on('reset', function (collection) {
-      collection.each(function (contrib) {
-        // addTagToList(contrib);
-        // addTypeToList(contrib);
-        // addAboutToList(contrib);
-      });
-    });
-
-    this.restoreContributions();
-
+ 
     //var stateObj = {"type":"phase"};
     CK.getState("phase", function(s){
-      if (s && s.state === "start_student_tagging"){
+      if (s && s.get('state') === "start_student_tagging"){
         console.log('phase is start_student_tagging');
         app.startStudentTagging();
 
         console.log('Check if contribution left to do or done with tagging');
-        CK.getStateForUser("tablet", Sail.app.userData.account.login, "contribution_to_tag", function(state){
-          if (state.data === "already done") {
-            CK.getStateForUser("tablet", Sail.app.userData.account.login, "done_tagging", function(state) {
+        CK.getStateForUser("tablet", Sail.app.userData.account.login, "contribution_to_tag", function(user_state){
+          var data_from_state = user_state.get('data');
+          if (data_from_state === "already done") {
+            CK.getStateForUser("tablet", Sail.app.userData.account.login, "done_tagging", function(s3) {
               // go to done tagging
               app.doneTagging();
             });
-          } else if (state.data.contribution_id !== "") {
-            console.log('Need to work on contribution with id: '+state.data.contribution_id);
+          } else if (data_from_state.contribution_id !== "") {
+            console.log('Need to work on contribution with id: '+data_from_state.contribution_id);
+            app.contributionToTag(data_from_state.contribution_id);
           }
         });
-      } if (s && s.state === "start_synthesis") {
+      } if (s && s.get('state') === "start_synthesis") {
         console.log('phase is start_synthesis');
       } else {
         console.log('could not find state for type phase');
       }
     });
-    // app.retrieveState(stateObj, 
-    //   function(data) {
-    //     console.log('Success retrieving state from DB '+data);
-    //     if (data.length >= 1) {                            
-    //       console.log("Current phase: "+data[0].state);
-    //       // app.currentState = data[0];
-    //       if (_.first(data).state === "start_student_tagging") {
-    //         // TODO go to the right position, aka call a function?
-    //         app.startStudentTagging();
-
-    //         var stateObjContrib = {"type":"tablet","username":Sail.app.userData.account.login,"state":_.first(data).state};
-    //         app.retrieveState(stateObjContrib,
-    //           function(data) {
-    //             console.log('Success retrieving state from DB '+data);
-    //             if (data.length >= 1) {                            
-    //               console.log("Contribution ID to work on: "+_.first(data).contribution_id.$oid);
-                  
-    //               app.contributionDetails.id = _.first(data).contribution_id;
-    //               app.contributionDetails.fetch({
-    //                 success: function () {
-    //                   app.taggedContribution = app.contributionDetails;
-    //                 }
-    //               });
-    //               return true;
-    //             }
-    //             else {
-    //               console.log("No state found");
-    //               return true;
-    //             }
-    //           },
-    //           function (data) {
-    //             console.log("Call to Drowsy failed with error: "+data);
-    //             return false;
-    //           }
-    //         );
-    //       }
-    //       return true;
-    //     }
-    //     else {
-    //       console.log("No state found");
-    //       // stateObj.state = "beginning";
-    //       // app.storeState(stateObj);
-    //       return true;
-    //     }
-    //   },
-    //   function (data) {
-    //     console.log("Call to Drowsy failed with error: "+data);
-    //     return false;
-    //   }
-    // );
-  };
-
-  app.restoreContributions = function () {
-    this.contributions.fetch({
-      data: { 
-        selector: JSON.stringify({
-          session: app.run.name
-        }) 
-      },
-      success: function (contributions) {
-        contributions.each(function (contrib) {
-          new CK.Mobile.View.ContributionListView({model: contrib}).render();         // TODO - check me, I'm not right
-        });
-      }
-    });
+ 
   };
 
   app.events = {
@@ -261,40 +182,12 @@ CK.Mobile = function() {
         if (sev.payload.recipient === app.userData.account.login) {
           console.log('name: '+sev.payload.recipient);
 
-          app.contributionDetails.id = sev.payload.contribution_id;
-          app.contributionDetails.fetch({
-            success: function () {
-              app.taggedContribution = app.contributionDetails;
-            }
-          });
+
+          app.contributionToTag(sev.payload.contribution_id);          
 
           var dataObj = {"contribution_id":sev.payload.contribution_id};
           CK.setStateForUser ("tablet", app.userData.account.login, "contribution_to_tag", dataObj);
-          // store contribution_id for restore state
-          // var stateObj = {"type":"tablet","username":sev.payload.recipient,"state":"start_student_tagging"};
-          // app.retrieveState(stateObj,
-          //   function(data) {
-          //     console.log('Success retrieving state from DB '+data);
-          //     if (data.length >= 1) {                            
-          //       console.log("Current state of tablets: "+_.first(data).state);
-          //       // app.currentState = data[0];
-          //       _.first(data).contribution_id = sev.payload.contribution_id;
-          //       app.storeState(_.first(data));
-                
-          //       return true;
-          //     }
-          //     else {
-          //       console.log("No state found");
-          //       stateObj.contribution_id = sev.payload.contribution_id;
-          //       app.storeState(stateObj);
-          //       return true;
-          //     }
-          //   },
-          //   function (data) {
-          //     console.log("Call to Drowsy failed with error: "+data);
-          //     return false;
-          //   }
-          // );
+
         }
 
       },
@@ -437,6 +330,15 @@ CK.Mobile = function() {
     });
 
     app.contributionInputView.render();
+  };
+
+  app.contributionToTag = function (contribution_id) {
+    app.contributionDetails.id = contribution_id;
+    app.contributionDetails.fetch({
+      success: function () {
+        app.taggedContribution = app.contributionDetails;
+      }
+    });
   };
 
   app.doneTagging = function() {

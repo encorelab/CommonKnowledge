@@ -19,12 +19,13 @@
     return states.fetch();
   };
 
-  CK.getStateForUser = function(type, username, state, callback) {
+  CK.getStateForUser = function(type, username, state_name, callback) {
     var states;
     states = new CK.Model.States();
     states.on('reset', function(ss) {
+      var state;
       state = ss.find(function(s) {
-        return s.get('type') === type && s.get('username') === username && s.get('state') === state;
+        return s.get('type') === type && s.get('username') === username && s.get('state') === state_name;
       });
       return callback(state);
     });
@@ -42,15 +43,15 @@
     });
   };
 
-  CK.setStateForUser = function(type, username, state, dataObj) {
+  CK.setStateForUser = function(type, username, state, data_obj) {
     return CK.getStateForUser(type, username, state, function(s) {
-      if (s != null) {
+      if (s == null) {
         s = new CK.Model.State();
         s.set('type', type);
         s.set('username', username);
         s.set('state', state);
       }
-      s.set('data', dataObj);
+      s.set('data', data_obj);
       return s.save();
     });
   };
