@@ -140,7 +140,7 @@
         }
       },
       'click #go-analyze': function(ev) {
-        if (this.mode === 'brainstorm') {
+        if (!(this.mode != null) || this.mode === 'brainstorm') {
           return Sail.app.startAnalysis();
         }
       },
@@ -372,7 +372,7 @@
           var $q, h, qHeight, qIsTag, qWidth, w, xDist, xNudge, xOverlap, yDist, yNudge, yOverlap;
           if (quad.point && quad.point !== b) {
             qWidth = jQuery(quad.point).outerWidth();
-            qHeight = jQuery(quad.point).outerWidth();
+            qHeight = jQuery(quad.point).outerHeight();
             w = bWidth / 2 + qWidth / 2;
             h = bHeight / 2 + qHeight / 2;
             xDist = Math.abs(b.x - quad.point.x);

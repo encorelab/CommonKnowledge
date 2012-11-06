@@ -82,7 +82,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             # those are triggered by sail events in CK.Smartboard
 
         'click #go-analyze': (ev) ->
-            if @mode is 'brainstorm'
+            if !@mode? || @mode is 'brainstorm'
                 Sail.app.startAnalysis()
 
         'click #go-synthesize': (ev) ->
@@ -343,7 +343,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                 if quad.point && quad.point isnt b # don't try to collide with self
                     
                     qWidth = jQuery(quad.point).outerWidth()
-                    qHeight = jQuery(quad.point).outerWidth()
+                    qHeight = jQuery(quad.point).outerHeight()
 
                     w = bWidth/2 + qWidth/2
                     h = bHeight/2 + qHeight/2
