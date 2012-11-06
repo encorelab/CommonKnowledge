@@ -32,7 +32,7 @@ class CK.Model
                 else
                     console.log("Creating 'N/A' tag...")
                     tag = new CK.Model.Tag()
-                    tag.set('name')
+                    tag.set('name', "N/A")
                     tag.save()
 
 
