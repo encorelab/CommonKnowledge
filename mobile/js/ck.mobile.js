@@ -63,15 +63,19 @@ CK.Mobile = function() {
 
         console.log('Check if contribution left to do or done with tagging');
         CK.getStateForUser("tablet", Sail.app.userData.account.login, "contribution_to_tag", function(user_state){
-          var data_from_state = user_state.get('data');
-          if (data_from_state.done_tagging === true) {
-            CK.getStateForUser("tablet", Sail.app.userData.account.login, "done_tagging", function(s3) {
-              // go to done tagging
-              app.doneTagging();
-            });
-          } else if (data_from_state.contribution_id !== "") {
-            console.log('Need to work on contribution with id: '+data_from_state.contribution_id);
-            app.contributionToTag(data_from_state.contribution_id);
+          if (user_state) {
+            var data_from_state = user_state.get('data');
+            if (data_from_state.done_tagging === true) {
+              CK.getStateForUser("tablet", Sail.app.userData.account.login, "done_tagging", function(s3) {
+                // go to done tagging
+                app.doneTagging();
+              });
+            } else if (data_from_state.contribution_id !== "") {
+              console.log('Need to work on contribution with id: '+data_from_state.contribution_id);
+              app.contributionToTag(data_from_state.contribution_id);
+            }
+          } else {
+            console.log('I am on a boat');
           }
         });
       } if (s && s.get('state') === "start_synthesis") {
@@ -79,18 +83,22 @@ CK.Mobile = function() {
         app.startStudentTagging();
 
         CK.getStateForUser("tablet", Sail.app.userData.account.login, "contribution_to_tag", function(user_state){
-          var data_from_state = user_state.get('data');
-          if (data_from_state.done_tagging === true) {
-            CK.getStateForUser("tablet", Sail.app.userData.account.login, "done_tagging", function(s3) {
-              console.log('state is start_synthesis and we are done_tagging so call doneTagging and startSynthesis');
-// TODO for Colin: Figure out the side effects that are necessary to have everything in place for this restore to work.
-              
-              Sail.app.doneTagging();
-              Sail.app.startSynthesis();
-            });
-          } else if (data_from_state.contribution_id !== "") {
-            console.log('state is start_synthesis buy we need to work on contribution with id: '+data_from_state.contribution_id);
-            app.contributionToTag(data_from_state.contribution_id);
+          if (user_state) {
+            var data_from_state = user_state.get('data');
+            if (data_from_state.done_tagging === true) {
+              CK.getStateForUser("tablet", Sail.app.userData.account.login, "done_tagging", function(s3) {
+                console.log('state is start_synthesis and we are done_tagging so call doneTagging and startSynthesis');
+  // TODO for Colin: Figure out the side effects that are necessary to have everything in place for this restore to work.
+                
+                Sail.app.doneTagging();
+                Sail.app.startSynthesis();
+              });
+            } else if (data_from_state.contribution_id !== "") {
+              console.log('state is start_synthesis buy we need to work on contribution with id: '+data_from_state.contribution_id);
+              app.contributionToTag(data_from_state.contribution_id);
+            }
+          } else {
+            console.log('I am on a boat');
           }
         });
         
@@ -119,7 +127,7 @@ CK.Mobile = function() {
       // Colin there is already data about the user available
       app.userData = Sail.app.session;
 
-      jQuery('#logout-button').addClass('btn btn-warning').text('Logout');
+      jQuery('#logout-button').addClass('btn btn-warning').html('<a href="#">Logout</a>');
 
       // moved the view init here so that backbone is configured with URLs
       app.initModels();
