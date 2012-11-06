@@ -13,6 +13,7 @@ CK.Mobile = function() {
   app.currentBuildOn = {};
   app.tagArray = [];
   app.buildOnArray = [];
+  app.synthesisFlag = false;
   // app.currentState = {"type":"tablet"};
 
   // TODO: copied from washago code
@@ -306,7 +307,7 @@ CK.Mobile = function() {
       done_tagging: function(sev) {
         console.log('done_tagging event heard');
         if (sev.payload.recipient === app.userData.account.login) {
-          // app.currentState.state = "done_tagging";                        // Armin, check me - this is the place to set state?
+          // CK.setStateForUser('tablet', Sail.app.userData.account.login, 'done_tagging');     TODO - implement me once the model is done
           app.doneTagging();
         }
       },
@@ -323,7 +324,7 @@ CK.Mobile = function() {
 
   app.sendContribution = function(kind) {
     var sev;
-    if (kind === 'newNote') {
+    if (kind === 'newNote' || kind === 'synthesis') {
       sev = new Sail.Event('contribution', app.currentContribution.toJSON());
     } else if (kind === 'buildOn') {
       sev = new Sail.Event('build_on', app.contributionDetails.toJSON());
@@ -390,7 +391,13 @@ CK.Mobile = function() {
     app.clearModels();
 
     app.currentContribution.justAdded = true;
-    app.currentContribution.kind = kind;
+
+    if (app.synthesisFlag) {
+      app.currentContribution.kind = 'synthesis';
+      app.currentContribution.set('kind','synthesis');             // sloppy - fix me (.kind is the key for a lot of the view)
+    } else {
+      app.currentContribution.kind = kind;
+    }
 
     app.currentContribution.on('change sync', app.contributionInputView.render);
 
@@ -438,6 +445,7 @@ CK.Mobile = function() {
   };
 
   app.doneTagging = function() {
+
     jQuery('.brand').text('Common Knowledge - Notes');
     jQuery('#tag-list').addClass('hide');
     jQuery('#contribution-list').removeClass('hide');
@@ -452,6 +460,7 @@ CK.Mobile = function() {
   };
 
   app.startSynthesis = function() {
+    app.synthesisFlag = true;
     jQuery('.brand').text('Common Knowledge - Synthesis');
     Sail.app.contributionInputView.render();                  // do I need to do fetch? 
   }

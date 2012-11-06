@@ -13,7 +13,7 @@
         jQuery('#contribution-list .note').removeClass('selected');
 
         // The problem here was that ev.target referes to a differently deep nested element 
-        $target = jQuery(ev.target);
+        var $target = jQuery(ev.target);
         if (!$target.is('.list-item')) {
            $target = $target.parents('.list-item').first();
         }
@@ -128,11 +128,11 @@
           buildOnEl += " (" + date.toLocaleDateString() + ' ' + date.toLocaleTimeString() + ")" +  "<hr />";
         });
 
-        buildOnEl += "</div>"
+        buildOnEl += "</div>";
         buildOnEl = jQuery(buildOnEl);
         jQuery('#contribution-details .note-build-ons').append(buildOnEl);
       } else {
-        console.warn("ContributionDetailsView render is not working due to ")
+        console.warn("ContributionDetailsView render is not working due to ?");
       }
     }
   });
@@ -153,9 +153,13 @@
           console.log('setting build-on values');
           Sail.app.currentBuildOn.content = jQuery('#note-body-entry').val();
           Sail.app.currentBuildOn.author = Sail.app.userData.account.login;
-          var d = new Date()
+          var d = new Date();
           Sail.app.currentBuildOn.created_at = d;
           console.log(d);
+        } else if (Sail.app.currentContribution.kind === 'synthesis') {
+          var f = jQuery(ev.target);
+          console.log("Setting "+f.attr("name")+" to "+f.val());
+          this.model.set(f.attr('name'), f.val());          
         } else {
           console.log('unknown note type');
         }
@@ -201,7 +205,7 @@
 
     share: function () {
       // new note
-      if (Sail.app.currentContribution.kind === 'new') {
+      if (Sail.app.currentContribution.kind === 'new' || Sail.app.currentContribution.kind === 'synthesis') {
         if (Sail.app.currentContribution.has('content') && Sail.app.currentContribution.has('headline')) {
           console.log("Submitting contribution...");
           // var self = this;
@@ -258,15 +262,16 @@
 
       // build-on note
       if (Sail.app.currentContribution.kind === 'buildOn') {
+        var tempBuildOnArray = [];
         // this if shouldn't be necessary (the first condition should always be met), but just in case...
         if (Sail.app.contributionDetails.get('build_ons')) {
-          var buildOnArray = Sail.app.contributionDetails.get('build_ons');
-          buildOnArray.push(Sail.app.currentBuildOn);
-          Sail.app.contributionDetails.set('build_ons', buildOnArray);          
+          tempBuildOnArray = Sail.app.contributionDetails.get('build_ons');
+          tempBuildOnArray.push(Sail.app.currentBuildOn);
+          Sail.app.contributionDetails.set('build_ons', tempBuildOnArray);          
         } else {
-          var buildOnArray = []
-          buildOnArray.push(Sail.app.currentBuildOn);
-          Sail.app.contributionDetails.set('build_ons', buildOnArray);
+          tempBuildOnArray = [];
+          tempBuildOnArray.push(Sail.app.currentBuildOn);
+          Sail.app.contributionDetails.set('build_ons', tempBuildOnArray);
         }
 
         Sail.app.contributionDetails.save(null, {
@@ -317,12 +322,14 @@
           jQuery('#note-body-label').text('New Note');
           jQuery('#note-body-entry').removeClass('disabled');
           jQuery('#note-headline-entry').removeClass('disabled');          
-
         } else if (Sail.app.currentContribution.kind === 'buildOn') {
           jQuery('#note-body-label').text('Build On Note');
           jQuery('#note-body-entry').removeClass('disabled');
           jQuery('#note-headline-entry').addClass('disabled');          
-
+        } else if (Sail.app.currentContribution.kind === 'synthesis') {
+          jQuery('#note-body-label').text('Synthesis Note');
+          jQuery('#note-body-entry').removeClass('disabled');
+          jQuery('#note-headline-entry').removeClass('disabled');  
         } else {
           console.log('unknown note type');
         }  
@@ -340,13 +347,15 @@
         jQuery('#note-headline-entry').val(Sail.app.currentContribution.get('headline'));
       } else if (Sail.app.currentContribution.kind === 'buildOn') {
         jQuery('#note-body-entry').val(Sail.app.currentBuildOn.content);
+      } else if (Sail.app.currentContribution.kind === 'synthesis') {
+        jQuery('#note-body-entry').val(Sail.app.currentContribution.get('content'));
+        jQuery('#note-headline-entry').val(Sail.app.currentContribution.get('headline'));
       } else {
         console.log('trying to render, but unknown note type');
       }
 
-      // hook in the done_tagging state here
-      CK.getState('phase', function(s) {
-        if (s && s.get('state') === 'done_tagging') {
+      //CK.getState('phase', function(s) {
+        //if (s && s.get('state') === 'done_tagging') {
           jQuery('#contribution-details-build-on-btn').addClass('hide');
           // TODO - do this right: make sure model is actually syncing with view instead of manually doing this
           jQuery('#tag-submission-container .tag-btn').removeClass('active');
@@ -372,8 +381,8 @@
               tagButton.addClass('active');
             }
           });
-        }
-      });
+        //}
+      //});
 
 
     }

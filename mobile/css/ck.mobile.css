@@ -12,6 +12,14 @@ body {
 	background-color: #585B7F;
 }
 
+/*
+maybe add these for the lis? And others?
+* {
+	-moz-user-select: none;
+ 	-webkit-user-select: none;
+ 	user-select: none;
+}*/
+
 i {
 	float: right;
 }
@@ -83,10 +91,10 @@ i {
 #tag-list {
 	text-align: center;
 }
-
+/*
 #tag-list .tag-btn-group {
 	width: 50%;
-}
+}*/
 
 #contribution-input {
 	width: 611px;						/* sigh - still fighting bootstrap */
@@ -170,7 +178,7 @@ i {
 
 #tag-list .tag-btn {
 	font-size: 18px;
-	margin-top: 20%;	
+	margin-top: 12%;	
 }
 
 #tag-submission-container .tag-btn {
