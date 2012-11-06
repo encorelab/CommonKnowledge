@@ -77,7 +77,12 @@ class Choreographer < Sail::Agent
       log "Found #{@bucket.count} contributions with no tags and #{@na_bucket.count} contributions with N/A tags to hand out"
       # goes through buckets of contributions to tag and sends out contribution_to_tag or done_tagging
       hand_out_assignment(data['origin'])  
-    end 
+    end
+
+    event :start_synthesis? do |stanza, data|
+      log "Recieved start_synthesis #{data.inspect}"
+      store_phase("start_synthesis")
+    end
 
   end
 
@@ -150,7 +155,7 @@ class Choreographer < Sail::Agent
 
     if !@bucket.empty?
       contributionId = @bucket.pop
-      log "Assigning contribution #{contrib.inspect} to user #{username.inspect}"
+      log "Assigning contribution #{contributionId.inspect} to user #{username.inspect}"
       # tagAssignments[username] = contrib
       send_tag_assignment(username, contributionId)
     elsif !@na_bucket.empty?
@@ -186,14 +191,20 @@ class Choreographer < Sail::Agent
   end
 
   def store_phase(phaseName)
+    done = false
+
     phase = @mongo.collection(:states).find("type" => "phase").each do |state|
       state['state'] = phaseName
+      log "Saving state #{state.inspect}"
       @mongo.collection(:states).save(state)
-      return true
+      done = true
+      break
     end
 
-    @mongo.collection(:states).save("type" => "phase", "state" => phaseName)
-    return true
+    unless done
+      log "Inserting new state with state #{phaseName.inspect}"
+      @mongo.collection(:states).save("type" => "phase", "state" => phaseName)
+    end 
   end
 
 

@@ -82,10 +82,12 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             # those are triggered by sail events in CK.Smartboard
 
         'click #go-analyze': (ev) ->
-            Sail.app.startAnalysis()
+            if @mode is 'brainstorm'
+                Sail.app.startAnalysis()
 
         'click #go-synthesize': (ev) ->
-            Sail.app.startSynthesis()
+            if @mode is 'analysis'
+                Sail.app.startSynthesis()
 
     submitNewTag: =>
         newTag = @$el.find('#new-tag').val()
@@ -111,7 +113,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             .removeClass('paused')
             .text('Pause')
 
-        @changeWatermark(@mode || "Brainstorm")
+        @changeWatermark(@mode || "brainstorm")
 
     changeWatermark: (text) =>
         jQuery('#watermark').fadeOut 800, ->
@@ -119,26 +121,26 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                     .fadeIn 800
 
     setMode: (mode) =>
-        mode = "Brainstorm" unless mode
+        mode = "brainstorm" unless mode
         @mode = mode
 
         if mode is 'analysis'
             jQuery('body')
                 .removeClass('mode-synthesis')
                 .addClass('mode-analysis')
-            @changeWatermark("Analysis")
+            @changeWatermark("analysis")
 
         else if mode is 'synthesis'
             jQuery('body')
                 .removeClass('mode-analysis')
                 .addClass('mode-synthesis')
-            @changeWatermark("Synthesis")
+            @changeWatermark("synthesis")
 
         else
             jQuery('body')
                 .removeClass('mode-analysis')
                 .removeClass('mode-synthesis')
-            @changeWatermark("Brainstorm")
+            @changeWatermark("brainstorm")
 
 
     cloudify: =>
@@ -151,8 +153,8 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
         cloud.wallHeight = @$el.innerHeight()
 
         cloud.linkDistance = (link, i) ->
-            ( jQuery(link.source).outerHeight()/2 +
-                jQuery(link.target).outerHeight()/2 ) + 40
+            ( jQuery(link.source).outerWidth()/2 +
+                jQuery(link.target).outerWidth()/2 ) + 10
 
         cloud.tick = ->
             cloud.balloon
@@ -170,6 +172,9 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                     else if d.y - balloonHeight/2 < 0
                         d.y = 0 + balloonHeight/2
                     return (d.y - balloonHeight/2) + 'px'
+                .each (d) ->
+                    if jQuery(d).hasClass('pinned')
+                        d.fixed = true
 
             # collision detection
             q = d3.geom.quadtree(cloud.nodes)
@@ -213,7 +218,8 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             n.index = i
 
         cloud.force = d3.layout.force()
-            .charge((d) -> if jQuery(d).hasClass('tag') then -4500 else -1000)
+            #.charge((d) -> if jQuery(d).hasClass('tag') then -4500 else -1000)
+            .charge(0)
             .linkDistance(cloud.linkDistance)
             .linkStrength(0.2)
             .gravity(0)
@@ -492,6 +498,7 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
 
     events:
         'mousedown': (ev) -> @moveToTop()
+
         'click': (ev) ->
             @$el.toggleClass('opened')
             if @$el.hasClass('opened')
@@ -505,8 +512,8 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
     #     @$el.data('view', @)
 
     render: =>
-        if @model.get('kind') is 'riseabove'
-            @$el.addClass('riseabove')
+        if @model.get('kind') is 'synthesis'
+            @$el.addClass('synthesis')
 
         headline = @findOrCreate '.headline', 
             "<h3 class='headline'></h3>"
@@ -599,10 +606,49 @@ class CK.Smartboard.View.TagBalloon extends CK.Smartboard.View.Balloon
     events:
         'mousedown': (ev) -> @moveToTop()
 
+        # can't do on mouseup because d3's drag prevents bubbling of that event
+        'mouseout': (ev) ->
+            if @model.get('pinned')
+                console.log("Saving pinned tag's position")
+                pos = @$el.position()
+                tid = @$el.attr('id')
+                tag = Sail.app.tags.get(tid)
+                if tag
+                    tag.set({pos: {left: pos.left, top: pos.top, pinned: true}}, {silent: true})
+                    tag.save({}, {silent: true})
+                else
+                    console.log("Couldn't save pinned tag's position -- couldn't find a tag with id: ", tid)
+
+        'click': (ev) ->
+            @model.set('pinned', !@model.get('pinned'))
+
+            # FIXME: seems to always be evaluating to false
+
+            if @$el.get('pinned')
+                # NOTE: this gets set again based on the 'pinned' class in cloud.tick()
+                @$el[0].fixed = true
+            else
+                @$el[0].fixed = false
+                return
+
+            console.log("Saving pinned tag's position")
+
+            tid = @$el.attr('id')
+            tag = Sail.app.tags.get(tid)
+            if tag
+                tag.save({}, {silent: true})
+            else
+                console.log("Couldn't save pinned tag's position -- couldn't find a tag with id: ", tid)
+
     render: => 
         name = @findOrCreate '.name', 
             "<h3 class='name'></h3>"
         name.text @model.get('name')
+
+        if @model.get('pinned')
+            @$el.addClass('pinned')
+        else
+            @$el.removeClass('pinned')
 
         @corporealize()
 

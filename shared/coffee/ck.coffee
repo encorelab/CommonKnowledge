@@ -11,11 +11,14 @@ CK.getState = (type, callback) ->
 
     states.fetch()
 
-CK.getStateForUser = (type, username, state, callback) ->
+CK.getStateForUser = (type, username, state_name, callback) ->
     states = new CK.Model.States()
     # TODO: filter using Drowsy query
     states.on 'reset', (ss) ->
-        state = ss.find (s) -> s.get('type') is type && s.get('username') is username && s.get('state') is state
+        state = ss.find (s) -> s.get('type') is type && s.get('username') is username && s.get('state') is state_name
+        # unless state?
+        #     state = new CK.Model.State()
+
         callback(state)
 
     states.fetch()
@@ -30,14 +33,14 @@ CK.setState = (type, state) ->
         s.set('state', state)
         s.save()
 
-CK.setStateForUser = (type, username, state, dataObj) ->
+CK.setStateForUser = (type, username, state, data_obj) ->
     CK.getStateForUser type, username, state, (s)->
-        if s?
+        unless s?
             #create new state
             s = new CK.Model.State()
             s.set('type', type)
             s.set('username', username)
             s.set('state', state)
         
-        s.set('data', dataObj)
+        s.set('data', data_obj)
         s.save()
