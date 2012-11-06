@@ -82,7 +82,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             # those are triggered by sail events in CK.Smartboard
 
         'click #go-analyze': (ev) ->
-            if @mode is 'brainstorm'
+            if !@mode? || @mode is 'brainstorm'
                 Sail.app.startAnalysis()
 
         'click #go-synthesize': (ev) ->
@@ -328,8 +328,8 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             #   from https://gist.github.com/3116713
 
             $b = jQuery(b)
-            bWidth = b.width
-            bHeight = b.height
+            bWidth = $b.outerWidth()
+            bHeight = $b.outerHeight()
 
             nx1 = b.x - bWidth/2
             nx2 = b.x + bWidth/2
@@ -342,8 +342,8 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             return (quad, x1, y1, x2, y2) ->
                 if quad.point && quad.point isnt b # don't try to collide with self
                     
-                    qWidth = quad.point.width
-                    qHeight = quad.point.height
+                    qWidth = jQuery(quad.point).outerWidth()
+                    qHeight = jQuery(quad.point).outerHeight()
 
                     w = bWidth/2 + qWidth/2
                     h = bHeight/2 + qHeight/2
@@ -432,8 +432,6 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                 pos = $n.position()
                 n.x = pos.left + $n.outerWidth()/2 unless n.x?
                 n.y = pos.top + $n.outerHeight()/2 unless n.y?
-                n.width = $n.outerWidth()
-                n.height = $n.outerHeight()
 
             cloud.balloon = cloud.vis.selectAll('.balloon')
                 .data(cloud.nodes)
@@ -629,12 +627,12 @@ class CK.Smartboard.View.TagBalloon extends CK.Smartboard.View.Balloon
 
             # FIXME: seems to always be evaluating to false
 
-            # if @$el.get('pinned')
-            #     # NOTE: this gets set again based on the 'pinned' class in cloud.tick()
-            #     @$el[0].fixed = true
-            # else
-            #     @$el[0].fixed = false
-            #     return
+            if @$el.get('pinned')
+                # NOTE: this gets set again based on the 'pinned' class in cloud.tick()
+                @$el[0].fixed = true
+            else
+                @$el[0].fixed = false
+                return
 
             # console.log("Saving pinned tag's position")
 

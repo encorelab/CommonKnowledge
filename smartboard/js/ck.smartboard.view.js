@@ -140,7 +140,7 @@
         }
       },
       'click #go-analyze': function(ev) {
-        if (this.mode === 'brainstorm') {
+        if (!(this.mode != null) || this.mode === 'brainstorm') {
           return Sail.app.startAnalysis();
         }
       },
@@ -361,8 +361,8 @@
       cloud.detectCollision = function(b) {
         var $b, bHeight, bIsTag, bWidth, nx1, nx2, ny1, ny2;
         $b = jQuery(b);
-        bWidth = b.width;
-        bHeight = b.height;
+        bWidth = $b.outerWidth();
+        bHeight = $b.outerHeight();
         nx1 = b.x - bWidth / 2;
         nx2 = b.x + bWidth / 2;
         ny1 = b.y - bHeight / 2;
@@ -371,8 +371,8 @@
         return function(quad, x1, y1, x2, y2) {
           var $q, h, qHeight, qIsTag, qWidth, w, xDist, xNudge, xOverlap, yDist, yNudge, yOverlap;
           if (quad.point && quad.point !== b) {
-            qWidth = quad.point.width;
-            qHeight = quad.point.height;
+            qWidth = jQuery(quad.point).outerWidth();
+            qHeight = jQuery(quad.point).outerHeight();
             w = bWidth / 2 + qWidth / 2;
             h = bHeight / 2 + qHeight / 2;
             xDist = Math.abs(b.x - quad.point.x);
@@ -422,8 +422,6 @@
           if (n.y == null) {
             n.y = pos.top + $n.outerHeight() / 2;
           }
-          n.width = $n.outerWidth();
-          n.height = $n.outerHeight();
         }
         cloud.balloon = cloud.vis.selectAll('.balloon').data(cloud.nodes).call(cloud.force.drag);
         cloud.connector = cloud.vis.selectAll(".connector").data(cloud.links);
@@ -614,9 +612,14 @@
           silent: true
         });
         if (this.model.get('pinned')) {
-          return this.$el.addClass('pinned');
+          this.$el.addClass('pinned');
         } else {
-          return this.$el.removeClass('pinned');
+          this.$el.removeClass('pinned');
+        }
+        if (this.$el.get('pinned')) {
+          return this.$el[0].fixed = true;
+        } else {
+          this.$el[0].fixed = false;
         }
       }
     };
