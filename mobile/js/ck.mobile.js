@@ -367,8 +367,11 @@ CK.Mobile = function() {
   };
 
   app.startSynthesis = function() {
-    // TODO - set done_tagging just in case
+    // setting done_tagging just in case we missed it
+    var dataObj = {'done_tagging':true};
+    CK.setStateForUser ("tablet", app.userData.account.login, "contribution_to_tag", dataObj);    
     app.doneTagging();
+    
     jQuery('#contribution-details-build-on-btn').addClass('hide');    
     app.synthesisFlag = true;
     jQuery('.brand').text('Common Knowledge - Synthesis');
