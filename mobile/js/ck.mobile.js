@@ -17,12 +17,6 @@ CK.Mobile = function() {
   // app.currentState = {"type":"tablet"};
 
 
-app.hideAddressBar = function() {
-  if(document.documentElement.scrollHeight<window.outerHeight/window.devicePixelRatio)
-    document.documentElement.style.height=(window.outerHeight/window.devicePixelRatio)+'px';
-  setTimeout(window.scrollTo(1,1),0);
-}
-
   // TODO: copied from washago code
   app.init = function() {
     Sail.modules
@@ -44,9 +38,6 @@ app.hideAddressBar = function() {
     jQuery().toastmessage({
       position : 'middle-center'
     });
-
-    app.hideAddressBar();
-
 
 //window.addEventListener("orientationchange",function(){hideAddressBar();});    
   };
@@ -154,7 +145,7 @@ app.hideAddressBar = function() {
     },
 
     'unauthenticated': function(ev) {
-      app.authenticte();
+      app.authenticate();
     },
 
     sail: {
@@ -377,6 +368,7 @@ app.hideAddressBar = function() {
 
   app.startSynthesis = function() {
     // TODO - set done_tagging just in case
+    app.doneTagging();
     jQuery('#contribution-details-build-on-btn').addClass('hide');    
     app.synthesisFlag = true;
     jQuery('.brand').text('Common Knowledge - Synthesis');
