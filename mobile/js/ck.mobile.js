@@ -73,9 +73,29 @@ CK.Mobile = function() {
 
     this.restoreContributions();
 
-    var stateObj = {"type":"phase"};
+    //var stateObj = {"type":"phase"};
+    CK.getState("phase", function(s){
+      if (s && s.state === "start_student_tagging"){
+        console.log('phase is start_student_tagging');
+        app.startStudentTagging();
 
-
+        console.log('Check if contribution left to do or done with tagging');
+        CK.getStateForUser("tablet", Sail.app.userData.account.login, "contribution_to_tag", function(state){
+          if (state.data === "already done") {
+            CK.getStateForUser("tablet", Sail.app.userData.account.login, "done_tagging", function(state) {
+              // go to done tagging
+              app.doneTagging();
+            });
+          } else if (state.data.contribution_id !== "") {
+            console.log('Need to work on contribution with id: '+state.data.contribution_id);
+          }
+        });
+      } if (s && s.state === "start_synthesis") {
+        console.log('phase is start_synthesis');
+      } else {
+        console.log('could not find state for type phase');
+      }
+    });
     // app.retrieveState(stateObj, 
     //   function(data) {
     //     console.log('Success retrieving state from DB '+data);
@@ -231,33 +251,6 @@ CK.Mobile = function() {
 
       start_student_tagging: function(sev) {
         console.log('start_student_tagging heard, creating TagView');
-        // TODO make sure the state is only stored once per user
-        var stateObj = {"type":"phase"};
-        app.retrieveState(stateObj,
-          function(data) {
-            console.log('Success retrieving state from DB '+data);
-            if (data.length >= 1) {                            
-              console.log("Current state of tablets: "+_.first(data).state);
-              // app.currentState = data[0];
-              if (_.first(data).state !== "start_student_tagging") {
-                _.first(data).state = "start_student_tagging";
-                app.storeState(_.first(data));
-              }
-              return true;
-            }
-            else {
-              console.log("No state found");
-              stateObj.state = "start_student_tagging";
-              app.storeState(stateObj);
-              return true;
-            }
-          },
-          function (data) {
-            console.log("Call to Drowsy failed with error: "+data);
-            return false;
-          }
-        );
-
         app.startStudentTagging();
       },
 
@@ -275,6 +268,8 @@ CK.Mobile = function() {
             }
           });
 
+          var dataObj = {"contribution_id":sev.payload.contribution_id};
+          CK.setStateForUser ("tablet", app.userData.account.login, "contribution_to_tag", dataObj);
           // store contribution_id for restore state
           // var stateObj = {"type":"tablet","username":sev.payload.recipient,"state":"start_student_tagging"};
           // app.retrieveState(stateObj,
@@ -416,7 +411,7 @@ CK.Mobile = function() {
     app.contributionInputView.delegateEvents();
 
     app.currentBuildOn = {};
-  }
+  };
 
 
   /* State related function */
@@ -463,47 +458,47 @@ CK.Mobile = function() {
     app.synthesisFlag = true;
     jQuery('.brand').text('Common Knowledge - Synthesis');
     Sail.app.contributionInputView.render();                  // do I need to do fetch? 
-  }
-
-  app.storeState = function(stateObj) {
-    console.log('Storing state '+stateObj.state+' for tablet');
-
-    jQuery.ajax({
-      type: "POST",
-      url: Sail.app.config.mongo.url +'/'+ Sail.app.run.name +'/states/',
-      data: JSON.stringify(stateObj),
-      // handing in the context is very important to fill the
-      // right table cell with the corresponding result - async
-      // call in loop!!
-      context: this,
-      success: function(data) {
-        console.log('Success storing state in DB');
-        return true;
-      },
-      error: function(data) {
-        console.log("Call to Drowsy failed with error: "+data);
-        return false;
-      }
-    }); // end of ajax
   };
 
-  app.retrieveState = function(selector, successCallback, errorCallback) {
-    console.log('Retrieving state for tablet');
+  // app.storeState = function(stateObj) {
+  //   console.log('Storing state '+stateObj.state+' for tablet');
 
-    // jQuery.ajax({
-    //   type: "GET",
-    //   url: Sail.app.config.mongo.url +'/'+ Sail.app.run.name +'/states/?selector='+JSON.stringify(selector),
-    //   // data: JSON.stringify({"username":username, "type":"tablet", "state":state}),
-    //   // handing in the context is very important to fill the
-    //   // right table cell with the corresponding result - async
-    //   // call in loop!!
-    //   context: this,
-    //   success: successCallback,
-    //   error: errorCallback
-    // }); // end of ajax
-    type = selector.type;
-    CK.getState(type, successCallback);
-  };
+  //   jQuery.ajax({
+  //     type: "POST",
+  //     url: Sail.app.config.mongo.url +'/'+ Sail.app.run.name +'/states/',
+  //     data: JSON.stringify(stateObj),
+  //     // handing in the context is very important to fill the
+  //     // right table cell with the corresponding result - async
+  //     // call in loop!!
+  //     context: this,
+  //     success: function(data) {
+  //       console.log('Success storing state in DB');
+  //       return true;
+  //     },
+  //     error: function(data) {
+  //       console.log("Call to Drowsy failed with error: "+data);
+  //       return false;
+  //     }
+  //   }); // end of ajax
+  // };
+
+  // app.retrieveState = function(selector, successCallback, errorCallback) {
+  //   console.log('Retrieving state for tablet');
+
+  //   // jQuery.ajax({
+  //   //   type: "GET",
+  //   //   url: Sail.app.config.mongo.url +'/'+ Sail.app.run.name +'/states/?selector='+JSON.stringify(selector),
+  //   //   // data: JSON.stringify({"username":username, "type":"tablet", "state":state}),
+  //   //   // handing in the context is very important to fill the
+  //   //   // right table cell with the corresponding result - async
+  //   //   // call in loop!!
+  //   //   context: this,
+  //   //   success: successCallback,
+  //   //   error: errorCallback
+  //   // }); // end of ajax
+  //   // type = selector.type;
+  //   //CK.getState(type, successCallback);
+  // };
 
 
 };
