@@ -627,12 +627,12 @@ class CK.Smartboard.View.TagBalloon extends CK.Smartboard.View.Balloon
 
             # FIXME: seems to always be evaluating to false
 
-            # if @$el.get('pinned')
-            #     # NOTE: this gets set again based on the 'pinned' class in cloud.tick()
-            #     @$el[0].fixed = true
-            # else
-            #     @$el[0].fixed = false
-            #     return
+            if @$el.get('pinned')
+                # NOTE: this gets set again based on the 'pinned' class in cloud.tick()
+                @$el[0].fixed = true
+            else
+                @$el[0].fixed = false
+                return
 
             # console.log("Saving pinned tag's position")
 

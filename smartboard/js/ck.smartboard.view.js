@@ -612,9 +612,14 @@
           silent: true
         });
         if (this.model.get('pinned')) {
-          return this.$el.addClass('pinned');
+          this.$el.addClass('pinned');
         } else {
-          return this.$el.removeClass('pinned');
+          this.$el.removeClass('pinned');
+        }
+        if (this.$el.get('pinned')) {
+          return this.$el[0].fixed = true;
+        } else {
+          this.$el[0].fixed = false;
         }
       }
     };
