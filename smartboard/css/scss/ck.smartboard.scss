@@ -25,12 +25,32 @@ body {
 
     @include transition(3s, background-color);
 
+    #go-synthesize {
+        opacity: 0.4;
+    }
+
     &.mode-analysis {
         background-color: #51ba34;
+
+        #go-analyze {
+            opacity: 0.4;
+        }
+
+        #go-synthesize {
+            opacity: 1.0;
+        }
     }
 
     &.mode-synthesis {
         background-color: #34ba70;
+
+        #go-analyze {
+            opacity: 0.4;
+        }
+
+        #go-synthesize {
+            opacity: 0.4;
+        }
     }
 
     &.paused {
@@ -72,6 +92,9 @@ body {
     border-radius: 15px;
     background-color: rgba($contribution-bubble-color, 0.9);
     box-shadow: rgba(#000, 0.3) 0px 2px 10px;
+
+    max-height: 95%;
+    overflow-y: auto;
 
     h3.headline {
         margin-top: 8px;
@@ -183,6 +206,10 @@ body {
         margin: 0;
         color: $tag-text-color;
     }
+
+    &.pinned {
+        border-style: solid;
+    }
 }
 
 #tags-panel {
@@ -248,6 +275,8 @@ button {
     border-radius: 1em;
 
     font-size: 20px;
+
+    @include transition(1s, opacity);
 
     &:hover {
         cursor: pointer;

@@ -6,10 +6,20 @@ body {
   -webkit-transition: background-color 3s ease 0;
   -moz-transition: background-color 3s ease 0;
   transition: background-color 3s ease 0; }
+  body #go-synthesize {
+    opacity: 0.4; }
   body.mode-analysis {
     background-color: #51ba34; }
+    body.mode-analysis #go-analyze {
+      opacity: 0.4; }
+    body.mode-analysis #go-synthesize {
+      opacity: 1.0; }
   body.mode-synthesis {
     background-color: #34ba70; }
+    body.mode-synthesis #go-analyze {
+      opacity: 0.4; }
+    body.mode-synthesis #go-synthesize {
+      opacity: 0.4; }
   body.paused {
     background-color: #aaa; }
 
@@ -41,6 +51,8 @@ body {
   border-radius: 15px;
   background-color: rgba(255, 255, 255, 0.9);
   box-shadow: rgba(0, 0, 0, 0.3) 0px 2px 10px;
+  max-height: 95%;
+  overflow-y: auto;
   -webkit-transition: height 0.5s ease 0;
   -moz-transition: height 0.5s ease 0;
   transition: height 0.5s ease 0; }
@@ -111,6 +123,8 @@ body {
     text-align: center;
     margin: 0;
     color: black; }
+  .tag.balloon.pinned {
+    border-style: solid; }
 
 #tags-panel {
   position: fixed;
@@ -152,7 +166,10 @@ button {
   font-weight: bold;
   box-shadow: inset -1px -2px 8px rgba(0, 0, 0, 0.6), 2px 1px 8px rgba(0, 0, 0, 0.3);
   border-radius: 1em;
-  font-size: 20px; }
+  font-size: 20px;
+  -webkit-transition: opacity 1s ease 0;
+  -moz-transition: opacity 1s ease 0;
+  transition: opacity 1s ease 0; }
   button:hover {
     cursor: pointer; }
 

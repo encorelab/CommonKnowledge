@@ -170,6 +170,11 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                     else if d.y - balloonHeight/2 < 0
                         d.y = 0 + balloonHeight/2
                     return (d.y - balloonHeight/2) + 'px'
+                .each (d) ->
+                    if jQuery(d).hasClass('pinned')
+                        d.fixed = true
+                    else
+                        d.fixed = false
 
             # collision detection
             q = d3.geom.quadtree(cloud.nodes)
@@ -492,6 +497,7 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
 
     events:
         'mousedown': (ev) -> @moveToTop()
+
         'click': (ev) ->
             @$el.toggleClass('opened')
             if @$el.hasClass('opened')
@@ -598,6 +604,9 @@ class CK.Smartboard.View.TagBalloon extends CK.Smartboard.View.Balloon
 
     events:
         'mousedown': (ev) -> @moveToTop()
+
+        'click': (ev) ->
+            @$el.toggleClass('pinned')
 
     render: => 
         name = @findOrCreate '.name', 
