@@ -298,6 +298,8 @@ CK.Mobile = function() {
       app.currentContribution.kind = kind;
     }
 
+    jQuery('#tag-submission-container .tag-btn').removeClass('disabled');
+
     app.currentContribution.on('change sync', app.contributionInputView.render);
 
     app.currentContribution.set('author', app.userData.account.login);
@@ -358,6 +360,7 @@ CK.Mobile = function() {
     jQuery('#contribution-list').removeClass('hide');
 
     app.contributionInputView.render();
+    jQuery('#tag-submission-container .tag-btn').addClass('disabled');
 
     //app.contributionDetails = new CK.Model.Contribution();
     //app.contributionDetailsView.model = app.contributionDetails;
@@ -375,7 +378,8 @@ CK.Mobile = function() {
     jQuery('#contribution-details-build-on-btn').addClass('hide');    
     app.synthesisFlag = true;
     jQuery('.brand').text('Common Knowledge - Synthesis');
-    Sail.app.contributionInputView.render();                  // do I need to do fetch? 
+    Sail.app.contributionInputView.render();
+    jQuery('#tag-submission-container .tag-btn').addClass('disabled');
   };
 
 };

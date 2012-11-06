@@ -227,6 +227,7 @@
               Sail.app.contributionInputView.$el.find(".field").val(null);
               Sail.app.currentContribution.justAdded = false;
               Sail.app.contributionInputView.render();
+              jQuery('#tag-submission-container .tag-btn').addClass('disabled');
             },
             failure: function(model, response) {
               console.log('Error submitting: ' + response);
