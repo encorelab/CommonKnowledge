@@ -22,7 +22,7 @@ CK.Mobile = function() {
       // Enable multi-picker login for CommonKnowledge curnit - asking for run (must be linked to curnit)
       .load('Rollcall.Authenticator', {mode: 'multi-picker', askForRun: true, curnit: 'CommonKnowledge'})
       .load('Strophe.AutoConnector')
-      .load('AuthStatusWidget')
+      .load('AuthStatusWidget', {indicatorContainer: '#logout-container'})
       .thenRun(function () {
         Sail.autobindEvents(app);
         app.trigger('initialized');
@@ -127,6 +127,8 @@ CK.Mobile = function() {
       // Colin there is already data about the user available
       app.userData = Sail.app.session;
 
+      jQuery('#logout-button').addClass('btn btn-warning').html('<a href="#">Logout</a>');
+
       // moved the view init here so that backbone is configured with URLs
       app.initModels();
       app.initViews();
@@ -137,6 +139,10 @@ CK.Mobile = function() {
 
       app.restoreState();
 
+    },
+
+    'unauthenticated': function(ev) {
+      app.authenticte();
     },
 
     sail: {
@@ -344,7 +350,6 @@ CK.Mobile = function() {
   };
 
   app.doneTagging = function() {
-
     jQuery('.brand').text('Common Knowledge - Notes');
     jQuery('#tag-list').addClass('hide');
     jQuery('#contribution-list').removeClass('hide');
@@ -360,6 +365,7 @@ CK.Mobile = function() {
 
   app.startSynthesis = function() {
     // TODO - set done_tagging just in case
+    jQuery('#contribution-details-build-on-btn').addClass('hide');    
     app.synthesisFlag = true;
     jQuery('.brand').text('Common Knowledge - Synthesis');
     Sail.app.contributionInputView.render();                  // do I need to do fetch? 

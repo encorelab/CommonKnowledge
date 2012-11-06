@@ -95,6 +95,8 @@
       console.log("Initializing ContributionDetailsView...");
 
       this.model.on('change', this.render);
+
+      jQuery('#contribution-details-build-on-btn').removeClass('hide');
     },
 
     'build-on': function () {
@@ -115,7 +117,6 @@
       // but checking for undefined would still be good.
       if (Sail.app.contributionDetails && Sail.app.contributionDetails.get('created_at')) {
         // TODO - do this with a loop instead of manually
-        jQuery('#contribution-details-build-on-btn').removeClass('hide');
         jQuery('#contribution-details .note-headline').text(Sail.app.contributionDetails.get('headline'));
         jQuery('#contribution-details .note-body').text(Sail.app.contributionDetails.get('content'));
         jQuery('#contribution-details .note-author').text('~'+Sail.app.contributionDetails.get('author'));
@@ -354,9 +355,11 @@
         console.log('trying to render, but unknown note type');
       }
 
+      jQuery('.tag-btn').removeClass('active');
+
       //CK.getState('phase', function(s) {                      // TODO - fix me when model is done
         //if (s && s.get('state') === 'done_tagging') {
-          jQuery('#contribution-details-build-on-btn').addClass('hide');
+          //jQuery('#contribution-details-build-on-btn').addClass('hide');
           // TODO - do this right: make sure model is actually syncing with view instead of manually doing this
           // jQuery('#tag-submission-container .tag-btn').removeClass('active');
 
