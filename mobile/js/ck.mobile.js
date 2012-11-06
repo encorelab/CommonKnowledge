@@ -65,7 +65,7 @@ CK.Mobile = function() {
         console.log('Check if contribution left to do or done with tagging');
         CK.getStateForUser("tablet", Sail.app.userData.account.login, "contribution_to_tag", function(user_state){
           var data_from_state = user_state.get('data');
-          if (data_from_state === "already done") {
+          if (data_from_state.done_tagging === true) {
             CK.getStateForUser("tablet", Sail.app.userData.account.login, "done_tagging", function(s3) {
               // go to done tagging
               app.doneTagging();
@@ -198,6 +198,10 @@ CK.Mobile = function() {
           // CK.setStateForUser('tablet', Sail.app.userData.account.login, 'done_tagging');     TODO - implement me once the model is done
           app.doneTagging();
         }
+
+        // store state for restoreState ;)
+        var dataObj = {'done_tagging':true};
+        CK.setStateForUser ("tablet", app.userData.account.login, "contribution_to_tag", dataObj);
       },
 
       start_synthesis: function(sev) {
