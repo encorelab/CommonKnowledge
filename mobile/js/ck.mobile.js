@@ -8,6 +8,20 @@ CK.Mobile = function() {
 
   app.name = "CK.Mobile";
 
+  app.requiredConfig = {
+    xmpp: {
+      domain: 'string',
+      port: 'number',
+      url: 'string'
+    },
+    rollcall: {
+      url: 'string'
+    },
+    mongo: {
+      url: 'string'
+    }
+  };
+
   // Global vars
   app.userData = null;
   app.currentBuildOn = {};
@@ -18,6 +32,8 @@ CK.Mobile = function() {
 
   // TODO: copied from washago code
   app.init = function() {
+    Sail.verifyConfig(this.config, this.requiredConfig);
+    
     Sail.modules
       // Enable multi-picker login for CommonKnowledge curnit - asking for run (must be linked to curnit)
       .load('Rollcall.Authenticator', {mode: 'multi-picker', askForRun: true, curnit: 'CommonKnowledge'})
