@@ -1,7 +1,8 @@
 {
 "xmpp": {
     "domain": "badger.encorelab.org",
-    "port": 5222
+    "port": 5222,
+    "url": "ws://badger.encorelab.org:5281/"
   },
 "rollcall": {
     "url": "http://rollcall.badger.encorelab.org/"

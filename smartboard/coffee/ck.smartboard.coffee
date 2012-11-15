@@ -6,6 +6,7 @@ class CK.Smartboard extends Sail.App
         xmpp: 
             domain: 'string'
             port: 'number'
+            url: 'string'
         rollcall:
             url: 'string'
         assets:

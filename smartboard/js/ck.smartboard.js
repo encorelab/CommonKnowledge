@@ -36,12 +36,10 @@
     Smartboard.prototype.requiredConfig = {
       xmpp: {
         domain: 'string',
-        port: 'number'
-      },
-      rollcall: {
+        port: 'number',
         url: 'string'
       },
-      assets: {
+      rollcall: {
         url: 'string'
       },
       mongo: {
