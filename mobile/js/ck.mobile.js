@@ -30,6 +30,7 @@ CK.Mobile = function() {
   app.synthesisFlag = false;
   // app.currentState = {"type":"tablet"};
 
+
   // TODO: copied from washago code
   app.init = function() {
     Sail.verifyConfig(this.config, this.requiredConfig);
@@ -53,6 +54,8 @@ CK.Mobile = function() {
     jQuery().toastmessage({
       position : 'middle-center'
     });
+
+//window.addEventListener("orientationchange",function(){hideAddressBar();});    
   };
 
   app.authenticate = function() {
@@ -158,7 +161,7 @@ CK.Mobile = function() {
     },
 
     'unauthenticated': function(ev) {
-      app.authenticte();
+      app.authenticate();
     },
 
     sail: {
@@ -311,6 +314,8 @@ CK.Mobile = function() {
       app.currentContribution.kind = kind;
     }
 
+    jQuery('#tag-submission-container .tag-btn').removeClass('disabled');
+
     app.currentContribution.on('change sync', app.contributionInputView.render);
 
     app.currentContribution.set('author', app.userData.account.login);
@@ -371,6 +376,7 @@ CK.Mobile = function() {
     jQuery('#contribution-list').removeClass('hide');
 
     app.contributionInputView.render();
+    jQuery('#tag-submission-container .tag-btn').addClass('disabled');
 
     //app.contributionDetails = new CK.Model.Contribution();
     //app.contributionDetailsView.model = app.contributionDetails;
@@ -380,11 +386,16 @@ CK.Mobile = function() {
   };
 
   app.startSynthesis = function() {
-    // TODO - set done_tagging just in case
+    // setting done_tagging just in case we missed it
+    var dataObj = {'done_tagging':true};
+    CK.setStateForUser ("tablet", app.userData.account.login, "contribution_to_tag", dataObj);    
+    app.doneTagging();
+    
     jQuery('#contribution-details-build-on-btn').addClass('hide');    
     app.synthesisFlag = true;
     jQuery('.brand').text('Common Knowledge - Synthesis');
-    Sail.app.contributionInputView.render();                  // do I need to do fetch? 
+    Sail.app.contributionInputView.render();
+    jQuery('#tag-submission-container .tag-btn').addClass('disabled');
   };
 
 };
