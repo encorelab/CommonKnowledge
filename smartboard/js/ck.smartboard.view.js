@@ -170,9 +170,16 @@
     };
 
     Wall.prototype.showWordCloud = function() {
-      var fade, wordCloud;
+      var fade, wordCloud, wordHash, words;
       jQuery('#word-cloud svg').remove();
-      this.generateWordCloud2(["Hello", "world", "normally", "normally", "normally", "normally", "normally", "you", "want", "more", "words", "than", "this"]);
+      words = ["Hello", "world", "normally", "normally", "normally", "normally", "normally", "you", "want", "more", "words", "than", "this"];
+      wordHash = words.map(function(word) {
+        return {
+          text: word,
+          size: word.length * 10
+        };
+      });
+      this.generateWordCloud(wordHash);
       wordCloud = jQuery('#word-cloud');
       wordCloud.addClass('visible');
       fade = jQuery('#fade');
@@ -189,13 +196,11 @@
     };
 
     
-    Wall.prototype.generateWordCloud = function (wordArray) {
+    Wall.prototype.generateWordCloud = function (wordHash) {
           var fill = d3.scale.category20();
 
           d3.layout.cloud().size([300, 300])
-              .words(wordArray.map(function(d) {
-                return {text: d, size: 10 + Math.random() * 90};
-              }))
+              .words(wordHash)
               .rotate(function() { return ~~(Math.random() * 2) * 90; })
               .font("Impact")
               .fontSize(function(d) { return d.size; })
@@ -212,45 +217,8 @@
                 .data(words)
               .enter().append("text")
                 .style("font-size", function(d) { return d.size + "px"; })
-                .style("font-family", "Impact")
+                .style("font-family", "Ubuntu")
                 .style("fill", function(d, i) { return fill(i); })
-                .attr("text-anchor", "middle")
-                .attr("transform", function(d) {
-                  return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
-                })
-                .text(function(d) { return d.text; });
-          }
-    }
-    ;
-
-
-    
-    Wall.prototype.generateWordCloud2 = function (wordArray) {
-        var fontSize = d3.scale.log().range([10, 100]);
-
-        var layout = d3.layout.cloud()
-              .size([960, 600])
-              .timeInterval(10)
-              .text(function(d) { return d.key; })
-              .font("Impact")
-              .fontSize(function(d) { return fontSize(+d.value); })
-              .rotate(function(d) { return ~~(Math.random() * 5) * 30 - 60; })
-              .padding(1)
-              .on("end", draw)
-              .words(wordArray)
-              .start();
-
-        function draw(words) {
-            d3.select("#word-cloud").append("svg")
-                .attr("width", 300)
-                .attr("height", 300)
-              .append("g")
-                .attr("transform", "translate(150,150)")
-              .selectAll("text")
-                .data(words)
-              .enter().append("text")
-                .style("font-size", function(d) { return d.size + "px"; })
-                .style("font-family", "Impact")
                 .attr("text-anchor", "middle")
                 .attr("transform", function(d) {
                   return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
