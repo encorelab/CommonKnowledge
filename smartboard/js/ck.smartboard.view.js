@@ -100,6 +100,10 @@
 
       this.pause = __bind(this.pause, this);
 
+      this.hideWordCloud = __bind(this.hideWordCloud, this);
+
+      this.showWordCloud = __bind(this.showWordCloud, this);
+
       this.submitNewTag = __bind(this.submitNewTag, this);
       return Wall.__super__.constructor.apply(this, arguments);
     }
@@ -122,6 +126,12 @@
       },
       'click #submit-new-tag': function(ev) {
         return this.submitNewTag();
+      },
+      'click #show-word-cloud': function(ev) {
+        return this.showWordCloud();
+      },
+      'click #close-word-cloud': function(ev) {
+        return this.hideWordCloud();
       },
       'keydown #new-tag': function(ev) {
         if (ev.keyCode === 13) {
@@ -158,6 +168,98 @@
       this.$el.find('#add-tag-container').removeClass('opened').blur();
       return this.$el.find('#new-tag').val('');
     };
+
+    Wall.prototype.showWordCloud = function() {
+      var fade, wordCloud;
+      jQuery('#word-cloud svg').remove();
+      this.generateWordCloud2(["Hello", "world", "normally", "normally", "normally", "normally", "normally", "you", "want", "more", "words", "than", "this"]);
+      wordCloud = jQuery('#word-cloud');
+      wordCloud.addClass('visible');
+      fade = jQuery('#fade');
+      return fade.addClass('visible');
+    };
+
+    Wall.prototype.hideWordCloud = function() {
+      var fade, wordCloud;
+      wordCloud = jQuery('#word-cloud');
+      wordCloud.removeClass('visible');
+      fade = jQuery('#fade');
+      fade.removeClass('visible');
+      return jQuery('#word-cloud svg').remove();
+    };
+
+    
+    Wall.prototype.generateWordCloud = function (wordArray) {
+          var fill = d3.scale.category20();
+
+          d3.layout.cloud().size([300, 300])
+              .words(wordArray.map(function(d) {
+                return {text: d, size: 10 + Math.random() * 90};
+              }))
+              .rotate(function() { return ~~(Math.random() * 2) * 90; })
+              .font("Impact")
+              .fontSize(function(d) { return d.size; })
+              .on("end", draw)
+              .start();
+
+          function draw(words) {
+            d3.select("#word-cloud").append("svg")
+                .attr("width", 300)
+                .attr("height", 300)
+              .append("g")
+                .attr("transform", "translate(150,150)")
+              .selectAll("text")
+                .data(words)
+              .enter().append("text")
+                .style("font-size", function(d) { return d.size + "px"; })
+                .style("font-family", "Impact")
+                .style("fill", function(d, i) { return fill(i); })
+                .attr("text-anchor", "middle")
+                .attr("transform", function(d) {
+                  return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+                })
+                .text(function(d) { return d.text; });
+          }
+    }
+    ;
+
+
+    
+    Wall.prototype.generateWordCloud2 = function (wordArray) {
+        var fontSize = d3.scale.log().range([10, 100]);
+
+        var layout = d3.layout.cloud()
+              .size([960, 600])
+              .timeInterval(10)
+              .text(function(d) { return d.key; })
+              .font("Impact")
+              .fontSize(function(d) { return fontSize(+d.value); })
+              .rotate(function(d) { return ~~(Math.random() * 5) * 30 - 60; })
+              .padding(1)
+              .on("end", draw)
+              .words(wordArray)
+              .start();
+
+        function draw(words) {
+            d3.select("#word-cloud").append("svg")
+                .attr("width", 300)
+                .attr("height", 300)
+              .append("g")
+                .attr("transform", "translate(150,150)")
+              .selectAll("text")
+                .data(words)
+              .enter().append("text")
+                .style("font-size", function(d) { return d.size + "px"; })
+                .style("font-family", "Impact")
+                .attr("text-anchor", "middle")
+                .attr("transform", function(d) {
+                  return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+                })
+                .text(function(d) { return d.text; });
+          }
+    }
+    ;
+
 
     Wall.prototype.pause = function() {
       this.cloud.force.stop();

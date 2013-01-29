@@ -403,6 +403,47 @@ button {
         width: 14em;
         margin-left: 106px;
     }
+
+    #show-word-cloud {
+        position: fixed;
+        bottom: 10px;
+        left: 480px;
+    }
+}
+
+#word-cloud {
+    display: none;
+    position:fixed;
+    top: 34%;
+    left: 42%;
+    padding: 16px;
+    border: 1px solid orange;
+    background-color: white;
+    z-index:1002;
+    overflow: auto;
+
+    &.visible {
+        display: block;
+    }
+}
+
+#fade {
+    display: none;
+    position:fixed;
+    top: 0%;
+    left: 0%;
+    width: 100%;
+    height: 85%;
+    background-color: black;
+    background-position:fixed;
+    z-index:1001;
+    -moz-opacity: 0.8;
+    opacity:.80;
+    filter: alpha(opacity=80);
+
+    &.visible {
+        display: block;
+    }
 }
 
 .balloon {

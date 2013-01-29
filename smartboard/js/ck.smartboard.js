@@ -42,6 +42,9 @@
       rollcall: {
         url: 'string'
       },
+      assets: {
+        url: 'string'
+      },
       mongo: {
         url: 'string'
       }
