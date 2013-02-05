@@ -130,6 +130,27 @@
       return Contribution.__super__.constructor.apply(this, arguments);
     }
 
+    Contribution.prototype.initialize = function() {
+      Contribution.__super__.initialize.call(this);
+      if (!this.get('created_at')) {
+        return this.set('created_at', new Date());
+      }
+    };
+
+    Contribution.prototype.get = function(attr) {
+      var date, val;
+      val = Contribution.__super__.get.call(this, attr);
+      if (attr === 'created_at') {
+        if (!(val instanceof Date)) {
+          date = new Date(val);
+          if (!isNaN(date.getTime())) {
+            val = date;
+          }
+        }
+      }
+      return val;
+    };
+
     Contribution.prototype.addTag = function(tag, tagger) {
       var existingTagRelationships, tagRel;
       if (!(tag instanceof CK.Model.Tag)) {

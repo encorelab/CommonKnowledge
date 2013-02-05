@@ -73,6 +73,22 @@ class CK.Model.Collection extends Drowsy.Collection
 
 
 class CK.Model.Contribution extends CK.Model.Document
+
+    initialize: ->
+        super()
+        unless @get('created_at')
+            @set 'created_at', new Date()
+
+    get: (attr) ->
+        val = super(attr)
+        # previous versions of CK did not store created_at as a proper ISODate
+        if attr is 'created_at'
+            unless val instanceof Date
+                date = new Date(val)
+                unless isNaN date.getTime()
+                    val = date
+        
+        return val
     
     addTag: (tag, tagger) ->
         unless tag instanceof CK.Model.Tag
