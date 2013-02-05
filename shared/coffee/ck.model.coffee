@@ -17,7 +17,7 @@ class CK.Model
         CK.Model.State::urlRoot = "#{@dbURL}/states"
         CK.Model.States::url = "#{@dbURL}/states"
 
-        CK.Model.DrowsyModel.createNecessaryCollections([
+        CK.Model.createNecessaryCollections([
             'contributions',
             'tags',
             'states'
@@ -34,33 +34,6 @@ class CK.Model
                     tag = new CK.Model.Tag()
                     tag.set('name', "N/A")
                     tag.save()
-
-
-# TODO: move this out to sail.js
-class CK.Model.DrowsyModel extends Backbone.Model
-    idAttribute: "_id"
-
-    parse: (data) ->
-        data._id = data._id.$oid
-        if data.created_at?
-            parsedCreatedAt = new Date(data.created_at)
-            unless isNaN parsedCreatedAt.getTime()
-                data.created_at = parsedCreatedAt
-        return data
-
-    initialize: ->
-        unless @get(@idAttribute)
-            @set @idAttribute, CK.Model.DrowsyModel.generateMongoObjectId()
-
-        unless @get('created_at')
-            @set 'created_at', Date()
-
-    @generateMongoObjectId: ->
-        base = 16 # hex
-        randLength = 13
-        time = Date.now().toString(base)
-        rand = Math.ceil(Math.random() * (Math.pow(base, randLength)-1)).toString(base)
-        return time + (Array(randLength+1).join("0") + rand).slice(-randLength)
 
     @createNecessaryDatabase: (requiredDatabase, afterwards) ->
         jQuery.ajax CK.Model.baseURL,
@@ -91,14 +64,16 @@ class CK.Model.DrowsyModel extends Backbone.Model
                 console.error "Couldn't fetch list of collections from #{CK.Model.dbURL} because: ", JSON.parse(err.responseText)
                 throw err.responseText
 
-# TODO: move this out to sail.js
-class CK.Model.DrowsyCollection extends Backbone.Collection
-    model: CK.Model.DrowsyModel
 
 
-class CK.Model.Contribution extends CK.Model.DrowsyModel
-    urlRoot: undefined # set in CK.Model.setup()
+class CK.Model.Document extends Drowsy.Document
 
+class CK.Model.Collection extends Drowsy.Collection
+    model: CK.Model.Document
+
+
+class CK.Model.Contribution extends CK.Model.Document
+    
     addTag: (tag, tagger) ->
         unless tag instanceof CK.Model.Tag
             console.error("Cannot addTag ", tag ," because it is not a CK.Model.Tag instance!")
@@ -140,21 +115,21 @@ class CK.Model.Contribution extends CK.Model.DrowsyModel
                 (not tagger? || t.tagger is tagger)
 
 
-class CK.Model.Contributions extends CK.Model.DrowsyCollection
+class CK.Model.Contributions extends CK.Model.Collection
     model: CK.Model.Contribution
     url: undefined  # set in CK.Model.configure()
 
-class CK.Model.Tag extends CK.Model.DrowsyModel
+class CK.Model.Tag extends CK.Model.Document
     urlRoot: undefined # set in CK.Model.configure()
 
-class CK.Model.Tags extends CK.Model.DrowsyCollection
+class CK.Model.Tags extends CK.Model.Collection
     model: CK.Model.Tag
     url: undefined  # set in CK.Model.configure()
 
-class CK.Model.State extends CK.Model.DrowsyModel
+class CK.Model.State extends CK.Model.Document
     urlRoot: undefined # set in CK.Model.configure()
 
-class CK.Model.States extends CK.Model.DrowsyCollection
+class CK.Model.States extends CK.Model.Collection
     model: CK.Model.State
     url: undefined # set in CK.Model.configure()
     
