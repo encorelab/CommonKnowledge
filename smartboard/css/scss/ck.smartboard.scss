@@ -414,8 +414,10 @@ button {
 #word-cloud {
     display: none;
     position:fixed;
+    width: 800px;
+    height: 400px;
     top: 34%;
-    left: 42%;
+    left: 28%;
     padding: 16px;
     border: 1px solid orange;
     background-color: white;

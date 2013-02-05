@@ -112,6 +112,8 @@
 
     Wall.prototype.id = 'wall';
 
+    Wall.prototype.showCloud = true;
+
     Wall.prototype.events = {
       'click #add-tag-opener': function(ev) {
         var addTagContainer,
@@ -128,7 +130,13 @@
         return this.submitNewTag();
       },
       'click #show-word-cloud': function(ev) {
-        return this.showWordCloud();
+        if (this.showCloud) {
+          this.showWordCloud();
+          return this.showCloud = false;
+        } else {
+          this.hideWordCloud();
+          return this.showCloud = true;
+        }
       },
       'click #close-word-cloud': function(ev) {
         return this.hideWordCloud();
@@ -170,20 +178,57 @@
     };
 
     Wall.prototype.showWordCloud = function() {
-      var fade, wordCloud, wordHash, words;
+      var count, fade, filteredWords, h, maxCount, maxSize, w, word, wordCloud, wordCount, wordHash, words, _i, _len, _ref;
+      words = [];
       jQuery('#word-cloud svg').remove();
-      words = ["Hello", "world", "normally", "normally", "normally", "normally", "normally", "you", "want", "more", "words", "than", "this"];
-      wordHash = words.map(function(word) {
-        return {
-          text: word,
-          size: word.length * 10
-        };
+      words = ["I", "need", "more", "words", "here", "and", "this", "is", "Hello", "world", "normally", "normally", "normally", "normally", "normally", "you", "you", "you", "want", "more", "more", "words", "than", "this"];
+      filteredWords = this.filterWords(words);
+      console.log(filteredWords);
+      wordCount = {};
+      for (_i = 0, _len = filteredWords.length; _i < _len; _i++) {
+        w = filteredWords[_i];
+        if ((_ref = wordCount[w]) == null) {
+          wordCount[w] = 0;
+        }
+        wordCount[w]++;
+      }
+      maxSize = 70;
+      maxCount = _.max(wordCount, function(count, word) {
+        return count;
       });
+      console.log(maxCount, wordCount);
+      wordHash = (function() {
+        var _results;
+        _results = [];
+        for (word in wordCount) {
+          count = wordCount[word];
+          h = {
+            text: word,
+            size: Math.pow(count / maxCount, 0.5) * maxSize
+          };
+          console.log(word, count, h);
+          _results.push(h);
+        }
+        return _results;
+      })();
       this.generateWordCloud(wordHash);
       wordCloud = jQuery('#word-cloud');
       wordCloud.addClass('visible');
       fade = jQuery('#fade');
       return fade.addClass('visible');
+    };
+
+    Wall.prototype.filterWords = function(wordsToFilter) {
+      var discard, filteredWords, htmlTags, punctuation, stopWords, wordSeparators;
+      stopWords = /^(i|me|my|myself|we|us|our|ours|ourselves|you|your|yours|yourself|yourselves|he|him|his|himself|she|her|hers|herself|it|its|itself|they|them|their|theirs|themselves|what|which|who|whom|whose|this|that|these|those|am|is|are|was|were|be|been|being|have|has|had|having|do|does|did|doing|will|would|should|can|could|ought|i'm|you're|he's|she's|it's|we're|they're|i've|you've|we've|they've|i'd|you'd|he'd|she'd|we'd|they'd|i'll|you'll|he'll|she'll|we'll|they'll|isn't|aren't|wasn't|weren't|hasn't|haven't|hadn't|doesn't|don't|didn't|won't|wouldn't|shan't|shouldn't|can't|cannot|couldn't|mustn't|let's|that's|who's|what's|here's|there's|when's|where's|why's|how's|a|an|the|and|but|if|or|because|as|until|while|of|at|by|for|with|about|against|between|into|through|during|before|after|above|below|to|from|up|upon|down|in|out|on|off|over|under|again|further|then|once|here|there|when|where|why|how|all|any|both|each|few|more|most|other|some|such|no|nor|not|only|own|same|so|than|too|very|say|says|said|shall)$/i;
+      punctuation = /[!"&()*+,-\.\/:;<=>?\[\\\]^`\{|\}~]+/g;
+      wordSeparators = /[\s\u3031-\u3035\u309b\u309c\u30a0\u30fc\uff70]+/g;
+      discard = /^(@|https?:)/;
+      htmlTags = /(<[^>]*?>|<script.*?<\/script>|<style.*?<\/style>|<head.*?><\/head>)/g;
+      filteredWords = _.filter(wordsToFilter, function(w) {
+        return !(stopWords.test(w) || punctuation.test(w));
+      });
+      return filteredWords;
     };
 
     Wall.prototype.hideWordCloud = function() {
@@ -195,39 +240,28 @@
       return jQuery('#word-cloud svg').remove();
     };
 
-    
-    Wall.prototype.generateWordCloud = function (wordHash) {
-          var fill = d3.scale.category20();
-
-          d3.layout.cloud().size([300, 300])
-              .words(wordHash)
-              .rotate(function() { return ~~(Math.random() * 2) * 90; })
-              .font("Impact")
-              .fontSize(function(d) { return d.size; })
-              .on("end", draw)
-              .start();
-
-          function draw(words) {
-            d3.select("#word-cloud").append("svg")
-                .attr("width", 300)
-                .attr("height", 300)
-              .append("g")
-                .attr("transform", "translate(150,150)")
-              .selectAll("text")
-                .data(words)
-              .enter().append("text")
-                .style("font-size", function(d) { return d.size + "px"; })
-                .style("font-family", "Ubuntu")
-                .style("fill", function(d, i) { return fill(i); })
-                .attr("text-anchor", "middle")
-                .attr("transform", function(d) {
-                  return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
-                })
-                .text(function(d) { return d.text; });
-          }
-    }
-    ;
-
+    Wall.prototype.generateWordCloud = function(wordHash) {
+      var draw, fill, height, width;
+      width = 800;
+      height = 400;
+      draw = function(words) {
+        return d3.select("#word-cloud").append("svg").attr("width", "99%").attr("height", "99%").append("g").attr("transform", "translate(" + (width / 2) + "," + (height / 2) + ")").selectAll("text").data(words).enter().append("text").style("font-size", function(d) {
+          return d.size + "px";
+        }).style("font-family", "Ubuntu").style("fill", function(d, i) {
+          return fill(i);
+        }).attr("text-anchor", "middle").attr("transform", function(d) {
+          return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+        }).text(function(d) {
+          return d.text;
+        });
+      };
+      fill = d3.scale.category20();
+      return d3.layout.cloud().size([width, height]).words(wordHash).rotate(function() {
+        return ~~(Math.random() * 5) * 30 - 60;
+      }).font("Ubuntu").fontSize(function(d) {
+        return d.size;
+      }).on("end", draw).start();
+    };
 
     Wall.prototype.pause = function() {
       this.cloud.force.stop();
