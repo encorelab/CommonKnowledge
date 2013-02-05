@@ -102,6 +102,8 @@
 
       this.hideWordCloud = __bind(this.hideWordCloud, this);
 
+      this.gatherWordsForCloud = __bind(this.gatherWordsForCloud, this);
+
       this.showWordCloud = __bind(this.showWordCloud, this);
 
       this.submitNewTag = __bind(this.submitNewTag, this);
@@ -178,55 +180,78 @@
     };
 
     Wall.prototype.showWordCloud = function() {
-      var count, fade, filteredWords, h, maxCount, maxSize, w, word, wordCloud, wordCount, wordHash, words, _i, _len, _ref;
+      var words;
       words = [];
       jQuery('#word-cloud svg').remove();
-      words = ["I", "need", "more", "words", "here", "and", "this", "is", "Hello", "world", "normally", "normally", "normally", "normally", "normally", "you", "you", "you", "want", "more", "more", "words", "than", "this"];
-      filteredWords = this.filterWords(words);
-      console.log(filteredWords);
-      wordCount = {};
-      for (_i = 0, _len = filteredWords.length; _i < _len; _i++) {
-        w = filteredWords[_i];
-        if ((_ref = wordCount[w]) == null) {
-          wordCount[w] = 0;
+      return this.gatherWordsForCloud(words, function(gatheredWords) {
+        var count, fade, filteredWords, h, maxCount, maxSize, w, word, wordCloud, wordCount, wordHash, _i, _len, _ref;
+        words = gatheredWords;
+        filteredWords = Wall.prototype.filterWords(words);
+        console.log(filteredWords);
+        wordCount = {};
+        for (_i = 0, _len = filteredWords.length; _i < _len; _i++) {
+          w = filteredWords[_i];
+          if ((_ref = wordCount[w]) == null) {
+            wordCount[w] = 0;
+          }
+          wordCount[w]++;
         }
-        wordCount[w]++;
-      }
-      maxSize = 70;
-      maxCount = _.max(wordCount, function(count, word) {
-        return count;
+        maxSize = 70;
+        maxCount = _.max(wordCount, function(count, word) {
+          return count;
+        });
+        console.log(maxCount, wordCount);
+        wordHash = (function() {
+          var _results;
+          _results = [];
+          for (word in wordCount) {
+            count = wordCount[word];
+            h = {
+              text: word,
+              size: Math.pow(count / maxCount, 0.5) * maxSize
+            };
+            console.log(word, count, h);
+            _results.push(h);
+          }
+          return _results;
+        })();
+        Wall.prototype.generateWordCloud(wordHash);
+        wordCloud = jQuery('#word-cloud');
+        wordCloud.addClass('visible');
+        fade = jQuery('#fade');
+        return fade.addClass('visible');
       });
-      console.log(maxCount, wordCount);
-      wordHash = (function() {
-        var _results;
-        _results = [];
-        for (word in wordCount) {
-          count = wordCount[word];
-          h = {
-            text: word,
-            size: Math.pow(count / maxCount, 0.5) * maxSize
-          };
-          console.log(word, count, h);
-          _results.push(h);
+    };
+
+    Wall.prototype.gatherWordsForCloud = function(wordsToReturn, callback) {
+      var punctuation, text, wordSeparators;
+      punctuation = /[!"&()*+,-\.\/:;<=>?\[\\\]^`\{|\}~]+/g;
+      wordSeparators = /[\s\u3031-\u3035\u309b\u309c\u30a0\u30fc\uff70]+/g;
+      text = '';
+      this.contributions = new CK.Model.Contributions();
+      return this.contributions.fetch({
+        success: function(collection, response) {
+          _.each(collection.models, function(c) {
+            console.log(c.get('headline'), c.get('content'));
+            text += c.get('headline') + ' ';
+            return text += c.get('content') + ' ';
+          });
+          _.each(text.split(wordSeparators), function(word) {
+            word = word.replace(punctuation, "");
+            return wordsToReturn.push(word);
+          });
+          return callback(wordsToReturn);
         }
-        return _results;
-      })();
-      this.generateWordCloud(wordHash);
-      wordCloud = jQuery('#word-cloud');
-      wordCloud.addClass('visible');
-      fade = jQuery('#fade');
-      return fade.addClass('visible');
+      });
     };
 
     Wall.prototype.filterWords = function(wordsToFilter) {
-      var discard, filteredWords, htmlTags, punctuation, stopWords, wordSeparators;
-      stopWords = /^(i|me|my|myself|we|us|our|ours|ourselves|you|your|yours|yourself|yourselves|he|him|his|himself|she|her|hers|herself|it|its|itself|they|them|their|theirs|themselves|what|which|who|whom|whose|this|that|these|those|am|is|are|was|were|be|been|being|have|has|had|having|do|does|did|doing|will|would|should|can|could|ought|i'm|you're|he's|she's|it's|we're|they're|i've|you've|we've|they've|i'd|you'd|he'd|she'd|we'd|they'd|i'll|you'll|he'll|she'll|we'll|they'll|isn't|aren't|wasn't|weren't|hasn't|haven't|hadn't|doesn't|don't|didn't|won't|wouldn't|shan't|shouldn't|can't|cannot|couldn't|mustn't|let's|that's|who's|what's|here's|there's|when's|where's|why's|how's|a|an|the|and|but|if|or|because|as|until|while|of|at|by|for|with|about|against|between|into|through|during|before|after|above|below|to|from|up|upon|down|in|out|on|off|over|under|again|further|then|once|here|there|when|where|why|how|all|any|both|each|few|more|most|other|some|such|no|nor|not|only|own|same|so|than|too|very|say|says|said|shall)$/i;
-      punctuation = /[!"&()*+,-\.\/:;<=>?\[\\\]^`\{|\}~]+/g;
-      wordSeparators = /[\s\u3031-\u3035\u309b\u309c\u30a0\u30fc\uff70]+/g;
+      var discard, filteredWords, htmlTags, stopWords;
+      stopWords = /^(i|me|my|myself|we|us|our|ours|ourselves|you|your|yours|yourself|yourselves|he|him|his|himself|she|her|hers|herself|it|its|itself|they|them|their|theirs|themselves|what|which|who|whom|whose|this|that|these|those|am|is|are|was|were|be|been|being|have|has|had|having|do|does|did|doing|will|would|should|can|could|ought|i'm|you're|he's|she's|it's|we're|they're|i've|you've|we've|they've|i'd|you'd|he'd|she'd|we'd|they'd|i'll|you'll|he'll|she'll|we'll|they'll|isn't|aren't|wasn't|weren't|hasn't|haven't|hadn't|doesn't|don't|didn't|won't|wouldn't|shan't|shouldn't|can't|cannot|couldn't|mustn't|let's|that's|who's|what's|here's|there's|when's|where's|why's|how's|a|an|the|and|but|if|or|because|as|until|while|of|at|by|for|with|about|against|between|into|through|during|before|after|above|below|to|from|up|upon|down|in|out|on|off|over|under|again|further|then|once|here|there|when|where|why|how|all|any|both|each|few|more|most|other|some|such|no|nor|not|only|own|same|so|than|too|very|say|says|said|shall|sd|sdf|fuck|shit|poo|pooped|boop|boops|asshole)$/i;
       discard = /^(@|https?:)/;
       htmlTags = /(<[^>]*?>|<script.*?<\/script>|<style.*?<\/style>|<head.*?><\/head>)/g;
       filteredWords = _.filter(wordsToFilter, function(w) {
-        return !(stopWords.test(w) || punctuation.test(w));
+        return !(stopWords.test(w));
       });
       return filteredWords;
     };
@@ -242,7 +267,7 @@
 
     Wall.prototype.generateWordCloud = function(wordHash) {
       var draw, fill, height, width;
-      width = 800;
+      width = 650;
       height = 400;
       draw = function(words) {
         return d3.select("#word-cloud").append("svg").attr("width", "99%").attr("height", "99%").append("g").attr("transform", "translate(" + (width / 2) + "," + (height / 2) + ")").selectAll("text").data(words).enter().append("text").style("font-size", function(d) {

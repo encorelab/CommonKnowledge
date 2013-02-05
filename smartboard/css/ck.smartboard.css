@@ -279,15 +279,16 @@ button {
   #add-tag-container #show-word-cloud {
     position: fixed;
     bottom: 10px;
-    left: 480px; }
+    left: 180px;
+    z-index: -1; }
 
 #word-cloud {
   display: none;
   position: fixed;
-  width: 800px;
+  width: 650px;
   height: 400px;
-  top: 34%;
-  left: 28%;
+  top: 10%;
+  left: 15%;
   padding: 16px;
   border: 1px solid orange;
   background-color: white;
