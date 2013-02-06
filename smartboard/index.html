@@ -15,6 +15,7 @@
         Sail.load()
             .then(Sail.JS_ROOT_PATH+'/rollcall.js',
                 'js/d3.v2.js', 'js/q.js')
+            .then('js/d3.layout.cloud.js')
             .then('../shared/js/ck.js')
             .then('https://raw.github.com/zuk/Backbone.Drowsy/master/backbone.drowsy.js')
             .then('https://raw.github.com/zuk/Backbone.Drowsy/master/wakeful.js')
@@ -41,7 +42,10 @@
             <button id="add-tag-opener">Add Tag</button>
             <input type="text" id="new-tag" />
             <button id="submit-new-tag">✚</button>
+
+            <button id="show-word-cloud">Show word cloud</button>
         </div>
+
 
         <div id="action-buttons-container">
             <button id="toggle-pause">Pause</button>
@@ -49,7 +53,13 @@
             <button id="go-analyze">Go Analyze!</button>
             <button id="go-synthesize">Go Synthesize!</button>
         </div>
+
+        <div id="word-cloud">
+            <!-- <button id="close-word-cloud">close</button> -->
+        </div>
+        <div id="fade"></div>
     </div>
+</script>
 </body>
 
 </html>
