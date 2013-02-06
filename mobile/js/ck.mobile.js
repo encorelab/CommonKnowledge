@@ -17,7 +17,10 @@ CK.Mobile = function() {
     rollcall: {
       url: 'string'
     },
-    mongo: {
+    drowsy: {
+      url: 'string'
+    },
+    wakeful: {
       url: 'string'
     }
   };
@@ -139,9 +142,9 @@ CK.Mobile = function() {
 
     authenticated: function(ev) {
       console.log('Authenticated...');
-      // now we call a class function (configure) and hand in the mongo url and the run name so we don't need
+      // now we call a class function (configure) and hand in the drowsy url and the run name so we don't need
       // to do this config again for each model instantiation
-      CK.Model.configure(app.config.mongo.url, app.run.name);
+      CK.Model.configure(app.config.drowsy.url, app.run.name);
 
       // Colin there is already data about the user available
       app.userData = Sail.app.session;

@@ -45,7 +45,10 @@
       assets: {
         url: 'string'
       },
-      mongo: {
+      drowsy: {
+        url: 'string'
+      },
+      wakeful: {
         url: 'string'
       }
     };
@@ -200,7 +203,7 @@
       authenticated: function(ev) {
         var _this = this;
         console.log("Authenticated...");
-        CK.Model.configure(this.config.mongo.url, this.run.name);
+        CK.Model.configure(this.config.drowsy.url, this.run.name);
         return CK.getState('phase', function(s) {
           if (s) {
             if (s.get('state') === 'start_student_tagging') {

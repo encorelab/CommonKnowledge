@@ -10,8 +10,11 @@
 "bosh": {
     "url": "http://badger.encorelab.org:5280/http-bind/"
   },
-"mongo": {
+"drowsy": {
     "url": "https://drowsy.badger.encorelab.org"
+  },
+"wakeful": {
+    "url": "ws://badger.encorelab.org:7777"
   },
 "assets": {
     "url": "http://ck.badger.encorelab.org/assets"

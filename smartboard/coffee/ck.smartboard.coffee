@@ -11,7 +11,9 @@ class CK.Smartboard extends Sail.App
             url: 'string'
         assets:
             url: 'string'
-        mongo:
+        drowsy:
+            url: 'string'
+        wakeful:
             url: 'string'
     }
 
@@ -115,7 +117,7 @@ class CK.Smartboard extends Sail.App
             
         authenticated: (ev) ->
             console.log "Authenticated..."
-            CK.Model.configure(@config.mongo.url, @run.name)
+            CK.Model.configure(@config.drowsy.url, @run.name)
 
             CK.getState 'phase', (s) =>
                 if s
