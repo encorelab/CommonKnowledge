@@ -146,8 +146,9 @@
     events: {
       // for most fields
       'change .field': function (ev) {
+        var f;
         if (Sail.app.currentContribution.kind === 'new') {
-          var f = jQuery(ev.target);
+          f = jQuery(ev.target);
           console.log("Setting "+f.attr("name")+" to "+f.val());
           this.model.set(f.attr('name'), f.val());          
         } else if (Sail.app.currentContribution.kind === 'buildOn') {
@@ -158,7 +159,7 @@
           Sail.app.currentBuildOn.created_at = d;
           console.log(d);
         } else if (Sail.app.currentContribution.kind === 'synthesis') {
-          var f = jQuery(ev.target);
+          f = jQuery(ev.target);
           console.log("Setting "+f.attr("name")+" to "+f.val());
           this.model.set(f.attr('name'), f.val());          
         } else {
