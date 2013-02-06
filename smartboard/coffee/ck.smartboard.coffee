@@ -38,37 +38,7 @@ class CK.Smartboard extends Sail.App
         @rollcall = new Rollcall.Client(@config.rollcall.url)
 
         @wall = new CK.Smartboard.View.Wall {el: jQuery('#wall')}
-
-        bubbleContrib = (contrib) =>
-            # TODO: move this to @wall.cloud.addContribution
-            bubble = new CK.Smartboard.View.ContributionBalloon {model: contrib}
-            contrib.on 'change', bubble.render
-            bubble.render()
-            @wall.cloud.addContribution(bubble.$el) if @wall.cloud?
-
-        bubbleTag = (tag) =>
-            # TODO: move this to @wall.cloud.addTag
-            bubble = new CK.Smartboard.View.TagBalloon {model: tag}
-            tag.on 'change', bubble.render
-            bubble.render()
-            @wall.cloud.addTag(bubble.$el) if @wall.cloud?
         
-        @contributions = new CK.Model.Contributions()
-        @contributions.on 'add', (contrib) -> 
-            contrib.justAdded = true
-            bubbleContrib(contrib)
-
-        @contributions.on 'reset', (collection) -> 
-            collection.each bubbleContrib
-
-        @tags = new CK.Model.Tags()
-        @tags.on 'add', (tag) ->
-            tag.justAdded = true
-            view = bubbleTag(tag)
-
-        @tags.on 'reset', (collection) ->
-            collection.each bubbleTag
-
     authenticate: =>
         if @run
             Rollcall.Authenticator.requestLogin()
@@ -117,14 +87,44 @@ class CK.Smartboard extends Sail.App
             
         authenticated: (ev) ->
             console.log "Authenticated..."
-            CK.Model.configure(@config.drowsy.url, @run.name)
 
-            CK.getState 'phase', (s) =>
-                if s
-                    if s.get('state') is 'start_student_tagging'
-                        @switchToAnalysis()
-                    else if s.get('state') is 'start_synthesis'
-                        @switchToSynthesis()
+            bubbleContrib = (contrib) =>
+                # TODO: move this to @wall.cloud.addContribution
+                bubble = new CK.Smartboard.View.ContributionBalloon {model: contrib}
+                contrib.on 'change', bubble.render
+                bubble.render()
+                @wall.cloud.addContribution(bubble.$el) if @wall.cloud?
+
+            bubbleTag = (tag) =>
+                # TODO: move this to @wall.cloud.addTag
+                bubble = new CK.Smartboard.View.TagBalloon {model: tag}
+                tag.on 'change', bubble.render
+                bubble.render()
+                @wall.cloud.addTag(bubble.$el) if @wall.cloud?
+
+            CK.Model.init(@config.drowsy.url, @run.name).done =>
+                @contributions = new CK.Model.Contributions()
+                @contributions.on 'add', (contrib) => 
+                    contrib.justAdded = true
+                    bubbleContrib(contrib)
+
+                @contributions.on 'reset', (collection) => 
+                    collection.each bubbleContrib
+
+                @tags = new CK.Model.Tags()
+                @tags.on 'add', (tag) =>
+                    tag.justAdded = true
+                    view = bubbleTag(tag)
+
+                @tags.on 'reset', (collection) =>
+                    collection.each bubbleTag
+
+                CK.getState 'phase', (s) =>
+                    if s
+                        if s.get('state') is 'start_student_tagging'
+                            @switchToAnalysis()
+                        else if s.get('state') is 'start_synthesis'
+                            @switchToSynthesis()
 
 
         'ui.initialized': (ev) ->

@@ -54,7 +54,7 @@
     };
 
     Smartboard.prototype.init = function() {
-      var bubbleContrib, bubbleTag, userFilter,
+      var userFilter,
         _this = this;
       Sail.verifyConfig(this.config, this.requiredConfig);
       console.log("Configuration is valid.");
@@ -78,47 +78,8 @@
         return _this.trigger('initialized');
       });
       this.rollcall = new Rollcall.Client(this.config.rollcall.url);
-      this.wall = new CK.Smartboard.View.Wall({
+      return this.wall = new CK.Smartboard.View.Wall({
         el: jQuery('#wall')
-      });
-      bubbleContrib = function(contrib) {
-        var bubble;
-        bubble = new CK.Smartboard.View.ContributionBalloon({
-          model: contrib
-        });
-        contrib.on('change', bubble.render);
-        bubble.render();
-        if (_this.wall.cloud != null) {
-          return _this.wall.cloud.addContribution(bubble.$el);
-        }
-      };
-      bubbleTag = function(tag) {
-        var bubble;
-        bubble = new CK.Smartboard.View.TagBalloon({
-          model: tag
-        });
-        tag.on('change', bubble.render);
-        bubble.render();
-        if (_this.wall.cloud != null) {
-          return _this.wall.cloud.addTag(bubble.$el);
-        }
-      };
-      this.contributions = new CK.Model.Contributions();
-      this.contributions.on('add', function(contrib) {
-        contrib.justAdded = true;
-        return bubbleContrib(contrib);
-      });
-      this.contributions.on('reset', function(collection) {
-        return collection.each(bubbleContrib);
-      });
-      this.tags = new CK.Model.Tags();
-      this.tags.on('add', function(tag) {
-        var view;
-        tag.justAdded = true;
-        return view = bubbleTag(tag);
-      });
-      return this.tags.on('reset', function(collection) {
-        return collection.each(bubbleTag);
       });
     };
 
@@ -201,17 +162,58 @@
         return console.log("Initialized...");
       },
       authenticated: function(ev) {
-        var _this = this;
+        var bubbleContrib, bubbleTag,
+          _this = this;
         console.log("Authenticated...");
-        CK.Model.configure(this.config.drowsy.url, this.run.name);
-        return CK.getState('phase', function(s) {
-          if (s) {
-            if (s.get('state') === 'start_student_tagging') {
-              return _this.switchToAnalysis();
-            } else if (s.get('state') === 'start_synthesis') {
-              return _this.switchToSynthesis();
-            }
+        bubbleContrib = function(contrib) {
+          var bubble;
+          bubble = new CK.Smartboard.View.ContributionBalloon({
+            model: contrib
+          });
+          contrib.on('change', bubble.render);
+          bubble.render();
+          if (_this.wall.cloud != null) {
+            return _this.wall.cloud.addContribution(bubble.$el);
           }
+        };
+        bubbleTag = function(tag) {
+          var bubble;
+          bubble = new CK.Smartboard.View.TagBalloon({
+            model: tag
+          });
+          tag.on('change', bubble.render);
+          bubble.render();
+          if (_this.wall.cloud != null) {
+            return _this.wall.cloud.addTag(bubble.$el);
+          }
+        };
+        return CK.Model.init(this.config.drowsy.url, this.run.name).done(function() {
+          _this.contributions = new CK.Model.Contributions();
+          _this.contributions.on('add', function(contrib) {
+            contrib.justAdded = true;
+            return bubbleContrib(contrib);
+          });
+          _this.contributions.on('reset', function(collection) {
+            return collection.each(bubbleContrib);
+          });
+          _this.tags = new CK.Model.Tags();
+          _this.tags.on('add', function(tag) {
+            var view;
+            tag.justAdded = true;
+            return view = bubbleTag(tag);
+          });
+          _this.tags.on('reset', function(collection) {
+            return collection.each(bubbleTag);
+          });
+          return CK.getState('phase', function(s) {
+            if (s) {
+              if (s.get('state') === 'start_student_tagging') {
+                return _this.switchToAnalysis();
+              } else if (s.get('state') === 'start_synthesis') {
+                return _this.switchToSynthesis();
+              }
+            }
+          });
         });
       },
       'ui.initialized': function(ev) {
