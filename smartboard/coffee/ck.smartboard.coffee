@@ -45,6 +45,7 @@ class CK.Smartboard extends Sail.App
         else
             Rollcall.Authenticator.requestRun()
 
+    # initializes and persists a new CK.Model.Tag with the given name
     createNewTag: (name) =>
         tag = new CK.Model.Tag({name: name})
         tag.save {},
@@ -80,6 +81,51 @@ class CK.Smartboard extends Sail.App
     switchToSynthesis: =>
         @wall.setMode('synthesis')
 
+    # init and render a new ContributionBalloon view and add it to the Bubble cloud
+    # `contrib` should be a CK.Model.Contribution object
+    bubbleContrib: (contrib) =>
+        # TODO: move this to @wall.cloud.addContribution
+        bubble = new CK.Smartboard.View.ContributionBalloon {model: contrib}
+        contrib.on 'change', bubble.render
+        bubble.render()
+        @wall.cloud.addContribution(bubble.$el) if @wall.cloud?
+
+    # init and render a new TagBalloon view and add it to the Bubble cloud
+    # `contrib` should be a CK.Model.Tag object
+    bubbleTag: (tag) =>
+        # TODO: move this to @wall.cloud.addTag
+        bubble = new CK.Smartboard.View.TagBalloon {model: tag}
+        tag.on 'change', bubble.render
+        bubble.render()
+        @wall.cloud.addTag(bubble.$el) if @wall.cloud?
+
+    # set up all the Collections used by the board
+    initModels: =>
+        @contributions = new CK.Model.Contributions()
+        @contributions.on 'add', (contrib) => 
+            contrib.justAdded = true
+            @bubbleContrib(contrib)
+
+        @contributions.on 'reset', (collection) => 
+            collection.each @bubbleContrib
+
+        @tags = new CK.Model.Tags()
+        @tags.on 'add', (tag) =>
+            tag.justAdded = true
+            @bubbleTag(tag)
+
+        @tags.on 'reset', (collection) =>
+            collection.each @bubbleTag
+
+        CK.getState 'phase', (s) =>
+            if s
+                if s.get('state') is 'start_student_tagging'
+                    @switchToAnalysis()
+                else if s.get('state') is 'start_synthesis'
+                    @switchToSynthesis()
+
+        @trigger('ready')
+
     events:
         initialized: (ev) ->
             @authenticate()
@@ -88,45 +134,7 @@ class CK.Smartboard extends Sail.App
         authenticated: (ev) ->
             console.log "Authenticated..."
 
-            bubbleContrib = (contrib) =>
-                # TODO: move this to @wall.cloud.addContribution
-                bubble = new CK.Smartboard.View.ContributionBalloon {model: contrib}
-                contrib.on 'change', bubble.render
-                bubble.render()
-                @wall.cloud.addContribution(bubble.$el) if @wall.cloud?
-
-            bubbleTag = (tag) =>
-                # TODO: move this to @wall.cloud.addTag
-                bubble = new CK.Smartboard.View.TagBalloon {model: tag}
-                tag.on 'change', bubble.render
-                bubble.render()
-                @wall.cloud.addTag(bubble.$el) if @wall.cloud?
-
-            CK.Model.init(@config.drowsy.url, @run.name).done =>
-                @contributions = new CK.Model.Contributions()
-                @contributions.on 'add', (contrib) => 
-                    contrib.justAdded = true
-                    bubbleContrib(contrib)
-
-                @contributions.on 'reset', (collection) => 
-                    collection.each bubbleContrib
-
-                @tags = new CK.Model.Tags()
-                @tags.on 'add', (tag) =>
-                    tag.justAdded = true
-                    view = bubbleTag(tag)
-
-                @tags.on 'reset', (collection) =>
-                    collection.each bubbleTag
-
-                CK.getState 'phase', (s) =>
-                    if s
-                        if s.get('state') is 'start_student_tagging'
-                            @switchToAnalysis()
-                        else if s.get('state') is 'start_synthesis'
-                            @switchToSynthesis()
-
-                @trigger('ready')
+            CK.Model.init(@config.drowsy.url, @run.name).done @initModels
 
 
         'ui.initialized': (ev) ->
@@ -149,13 +157,13 @@ class CK.Smartboard extends Sail.App
                         , 1000)
 
         sail:
-            contribution: (sev) ->
-                c = @contributions.get(sev.payload._id)
-                if c?
-                    c.set(sev.payload)
-                else
-                    c = new CK.Model.Contribution(sev.payload)
-                    @contributions.add(c)
+            # contribution: (sev) ->
+            #     c = @contributions.get(sev.payload._id)
+            #     if c?
+            #         c.set(sev.payload)
+            #     else
+            #         c = new CK.Model.Contribution(sev.payload)
+            #         @contributions.add(c)
 
             build_on: (sev) ->
                 c = @contributions.get(sev.payload._id)

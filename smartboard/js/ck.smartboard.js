@@ -9,6 +9,12 @@
     __extends(Smartboard, _super);
 
     function Smartboard() {
+      this.initModels = __bind(this.initModels, this);
+
+      this.bubbleTag = __bind(this.bubbleTag, this);
+
+      this.bubbleContrib = __bind(this.bubbleContrib, this);
+
       this.switchToSynthesis = __bind(this.switchToSynthesis, this);
 
       this.switchToAnalysis = __bind(this.switchToAnalysis, this);
@@ -156,66 +162,68 @@
       return this.wall.setMode('synthesis');
     };
 
+    Smartboard.prototype.bubbleContrib = function(contrib) {
+      var bubble;
+      bubble = new CK.Smartboard.View.ContributionBalloon({
+        model: contrib
+      });
+      contrib.on('change', bubble.render);
+      bubble.render();
+      if (this.wall.cloud != null) {
+        return this.wall.cloud.addContribution(bubble.$el);
+      }
+    };
+
+    Smartboard.prototype.bubbleTag = function(tag) {
+      var bubble;
+      bubble = new CK.Smartboard.View.TagBalloon({
+        model: tag
+      });
+      tag.on('change', bubble.render);
+      bubble.render();
+      if (this.wall.cloud != null) {
+        return this.wall.cloud.addTag(bubble.$el);
+      }
+    };
+
+    Smartboard.prototype.initModels = function() {
+      var _this = this;
+      this.contributions = new CK.Model.Contributions();
+      this.contributions.on('add', function(contrib) {
+        contrib.justAdded = true;
+        return _this.bubbleContrib(contrib);
+      });
+      this.contributions.on('reset', function(collection) {
+        return collection.each(_this.bubbleContrib);
+      });
+      this.tags = new CK.Model.Tags();
+      this.tags.on('add', function(tag) {
+        tag.justAdded = true;
+        return _this.bubbleTag(tag);
+      });
+      this.tags.on('reset', function(collection) {
+        return collection.each(_this.bubbleTag);
+      });
+      CK.getState('phase', function(s) {
+        if (s) {
+          if (s.get('state') === 'start_student_tagging') {
+            return _this.switchToAnalysis();
+          } else if (s.get('state') === 'start_synthesis') {
+            return _this.switchToSynthesis();
+          }
+        }
+      });
+      return this.trigger('ready');
+    };
+
     Smartboard.prototype.events = {
       initialized: function(ev) {
         this.authenticate();
         return console.log("Initialized...");
       },
       authenticated: function(ev) {
-        var bubbleContrib, bubbleTag,
-          _this = this;
         console.log("Authenticated...");
-        bubbleContrib = function(contrib) {
-          var bubble;
-          bubble = new CK.Smartboard.View.ContributionBalloon({
-            model: contrib
-          });
-          contrib.on('change', bubble.render);
-          bubble.render();
-          if (_this.wall.cloud != null) {
-            return _this.wall.cloud.addContribution(bubble.$el);
-          }
-        };
-        bubbleTag = function(tag) {
-          var bubble;
-          bubble = new CK.Smartboard.View.TagBalloon({
-            model: tag
-          });
-          tag.on('change', bubble.render);
-          bubble.render();
-          if (_this.wall.cloud != null) {
-            return _this.wall.cloud.addTag(bubble.$el);
-          }
-        };
-        return CK.Model.init(this.config.drowsy.url, this.run.name).done(function() {
-          _this.contributions = new CK.Model.Contributions();
-          _this.contributions.on('add', function(contrib) {
-            contrib.justAdded = true;
-            return bubbleContrib(contrib);
-          });
-          _this.contributions.on('reset', function(collection) {
-            return collection.each(bubbleContrib);
-          });
-          _this.tags = new CK.Model.Tags();
-          _this.tags.on('add', function(tag) {
-            var view;
-            tag.justAdded = true;
-            return view = bubbleTag(tag);
-          });
-          _this.tags.on('reset', function(collection) {
-            return collection.each(bubbleTag);
-          });
-          CK.getState('phase', function(s) {
-            if (s) {
-              if (s.get('state') === 'start_student_tagging') {
-                return _this.switchToAnalysis();
-              } else if (s.get('state') === 'start_synthesis') {
-                return _this.switchToSynthesis();
-              }
-            }
-          });
-          return _this.trigger('ready');
-        });
+        return CK.Model.init(this.config.drowsy.url, this.run.name).done(this.initModels);
       },
       'ui.initialized': function(ev) {
         return console.log("UI initialized...");
@@ -235,16 +243,6 @@
         });
       },
       sail: {
-        contribution: function(sev) {
-          var c;
-          c = this.contributions.get(sev.payload._id);
-          if (c != null) {
-            return c.set(sev.payload);
-          } else {
-            c = new CK.Model.Contribution(sev.payload);
-            return this.contributions.add(c);
-          }
-        },
         build_on: function(sev) {
           var c;
           c = this.contributions.get(sev.payload._id);
