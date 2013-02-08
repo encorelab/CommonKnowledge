@@ -205,7 +205,7 @@
           _this.tags.on('reset', function(collection) {
             return collection.each(bubbleTag);
           });
-          return CK.getState('phase', function(s) {
+          CK.getState('phase', function(s) {
             if (s) {
               if (s.get('state') === 'start_student_tagging') {
                 return _this.switchToAnalysis();
@@ -214,27 +214,21 @@
               }
             }
           });
+          return _this.trigger('ready');
         });
       },
       'ui.initialized': function(ev) {
         return console.log("UI initialized...");
       },
       connected: function(ev) {
-        var deferC, deferT;
-        console.log("Connected...");
-        deferC = Q.defer();
-        deferT = Q.defer();
-        this.contributions.fetch({
-          success: function() {
-            return deferC.resolve();
-          }
-        });
-        this.tags.fetch({
-          success: function() {
-            return deferT.resolve();
-          }
-        });
-        return Q.all([deferC, deferT]).then(function() {
+        return console.log("Connected...");
+      },
+      ready: function(ev) {
+        var deferredContributions, deferredTags;
+        console.log("Ready...");
+        deferredContributions = this.contributions.fetch();
+        deferredTags = this.tags.fetch();
+        return $.when([deferredContributions, deferredTags]).done(function() {
           return setTimeout((function() {
             return Sail.app.wall.cloudify();
           }), 1000);

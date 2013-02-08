@@ -126,6 +126,8 @@ class CK.Smartboard extends Sail.App
                         else if s.get('state') is 'start_synthesis'
                             @switchToSynthesis()
 
+                @trigger('ready')
+
 
         'ui.initialized': (ev) ->
             console.log "UI initialized..."
@@ -133,14 +135,15 @@ class CK.Smartboard extends Sail.App
         connected: (ev) ->
             console.log "Connected..."
 
-            deferC = Q.defer()
-            deferT = Q.defer()
+        ready: (ev) ->
+            # triggered when CK.Model has been configured (via CK.Model.init)
+            # TODO: maybe also wait until we're connected?
+            console.log "Ready..."
 
-            @contributions.fetch(success: -> deferC.resolve())
-            @tags.fetch(success: -> deferT.resolve())
+            deferredContributions = @contributions.fetch()
+            deferredTags = @tags.fetch()
 
-            Q.all([deferC, deferT])
-                .then ->
+            $.when([deferredContributions, deferredTags]).done ->
                     # give some time for rendering to finish.. 
                     setTimeout((-> Sail.app.wall.cloudify())
                         , 1000)

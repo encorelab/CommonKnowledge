@@ -14,11 +14,13 @@
         Sail.JS_ROOT_PATH = "/shared/js/sail.js";
         Sail.load()
             .then(Sail.JS_ROOT_PATH+'/rollcall.js',
-                'js/d3.v2.js', 'js/q.js')
+                'js/d3.v2.js')
             .then('js/d3.layout.cloud.js')
             .then('../shared/js/ck.js')
-            .then('https://raw.github.com/zuk/Backbone.Drowsy/master/backbone.drowsy.js')
-            .then('https://raw.github.com/zuk/Backbone.Drowsy/master/wakeful.js')
+            .then('http://localhost:8002/backbone.drowsy.js')
+            .then('http://localhost:8002/wakeful.js')
+            //.then('https://raw.github.com/zuk/Backbone.Drowsy/master/backbone.drowsy.js')
+            //.then('https://raw.github.com/zuk/Backbone.Drowsy/master/wakeful.js')
             .then('../shared/js/ck.model.js')
             .then('/smartboard/js/ck.smartboard.js')
             .then('/smartboard/js/ck.smartboard.view.js')
