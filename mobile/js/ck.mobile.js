@@ -144,23 +144,31 @@ CK.Mobile = function() {
       console.log('Authenticated...');
       // now we call a class function (configure) and hand in the drowsy url and the run name so we don't need
       // to do this config again for each model instantiation
-      CK.Model.configure(app.config.drowsy.url, app.run.name);
+      CK.Model.init(app.config.drowsy.url, this.run.name)
+      .done(function () {
+        app.trigger('ready')
+      });
 
       // Colin there is already data about the user available
       app.userData = Sail.app.session;
 
       //jQuery('#logout-button').addClass('btn btn-warning').html('<a href="#">Logout</a>');
-
-      // moved the view init here so that backbone is configured with URLs
-      app.initModels();
-      app.initViews();
     },
 
     connected: function(ev) {
       console.log("Connected...");
+    },
+
+    ready: function(ev) {
+      // TODO: maybe also wait until we're connected?
+      //       currently this just waits until CK.Model is initialized
+      console.log("Ready!");
 
       app.restoreState();
 
+      // moved the view init here so that backbone is configured with URLs
+      app.initModels();
+      app.initViews();
     },
 
     'unauthenticated': function(ev) {
