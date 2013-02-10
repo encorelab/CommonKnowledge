@@ -188,32 +188,36 @@
 
     Smartboard.prototype.initModels = function() {
       var _this = this;
-      this.contributions = new CK.Model.Contributions();
-      this.contributions.on('add', function(contrib) {
-        contrib.justAdded = true;
-        return _this.bubbleContrib(contrib);
-      });
-      this.contributions.on('reset', function(collection) {
-        return collection.each(_this.bubbleContrib);
-      });
-      this.tags = new CK.Model.Tags();
-      this.tags.on('add', function(tag) {
-        tag.justAdded = true;
-        return _this.bubbleTag(tag);
-      });
-      this.tags.on('reset', function(collection) {
-        return collection.each(_this.bubbleTag);
-      });
-      CK.getState('phase', function(s) {
-        if (s) {
-          if (s.get('state') === 'start_student_tagging') {
-            return _this.switchToAnalysis();
-          } else if (s.get('state') === 'start_synthesis') {
-            return _this.switchToSynthesis();
+      return Wakeful.loadFayeClient(this.config.wakeful.url).done(function() {
+        _this.contributions = new CK.Model.Contributions();
+        Wakeful.wake(_this.contributions, _this.config.wakeful.url);
+        _this.contributions.on('add', function(contrib) {
+          contrib.justAdded = true;
+          return _this.bubbleContrib(contrib);
+        });
+        _this.contributions.on('reset', function(collection) {
+          return collection.each(_this.bubbleContrib);
+        });
+        _this.tags = new CK.Model.Tags();
+        Wakeful.wake(_this.contributions, _this.config.wakeful.url);
+        _this.tags.on('add', function(tag) {
+          tag.justAdded = true;
+          return _this.bubbleTag(tag);
+        });
+        _this.tags.on('reset', function(collection) {
+          return collection.each(_this.bubbleTag);
+        });
+        CK.getState('phase', function(s) {
+          if (s) {
+            if (s.get('state') === 'start_student_tagging') {
+              return _this.switchToAnalysis();
+            } else if (s.get('state') === 'start_synthesis') {
+              return _this.switchToSynthesis();
+            }
           }
-        }
+        });
+        return _this.trigger('ready');
       });
-      return this.trigger('ready');
     };
 
     Smartboard.prototype.events = {

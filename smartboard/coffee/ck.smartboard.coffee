@@ -101,30 +101,33 @@ class CK.Smartboard extends Sail.App
 
     # set up all the Collections used by the board
     initModels: =>
-        @contributions = new CK.Model.Contributions()
-        @contributions.on 'add', (contrib) => 
-            contrib.justAdded = true
-            @bubbleContrib(contrib)
+        Wakeful.loadFayeClient(@config.wakeful.url).done =>
+            @contributions = new CK.Model.Contributions()
+            Wakeful.wake @contributions, @config.wakeful.url
 
-        @contributions.on 'reset', (collection) => 
-            collection.each @bubbleContrib
+            @contributions.on 'add', (contrib) => 
+                contrib.justAdded = true
+                @bubbleContrib(contrib)
+            @contributions.on 'reset', (collection) => 
+                collection.each @bubbleContrib
 
-        @tags = new CK.Model.Tags()
-        @tags.on 'add', (tag) =>
-            tag.justAdded = true
-            @bubbleTag(tag)
+            @tags = new CK.Model.Tags()
+            Wakeful.wake @contributions, @config.wakeful.url
 
-        @tags.on 'reset', (collection) =>
-            collection.each @bubbleTag
+            @tags.on 'add', (tag) =>
+                tag.justAdded = true
+                @bubbleTag(tag)
+            @tags.on 'reset', (collection) =>
+                collection.each @bubbleTag
 
-        CK.getState 'phase', (s) =>
-            if s
-                if s.get('state') is 'start_student_tagging'
-                    @switchToAnalysis()
-                else if s.get('state') is 'start_synthesis'
-                    @switchToSynthesis()
+            CK.getState 'phase', (s) =>
+                if s
+                    if s.get('state') is 'start_student_tagging'
+                        @switchToAnalysis()
+                    else if s.get('state') is 'start_synthesis'
+                        @switchToSynthesis()
 
-        @trigger('ready')
+            @trigger('ready')
 
     events:
         initialized: (ev) ->
