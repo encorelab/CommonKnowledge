@@ -159,6 +159,26 @@ i {
 	background-color: pink;
 }
 
+.own-note {
+	background-color: #F0ED69;
+}
+
+.group1-note {
+	background-color: #7B69F0;
+}
+
+.group2-note {
+	background-color: #FA9405;
+}
+
+.group3-note {
+	background-color: #70ED11;
+}
+
+.group4-note {
+	background-color: #ED11C1;
+}
+
 #selected-note {
 	padding: 6px 15px 0px 15px;
 

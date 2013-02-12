@@ -66,8 +66,19 @@
         jQuery('#contribution-list .nav-list').append(note);
 
         note.find('.headline').text(contrib.get('headline'));
-        note.find('.author').text(contrib.get('author'));
         note.find('.date').text(' (' + contrib.get('created_at').toLocaleDateString() + ' ' + contrib.get('created_at').toLocaleTimeString() + ')');
+
+        note.find('.author').text(contrib.get('author'));               
+        if (contrib.get('author') === Sail.app.userData.account.login) {
+          note.children().first().addClass('own-note');
+        }
+        // TODO check if this is working, then add for tags as well
+        _.each(contrib.get('build_ons'), function(b) {
+           if (contrib.get('author') === Sail.app.userData.account.login) {
+            note.children().first().addClass('own-note');
+          }
+        });
+
       });        
           
     }
