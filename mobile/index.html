@@ -48,6 +48,9 @@
         <div id="screen-lock" class="hide">
             <img src="img/lock-icon.png" id="lock-image"/>
         </div>
+        <div id="wait-screen" class="hide">
+            <img src="loader.gif" id="loader-image"/>
+        </div>        
 
         <div class="row">
             <div id="contribution-list" class="span4 view-container bs-docs-sidebar">
@@ -88,11 +91,7 @@
             <!-- hidden until tablet hears event re moving to tagging -->
             <div id="tag-list" class="span4 view-container hide">
                 <div id="tag-list-btn-container" class="tag-btn-group btn-group btn-group-vertical scrollable" data-toggle="buttons-checkbox">
-<!--                     <button type="button" class="btn tag-btn btn-warning">Shoes</button>
-                    <button type="button" class="btn tag-btn btn-warning">Running</button>
-                    <button type="button" class="btn tag-btn btn-warning">Economy</button>
-                    <button type="button" class="btn tag-btn btn-warning">Athletes</button>
-                    <button id="na-btn" type="button" class="btn tag-btn btn-warning">N/A</button>-->
+                    <!-- filled by self.TagListView -->
                 </div>                
 <!--                 <div class="btn-container">
                     <a id="tag-list-build-on-btn" class="btn btn-primary build-on-btn">
@@ -117,16 +116,9 @@
                 </div>
                 <!-- hidden until tablet hears event re synthesizing -->
                 <div id="tag-submission-container">
-<!--                         <button type="button" class="btn tag-btn btn-warning">Shoes</button>
-                    <button type="button" class="btn tag-btn btn-warning">Running</button>
-                    <button type="button" class="btn tag-btn btn-warning">Economy</button>
-                    <button type="button" class="btn tag-btn btn-warning">Athletes</button>
-                    <button type="button" class="btn tag-btn btn-warning">N/A</button> -->
+                    <!-- filled by self.ContributionInputView  -->
                 </div>
                 <div class="btn-container btn-group action-btn-group">
-<!--                     <a id="cancel-note-btn" class="btn btn-danger">
-                        Cancel
-                    </a> -->
                     <a id="share-note-btn" class="btn btn-success">
                         Share
                     </a>

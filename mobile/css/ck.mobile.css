@@ -46,7 +46,7 @@ i {
 	/*margin: 0 !important;*/
 	/*margin: -10px -10px 0px -10px !important;*/
 	/*margin-left: -10px;*/
-	margin-top: -10px;
+	margin-top: -25px;
 }
 
 .scrollable {
@@ -98,7 +98,7 @@ i {
 	background-color: #FCFCFF;
 }
 
-#screen-lock {
+#screen-lock, #wait-screen {
 	height: 100%;
 	width: 100%;
 	background-color: black;
@@ -141,7 +141,7 @@ i {
 
 /******* elements *******/
 
-#lock-image {
+#lock-image, #loader-image {
 	position: absolute;
 	left: 50%;
 	top: 50%;
@@ -157,6 +157,26 @@ i {
 
 .selected {
 	background-color: pink;
+}
+
+.own-note {
+	background-color: #F0ED69;
+}
+
+.group1-note {
+	background-color: #7B69F0;
+}
+
+.group2-note {
+	background-color: #FA9405;
+}
+
+.group3-note {
+	background-color: #70ED11;
+}
+
+.group4-note {
+	background-color: #ED11C1;
 }
 
 #selected-note {

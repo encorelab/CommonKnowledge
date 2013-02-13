@@ -31,7 +31,6 @@ CK.Mobile = function() {
   // app.currentState = {"type":"tablet"};
 
 
-  // TODO: copied from washago code
   app.init = function() {
     Sail.verifyConfig(this.config, this.requiredConfig);
     
@@ -55,7 +54,6 @@ CK.Mobile = function() {
       position : 'middle-center'
     });
 
-//window.addEventListener("orientationchange",function(){hideAddressBar();});    
   };
 
   app.authenticate = function() {
@@ -335,6 +333,19 @@ CK.Mobile = function() {
     app.currentBuildOn = {};
   };
 
+  app.showWaitScreen = function() {
+    console.log('showing wait screen');
+
+    jQuery('#wait-screen').removeClass('hide');
+    jQuery('.row').addClass('disabled');
+  };
+
+  app.hideWaitScreen = function() {
+    console.log('hiding wait screen');
+
+    jQuery('#wait-screen').addClass('hide');
+    jQuery('.row').removeClass('disabled');
+  };
 
   /* State related function */
 
