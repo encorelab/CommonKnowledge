@@ -32,6 +32,7 @@ class Choreographer < Sail::Agent
     
     self_joined_log_room do |stanza|
       groupchat_logger_ready!
+      store_phase("brainstorming")
     end
 
     # This function monitors the chat room and registers any user that joins
