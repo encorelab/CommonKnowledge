@@ -26,13 +26,17 @@ class Choreographer < Sail::Agent
       # Setup MongoDB connection
       @mongo = Mongo::Connection.new.db(config[:database])
 
+      phase = @mongo.collection(:states).find("type" => "phase").first
+      unless phase
+        store_phase("brainstorming")
+      end
+      
       join_room
       #join_log_room
     end
     
     self_joined_log_room do |stanza|
       groupchat_logger_ready!
-      store_phase("brainstorming")
     end
 
     # This function monitors the chat room and registers any user that joins
