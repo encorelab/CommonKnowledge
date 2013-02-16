@@ -3,9 +3,9 @@
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
-  CK.Smartboard.View.Cloud = (function() {
+  CK.Smartboard.View.BubbleCloud = (function() {
 
-    function Cloud(wallView) {
+    function BubbleCloud(wallView) {
       this.render = __bind(this.render, this);
 
       this.renderNode = __bind(this.renderNode, this);
@@ -16,12 +16,6 @@
 
       this.detectCollision = __bind(this.detectCollision, this);
 
-      this.corporealizeLinks = __bind(this.corporealizeLinks, this);
-
-      this.corporealizeTag = __bind(this.corporealizeTag, this);
-
-      this.corporealizeContribution = __bind(this.corporealizeContribution, this);
-
       this.tick = __bind(this.tick, this);
 
       this.connectorTransform = __bind(this.connectorTransform, this);
@@ -29,44 +23,29 @@
       this.linkDistance = __bind(this.linkDistance, this);
 
       this.generateForceFunction = __bind(this.generateForceFunction, this);
-
-      var $n, i, n, _i, _len, _ref,
-        _this = this;
       console.log("Cloudifying the wall...");
       this.wall = wallView;
       this.wallWidth = this.wall.$el.innerWidth();
       this.wallHeight = this.wall.$el.innerHeight();
-      this.nodes = this.wall.$el.find('.balloon').toArray();
+      this.nodes = [];
       this.links = [];
-      _ref = this.nodes;
-      for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
-        n = _ref[i];
-        $n = jQuery(n);
-        n.index = i;
-      }
       this.force = this.generateForceFunction();
-      this.tags = {};
-      Sail.app.tags.each(function(tag) {
-        var t;
-        t = jQuery('#' + tag.id)[0];
-        return _this.tags[tag.id] = t;
-      });
       this.vis = d3.select("#" + this.wall.id);
     }
 
-    Cloud.prototype.generateForceFunction = function() {
+    BubbleCloud.prototype.generateForceFunction = function() {
       return d3.layout.force().charge(0).linkDistance(this.linkDistance).linkStrength(0.2).gravity(0).friction(0.2).size([this.wallWidth, this.wallHeight]).nodes(this.nodes).links(this.links).on('tick', this.tick);
     };
 
-    Cloud.prototype.linkDistance = function(link, i) {
+    BubbleCloud.prototype.linkDistance = function(link, i) {
       return (jQuery(link.source).outerWidth() / 2 + jQuery(link.target).outerWidth() / 2) + 10;
     };
 
-    Cloud.prototype.connectorTransform = function(d) {
+    BubbleCloud.prototype.connectorTransform = function(d) {
       return "rotate(" + (Math.atan2(d.target.y - d.source.y, d.target.x - d.source.x) * 180 / Math.PI) + "deg)";
     };
 
-    Cloud.prototype.tick = function() {
+    BubbleCloud.prototype.tick = function() {
       var i, q, _i, _ref,
         _this = this;
       this.balloon.style('left', function(d) {
@@ -108,86 +87,92 @@
       }).style("-webkit-transform", this.connectorTransform).style("-moz-transform", this.connectorTransform).style("transform", this.connectorTransform);
     };
 
-    Cloud.prototype.corporealizeContribution = function(contrib) {
-      var $c, bubble;
-      if (!contrib.id) {
-        console.error("Contribution given to @corporealizeContribution must have an id!");
-        throw "Invalid Contribution";
-      }
-      $c = this.wall.find('#' + c.id);
-      if ($c.length === 0) {
-        bubble = new CK.Smartboard.View.ContributionBalloon({
-          model: contrib
-        });
-        contrib.on('change', bubble.render);
-        $c.view = bubble;
-      } else {
-        bubble = $c.view;
-      }
-      bubble.render();
-      contrib.index = this.nodes.length;
-      this.nodes.push($c);
-      return this.update();
-    };
+    /*
+        corporealizeContribution: (contrib) =>
+            unless contrib.id
+                console.error("Contribution given to @corporealizeContribution must have an id!")
+                throw "Invalid Contribution"
+    
+            $c = @wall.find('#'+c.id)
+            if $c.length is 0
+                bubble = new CK.Smartboard.View.ContributionBalloon {model: contrib}
+                contrib.on 'change', bubble.render
+                $c.view = bubble
+            else
+                bubble = $c.view
+            
+            bubble.render()
+    
+            contrib.index = @nodes.length
+            @nodes.push($c)
+            @update()
+    */
 
-    Cloud.prototype.corporealizeTag = function(tag) {
-      var t;
-      if (!tag.id) {
-        console.error("Tag given to @corporealizeTag must have an id!");
-        throw "Invalid Tag";
-      }
-      t = $t[0];
-      t.index = this.nodes.length;
-      this.tags[t.id] = t;
-      this.nodes.push(t);
-      return this.update();
-    };
 
-    Cloud.prototype.corporealizeLinks = function(c, ts) {
-      var $c, $t, id, t, _i, _len;
-      if (c.jquery) {
-        id = c.attr('id');
-        $c = c;
-      } else if (c.id) {
-        id = c.id;
-        $c = this.wall.$el.find('#' + id);
-      } else {
-        console.error("Contribution given to @addLinks must have an id!");
-        throw "Invalid Contribution";
-      }
-      c = $c[0];
-      if (!c) {
-        console.warn("Contibution Balloon for contribution " + id + " has not been rendered yet. This shouldn't have happened!");
-        return;
-      }
-      for (_i = 0, _len = ts.length; _i < _len; _i++) {
-        t = ts[_i];
-        if (t.jquery) {
-          id = t.attr('id');
-          $t = t;
-        } else if (t.id) {
-          id = t.id;
-          $t = this.wall.$el.find('#' + id);
-        } else {
-          console.error("Tag given to @corporealizeTag must have an id!");
-          throw "Invalid Tag";
-        }
-        t = $t[0];
-        if (!t) {
-          console.warn("Tag Balloon for tag " + id + " has not been rendered yet. This shouldn't have happened!");
-          continue;
-        }
-        (t.contribs != null) || (t.contribs = []);
-        t.contribs.push(c.id);
-        this.links.push({
-          source: t,
-          target: c
-        });
-      }
-      return this.update();
-    };
+    /*
+        corporealizeTag: (tag) =>
+            unless tag.id
+                console.error("Tag given to @corporealizeTag must have an id!")
+                throw "Invalid Tag"
+    
+    
+    
+            t = $t[0]
+    
+            t.index = @nodes.length
+            @tags[t.id] = t
+            @nodes.push(t)
+            @update()
+    */
 
-    Cloud.prototype.detectCollision = function(b) {
+
+    /*
+        # adds links (connectors) to the cloud if they don't already exist
+        corporealizeLinks: (c, ts) =>
+            if c.jquery
+                id = c.attr('id')
+                $c = c
+            else if c.id
+                id = c.id
+                $c = @wall.$el.find('#'+id)
+            else
+                console.error("Contribution given to @addLinks must have an id!")
+                throw "Invalid Contribution"
+    
+            c = $c[0]
+    
+            unless c
+                console.warn "Contibution Balloon for contribution #{id} has not been rendered yet. This shouldn't have happened!"
+                return
+    
+            for t in ts
+                if t.jquery
+                    id = t.attr('id')
+                    $t = t
+                else if t.id
+                    id = t.id
+                    $t = @wall.$el.find('#'+id)
+                else
+                    console.error("Tag given to @corporealizeTag must have an id!")
+                    throw "Invalid Tag"
+    
+                t = $t[0]
+                
+                unless t
+                    console.warn "Tag Balloon for tag #{id} has not been rendered yet. This shouldn't have happened!"
+                    continue
+    
+                t.contribs? || t.contribs = []
+                t.contribs.push(c.id)
+                @links.push
+                    source: t
+                    target: c
+    
+            @update()
+    */
+
+
+    BubbleCloud.prototype.detectCollision = function(b) {
       var $b, bHeight, bIsTag, bWidth, nx1, nx2, ny1, ny2,
         _this = this;
       $b = jQuery(b);
@@ -237,22 +222,22 @@
       };
     };
 
-    Cloud.prototype.startForce = function() {
+    BubbleCloud.prototype.startForce = function() {
       this.force.start();
       return this.started = true;
     };
 
-    Cloud.prototype.addNode = function(n) {
+    BubbleCloud.prototype.addNode = function(n) {
       if (__indexOf.call(this.nodes, n) < 0) {
         return this.nodes.push(n);
       }
     };
 
-    Cloud.prototype.renderNode = function(n) {
+    BubbleCloud.prototype.renderNode = function(n) {
       debugger;      return console.log("Rendering node ", n);
     };
 
-    Cloud.prototype.render = function(ev) {
+    BubbleCloud.prototype.render = function(ev) {
       var $n, i, n, pos, _i, _len, _ref;
       _ref = this.nodes;
       for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
@@ -272,7 +257,7 @@
       return this.force.start();
     };
 
-    return Cloud;
+    return BubbleCloud;
 
   })();
 

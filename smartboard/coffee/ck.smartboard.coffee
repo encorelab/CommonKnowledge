@@ -48,6 +48,7 @@ class CK.Smartboard extends Sail.App
     # initializes and persists a new CK.Model.Tag with the given name
     createNewTag: (name) =>
         tag = new CK.Model.Tag({name: name})
+        tag.wake @config.wakeful.url
         tag.save {},
             success: =>
                 sev = new Sail.Event 'new_tag', tag.toJSON()
@@ -81,44 +82,29 @@ class CK.Smartboard extends Sail.App
     switchToSynthesis: =>
         @wall.setMode('synthesis')
 
-    # init and render a new ContributionBalloon view and add it to the Bubble cloud
-    # `contrib` should be a CK.Model.Contribution object
-    bubbleContrib: (contrib) =>
-        # TODO: move this to @wall.cloud.addContribution
-        bubble = new CK.Smartboard.View.ContributionBalloon {model: contrib}
-        contrib.on 'change', bubble.render
-        bubble.render()
-        @wall.cloud.addContribution(bubble.$el) if @wall.cloud?
-
-    # init and render a new TagBalloon view and add it to the Bubble cloud
-    # `contrib` should be a CK.Model.Tag object
-    bubbleTag: (tag) =>
-        # TODO: move this to @wall.cloud.addTag
-        bubble = new CK.Smartboard.View.TagBalloon {model: tag}
-        tag.on 'change', bubble.render
-        bubble.render()
-        @wall.cloud.addTag(bubble.$el) if @wall.cloud?
-
     # set up all the Collections used by the board
     initModels: =>
         Wakeful.loadFayeClient(@config.wakeful.url).done =>
             @contributions = new CK.Model.Contributions()
-            Wakeful.wake @contributions, @config.wakeful.url
+            @contributions.wake @config.wakeful.url
+
+            @contributions.on 'all', (ev, data) => 
+                console.log(@contributions.url, ev, data)
 
             @contributions.on 'add', (contrib) => 
-                contrib.justAdded = true
-                @bubbleContrib(contrib)
+                @wall.cloud.addNode contrib
+
             @contributions.on 'reset', (collection) => 
-                collection.each @bubbleContrib
+                collection.each @wall.cloud.addNode
 
             @tags = new CK.Model.Tags()
-            Wakeful.wake @contributions, @config.wakeful.url
+            @tags.wake @config.wakeful.url
 
             @tags.on 'add', (tag) =>
-                tag.justAdded = true
-                @bubbleTag(tag)
+                @wall.cloud.addNode tag
+
             @tags.on 'reset', (collection) =>
-                collection.each @bubbleTag
+                collection.each @wall.cloud.addNode
 
             CK.getState 'phase', (s) =>
                 if s
@@ -150,14 +136,17 @@ class CK.Smartboard extends Sail.App
             # triggered when CK.Model has been configured (via CK.Model.init)
             # TODO: maybe also wait until we're connected?
             console.log "Ready..."
+            
+            @wall.render()
 
-            deferredContributions = @contributions.fetch()
-            deferredTags = @tags.fetch()
+            $.when( 
+                @contributions.fetch(),
+                @tags.fetch()
+            ).done =>
+                @wall.cloud.render()
+                @wall.cloud.startForce()
 
-            $.when([deferredContributions, deferredTags]).done ->
-                    # give some time for rendering to finish.. 
-                    setTimeout((-> Sail.app.wall.cloudify())
-                        , 1000)
+
 
         sail:
             # contribution: (sev) ->
@@ -168,45 +157,45 @@ class CK.Smartboard extends Sail.App
             #         c = new CK.Model.Contribution(sev.payload)
             #         @contributions.add(c)
 
-            build_on: (sev) ->
-                c = @contributions.get(sev.payload._id)
-                if c?
-                    c.set(sev.payload)
-                else
-                    console.warn("New contribution added by build_on... something ain't right here...")
-                    c = new CK.Model.Contribution(sev.payload)
-                    @contributions.add(c)
+            # build_on: (sev) ->
+            #     c = @contributions.get(sev.payload._id)
+            #     if c?
+            #         c.set(sev.payload)
+            #     else
+            #         console.warn("New contribution added by build_on... something ain't right here...")
+            #         c = new CK.Model.Contribution(sev.payload)
+            #         @contributions.add(c)
 
-                # TODO: move to view, plus do more (pop?)
-                jQuery('#'+c.id).effect('highlight', 2000)
+            #     # TODO: move to view, plus do more (pop?)
+            #     jQuery('#'+c.id).effect('highlight', 2000)
 
-            new_tag: (sev) ->
-                t = @tags.get(sev.payload._id)
-                if t?
-                    t.set(sev.payload)
-                else
-                    t = new CK.Model.Tag(sev.payload)
-                    @tags.add(t)
+            # new_tag: (sev) ->
+            #     t = @tags.get(sev.payload._id)
+            #     if t?
+            #         t.set(sev.payload)
+            #     else
+            #         t = new CK.Model.Tag(sev.payload)
+            #         @tags.add(t)
 
-            contribution_tagged: (sev) ->
-                c = @contributions.get(sev.payload._id)
-                console.log("contribution_tagged, c is: ", c)
+            # contribution_tagged: (sev) ->
+            #     c = @contributions.get(sev.payload._id)
+            #     console.log("contribution_tagged, c is: ", c)
 
-                addLink = =>
-                    c.set(sev.payload)
-                    ts = ( @tags.get(tr.id) for tr in c.get('tags') )
-                    console.log("adding links from ", c, " to ", ts)
-                    @wall.cloud.addLinks(c, ts)
+            #     addLink = =>
+            #         c.set(sev.payload)
+            #         ts = ( @tags.get(tr.id) for tr in c.get('tags') )
+            #         console.log("adding links from ", c, " to ", ts)
+            #         @wall.cloud.addLinks(c, ts)
 
-                if c
-                    addLink()
-                else
-                    # TODO: do the same thing if tag is not found
-                    console.warn("Contribution ",sev.payload._id," not found locally... fetching updated contributions collection...")
-                    @contributions.fetch
-                        success: ->
-                            c = @contributions.get(sev.payload._id)
-                            addLink()
+            #     if c
+            #         addLink()
+            #     else
+            #         # TODO: do the same thing if tag is not found
+            #         console.warn("Contribution ",sev.payload._id," not found locally... fetching updated contributions collection...")
+            #         @contributions.fetch
+            #             success: ->
+            #                 c = @contributions.get(sev.payload._id)
+            #                 addLink()
                     
 
             screen_lock: (sev) ->

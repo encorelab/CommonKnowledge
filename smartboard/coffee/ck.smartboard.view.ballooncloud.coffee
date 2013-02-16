@@ -1,4 +1,4 @@
-class CK.Smartboard.View.Cloud
+class CK.Smartboard.View.BalloonCloud
 
     constructor: (wallView) ->
         console.log("Cloudifying the wall...")
@@ -7,43 +7,36 @@ class CK.Smartboard.View.Cloud
         @wallWidth = @wall.$el.innerWidth()
         @wallHeight = @wall.$el.innerHeight()
 
-        @nodes = @wall.$el.find('.balloon').toArray()
+        @nodes = []
         @links = []
 
-        for n,i in @nodes
-            $n = jQuery(n)
-            n.index = i
+        # for n,i in @nodes
+        #     $n = jQuery(n)
+        #     n.index = i
 
         @force = @generateForceFunction()
-
-        @tags = {}
-
-        # FIXME: this is a reference to the CK.Model.Tags Drowsy.Collection in the wall... why do we need this?
-        Sail.app.tags.each (tag) =>
-            t = jQuery('#'+tag.id)[0]
-            @tags[tag.id] = t
             
         #jQuery('.balloon').not('#509424717e59cb16c1000003, #509426227e59cb16c1000006').remove()
         
-        cloud = this
-        jQuery('.balloon.contribution').each ->
-            contribBalloon = jQuery(this)
-            return unless contribBalloon.data('tags')
-            c = contribBalloon[0]
-            for tid in contribBalloon.data('tags').split(' ')
-                if cloud.tags[tid] # FIXME: why would t not be in @tags?
-                    tag = cloud.tags[tid]
-                    tag.contribs? || tag.contribs = []
-                    tag.contribs.push(c.id)
-                    cloud.links.push
-                        source: tag
-                        target: c
+        # cloud = this
+        # jQuery('.balloon.contribution').each ->
+        #     contribBalloon = jQuery(this)
+        #     return unless contribBalloon.data('tags')
+        #     c = contribBalloon[0]
+        #     for tid in contribBalloon.data('tags').split(' ')
+        #         if cloud.tags[tid] # FIXME: why would t not be in @tags?
+        #             tag = cloud.tags[tid]
+        #             tag.contribs? || tag.contribs = []
+        #             tag.contribs.push(c.id)
+        #             cloud.links.push
+        #                 source: tag
+        #                 target: c
 
         @vis = d3.select("#"+@wall.id)
 
         #Sail.app.force = @force
 
-        @update()
+        #@update()
 
     # generate a force calculation for the force-directed graph
     # see https://github.com/mbostock/d3/wiki/Force-Layout#wiki-force
@@ -63,8 +56,8 @@ class CK.Smartboard.View.Cloud
 
     # calculate the length in pixels of a link connector
     linkDistance: (link, i) =>
-        ( jQuery(link.source).outerWidth()/2 +
-            jQuery(link.target).outerWidth()/2 ) + 10
+        (  link.source.view.$el.outerWidth()/2 +
+            link.target.view.$el.outerWidth()/2 ) + 10
 
     # generates a CSS transformation for the connector (link) -- this is what rotates the line so that it connects two balloons
     connectorTransform: (d) =>
@@ -72,24 +65,23 @@ class CK.Smartboard.View.Cloud
 
     # a tick of the d3 animation
     tick: =>
-        # note that @balloon is a d3 selector referring to ALL balloons, not a single balloon
-        @balloon
+        @balloons
             .style 'left', (d) =>
-                balloonWidth = jQuery(d).outerWidth()
+                balloonWidth = d.view.$el.outerWidth()
                 if d.x + balloonWidth/2 > @wallWidth
                     d.x = @wallWidth - balloonWidth/2
                 else if d.x - balloonWidth/2 < 0
                     d.x = 0 + balloonWidth/2
                 return (d.x - balloonWidth/2) + 'px'
             .style 'top', (d) =>
-                balloonHeight = jQuery(d).outerHeight()
+                balloonHeight = d.view.$el.outerHeight()
                 if d.y + balloonHeight/2 > @wallHeight
                     d.y = @wallHeight - balloonHeight/2
                 else if d.y - balloonHeight/2 < 0
                     d.y = 0 + balloonHeight/2
                 return (d.y - balloonHeight/2) + 'px'
             .each (d) =>
-                if jQuery(d).hasClass('pinned')
+                if d.view.$el.hasClass('pinned')
                     d.fixed = true
 
         # quad tree used for collision detection
@@ -97,8 +89,7 @@ class CK.Smartboard.View.Cloud
         for i in [0...@nodes.length]
             q.visit(@detectCollision(@nodes[i]))
 
-        # note that @connector is a d3 selector referring to ALL connectors, not a single connector
-        @connector
+        @connectors
             .style("z-index", -1)
             .style("left", (d) => 
                 d.source.x + "px")
@@ -122,34 +113,35 @@ class CK.Smartboard.View.Cloud
 
 
     # adds a contribution to the cloud
-    addContribution: (c) =>
-        if c.jquery
-            id = c.attr('id')
-            $c = c
-        else if c.id
-            id = c.id
-            $c = @wall.$el.find('#'+id)
-        else
-            console.error("Contribution given to @addContribution must have an id!")
+    ###
+    corporealizeContribution: (contrib) =>
+        unless contrib.id
+            console.error("Contribution given to @corporealizeContribution must have an id!")
             throw "Invalid Contribution"
 
-        c = $c[0]
+        $c = @wall.find('#'+c.id)
+        if $c.length is 0
+            bubble = new CK.Smartboard.View.ContributionBalloon {model: contrib}
+            contrib.on 'change', bubble.render
+            $c.view = bubble
+        else
+            bubble = $c.view
+        
+        bubble.render()
 
-        c.index = @nodes.length
-        @nodes.push(c)
+        contrib.index = @nodes.length
+        @nodes.push($c)
         @update()
+    ###
 
     # adds a tag to the cloud
-    addTag: (t) =>
-        if t.jquery
-            id = t.attr('id')
-            $t = t
-        else if t.id
-            id = t.id
-            $t = @wall.$el.find('#'+id)
-        else
-            console.error("Tag given to @addTag must have an id!")
+    ###
+    corporealizeTag: (tag) =>
+        unless tag.id
+            console.error("Tag given to @corporealizeTag must have an id!")
             throw "Invalid Tag"
+
+
 
         t = $t[0]
 
@@ -157,9 +149,11 @@ class CK.Smartboard.View.Cloud
         @tags[t.id] = t
         @nodes.push(t)
         @update()
+    ###
 
-    # adds links (connectors) to the cloud
-    addLinks: (c, ts) =>
+    ###
+    # adds links (connectors) to the cloud if they don't already exist
+    corporealizeLinks: (c, ts) =>
         if c.jquery
             id = c.attr('id')
             $c = c
@@ -167,10 +161,14 @@ class CK.Smartboard.View.Cloud
             id = c.id
             $c = @wall.$el.find('#'+id)
         else
-            console.error("Contribution given to @addContribution must have an id!")
-            throw "Invalid Contributiona"
+            console.error("Contribution given to @addLinks must have an id!")
+            throw "Invalid Contribution"
 
         c = $c[0]
+
+        unless c
+            console.warn "Contibution Balloon for contribution #{id} has not been rendered yet. This shouldn't have happened!"
+            return
 
         for t in ts
             if t.jquery
@@ -180,11 +178,14 @@ class CK.Smartboard.View.Cloud
                 id = t.id
                 $t = @wall.$el.find('#'+id)
             else
-                console.error("Tag given to @addTag must have an id!")
+                console.error("Tag given to @corporealizeTag must have an id!")
                 throw "Invalid Tag"
 
             t = $t[0]
             
+            unless t
+                console.warn "Tag Balloon for tag #{id} has not been rendered yet. This shouldn't have happened!"
+                continue
 
             t.contribs? || t.contribs = []
             t.contribs.push(c.id)
@@ -193,6 +194,7 @@ class CK.Smartboard.View.Cloud
                 target: c
 
         @update()
+    ###
 
 
     # collision detection - takes a single balloon, checks if its colliding with anything else,
@@ -201,7 +203,7 @@ class CK.Smartboard.View.Cloud
         # based on collision detection example 
         #   from https://gist.github.com/3116713
 
-        $b = jQuery(b)
+        $b = b.view.$el
         bWidth = $b.outerWidth()
         bHeight = $b.outerHeight()
 
@@ -210,14 +212,13 @@ class CK.Smartboard.View.Cloud
         ny1 = b.y - bHeight/2
         ny2 = b.y + bHeight/2
 
-
         bIsTag = $b.hasClass('tag')
 
         return (quad, x1, y1, x2, y2) =>
             if quad.point && quad.point isnt b # don't try to collide with self
                 
-                qWidth = jQuery(quad.point).outerWidth()
-                qHeight = jQuery(quad.point).outerHeight()
+                qWidth = quad.point.view.$el.outerWidth()
+                qHeight = quad.point.view.$el.outerHeight()
 
                 w = bWidth/2 + qWidth/2
                 h = bHeight/2 + qHeight/2
@@ -226,7 +227,7 @@ class CK.Smartboard.View.Cloud
                 yDist = Math.abs(b.y - quad.point.y)
 
                 if xDist < w && yDist < h
-                    $q = jQuery(quad.point)
+                    $q = quad.point.view.$el
                     qIsTag = $q.hasClass('tag')
 
                     # bRepulsion = 2
@@ -285,7 +286,53 @@ class CK.Smartboard.View.Cloud
                 y1 > ny2 || 
                 y2 < ny1
 
-    update: (ev) =>
+    startForce: =>
+        @force.start()
+        @started = true
+
+
+    addNode: (n) =>
+        unless n in @nodes
+            @nodes.push n
+
+        if n.has('tags')
+            for t in n.get('tags')
+                
+                tag = _.find @nodes, (n) -> n.id is t.id
+
+                # TODO: create the tag if it doesn't exist?
+                if tag?
+                    @addLink(n, tag)
+
+    addLink: (fromContribution, toTag) =>
+        link =
+            source: fromContribution
+            target: toTag
+
+        unless link in @links
+            @links.push link
+
+    inflateBalloons: (balloons) =>
+        balloons.each (d,i) ->
+            view = d.view
+
+            unless d.view
+                if d instanceof CK.Model.Tag
+                    view = new CK.Smartboard.View.TagBalloon
+                        model: d
+                        el: $('#'+d.id)[0]
+                else if d instanceof CK.Model.Contribution
+                    view = new CK.Smartboard.View.ContributionBalloon
+                        model: d
+                        el: $('#'+d.id)[0]
+                else
+                    console.error("Unrecognized Balloon type:", d)
+
+                d.view = view
+
+            view.render()
+
+    render: (ev) =>
 
         # force2 = d3.layout.force()
         #     .charge(-300)
@@ -296,33 +343,48 @@ class CK.Smartboard.View.Cloud
 
         #@wall.$el.find('.balloon').each -> # nothing yet
 
+        # TODO: do this using .call() instead?
+        ###
         for n,i in @nodes
             $n = jQuery(n)
             pos = $n.position()
             n.x = pos.left + $n.outerWidth()/2 unless n.x?
             n.y = pos.top + $n.outerHeight()/2 unless n.y?
+        ###
 
-        @balloon = @vis.selectAll('.balloon')
-            .data(@nodes)
+        # link <div.balloon>s to the Tag and Contribution objects in @nodes
+        @balloons = @vis.selectAll('div.balloon')
+        # create emtpy <div.balloon> nodes for the @nodes that don't yet exist
+            .data(@nodes).enter()
+            .append('div')
+                .attr('id', (d,i) -> d.id)
+                .attr('class', "balloon")
+        # fill in the <div.balloon>s
+            .call(@inflateBalloons)
+        # make the <div.balloons> draggable via the force-directed layout
             .call(@force.drag)
+                
+
+        # .exit()
+        # .call(@renderNode)
+        # .call(@force.drag)
 
         # tagBalloons = @wall.$el.find('.tag').toArray()
         # jQuery(@nodes).on('mousedown', force2.resume)
         # force2.nodes(tagBalloons)
         #     .links([])
         #     .start()
-
-        @connector = @vis.selectAll(".connector")
-            .data(@links)
-
-        @connector
-            .enter()
+        
+        @connectors = @vis.selectAll("div.connector")
+            .data(@links).enter()
             .append("div")
-                .attr("class", "connector")
+                .attr('id', (d,i) -> "#{d.source.id}-#{d.target.id}")
+                .attr('class','connector')
         
 
-        @force
-            .start()
+        # restart the force direction algorithm if
+        # we've previously explicitly started it
+        #@force.start()
 
         # Sail.app.force2 = force2
 

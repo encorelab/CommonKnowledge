@@ -146,7 +146,9 @@ CK.Mobile = function() {
       // to do this config again for each model instantiation
       CK.Model.init(app.config.drowsy.url, this.run.name)
       .done(function () {
-        app.trigger('ready')
+        Wakeful.loadFayeClient(app.config.wakeful.url).done(function () {
+          app.trigger('ready')
+        });
       });
 
       // Colin there is already data about the user available
@@ -271,15 +273,20 @@ CK.Mobile = function() {
   app.initModels = function() {
     console.log('creating Models');
     app.currentContribution = new CK.Model.Contribution();
+    app.currentContribution.wake(app.config.wakeful.url);
     app.currentContribution.on('change', function(model) { console.log(model.changedAttributes()); });
-    
+    app.currentContribution.on('all', function() { console.log(arguments) });
+
     app.contributionList = new CK.Model.Contributions();
+    app.contributionList.wake(app.config.wakeful.url);
     app.contributionList.on('change', function(model) { console.log(model.changedAttributes()); });
 
     app.contributionDetails = new CK.Model.Contribution();
+    app.contributionDetails.wake(app.config.wakeful.url);
     app.contributionDetails.on('change', function(model) { console.log(model.changedAttributes()); });
 
     app.tagList = new CK.Model.Tags();
+    app.tagList.wake(app.config.wakeful.url);
     app.tagList.on('change', function(model) { console.log(model.changedAttributes()); });    
   };
 
@@ -308,6 +315,7 @@ CK.Mobile = function() {
       el: jQuery('#contribution-input'),
       model: app.currentContribution
     });
+    console.log("Views ARE GO!");
   };
 
   app.addNote = function(kind) {
@@ -339,6 +347,7 @@ CK.Mobile = function() {
   app.clearModels = function() {
     // clear all the old garbage out of the model, rebind
     app.currentContribution = new CK.Model.Contribution();
+    app.currentContribution.wake(app.config.wakeful.url);
     app.contributionInputView.model = app.currentContribution;
     app.contributionInputView.undelegateEvents();
     app.contributionInputView.delegateEvents();
@@ -351,6 +360,7 @@ CK.Mobile = function() {
 
   app.startStudentTagging = function() {
     app.taggedContribution = new CK.Model.Contribution();
+    app.taggedContribution.wake(app.config.wakeful.url);
 
     app.tagListView = new CK.Mobile.View.TagListView({
       el: jQuery('#tag-list'),
@@ -373,7 +383,7 @@ CK.Mobile = function() {
   };
 
   app.contributionToTag = function (contribution_id) {
-    app.contributionDetails.id = contribution_id;
+    app.contributionDetails.set('_id', contribution_id);
     app.contributionDetails.fetch({
       success: function () {
         app.taggedContribution = app.contributionDetails;

@@ -41,13 +41,13 @@ class CK.Model
         dfs = []
         df = $.Deferred()
 
-        @db.collections (colls) ->
+        @db.collections (colls) =>
             existingCollections = _.pluck(colls, 'name')
         
             for col in requiredCollections
                 unless col in existingCollections
                     console.log "Creating collection '#{col}' under #{CK.Model.dbURL}";
-                    dfs.push(db.createCollection col)
+                    dfs.push(@db.createCollection col)
 
         $.when.apply($, dfs).done -> df.resolve()
         return df

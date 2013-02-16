@@ -27,18 +27,15 @@
 
     __extends(Base, _super);
 
-    function Base() {
-      this.domID = __bind(this.domID, this);
-
-      this.findOrCreate = __bind(this.findOrCreate, this);
-      return Base.__super__.constructor.apply(this, arguments);
-    }
-
     Base.prototype.findOrCreate = function(selector, html) {
       return CK.Smartboard.View.findOrCreate(this.$el, selector, html);
     };
 
-    Base.prototype.corporealize = function() {
+    function Base(options) {
+      this.domID = __bind(this.domID, this);
+
+      this.findOrCreate = __bind(this.findOrCreate, this);
+      Base.__super__.constructor.call(this, options);
       this.$el.hide();
       if (!(this.$el.parent().length > 0)) {
         if (this.model.justAdded) {
@@ -48,16 +45,18 @@
         this.$el.css('position', 'absolute');
         jQuery('#wall').append(this.$el);
       }
-      if (this.model.has('pos')) {
-        this.$el.css({
-          left: this.model.get('pos').left + 'px',
-          top: this.model.get('pos').top + 'px'
-        });
-      } else {
-        this.autoPosition();
+      if (this.model != null) {
+        if (this.model.has('pos')) {
+          this.$el.css({
+            left: this.model.get('pos').left + 'px',
+            top: this.model.get('pos').top + 'px'
+          });
+        } else {
+          this.autoPosition();
+        }
       }
-      return this.$el.show();
-    };
+      this.$el.show();
+    }
 
     Base.prototype.autoPosition = function() {
       var left, top, wallHeight, wallWidth;
@@ -88,27 +87,6 @@
   CK.Smartboard.View.Wall = (function(_super) {
 
     __extends(Wall, _super);
-
-    function Wall() {
-      this.cloudify = __bind(this.cloudify, this);
-
-      this.setMode = __bind(this.setMode, this);
-
-      this.changeWatermark = __bind(this.changeWatermark, this);
-
-      this.unpause = __bind(this.unpause, this);
-
-      this.pause = __bind(this.pause, this);
-
-      this.hideWordCloud = __bind(this.hideWordCloud, this);
-
-      this.gatherWordsForCloud = __bind(this.gatherWordsForCloud, this);
-
-      this.showWordCloud = __bind(this.showWordCloud, this);
-
-      this.submitNewTag = __bind(this.submitNewTag, this);
-      return Wall.__super__.constructor.apply(this, arguments);
-    }
 
     Wall.prototype.tagName = 'div';
 
@@ -170,6 +148,32 @@
         }
       }
     };
+
+    function Wall(options) {
+      this.render = __bind(this.render, this);
+
+      this.bubbleTag = __bind(this.bubbleTag, this);
+
+      this.bubbleContrib = __bind(this.bubbleContrib, this);
+
+      this.setMode = __bind(this.setMode, this);
+
+      this.changeWatermark = __bind(this.changeWatermark, this);
+
+      this.unpause = __bind(this.unpause, this);
+
+      this.pause = __bind(this.pause, this);
+
+      this.hideWordCloud = __bind(this.hideWordCloud, this);
+
+      this.gatherWordsForCloud = __bind(this.gatherWordsForCloud, this);
+
+      this.showWordCloud = __bind(this.showWordCloud, this);
+
+      this.submitNewTag = __bind(this.submitNewTag, this);
+      Wall.__super__.constructor.call(this, options);
+      this.cloud = new CK.Smartboard.View.BalloonCloud(this);
+    }
 
     Wall.prototype.submitNewTag = function() {
       var newTag;
@@ -325,10 +329,19 @@
       }
     };
 
-    Wall.prototype.cloudify = function() {
-      var cloud;
-      return cloud = new CK.Smartboard.View.Cloud(this);
+    Wall.prototype.bubbleContrib = function(contrib) {};
+
+    Wall.prototype.bubbleTag = function(tag) {
+      var bubble;
+      bubble = new CK.Smartboard.View.TagBalloon({
+        model: tag
+      });
+      tag.on('change', bubble.render);
+      bubble.render();
+      return this.cloud.addTag(bubble.$el);
     };
+
+    Wall.prototype.render = function() {};
 
     return Wall;
 
@@ -394,6 +407,7 @@
 
     ContributionBalloon.prototype.render = function() {
       var body, headline, meta;
+      this.$el.addClass('contribution');
       if (this.model.get('kind') === 'synthesis') {
         this.$el.addClass('synthesis');
       }
@@ -407,9 +421,6 @@
       }
       meta = this.findOrCreate('.meta', "<div class='meta'><span class='author'></span></div>");
       meta.find('.author').text(this.model.get('author')).addClass("author-" + (this.model.get('author')));
-      this.renderTags();
-      this.renderBuildons();
-      this.corporealize();
       return this;
     };
 
@@ -433,25 +444,30 @@
     };
 
     ContributionBalloon.prototype.renderBuildons = function() {
-      var $b, b, buildons, container, counter, _i, _len, _results;
+      var $b, b, buildons, changed, container, counter, _i, _len;
       if (!this.model.has('build_ons')) {
         return;
       }
       buildons = this.model.get('build_ons');
       container = this.findOrCreate('.buildons', "<div class='buildons'></div>");
+      changed = false;
+      if (buildons.length !== container.find('div.buildon').length) {
+        changed = true;
+      }
       container.remove('div.buildon');
       counter = CK.Smartboard.View.findOrCreate(this.$el.find('.meta'), '.buildon-counter', "<div class='buildon-counter'></div>");
       counter.html('');
-      _results = [];
       for (_i = 0, _len = buildons.length; _i < _len; _i++) {
         b = buildons[_i];
         counter.append("•");
         $b = jQuery("                <div class='buildon'>                    <div class='author'></div>                    <div class='content'></div>                </div>            ");
         $b.find('.author').text(b.author);
         $b.find('.content').text(b.content);
-        _results.push(container.append($b));
+        container.append($b);
       }
-      return _results;
+      if (changed) {
+        return this.$el.effect('highlight', 2000);
+      }
     };
 
     return ContributionBalloon;
@@ -525,6 +541,7 @@
 
     TagBalloon.prototype.render = function() {
       var name;
+      this.$el.addClass('tag');
       name = this.findOrCreate('.name', "<h3 class='name'></h3>");
       name.text(this.model.get('name'));
       if (this.model.get('pinned')) {
@@ -532,7 +549,6 @@
       } else {
         this.$el.removeClass('pinned');
       }
-      this.corporealize();
       this.$el.show();
       return this;
     };

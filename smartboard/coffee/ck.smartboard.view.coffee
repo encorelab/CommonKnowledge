@@ -11,7 +11,9 @@ class CK.Smartboard.View.Base extends Backbone.View
     findOrCreate: (selector, html) => 
         CK.Smartboard.View.findOrCreate @$el, selector, html
 
-    corporealize: ->
+    constructor: (options) ->
+        super(options)
+
         @$el.hide() # hide until positioned
 
         # check if element is in DOM; if not, insert it
@@ -27,12 +29,13 @@ class CK.Smartboard.View.Base extends Backbone.View
             @$el.css('position', 'absolute') # draggable() makes them 'relative' on webkit for some reason, which breaks shit
             jQuery('#wall').append(@$el)
 
-        if @model.has('pos')
-            @$el.css
-                left: @model.get('pos').left + 'px'
-                top: @model.get('pos').top + 'px'
-        else
-            @autoPosition()
+        if @model? 
+            if @model.has('pos')
+                @$el.css
+                    left: @model.get('pos').left + 'px'
+                    top: @model.get('pos').top + 'px'
+            else
+                @autoPosition()
 
         @$el.show()
 
@@ -57,7 +60,6 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
     showCloud: true
 
     events:
-
         'click #add-tag-opener': (ev) ->
             addTagContainer = @$el.find('#add-tag-container')
             addTagContainer.toggleClass('opened')
@@ -99,6 +101,10 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
         'click #go-synthesize': (ev) ->
             if @mode is 'analysis'
                 Sail.app.startSynthesis()
+
+    constructor: (options) ->
+        super(options)
+        @cloud = new CK.Smartboard.View.BalloonCloud(this)
 
     submitNewTag: =>
         newTag = @$el.find('#new-tag').val()
@@ -147,6 +153,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
         punctuation = /[!"&()*+,-\.\/:;<=>?\[\\\]^`\{|\}~]+/g
         wordSeparators = /[\s\u3031-\u3035\u309b\u309c\u30a0\u30fc\uff70]+/g
         text = ''
+        
         @contributions = new CK.Model.Contributions()
         @contributions.fetch success: (collection, response) ->
             _.each collection.models, (c) ->
@@ -253,10 +260,25 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                 .removeClass('mode-analysis')
                 .removeClass('mode-synthesis')
             @changeWatermark("brainstorm")
+    
 
+    # init and render a new ContributionBalloon view and add it to the Bubble cloud
+    # `contrib` should be a CK.Model.Contribution object
+    bubbleContrib: (contrib) =>
+        # TODO: move this to @wall.cloud.addContribution
+        
 
-    cloudify: =>
-        cloud = new CK.Smartboard.View.Cloud(this)
+    # init and render a new TagBalloon view and add it to the Bubble cloud
+    # `contrib` should be a CK.Model.Tag object
+    bubbleTag: (tag) =>
+        # TODO: move this to @wall.cloud.addTag
+        bubble = new CK.Smartboard.View.TagBalloon {model: tag}
+        tag.on 'change', bubble.render
+        bubble.render()
+        @cloud.addTag(bubble.$el)
+
+    render: =>
+        #@cloud.render()
         
 
 class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
@@ -287,6 +309,8 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
     #     @$el.data('view', @)
 
     render: =>
+        @$el.addClass('contribution')
+
         if @model.get('kind') is 'synthesis'
             @$el.addClass('synthesis')
 
@@ -309,15 +333,14 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
             .text(@model.get('author'))
             .addClass("author-#{@model.get('author')}")
 
+        # @renderTags()
 
-        @renderTags()
+        # @renderBuildons()
 
-        @renderBuildons()
-        
-        @corporealize()
+        return this # return this for chaining
 
-        return @ # return this for chaining
-
+    # FIXME: tags are automatically rendered as they are added (via the tag collection event bindings)
+    # ... so this method is mostly vestigial... need to get rid of this
     renderTags: =>
         # tagsContainer = @findOrCreate '.tags',
         #     "<div class='tags'></div>"
@@ -352,6 +375,10 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
         container = @findOrCreate '.buildons',
             "<div class='buildons'></div>"
 
+        changed = false
+        if buildons.length isnt container.find('div.buildon').length
+            changed = true
+
         container.remove('div.buildon')
 
         counter = CK.Smartboard.View.findOrCreate @$el.find('.meta'), '.buildon-counter',
@@ -370,6 +397,9 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
             $b.find('.author').text(b.author)
             $b.find('.content').text(b.content)
             container.append $b
+
+        if changed
+            @$el.effect('highlight', 2000)
 
 
 
@@ -421,6 +451,8 @@ class CK.Smartboard.View.TagBalloon extends CK.Smartboard.View.Balloon
             #     console.log("Couldn't save pinned tag's position -- couldn't find a tag with id: ", tid)
 
     render: => 
+        @$el.addClass('tag')
+
         name = @findOrCreate '.name', 
             "<h3 class='name'></h3>"
         name.text @model.get('name')
@@ -430,9 +462,7 @@ class CK.Smartboard.View.TagBalloon extends CK.Smartboard.View.Balloon
         else
             @$el.removeClass('pinned')
 
-        @corporealize()
-
         @$el.show()
 
-        return @ # return this for chaining
+        return this # return this for chaining
 

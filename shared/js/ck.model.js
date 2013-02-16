@@ -48,7 +48,8 @@
     };
 
     Model.createNecessaryCollections = function(requiredCollections) {
-      var df, dfs;
+      var df, dfs,
+        _this = this;
       dfs = [];
       df = $.Deferred();
       this.db.collections(function(colls) {
@@ -59,7 +60,7 @@
           col = requiredCollections[_i];
           if (__indexOf.call(existingCollections, col) < 0) {
             console.log("Creating collection '" + col + "' under " + CK.Model.dbURL);
-            _results.push(dfs.push(db.createCollection(col)));
+            _results.push(dfs.push(_this.db.createCollection(col)));
           } else {
             _results.push(void 0);
           }

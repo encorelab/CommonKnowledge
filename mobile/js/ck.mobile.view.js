@@ -23,6 +23,7 @@
         var contribId = $target.attr('id');
 
         Sail.app.contributionDetails = Sail.app.contributionList.get(contribId);
+        Sail.app.contributionDetails.wake(Sail.app.config.wakeful.url);
         console.log('Clicked contribution: ' + Sail.app.contributionDetails);
         
         Sail.app.contributionDetailsView.render();
@@ -67,6 +68,7 @@
 
         note.find('.headline').text(contrib.get('headline'));
         note.find('.author').text(contrib.get('author'));
+
         note.find('.date').text(' (' + contrib.get('created_at').toLocaleDateString() + ' ' + contrib.get('created_at').toLocaleTimeString() + ')');
       });        
           
@@ -175,7 +177,7 @@
         } else {
           // due to our deadlines, this is all hideous, and fighting backbone... TODO - fixme when there's more time
           if (tag.get('name') === "N/A") {
-            Sail.app.currentContribution.attributes.tags = [];                       // eeeewwwwwwww
+            Sail.app.currentContribution.set('tags',[]);                       // eeeewwwwwwww
             jQuery('.tag-btn').removeClass('active');
           } else {
             var naTag = Sail.app.tagList.find(function(t) { return t.get('name') === "N/A"; } );
@@ -186,7 +188,7 @@
         }
 
         // enable/disable the Share button - dup'd in the render, probably a better way to do this
-        if (Sail.app.currentContribution.attributes.tags.length > 0) {
+        if (Sail.app.currentContribution.get('tags').length > 0) {
           jQuery('#share-note-btn').removeClass('disabled');
         } else {
           jQuery('#share-note-btn').addClass('disabled');
@@ -210,7 +212,7 @@
         if (Sail.app.currentContribution.has('content') && Sail.app.currentContribution.has('headline')) {
           console.log("Submitting contribution...");
           // var self = this;
-
+          
           Sail.app.currentContribution.save(null, {
             complete: function () {
               console.log('New note submitted!');
@@ -218,7 +220,7 @@
             },
             success: function () {
               console.log('Model saved');
-              Sail.app.sendContribution('newNote');
+              //Sail.app.sendContribution('newNote');
               jQuery().toastmessage('showSuccessToast', "Contribution submitted");
 
               // clear the old contribution plus ui fields
@@ -239,7 +241,7 @@
       }
       // tagged contribution - this can only be an else as long as no New Notes on tagging phase
       else if (Sail.app.taggedContribution) {
-        if (Sail.app.taggedContribution.attributes.tags.length > 0) {
+        if (Sail.app.taggedContribution.get('tags').length > 0) {
           console.log("Submitting tagged contribution...");
           Sail.app.taggedContribution.save(null, {
             complete: function () {
@@ -276,6 +278,8 @@
           Sail.app.contributionDetails.set('build_ons', tempBuildOnArray);
         }
 
+        // FIXME: why isn't this already awake??
+        Sail.app.contributionDetails.wake(Sail.app.config.wakeful.url);
         Sail.app.contributionDetails.save(null, {
           complete: function () {
             console.log('Build on submitted!');
@@ -482,7 +486,7 @@
       });
 
       // enable/disable the Share button
-      if (Sail.app.taggedContribution.attributes.tags && Sail.app.taggedContribution.attributes.tags.length > 0) {
+      if (Sail.app.taggedContribution.has('tags') && Sail.app.taggedContribution.get('tags').length > 0) {
         jQuery('#share-note-btn').removeClass('disabled');
       } else {
         jQuery('#share-note-btn').addClass('disabled');

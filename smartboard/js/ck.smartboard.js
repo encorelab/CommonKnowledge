@@ -11,10 +11,6 @@
     function Smartboard() {
       this.initModels = __bind(this.initModels, this);
 
-      this.bubbleTag = __bind(this.bubbleTag, this);
-
-      this.bubbleContrib = __bind(this.bubbleContrib, this);
-
       this.switchToSynthesis = __bind(this.switchToSynthesis, this);
 
       this.switchToAnalysis = __bind(this.switchToAnalysis, this);
@@ -103,6 +99,7 @@
       tag = new CK.Model.Tag({
         name: name
       });
+      tag.wake(this.config.wakeful.url);
       return tag.save({}, {
         success: function() {
           var sev;
@@ -162,50 +159,27 @@
       return this.wall.setMode('synthesis');
     };
 
-    Smartboard.prototype.bubbleContrib = function(contrib) {
-      var bubble;
-      bubble = new CK.Smartboard.View.ContributionBalloon({
-        model: contrib
-      });
-      contrib.on('change', bubble.render);
-      bubble.render();
-      if (this.wall.cloud != null) {
-        return this.wall.cloud.addContribution(bubble.$el);
-      }
-    };
-
-    Smartboard.prototype.bubbleTag = function(tag) {
-      var bubble;
-      bubble = new CK.Smartboard.View.TagBalloon({
-        model: tag
-      });
-      tag.on('change', bubble.render);
-      bubble.render();
-      if (this.wall.cloud != null) {
-        return this.wall.cloud.addTag(bubble.$el);
-      }
-    };
-
     Smartboard.prototype.initModels = function() {
       var _this = this;
       return Wakeful.loadFayeClient(this.config.wakeful.url).done(function() {
         _this.contributions = new CK.Model.Contributions();
-        Wakeful.wake(_this.contributions, _this.config.wakeful.url);
+        _this.contributions.wake(_this.config.wakeful.url);
+        _this.contributions.on('all', function(ev, data) {
+          return console.log(_this.contributions.url, ev, data);
+        });
         _this.contributions.on('add', function(contrib) {
-          contrib.justAdded = true;
-          return _this.bubbleContrib(contrib);
+          return _this.wall.cloud.addNode(contrib);
         });
         _this.contributions.on('reset', function(collection) {
-          return collection.each(_this.bubbleContrib);
+          return collection.each(_this.wall.cloud.addNode);
         });
         _this.tags = new CK.Model.Tags();
-        Wakeful.wake(_this.contributions, _this.config.wakeful.url);
+        _this.tags.wake(_this.config.wakeful.url);
         _this.tags.on('add', function(tag) {
-          tag.justAdded = true;
-          return _this.bubbleTag(tag);
+          return _this.wall.cloud.addNode(tag);
         });
         _this.tags.on('reset', function(collection) {
-          return collection.each(_this.bubbleTag);
+          return collection.each(_this.wall.cloud.addNode);
         });
         CK.getState('phase', function(s) {
           if (s) {
@@ -236,72 +210,15 @@
         return console.log("Connected...");
       },
       ready: function(ev) {
-        var deferredContributions, deferredTags;
+        var _this = this;
         console.log("Ready...");
-        deferredContributions = this.contributions.fetch();
-        deferredTags = this.tags.fetch();
-        return $.when([deferredContributions, deferredTags]).done(function() {
-          return setTimeout((function() {
-            return Sail.app.wall.cloudify();
-          }), 1000);
+        this.wall.render();
+        return $.when(this.contributions.fetch(), this.tags.fetch()).done(function() {
+          _this.wall.cloud.render();
+          return _this.wall.cloud.startForce();
         });
       },
       sail: {
-        build_on: function(sev) {
-          var c;
-          c = this.contributions.get(sev.payload._id);
-          if (c != null) {
-            c.set(sev.payload);
-          } else {
-            console.warn("New contribution added by build_on... something ain't right here...");
-            c = new CK.Model.Contribution(sev.payload);
-            this.contributions.add(c);
-          }
-          return jQuery('#' + c.id).effect('highlight', 2000);
-        },
-        new_tag: function(sev) {
-          var t;
-          t = this.tags.get(sev.payload._id);
-          if (t != null) {
-            return t.set(sev.payload);
-          } else {
-            t = new CK.Model.Tag(sev.payload);
-            return this.tags.add(t);
-          }
-        },
-        contribution_tagged: function(sev) {
-          var addLink, c,
-            _this = this;
-          c = this.contributions.get(sev.payload._id);
-          console.log("contribution_tagged, c is: ", c);
-          addLink = function() {
-            var tr, ts;
-            c.set(sev.payload);
-            ts = (function() {
-              var _i, _len, _ref, _results;
-              _ref = c.get('tags');
-              _results = [];
-              for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-                tr = _ref[_i];
-                _results.push(this.tags.get(tr.id));
-              }
-              return _results;
-            }).call(_this);
-            console.log("adding links from ", c, " to ", ts);
-            return _this.wall.cloud.addLinks(c, ts);
-          };
-          if (c) {
-            return addLink();
-          } else {
-            console.warn("Contribution ", sev.payload._id, " not found locally... fetching updated contributions collection...");
-            return this.contributions.fetch({
-              success: function() {
-                c = this.contributions.get(sev.payload._id);
-                return addLink();
-              }
-            });
-          }
-        },
         screen_lock: function(sev) {
           return this.wall.pause();
         },
