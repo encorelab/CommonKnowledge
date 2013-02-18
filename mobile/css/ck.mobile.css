@@ -187,7 +187,7 @@ i {
 }
 
 .selected {
-	background-color: pink;
+	background-color: pink !important;						/* needs to be important to win out over the other colors in the note list */
 }
 
 .own-color {
@@ -210,18 +210,18 @@ i {
 	background-color: #ED11C1;
 }
 
-#selected-note {
+.selected-note {
 	padding: 6px 15px 0px 15px;
 
 }
 
-#selected-note .note-headline {
+.selected-note .note-headline {
 	font-size: 18px;
 	font-weight: bold;
 	margin-bottom: 5px;
 }
 
-#selected-note .note-metadata {
+.selected-note .note-metadata {
 	float: right;
 }
 
@@ -269,6 +269,10 @@ i {
 
 #body-container .proposal-entry-field {
 	height: 220px;
+}
+
+#close-btn {
+	float: right;
 }
 
 

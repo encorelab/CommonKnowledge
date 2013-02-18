@@ -18,6 +18,8 @@
            $target = $target.parents('.list-item').first();
         }
 
+        // Removing background colors, then adding the correct one
+        //$target.children().first().removeClass('own-color');
         $target.children().first().addClass('selected');
 
         var contribId = $target.attr('id');
@@ -72,12 +74,12 @@
         if (contrib.get('author') === Sail.app.userData.account.login) {
           note.children().first().addClass('own-color');
         }
-        // TODO check if this is working, then add for tags as well
-        _.each(contrib.get('build_ons'), function(b) {
-           if (contrib.get('author') === Sail.app.userData.account.login) {
-            note.children().first().addClass('own-color');
-          }
-        });
+        // TODO check if this is working, then add for tags as well, then port to where it's actually relevant
+        // _.each(contrib.get('build_ons'), function(b) {
+        //    if (contrib.get('author') === Sail.app.userData.account.login) {
+        //     note.children().first().addClass('own-color');
+        //   }
+        // });
 
       });        
           

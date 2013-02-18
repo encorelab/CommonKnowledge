@@ -65,7 +65,7 @@
             </div>
 
             <div id="contribution-details" class="span4 view-container">
-                <div id="selected-note" class="scrollable">
+                <div class="selected-note scrollable">
                     <div class="note-headline field" name="headline">
                         <!-- These running shoes are awesome -->
                     </div>
@@ -94,7 +94,7 @@
                     <label id="note-body-label" for="content">
                         Note
                     </label>
-                    <input class="field disabled" id="note-body-entry" name="content"></input>
+                    <textarea class="field disabled" id="note-body-entry" name="content"></textarea>
                 </div>
                 <div class="control-group">
                     <label for="note-headline-entry">
@@ -161,10 +161,32 @@
 
         <div id="proposal-screen" class="row hide">
             <!-- hidden until tablet hears event? -->
-            <div id="contribution-list-FIXME" class="span4 view-container bs-docs-sidebar">                   <!-- fix to remove duplicate ID, and all the fallout associated with that -->
+            <div id="contribution-list-FIXME" class="span4 view-container bs-docs-sidebar">                   <!-- fix to remove duplicate ID, and all the fallout associated in the view -->
                 <ul class="nav nav-list bs-docs-sidenav affix-top scrollable">
-                    <!-- filled by ContributionListView -->
+                    <!-- filled by some View -->
                 </ul>
+
+                <div class="selected-note scrollable hide">
+                    <a id="close-btn" class="btn btn-danger">
+                        Close
+                    </a>
+                    <!-- filled by some View when note item clicked -->
+                    <div class="note-headline field" name="headline">
+                        <!-- These running shoes are awesome -->
+                    </div>
+                    <div class="note-body field" name="content">
+                        <!-- I like these running shoes because I think they'd help make me run faster.
+                        They have pumps on the tongues, to help with performance. The are also
+                        light. I hope that they come in other colours. -->
+                    </div>
+                    <div class="note-metadata">
+                        <span class="note-author field" name="author"> </span><span class="note-created-at field" name="created_at"></span>
+                    </div>
+                    <br />
+                    <div class="note-build-ons field" name="build_ons">
+                    </div>                 
+                </div>
+
                 <div class="btn-container">
                     <a id="new-proposal-btn" class="btn btn-primary">
                         Propose
