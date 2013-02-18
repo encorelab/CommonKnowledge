@@ -166,14 +166,14 @@ CK.Mobile = function() {
       screen_lock: function(sev) {
         console.log('freezing display');
 
-        jQuery('#screen-lock').removeClass('hide');
+        jQuery('#lock-screen').removeClass('hide');
         jQuery('.row').addClass('disabled');
       },
 
       screen_unlock: function(sev) {
         console.log('unfreezing display');
 
-        jQuery('#screen-lock').addClass('hide');
+        jQuery('#lock-screen').addClass('hide');
         jQuery('.row').removeClass('disabled');
       },
 

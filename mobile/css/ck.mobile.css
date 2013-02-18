@@ -51,7 +51,7 @@ i {
 
 .scrollable {
 	overflow: scroll;
-	height: 86%;				/* leaving room for the buttons */
+	height: 80%;				/* leaving room for the buttons */
 }
 
 .hide {
@@ -98,7 +98,14 @@ i {
 	background-color: #FCFCFF;
 }
 
-#screen-lock, #wait-screen {
+.container-header {
+	height: 40px;
+	padding: 15px 5px 5px 5px;
+	margin-bottom: 15px;
+	background-color: #CDCBD4;
+}
+
+#lock-screen, #wait-screen {
 	height: 100%;
 	width: 100%;
 	background-color: black;
@@ -109,7 +116,7 @@ i {
 	overflow: hidden;
 }
 
-#contribution-details, #tag-list {
+#contribution-details, #tag-list, #selected-tag-container, #proposal-screen {
 	margin-left: 0;
 	border-left-width: 0px;				/* overwritting .view-container to prevent dup borders btw 1/2 */
 }
@@ -127,6 +134,10 @@ i {
 	background-color: #AEB6FE;
 }
 
+.control-group {
+	position: relative;
+}
+
 #contribution-input .control-group {
 	margin-bottom: 0px;
 }
@@ -138,6 +149,26 @@ i {
 	overflow: auto;
 }
 
+#note-to-tag-content {
+	margin: 5px 10px 10px 5px;
+}
+
+#selected-tag-container {
+	text-align: center;
+}
+
+.proposal-container {
+	padding: 5px 0px 5px 5px;
+	background-color: #AEB6FE;
+}
+
+#proposal-body-entry-container {
+	margin-left: 0px;
+}
+
+#justification-body-entry-container {
+	margin-left: 10px;
+}
 
 /******* elements *******/
 
@@ -159,23 +190,23 @@ i {
 	background-color: pink;
 }
 
-.own-note {
+.own-color {
 	background-color: #F0ED69;
 }
 
-.group1-note {
+.group1-color {
 	background-color: #7B69F0;
 }
 
-.group2-note {
+.group2-color {
 	background-color: #FA9405;
 }
-
-.group3-note {
+	
+.group3-color {
 	background-color: #70ED11;
 }
 
-.group4-note {
+.group4-color {
 	background-color: #ED11C1;
 }
 
@@ -201,13 +232,14 @@ i {
 #note-body-entry {
 	width: 95%;
 	height: 170px;					/* think about changing this dependant on if the tablet is vert or hor (along with .view-container) */
+	margin-bottom: 10px;
 }
 
 #note-headline-entry {
 	width: 90%;
 }
 
-#tag-list .tag-btn, #tag-submission-container .tag-btn {
+#tag-list .tag-btn, #tag-submission-container .tag-btn, #selected-tag-btn-container .tag-btn {
   	-webkit-border-radius: 4px 4px 4px 4px;
     -moz-border-radius: 4px 4px 4px 4px;
     border-radius: 4px 4px 4px 4px;		
@@ -222,13 +254,21 @@ i {
 	background-color: #FD1654;
 }
 
-#tag-list .tag-btn {
+#tag-list .tag-btn, #selected-tag-btn-container .tag-btn {
 	font-size: 18px;
 	margin-top: 16%;	
 }
 
 #tag-submission-container .tag-btn {
 	margin: 5px;
+}
+
+.proposal-entry-field {
+	width: 80%;
+}
+
+#body-container .proposal-entry-field {
+	height: 220px;
 }
 
 

@@ -70,12 +70,12 @@
 
         note.find('.author').text(contrib.get('author'));               
         if (contrib.get('author') === Sail.app.userData.account.login) {
-          note.children().first().addClass('own-note');
+          note.children().first().addClass('own-color');
         }
         // TODO check if this is working, then add for tags as well
         _.each(contrib.get('build_ons'), function(b) {
            if (contrib.get('author') === Sail.app.userData.account.login) {
-            note.children().first().addClass('own-note');
+            note.children().first().addClass('own-color');
           }
         });
 
