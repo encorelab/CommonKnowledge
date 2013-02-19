@@ -71,9 +71,11 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
         'click #show-word-cloud': (ev) ->
             if (@showCloud)
                 @showWordCloud()
+                jQuery('#show-word-cloud').text('Hide word Cloud')
                 @showCloud = false
             else
                 @hideWordCloud()
+                jQuery('#show-word-cloud').text('Show word Cloud')
                 @showCloud = true
 
         'click #close-word-cloud': (ev) -> @hideWordCloud()
@@ -177,8 +179,15 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
         jQuery('#word-cloud svg').remove()
 
     generateWordCloud: (wordHash) ->
-        width = 650
-        height = 400
+        fadeDiv = jQuery('#fade');
+        width = fadeDiv.width() #650
+        height = fadeDiv.height() #400
+        wordCloud = jQuery('#word-cloud')
+        wordCloud.height(height + 'px')
+        wordCloud.width(width + 'px')
+
+        #alert height
+        #alert width
         draw = (words) ->
             d3.select("#word-cloud")
             .append("svg")

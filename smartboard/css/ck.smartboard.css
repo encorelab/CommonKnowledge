@@ -157,7 +157,7 @@ body {
     cursor: pointer; }
   #tags-panel #tags-editor {
     background-color: #ffa100;
-    border: 3px solid #C8271A;
+    border: 3px solid #c8271a;
     border-left: none;
     padding: 10px;
     min-height: 200px;
@@ -285,10 +285,12 @@ button {
 #word-cloud {
   display: none;
   position: fixed;
-  width: 650px;
+  /*width: 650px;
   height: 400px;
   top: 10%;
-  left: 15%;
+  left: 15%; */
+  left: 1%;
+  top: 1%;
   padding: 16px;
   border: 1px solid orange;
   background-color: white;

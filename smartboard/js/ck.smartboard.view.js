@@ -134,9 +134,11 @@
       'click #show-word-cloud': function(ev) {
         if (this.showCloud) {
           this.showWordCloud();
+          jQuery('#show-word-cloud').text('Hide word Cloud');
           return this.showCloud = false;
         } else {
           this.hideWordCloud();
+          jQuery('#show-word-cloud').text('Show word Cloud');
           return this.showCloud = true;
         }
       },
@@ -266,9 +268,13 @@
     };
 
     Wall.prototype.generateWordCloud = function(wordHash) {
-      var draw, fill, height, width;
-      width = 650;
-      height = 400;
+      var draw, fadeDiv, fill, height, width, wordCloud;
+      fadeDiv = jQuery('#fade');
+      width = fadeDiv.width();
+      height = fadeDiv.height();
+      wordCloud = jQuery('#word-cloud');
+      wordCloud.height(height + 'px');
+      wordCloud.width(width + 'px');
       draw = function(words) {
         return d3.select("#word-cloud").append("svg").attr("width", "99%").attr("height", "99%").append("g").attr("transform", "translate(" + (width / 2) + "," + (height / 2) + ")").selectAll("text").data(words).enter().append("text").style("font-size", function(d) {
           return d.size + "px";

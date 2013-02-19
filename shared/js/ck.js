@@ -34,10 +34,12 @@
 
   CK.setState = function(type, state) {
     return CK.getState(type, function(s) {
-      if (s != null) {
-        s = new CK.Model.State();
-        s.set('type', type);
-      }
+      if (typeof s === "undefined" || s === null ) {
+            //create new state
+            s = new CK.Model.State();
+            s.set('type', type);
+        }
+        ;
       s.set('state', state);
       return s.save();
     });
@@ -45,12 +47,14 @@
 
   CK.setStateForUser = function(type, username, state, data_obj) {
     return CK.getStateForUser(type, username, state, function(s) {
-      if (s == null) {
-        s = new CK.Model.State();
-        s.set('type', type);
-        s.set('username', username);
-        s.set('state', state);
-      }
+      if (typeof s === "undefined" || s === null ) {
+            //create new state
+            s = new CK.Model.State();
+            s.set('type', type);
+            s.set('username', username);
+            s.set('state', state);
+        }
+        ;
       s.set('data', data_obj);
       return s.save();
     });
