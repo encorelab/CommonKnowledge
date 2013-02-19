@@ -177,11 +177,16 @@
         });
         _this.tags = new CK.Model.Tags();
         _this.tags.wake(_this.config.wakeful.url);
+        _this.contributions.on('all', function(ev, data) {
+          return console.log(_this.contributions.url, ev, data);
+        });
         _this.tags.on('add', function(tag) {
-          return _this.wall.cloud.addNode(tag);
+          _this.wall.cloud.addNode(tag);
+          return _this.wall.cloud.render();
         });
         _this.tags.on('reset', function(collection) {
-          return collection.each(_this.wall.cloud.addNode);
+          collection.each(_this.wall.cloud.addNode);
+          return _this.wall.cloud.render();
         });
         CK.getState('phase', function(s) {
           if (s) {
@@ -212,13 +217,10 @@
         return console.log("Connected...");
       },
       ready: function(ev) {
-        var _this = this;
         console.log("Ready...");
         this.wall.render();
-        return $.when(this.contributions.fetch(), this.tags.fetch()).done(function() {
-          _this.wall.cloud.render();
-          return _this.wall.cloud.startForce();
-        });
+        this.contributions.fetch();
+        return this.tags.fetch();
       },
       sail: {
         screen_lock: function(sev) {

@@ -88,6 +88,10 @@ class CK.Smartboard extends Sail.App
             @contributions = new CK.Model.Contributions()
             @contributions.wake @config.wakeful.url
 
+            # FIXME: for the 'reset' event, we should wait until
+            #        BOTH the tags and contributions are fetched
+            #        before calling cloud.render()
+
             @contributions.on 'all', (ev, data) => 
                 console.log(@contributions.url, ev, data)
 
@@ -102,11 +106,16 @@ class CK.Smartboard extends Sail.App
             @tags = new CK.Model.Tags()
             @tags.wake @config.wakeful.url
 
+            @contributions.on 'all', (ev, data) => 
+                console.log(@contributions.url, ev, data)
+
             @tags.on 'add', (tag) =>
                 @wall.cloud.addNode tag
+                @wall.cloud.render()
 
             @tags.on 'reset', (collection) =>
                 collection.each @wall.cloud.addNode
+                @wall.cloud.render()
 
             CK.getState 'phase', (s) =>
                 if s
@@ -141,14 +150,8 @@ class CK.Smartboard extends Sail.App
             
             @wall.render()
 
-            $.when( 
-                @contributions.fetch(),
-                @tags.fetch()
-            ).done =>
-                @wall.cloud.render()
-                @wall.cloud.startForce()
-
-
+            @contributions.fetch()
+            @tags.fetch()
 
         sail:
             # contribution: (sev) ->

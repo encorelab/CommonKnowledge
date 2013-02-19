@@ -13,8 +13,6 @@ class CK.Smartboard.View.BalloonCloud
         # for n,i in @nodes
         #     $n = jQuery(n)
         #     n.index = i
-
-        @force = @generateForceFunction()
             
         #jQuery('.balloon').not('#509424717e59cb16c1000003, #509426227e59cb16c1000006').remove()
         
@@ -287,22 +285,35 @@ class CK.Smartboard.View.BalloonCloud
                 y2 < ny1
 
     startForce: =>
+        unless @force?
+            console.log("Instantiating force...")
+            @force = @generateForceFunction()
+            # make the <div.balloons> draggable via the force-directed layout
+            
+
+        console.log("Starting force...")
         @force.start()
-        @started = true
+
+        @balloons.call(@force.drag)
 
 
     addNode: (n) =>
         unless n in @nodes
             @nodes.push n
 
-        if n.has('tags')
+        if n instanceof CK.Model.Contribution and n.has('tags')
             for t in n.get('tags')
-                
                 tag = _.find @nodes, (n) -> n.id is t.id
 
                 # TODO: create the tag if it doesn't exist?
                 if tag?
                     @addLink(n, tag)
+
+        else if n instanceof CK.Model.Tag
+            for b in @nodes
+                if b.has('tags') and b.get('tags').some( (t) -> t.id is n.id )
+                    @addLink(b, n)
+
 
     addLink: (fromContribution, toTag) =>
         link =
@@ -332,6 +343,10 @@ class CK.Smartboard.View.BalloonCloud
 
             view.render()
 
+            pos = view.$el.position()
+            d.x = pos.left + view.$el.outerWidth()/2 unless d.x?
+            d.y = pos.top + view.$el.outerHeight()/2 unless d.y?
+
     render: (ev) =>
 
         # force2 = d3.layout.force()
@@ -353,17 +368,16 @@ class CK.Smartboard.View.BalloonCloud
         ###
 
         # link <div.balloon>s to the Tag and Contribution objects in @nodes
-        @balloons = @vis.selectAll('div.balloon')
+        @vis.selectAll('div.balloon')
         # create emtpy <div.balloon> nodes for the @nodes that don't yet exist
             .data(@nodes).enter()
             .append('div')
                 .attr('id', (d,i) -> d.id)
                 .attr('class', "balloon")
-        # fill in the <div.balloon>s
+        # fill in the <div.balloon>s html
             .call(@inflateBalloons)
-        # make the <div.balloons> draggable via the force-directed layout
-            .call(@force.drag)
-                
+        
+        @balloons = @vis.selectAll('div.balloon')
 
         # .exit()
         # .call(@renderNode)
@@ -375,12 +389,15 @@ class CK.Smartboard.View.BalloonCloud
         #     .links([])
         #     .start()
         
-        @connectors = @vis.selectAll("div.connector")
+        @vis.selectAll('div.connector')
             .data(@links).enter()
-            .append("div")
+            .append('div')
                 .attr('id', (d,i) -> "#{d.source.id}-#{d.target.id}")
                 .attr('class','connector')
         
+        @connectors = @vis.selectAll('div.connector')
+
+        @startForce()
 
         # restart the force direction algorithm if
         # we've previously explicitly started it

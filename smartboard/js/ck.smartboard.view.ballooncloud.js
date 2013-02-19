@@ -31,7 +31,6 @@
       this.wallHeight = this.wall.$el.innerHeight();
       this.nodes = [];
       this.links = [];
-      this.force = this.generateForceFunction();
       this.vis = d3.select("#" + this.wall.id);
     }
 
@@ -225,16 +224,21 @@
     };
 
     BalloonCloud.prototype.startForce = function() {
+      if (this.force == null) {
+        console.log("Instantiating force...");
+        this.force = this.generateForceFunction();
+      }
+      console.log("Starting force...");
       this.force.start();
-      return this.started = true;
+      return this.balloons.call(this.force.drag);
     };
 
     BalloonCloud.prototype.addNode = function(n) {
-      var t, tag, _i, _len, _ref, _results;
+      var b, t, tag, _i, _j, _len, _len1, _ref, _ref1, _results, _results1;
       if (__indexOf.call(this.nodes, n) < 0) {
         this.nodes.push(n);
       }
-      if (n.has('tags')) {
+      if (n instanceof CK.Model.Contribution && n.has('tags')) {
         _ref = n.get('tags');
         _results = [];
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -249,6 +253,20 @@
           }
         }
         return _results;
+      } else if (n instanceof CK.Model.Tag) {
+        _ref1 = this.nodes;
+        _results1 = [];
+        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+          b = _ref1[_j];
+          if (b.has('tags') && b.get('tags').some(function(t) {
+            return t.id === n.id;
+          })) {
+            _results1.push(this.addLink(b, n));
+          } else {
+            _results1.push(void 0);
+          }
+        }
+        return _results1;
       }
     };
 
@@ -265,7 +283,7 @@
 
     BalloonCloud.prototype.inflateBalloons = function(balloons) {
       return balloons.each(function(d, i) {
-        var view;
+        var pos, view;
         view = d.view;
         if (!d.view) {
           if (d instanceof CK.Model.Tag) {
@@ -283,7 +301,14 @@
           }
           d.view = view;
         }
-        return view.render();
+        view.render();
+        pos = view.$el.position();
+        if (d.x == null) {
+          d.x = pos.left + view.$el.outerWidth() / 2;
+        }
+        if (d.y == null) {
+          return d.y = pos.top + view.$el.outerHeight() / 2;
+        }
       });
     };
 
@@ -295,12 +320,15 @@
                   n.x = pos.left + $n.outerWidth()/2 unless n.x?
                   n.y = pos.top + $n.outerHeight()/2 unless n.y?
       */
-      this.balloons = this.vis.selectAll('div.balloon').data(this.nodes).enter().append('div').attr('id', function(d, i) {
+      this.vis.selectAll('div.balloon').data(this.nodes).enter().append('div').attr('id', function(d, i) {
         return d.id;
-      }).attr('class', "balloon").call(this.inflateBalloons).call(this.force.drag);
-      return this.connectors = this.vis.selectAll("div.connector").data(this.links).enter().append("div").attr('id', function(d, i) {
+      }).attr('class', "balloon").call(this.inflateBalloons);
+      this.balloons = this.vis.selectAll('div.balloon');
+      this.vis.selectAll('div.connector').data(this.links).enter().append('div').attr('id', function(d, i) {
         return "" + d.source.id + "-" + d.target.id;
       }).attr('class', 'connector');
+      this.connectors = this.vis.selectAll('div.connector');
+      return this.startForce();
     };
 
     return BalloonCloud;
