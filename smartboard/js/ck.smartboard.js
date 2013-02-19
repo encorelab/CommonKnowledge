@@ -168,10 +168,12 @@
           return console.log(_this.contributions.url, ev, data);
         });
         _this.contributions.on('add', function(contrib) {
-          return _this.wall.cloud.addNode(contrib);
+          _this.wall.cloud.addNode(contrib);
+          return _this.wall.cloud.render();
         });
         _this.contributions.on('reset', function(collection) {
-          return collection.each(_this.wall.cloud.addNode);
+          collection.each(_this.wall.cloud.addNode);
+          return _this.wall.cloud.render();
         });
         _this.tags = new CK.Model.Tags();
         _this.tags.wake(_this.config.wakeful.url);

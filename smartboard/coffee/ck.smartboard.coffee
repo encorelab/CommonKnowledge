@@ -91,11 +91,13 @@ class CK.Smartboard extends Sail.App
             @contributions.on 'all', (ev, data) => 
                 console.log(@contributions.url, ev, data)
 
-            @contributions.on 'add', (contrib) => 
+            @contributions.on 'add', (contrib) =>
                 @wall.cloud.addNode contrib
+                @wall.cloud.render()
 
             @contributions.on 'reset', (collection) => 
                 collection.each @wall.cloud.addNode
+                @wall.cloud.render()
 
             @tags = new CK.Model.Tags()
             @tags.wake @config.wakeful.url
