@@ -60,6 +60,7 @@
                 <div class="btn-container">
                     <a id="new-note-btn" class="btn btn-primary">
                         New Note
+                        <!-- TODO this can now go -->
                     </a>
                 </div>
             </div>
@@ -80,6 +81,11 @@
                     <br />
                     <div class="note-build-ons field" name="build_ons">
                     </div>
+                </div>
+                <div class="btn-container hide">
+                    <a id="tag-build-on-btn" class="btn btn-primary build-on-btn">
+                        Build On
+                    </a>
                 </div>
                 <div class="btn-container hide">
                     Would you like to work on this?
@@ -140,15 +146,10 @@
                 <div id="note-to-tag-body">              <!-- or better to reuse other class? -->
                     CONTENT TO BE FILLED BY VIEW
                 </div>
-<!--                 <div class="btn-container">
-                    <a id="tag-list-build-on-btn" class="btn btn-primary build-on-btn">
-                        Build On
-                    </a>
-                </div> -->
             </div>
             <div id="selected-tag-container" class="span6 view-container">
                 <div class="container-header">
-                    Does your tag belong on this note?    <!-- TODO language -->
+                    Is this note about <span class="chosen-tag">TO BE FILLED BY VIEW</span>
                 </div>
                 <div id="selected-tag-btn-container" class="btn-group btn-group-vertical">
                     <!-- TODO these need to be colored by the View -->
@@ -161,23 +162,23 @@
 
         <div id="proposal-screen" class="row hide">
             <!-- hidden until tablet hears event? -->
-            <div id="contribution-list-FIXME" class="span4 view-container bs-docs-sidebar">                   <!-- fix to remove duplicate ID, and all the fallout associated in the view -->
+            <div id="proposal-contribution-list" class="span4 view-container bs-docs-sidebar">
                 <ul class="nav nav-list bs-docs-sidenav affix-top scrollable">
                     <!-- filled by some View -->
                 </ul>
 
                 <div class="selected-note scrollable hide">
                     <a id="close-btn" class="btn btn-danger">
-                        Close
+                        X
                     </a>
                     <!-- filled by some View when note item clicked -->
                     <div class="note-headline field" name="headline">
-                        <!-- These running shoes are awesome -->
+                        These running shoes are awesome
                     </div>
                     <div class="note-body field" name="content">
-                        <!-- I like these running shoes because I think they'd help make me run faster.
+                        I like these running shoes because I think they'd help make me run faster.
                         They have pumps on the tongues, to help with performance. The are also
-                        light. I hope that they come in other colours. -->
+                        light. I hope that they come in other colours.
                     </div>
                     <div class="note-metadata">
                         <span class="note-author field" name="author"> </span><span class="note-created-at field" name="created_at"></span>
@@ -187,13 +188,13 @@
                     </div>                 
                 </div>
 
-                <div class="btn-container">
+<!--                 <div class="btn-container">
                     <a id="new-proposal-btn" class="btn btn-primary">
                         Propose
                     </a>
-                </div>
+                </div> -->
             </div>
-            <div id="proposal-justification-container" class="span12 view-container">
+            <div id="proposal-justification-container" class="span10 view-container">
                 <div id="proposal-headline-entry-container" class="control-group proposal-container">
                     <label id="proposal-headline-label" for="content">
                         <b>Proposal Headline: </b>
@@ -206,10 +207,11 @@
                     </div>
                 </div>
                 <div id="body-container">
-                    <div id="proposal-body-entry-container" class="control-group span6 proposal-container">
+                    <div id="proposal-body-entry-container" class="control-group span5 proposal-container">
                         <label for="proposal-body-entry">
                             <b>Proposal: </b>
                         </label>
+                        <!-- maybe move prompts to a div above the textareas? -->
                         <textarea class="proposal-entry-field field disabled" id="proposal-body-entry" name="proposal" placeholder="What should be done about this? What should we consider next?" type=""></textarea>
                         <div class="btn-container btn-group action-btn-group">
                             <a id="share-proposal-body-btn" class="btn btn-success">
@@ -217,7 +219,7 @@
                             </a>
                         </div>
                     </div>
-                    <div id="justification-body-entry-container" class="control-group span6 proposal-container">
+                    <div id="justification-body-entry-container" class="control-group span5 proposal-container">
                         <label for="justification-body-entry">
                             <b>Justification: </b>
                         </label>
