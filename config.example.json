@@ -14,7 +14,7 @@
     "url": "http://drowsy.badger.encorelab.org"
   },
 "wakeful": {
-    "url": "http://badger.encorelab.org:7777"
+    "url": "http://badger.encorelab.org:7777/faye"
   },
 "assets": {
     "url": "http://ck.badger.encorelab.org/assets"
