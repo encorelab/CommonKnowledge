@@ -271,7 +271,7 @@ CK.Mobile = function() {
   app.initModels = function() {
     console.log('creating Models');
     app.currentContribution = new CK.Model.Contribution();
-    //app.currentContribution.wake(app.config.wakeful.url);
+    app.currentContribution.wake(app.config.wakeful.url);
     app.currentContribution.on('change', function(model) { console.log(model.changedAttributes()); });
     app.currentContribution.on('all', function() { console.log(arguments) });
 
@@ -324,28 +324,43 @@ CK.Mobile = function() {
 
     app.currentContribution.justAdded = true;
 
-    if (app.synthesisFlag) {
-      app.currentContribution.kind = 'synthesis';
-      app.currentContribution.set('kind','synthesis');             // sloppy - fix me (.kind is the key for a lot of the view)
-    } else {
-      app.currentContribution.kind = kind;
-    }
+    // if (app.synthesisFlag) {
+    //   app.currentContribution.kind = 'synthesis';
+    //   app.currentContribution.set('kind','synthesis');             // sloppy - fix me (.kind is the key for a lot of the view)
+    // } else {
+    //   app.currentContribution.kind = kind;
+    // }
 
-    jQuery('#tag-submission-container .tag-btn').removeClass('disabled');
+    app.currentContribution.set('author', app.userData.account.login);
+    app.currentContribution.set('published', false);
+    app.currentContribution.set('tags', app.tagArray);
+    app.currentContribution.set('build_ons', app.buildOnArray);
+    app.currentContribution.set('kind', kind);
 
     app.currentContribution.on('change sync', app.contributionInputView.render);
 
-    app.currentContribution.set('author', app.userData.account.login);
-    app.currentContribution.set('tags', app.tagArray);
-    app.currentContribution.set('build_ons', app.buildOnArray);
+    app.currentContribution.save(null, {
+      complete: function () {
+        console.log('New note submitted!');
+      },
+      success: function () {
+        console.log('Model saved');
+      },
+      failure: function(model, response) {
+        console.log('Error submitting: ' + response);
+      }
+      // !!!
+    });
 
-    app.contributionInputView.render();
+    app.contributionList.add(app.currentContribution);
+
+    //app.contributionInputView.render();
   };
 
   app.clearModels = function() {
     // clear all the old garbage out of the model, rebind
     app.currentContribution = new CK.Model.Contribution();
-    //app.currentContribution.wake(app.config.wakeful.url);
+    app.currentContribution.wake(app.config.wakeful.url);
     app.contributionInputView.model = app.currentContribution;
     app.contributionInputView.undelegateEvents();
     app.contributionInputView.delegateEvents();
