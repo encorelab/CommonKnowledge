@@ -285,10 +285,12 @@ button {
 #word-cloud {
   display: none;
   position: fixed;
-  width: 650px;
+  /*width: 650px;
   height: 400px;
   top: 10%;
-  left: 15%;
+  left: 15%; */
+  left: 1%;
+  top: 1%;
   padding: 16px;
   border: 1px solid orange;
   background-color: white;

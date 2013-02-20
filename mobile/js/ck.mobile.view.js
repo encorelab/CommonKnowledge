@@ -18,6 +18,8 @@
            $target = $target.parents('.list-item').first();
         }
 
+        // Removing background colors, then adding the correct one
+        //$target.children().first().removeClass('own-color');
         $target.children().first().addClass('selected');
 
         var contribId = $target.attr('id');
@@ -67,9 +69,19 @@
         jQuery('#contribution-list .nav-list').append(note);
 
         note.find('.headline').text(contrib.get('headline'));
-        note.find('.author').text(contrib.get('author'));
-
         note.find('.date').text(' (' + contrib.get('created_at').toLocaleDateString() + ' ' + contrib.get('created_at').toLocaleTimeString() + ')');
+
+        note.find('.author').text(contrib.get('author'));               
+        if (contrib.get('author') === Sail.app.userData.account.login) {
+          note.children().first().addClass('own-color');
+        }
+        // TODO check if this is working, then add for tags as well, then port to where it's actually relevant
+        // _.each(contrib.get('build_ons'), function(b) {
+        //    if (contrib.get('author') === Sail.app.userData.account.login) {
+        //     note.children().first().addClass('own-color');
+        //   }
+        // });
+
       });        
           
     }
@@ -148,8 +160,9 @@
     events: {
       // for most fields
       'change .field': function (ev) {
+        var f;
         if (Sail.app.currentContribution.kind === 'new') {
-          var f = jQuery(ev.target);
+          f = jQuery(ev.target);
           console.log("Setting "+f.attr("name")+" to "+f.val());
           this.model.set(f.attr('name'), f.val());          
         } else if (Sail.app.currentContribution.kind === 'buildOn') {
@@ -160,7 +173,7 @@
           Sail.app.currentBuildOn.created_at = d;
           console.log(d);
         } else if (Sail.app.currentContribution.kind === 'synthesis') {
-          var f = jQuery(ev.target);
+          f = jQuery(ev.target);
           console.log("Setting "+f.attr("name")+" to "+f.val());
           this.model.set(f.attr('name'), f.val());          
         } else {

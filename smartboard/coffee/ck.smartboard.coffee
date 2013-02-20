@@ -39,6 +39,26 @@ class CK.Smartboard extends Sail.App
 
         @wall = new CK.Smartboard.View.Wall {el: jQuery('#wall')}
         
+        @contributions = new CK.Model.Contributions()
+        @contributions.on 'add', (contrib) -> 
+            contrib.justAdded = true
+            bubbleContrib(contrib)
+
+        @contributions.on 'reset', (collection) -> 
+            collection.each bubbleContrib
+
+        @tags = new CK.Model.Tags()
+        @tags.on 'add', (tag) ->
+            tag.justAdded = true
+            view = bubbleTag(tag)
+
+        @tags.on 'reset', (collection) ->
+            collection.each bubbleTag
+
+        #@states = new CK.Model.States()
+        #@states.on 'change', (collection) ->
+        #    console.log  'States Collection Changed!'
+
     authenticate: =>
         if @run
             Rollcall.Authenticator.requestLogin()
@@ -57,15 +77,20 @@ class CK.Smartboard extends Sail.App
     pause: =>
         sev = new Sail.Event 'screen_lock'
         @groupchat.sendEvent sev
+        CK.setState('screen_lock', true)
+
         # take this opportunity to save positions
         for b in _.union(@contributions.models, @tags.models)
             pos = @wall.$el.find('#'+b.id).position()
             b.set({pos: {left: pos.left, top: pos.top}}, {silent: true})
             b.save({}, {silent: true})
 
+        
+
     unpause: =>
         sev = new Sail.Event 'screen_unlock'
         @groupchat.sendEvent sev
+        CK.setState('screen_lock', false)
 
 
     startAnalysis: =>

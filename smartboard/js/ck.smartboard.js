@@ -113,6 +113,7 @@
       var b, pos, sev, _i, _len, _ref, _results;
       sev = new Sail.Event('screen_lock');
       this.groupchat.sendEvent(sev);
+      CK.setState('screen_lock', true);
       _ref = _.union(this.contributions.models, this.tags.models);
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -136,7 +137,8 @@
     Smartboard.prototype.unpause = function() {
       var sev;
       sev = new Sail.Event('screen_unlock');
-      return this.groupchat.sendEvent(sev);
+      this.groupchat.sendEvent(sev);
+      return CK.setState('screen_lock', false);
     };
 
     Smartboard.prototype.startAnalysis = function() {

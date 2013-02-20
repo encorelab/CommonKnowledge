@@ -26,6 +26,11 @@ class Choreographer < Sail::Agent
       # Setup MongoDB connection
       @mongo = Mongo::Connection.new.db(config[:database])
 
+      phase = @mongo.collection(:states).find("type" => "phase").first
+      unless phase
+        store_phase("brainstorming")
+      end
+      
       join_room
       #join_log_room
     end

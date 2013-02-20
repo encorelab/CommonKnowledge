@@ -25,22 +25,24 @@ CK.getStateForUser = (type, username, state_name, callback) ->
 
 CK.setState = (type, state) ->
     CK.getState type, (s)->
-        if s?
-            #create new state
-            s = new CK.Model.State()
-            s.set('type', type)
-        
+        `if (typeof s === "undefined" || s === null ) {
+            //create new state
+            s = new CK.Model.State();
+            s.set('type', type);
+        }
+        `
         s.set('state', state)
         s.save()
 
 CK.setStateForUser = (type, username, state, data_obj) ->
     CK.getStateForUser type, username, state, (s)->
-        unless s?
-            #create new state
-            s = new CK.Model.State()
-            s.set('type', type)
-            s.set('username', username)
-            s.set('state', state)
-        
+        `if (typeof s === "undefined" || s === null ) {
+            //create new state
+            s = new CK.Model.State();
+            s.set('type', type);
+            s.set('username', username);
+            s.set('state', state);
+        }
+        `
         s.set('data', data_obj)
         s.save()

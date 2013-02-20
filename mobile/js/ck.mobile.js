@@ -34,7 +34,6 @@ CK.Mobile = function() {
   // app.currentState = {"type":"tablet"};
 
 
-  // TODO: copied from washago code
   app.init = function() {
     Sail.verifyConfig(this.config, this.requiredConfig);
     
@@ -58,7 +57,6 @@ CK.Mobile = function() {
       position : 'middle-center'
     });
 
-//window.addEventListener("orientationchange",function(){hideAddressBar();});    
   };
 
   app.authenticate = function() {
@@ -181,14 +179,14 @@ CK.Mobile = function() {
       screen_lock: function(sev) {
         console.log('freezing display');
 
-        jQuery('#screen-lock').removeClass('hide');
+        jQuery('#lock-screen').removeClass('hide');
         jQuery('.row').addClass('disabled');
       },
 
       screen_unlock: function(sev) {
         console.log('unfreezing display');
 
-        jQuery('#screen-lock').addClass('hide');
+        jQuery('#lock-screen').addClass('hide');
         jQuery('.row').removeClass('disabled');
       },
 
@@ -355,6 +353,19 @@ CK.Mobile = function() {
     app.currentBuildOn = {};
   };
 
+  app.showWaitScreen = function() {
+    console.log('showing wait screen');
+
+    jQuery('#wait-screen').removeClass('hide');
+    jQuery('.row').addClass('disabled');
+  };
+
+  app.hideWaitScreen = function() {
+    console.log('hiding wait screen');
+
+    jQuery('#wait-screen').addClass('hide');
+    jQuery('.row').removeClass('disabled');
+  };
 
   /* State related function */
 

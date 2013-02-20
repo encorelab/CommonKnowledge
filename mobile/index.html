@@ -49,11 +49,14 @@
             </div>
         </div>
 
-        <div id="screen-lock" class="hide">
+        <div id="lock-screen" class="hide">
             <img src="img/lock-icon.png" id="lock-image"/>
         </div>
+        <div id="wait-screen" class="hide">
+            <img src="loader.gif" id="loader-image"/>
+        </div>
 
-        <div class="row">
+        <div id="index-screen" class="row">
             <div id="contribution-list" class="span4 view-container bs-docs-sidebar">
                 <ul class="nav nav-list bs-docs-sidenav affix-top scrollable">
                     <!-- filled by ContributionListView -->
@@ -61,12 +64,13 @@
                 <div class="btn-container">
                     <a id="new-note-btn" class="btn btn-primary">
                         New Note
+                        <!-- TODO this can now go -->
                     </a>
                 </div>
             </div>
 
             <div id="contribution-details" class="span4 view-container">
-                <div id="selected-note" class="scrollable">
+                <div class="selected-note scrollable">
                     <div class="note-headline field" name="headline">
                         <!-- These running shoes are awesome -->
                     </div>
@@ -82,28 +86,18 @@
                     <div class="note-build-ons field" name="build_ons">
                     </div>
                 </div>
-                <div class="btn-container">
-                    <a id="contribution-details-build-on-btn" class="btn btn-primary hide">
+                <div class="btn-container hide">
+                    <a id="tag-build-on-btn" class="btn btn-primary build-on-btn">
                         Build On
                     </a>
                 </div>
-            </div>
-
-            <!-- hidden until tablet hears event re moving to tagging -->
-            <div id="tag-list" class="span4 view-container hide">
-                <div id="tag-list-btn-container" class="tag-btn-group btn-group btn-group-vertical scrollable" data-toggle="buttons-checkbox">
-<!--                     <button type="button" class="btn tag-btn btn-warning">Shoes</button>
-                    <button type="button" class="btn tag-btn btn-warning">Running</button>
-                    <button type="button" class="btn tag-btn btn-warning">Economy</button>
-                    <button type="button" class="btn tag-btn btn-warning">Athletes</button>
-                    <button id="na-btn" type="button" class="btn tag-btn btn-warning">N/A</button>-->
-                </div>                
-<!--                 <div class="btn-container">
-                    <a id="tag-list-build-on-btn" class="btn btn-primary build-on-btn">
-                        Build On
+                <div class="btn-container hide">
+                    Would you like to work on this?
+                    <a id="like-btn" onClick="alert('hi')">
+                        <img src="img/success.png" />
                     </a>
-                </div> -->
-            </div>        
+                </div>
+            </div>   
 
             <div id="contribution-input" class="span8 view-container">
                 <div class="control-group">
@@ -117,24 +111,130 @@
                         <b>Headline</b>
                     </label>
                     <input class="field disabled" id="note-headline-entry" name="headline" placeholder="Enter headline..."
-                    type="">
+                    type="" />
                 </div>
                 <!-- hidden until tablet hears event re synthesizing -->
-                <div id="tag-submission-container">
-<!--                         <button type="button" class="btn tag-btn btn-warning">Shoes</button>
-                    <button type="button" class="btn tag-btn btn-warning">Running</button>
-                    <button type="button" class="btn tag-btn btn-warning">Economy</button>
-                    <button type="button" class="btn tag-btn btn-warning">Athletes</button>
-                    <button type="button" class="btn tag-btn btn-warning">N/A</button> -->
+                <div id="tag-submission-container">                                 <!-- TODO remove me and take me out of the view -->
+                    <!-- filled by self.ContributionInputView  -->
                 </div>
                 <div class="btn-container btn-group action-btn-group">
-<!--                     <a id="cancel-note-btn" class="btn btn-danger">
-                        Cancel
-                    </a> -->
                     <a id="share-note-btn" class="btn btn-success">
                         Share
                     </a>
-                </div>                
+                </div>
+            </div>
+        </div>
+
+
+        <!-- the following now need their own Views -->
+        <div id="choose-tag-screen" class="row hide">
+            <!-- hidden until tablet hears event re moving to tagging -->
+            <div id="tag-list" class="span16 view-container">
+                <div class="container-header">
+                    Choose your specialization!
+                </div>
+                <div id="tag-list-btn-container" class="tag-btn-group btn-group btn-group-vertical scrollable" data-toggle="buttons-checkbox">
+                    <!-- filled by self.TagListView, which needs the colors added TODO -->
+                </div>
+
+            </div>
+        </div>
+
+
+        <div id="tagging-screen" class="row hide">
+            <!-- hidden until tablet hears event? Or gets first contrib_to_tag? -->
+            <div id="note-to-tag-container" class="span10 view-container">
+                <div class="container-header">
+                    METADATA TO BE FILLED BY VIEW
+                </div>
+                <div id="note-to-tag-body">              <!-- or better to reuse other class? -->
+                    CONTENT TO BE FILLED BY VIEW
+                </div>
+            </div>
+            <div id="selected-tag-container" class="span6 view-container">
+                <div class="container-header">
+                    Is this note about <span class="chosen-tag">TO BE FILLED BY VIEW</span>
+                </div>
+                <div id="selected-tag-btn-container" class="btn-group btn-group-vertical">
+                    <!-- TODO these need to be colored by the View -->
+                    <a id="yes-btn" class="btn tag-btn">YES</a>
+                    <a id="no-btn" class="btn tag-btn">NO</a>
+                </div>
+            </div>
+        </div>
+
+
+        <div id="proposal-screen" class="row hide">
+            <!-- hidden until tablet hears event? -->
+            <div id="proposal-contribution-list" class="span4 view-container bs-docs-sidebar">
+                <ul class="nav nav-list bs-docs-sidenav affix-top scrollable">
+                    <!-- filled by some View -->
+                </ul>
+
+                <div class="selected-note scrollable hide">
+                    <a id="close-btn" class="btn btn-danger">
+                        X
+                    </a>
+                    <!-- filled by some View when note item clicked -->
+                    <div class="note-headline field" name="headline">
+                        These running shoes are awesome
+                    </div>
+                    <div class="note-body field" name="content">
+                        I like these running shoes because I think they'd help make me run faster.
+                        They have pumps on the tongues, to help with performance. The are also
+                        light. I hope that they come in other colours.
+                    </div>
+                    <div class="note-metadata">
+                        <span class="note-author field" name="author"> </span><span class="note-created-at field" name="created_at"></span>
+                    </div>
+                    <br />
+                    <div class="note-build-ons field" name="build_ons">
+                    </div>                 
+                </div>
+
+<!--                 <div class="btn-container">
+                    <a id="new-proposal-btn" class="btn btn-primary">
+                        Propose
+                    </a>
+                </div> -->
+            </div>
+            <div id="proposal-justification-container" class="span10 view-container">
+                <div id="proposal-headline-entry-container" class="control-group proposal-container">
+                    <label id="proposal-headline-label" for="content">
+                        <b>Proposal Headline: </b>
+                    </label>
+                    <textarea class="proposal-entry-field field disabled" id="proposal-headline-entry" name="headline" placeholder="Enter headline..." type=""></textarea>
+                    <div class="btn-container btn-group action-btn-group">
+                        <a id="share-proposal-headline-btn" class="btn btn-success">
+                            Share
+                        </a>
+                    </div>
+                </div>
+                <div id="body-container">
+                    <div id="proposal-body-entry-container" class="control-group span5 proposal-container">
+                        <label for="proposal-body-entry">
+                            <b>Proposal: </b>
+                        </label>
+                        <!-- maybe move prompts to a div above the textareas? -->
+                        <textarea class="proposal-entry-field field disabled" id="proposal-body-entry" name="proposal" placeholder="What should be done about this? What should we consider next?" type=""></textarea>
+                        <div class="btn-container btn-group action-btn-group">
+                            <a id="share-proposal-body-btn" class="btn btn-success">
+                                Share
+                            </a>
+                        </div>
+                    </div>
+                    <div id="justification-body-entry-container" class="control-group span5 proposal-container">
+                        <label for="justification-body-entry">
+                            <b>Justification: </b>
+                        </label>
+                        <textarea class="proposal-entry-field field disabled" id="justification-body-entry" name="justification" placeholder="How and why will this proposal help? What are some ideas it responds to?" type=""></textarea>
+                        <div class="btn-container btn-group action-btn-group">
+                            <a id="share-justification-body-btn" class="btn btn-success">
+                                Share
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
