@@ -35,23 +35,19 @@
       this.domID = __bind(this.domID, this);
 
       this.findOrCreate = __bind(this.findOrCreate, this);
+
+      var hasPosition;
       Base.__super__.constructor.call(this, options);
-      this.$el.hide();
-      if (!(this.$el.parent().length > 0)) {
-        if (this.model.justAdded) {
-          this.$el.addClass('new');
-          delete this.model.justAdded;
-        }
-        this.$el.css('position', 'absolute');
-        jQuery('#wall').append(this.$el);
-      }
-      if (this.model != null) {
+      hasPosition = (this.$el.position().left != null) && this.$el.position().left > 0;
+      if ((this.model != null) && !hasPosition) {
+        this.$el.hide();
         if (this.model.has('pos')) {
           this.$el.css({
             left: this.model.get('pos').left + 'px',
             top: this.model.get('pos').top + 'px'
           });
         } else {
+          console.log("autopositioning", this);
           this.autoPosition();
         }
       }
@@ -421,6 +417,7 @@
       }
       meta = this.findOrCreate('.meta', "<div class='meta'><span class='author'></span></div>");
       meta.find('.author').text(this.model.get('author')).addClass("author-" + (this.model.get('author')));
+      this.renderBuildons();
       return this;
     };
 
@@ -444,7 +441,7 @@
     };
 
     ContributionBalloon.prototype.renderBuildons = function() {
-      var $b, b, buildons, changed, container, counter, _i, _len;
+      var $b, b, buildons, changed, container, counter, _i, _len, _results;
       if (!this.model.has('build_ons')) {
         return;
       }
@@ -454,20 +451,19 @@
       if (buildons.length !== container.find('div.buildon').length) {
         changed = true;
       }
-      container.remove('div.buildon');
+      container.children('div.buildon').remove();
       counter = CK.Smartboard.View.findOrCreate(this.$el.find('.meta'), '.buildon-counter', "<div class='buildon-counter'></div>");
       counter.html('');
+      _results = [];
       for (_i = 0, _len = buildons.length; _i < _len; _i++) {
         b = buildons[_i];
         counter.append("•");
         $b = jQuery("                <div class='buildon'>                    <div class='author'></div>                    <div class='content'></div>                </div>            ");
         $b.find('.author').text(b.author);
         $b.find('.content').text(b.content);
-        container.append($b);
+        _results.push(container.append($b));
       }
-      if (changed) {
-        return this.$el.effect('highlight', 2000);
-      }
+      return _results;
     };
 
     return ContributionBalloon;
