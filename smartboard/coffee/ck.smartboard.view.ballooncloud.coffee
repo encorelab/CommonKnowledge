@@ -328,14 +328,16 @@ class CK.Smartboard.View.BalloonCloud
             view = d.view
 
             unless d.view
+                $el = $('#'+d.id)
+                $el.unbind()
                 if d instanceof CK.Model.Tag
                     view = new CK.Smartboard.View.TagBalloon
                         model: d
-                        el: $('#'+d.id)[0]
+                        el: $el[0]
                 else if d instanceof CK.Model.Contribution
                     view = new CK.Smartboard.View.ContributionBalloon
                         model: d
-                        el: $('#'+d.id)[0]
+                        el: $el[0]
                 else
                     console.error("Unrecognized Balloon type:", d)
 
