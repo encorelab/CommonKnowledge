@@ -53,10 +53,11 @@
     **/
     render: function () {
       console.log("rendering ContributionListView!");
+      var view = this;
 
       jQuery('#contribution-list li').remove();
 
-      Sail.app.contributionList.each(function(contrib) {
+      _.each(view.models, function(contrib) {
         if (contrib.get('published') === true) {
            console.log('headline: ' + contrib.get('headline'));
 
