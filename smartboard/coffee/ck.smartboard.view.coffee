@@ -14,27 +14,30 @@ class CK.Smartboard.View.Base extends Backbone.View
     constructor: (options) ->
         super(options)
 
-        @$el.hide() # hide until positioned
+        
+        # # check if element is in DOM; if not, insert it
+        # unless @$el.parent().length > 0
+        #     if @model.justAdded
+        #         @$el.addClass('new')
+        #         delete @model.justAdded
+        #     # @$el.draggable
+        #     #     stop: (ev, ui) =>
+        #     #         @model.save
+        #     #             pos: ui.position
+        #     #         return true # must return true, otherwise draggable is disabled
+        #     @$el.css('position', 'absolute') # draggable() makes them 'relative' on webkit for some reason, which breaks shit
+        #     jQuery('#wall').append(@$el)
 
-        # check if element is in DOM; if not, insert it
-        unless @$el.parent().length > 0
-            if @model.justAdded
-                @$el.addClass('new')
-                delete @model.justAdded
-            # @$el.draggable
-            #     stop: (ev, ui) =>
-            #         @model.save
-            #             pos: ui.position
-            #         return true # must return true, otherwise draggable is disabled
-            @$el.css('position', 'absolute') # draggable() makes them 'relative' on webkit for some reason, which breaks shit
-            jQuery('#wall').append(@$el)
+        hasPosition = this.$el.position().left? && this.$el.position().left > 0
 
-        if @model? 
+        if @model? and !hasPosition
+            @$el.hide() # hide until positioned
             if @model.has('pos')
                 @$el.css
                     left: @model.get('pos').left + 'px'
                     top: @model.get('pos').top + 'px'
             else
+                console.log("autopositioning", this)
                 @autoPosition()
 
         @$el.show()
@@ -335,7 +338,7 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
 
         # @renderTags()
 
-        # @renderBuildons()
+        @renderBuildons()
 
         return this # return this for chaining
 
@@ -379,7 +382,7 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
         if buildons.length isnt container.find('div.buildon').length
             changed = true
 
-        container.remove('div.buildon')
+        container.children('div.buildon').remove()
 
         counter = CK.Smartboard.View.findOrCreate @$el.find('.meta'), '.buildon-counter',
             "<div class='buildon-counter'></div>"
@@ -398,8 +401,8 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
             $b.find('.content').text(b.content)
             container.append $b
 
-        if changed
-            @$el.effect('highlight', 2000)
+        # if changed
+        #     @$el.effect('highlight', 2000)
 
 
 
