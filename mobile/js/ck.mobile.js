@@ -273,6 +273,7 @@ CK.Mobile = function() {
   app.initModels = function() {
     console.log('creating Models');
     app.currentContribution = new CK.Model.Contribution();
+    // have to delay waking until we've got an ID
     app.currentContribution.wake(app.config.wakeful.url);
     app.currentContribution.on('change', function(model) { console.log(model.changedAttributes()); });
     app.currentContribution.on('all', function() { console.log(arguments) });
@@ -282,6 +283,7 @@ CK.Mobile = function() {
     app.contributionList.on('change', function(model) { console.log(model.changedAttributes()); });
 
     app.contributionDetails = new CK.Model.Contribution();
+    // have to delay waking until we've got an ID
     app.contributionDetails.wake(app.config.wakeful.url);
     app.contributionDetails.on('change', function(model) { console.log(model.changedAttributes()); });
 
@@ -359,8 +361,7 @@ CK.Mobile = function() {
   /* State related function */
 
   app.startStudentTagging = function() {
-    app.taggedContribution = new CK.Model.Contribution();
-    app.taggedContribution.wake(app.config.wakeful.url);
+    app.taggedContribution = app.currentContribution;
 
     app.tagListView = new CK.Mobile.View.TagListView({
       el: jQuery('#tag-list'),
@@ -383,11 +384,15 @@ CK.Mobile = function() {
   };
 
   app.contributionToTag = function (contribution_id) {
-    app.contributionDetails.set('_id', contribution_id);
-    app.contributionDetails.fetch({
-      success: function () {
-        app.taggedContribution = app.contributionDetails;
-      }
+    app.taggedContribution.set('_id', contribution_id);
+    app.taggedContribution.wake(app.config.wakeful.url);
+    app.taggedContribution.fetch().done(function () {
+      app.contributionInputView.render();
+
+      // FIXME: awkward way of making sure we render the selected contribution's body
+      app.contributionDetails = Sail.app.contributionList.get(contribution_id);
+        
+      app.contributionDetailsView.render();
     });
   };
 
