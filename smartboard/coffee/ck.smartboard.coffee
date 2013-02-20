@@ -154,53 +154,23 @@ class CK.Smartboard extends Sail.App
             @tags.fetch()
 
         sail:
-            # contribution: (sev) ->
-            #     c = @contributions.get(sev.payload._id)
-            #     if c?
-            #         c.set(sev.payload)
-            #     else
-            #         c = new CK.Model.Contribution(sev.payload)
-            #         @contributions.add(c)
+            contribution: (sev) ->
+                @contributions.fetch().done ->
+                    jQuery('#'+sev.payload._id).addClass('new')
+                    setTimeout ->
+                        jQuery('#'+sev.payload._id).removeClass('new')
+                    , 2000
 
-            # build_on: (sev) ->
-            #     c = @contributions.get(sev.payload._id)
-            #     if c?
-            #         c.set(sev.payload)
-            #     else
-            #         console.warn("New contribution added by build_on... something ain't right here...")
-            #         c = new CK.Model.Contribution(sev.payload)
-            #         @contributions.add(c)
+            build_on: (sev) ->
+                @contributions.fetch().done ->
+                    # TODO: move to view, plus do more (pop?)
+                    jQuery('#'+sev.payload._id).effect('highlight', 2000)
 
-            #     # TODO: move to view, plus do more (pop?)
-            #     jQuery('#'+c.id).effect('highlight', 2000)
+            new_tag: (sev) ->
+                @tags.fetch()
 
-            # new_tag: (sev) ->
-            #     t = @tags.get(sev.payload._id)
-            #     if t?
-            #         t.set(sev.payload)
-            #     else
-            #         t = new CK.Model.Tag(sev.payload)
-            #         @tags.add(t)
-
-            # contribution_tagged: (sev) ->
-            #     c = @contributions.get(sev.payload._id)
-            #     console.log("contribution_tagged, c is: ", c)
-
-            #     addLink = =>
-            #         c.set(sev.payload)
-            #         ts = ( @tags.get(tr.id) for tr in c.get('tags') )
-            #         console.log("adding links from ", c, " to ", ts)
-            #         @wall.cloud.addLinks(c, ts)
-
-            #     if c
-            #         addLink()
-            #     else
-            #         # TODO: do the same thing if tag is not found
-            #         console.warn("Contribution ",sev.payload._id," not found locally... fetching updated contributions collection...")
-            #         @contributions.fetch
-            #             success: ->
-            #                 c = @contributions.get(sev.payload._id)
-            #                 addLink()
+            contribution_tagged: (sev) ->
+                @contributions.fetch()
                     
 
             screen_lock: (sev) ->

@@ -23,7 +23,7 @@
         var contribId = $target.attr('id');
 
         Sail.app.contributionDetails = Sail.app.contributionList.get(contribId);
-        Sail.app.contributionDetails.wake(Sail.app.config.wakeful.url);
+        //Sail.app.contributionDetails.wake(Sail.app.config.wakeful.url);
         console.log('Clicked contribution: ' + Sail.app.contributionDetails);
         
         Sail.app.contributionDetailsView.render();
@@ -220,7 +220,7 @@
             },
             success: function () {
               console.log('Model saved');
-              //Sail.app.sendContribution('newNote');
+              Sail.app.sendContribution('newNote');
               jQuery().toastmessage('showSuccessToast', "Contribution submitted");
 
               // clear the old contribution plus ui fields
@@ -279,7 +279,7 @@
         }
 
         // FIXME: why isn't this already awake??
-        Sail.app.contributionDetails.wake(Sail.app.config.wakeful.url);
+        //Sail.app.contributionDetails.wake(Sail.app.config.wakeful.url);
         Sail.app.contributionDetails.save(null, {
           complete: function () {
             console.log('Build on submitted!');

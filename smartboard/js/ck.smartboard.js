@@ -223,6 +223,25 @@
         return this.tags.fetch();
       },
       sail: {
+        contribution: function(sev) {
+          return this.contributions.fetch().done(function() {
+            jQuery('#' + sev.payload._id).addClass('new');
+            return setTimeout(function() {
+              return jQuery('#' + sev.payload._id).removeClass('new');
+            }, 2000);
+          });
+        },
+        build_on: function(sev) {
+          return this.contributions.fetch().done(function() {
+            return jQuery('#' + sev.payload._id).effect('highlight', 2000);
+          });
+        },
+        new_tag: function(sev) {
+          return this.tags.fetch();
+        },
+        contribution_tagged: function(sev) {
+          return this.contributions.fetch();
+        },
         screen_lock: function(sev) {
           return this.wall.pause();
         },

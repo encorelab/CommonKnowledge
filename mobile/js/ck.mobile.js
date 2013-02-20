@@ -273,20 +273,20 @@ CK.Mobile = function() {
   app.initModels = function() {
     console.log('creating Models');
     app.currentContribution = new CK.Model.Contribution();
-    app.currentContribution.wake(app.config.wakeful.url);
+    //app.currentContribution.wake(app.config.wakeful.url);
     app.currentContribution.on('change', function(model) { console.log(model.changedAttributes()); });
     app.currentContribution.on('all', function() { console.log(arguments) });
 
     app.contributionList = new CK.Model.Contributions();
-    app.contributionList.wake(app.config.wakeful.url);
+    //app.contributionList.wake(app.config.wakeful.url);
     app.contributionList.on('change', function(model) { console.log(model.changedAttributes()); });
 
     app.contributionDetails = new CK.Model.Contribution();
-    app.contributionDetails.wake(app.config.wakeful.url);
+    //app.contributionDetails.wake(app.config.wakeful.url);
     app.contributionDetails.on('change', function(model) { console.log(model.changedAttributes()); });
 
     app.tagList = new CK.Model.Tags();
-    app.tagList.wake(app.config.wakeful.url);
+    //app.tagList.wake(app.config.wakeful.url);
     app.tagList.on('change', function(model) { console.log(model.changedAttributes()); });    
   };
 
@@ -347,7 +347,7 @@ CK.Mobile = function() {
   app.clearModels = function() {
     // clear all the old garbage out of the model, rebind
     app.currentContribution = new CK.Model.Contribution();
-    app.currentContribution.wake(app.config.wakeful.url);
+    //app.currentContribution.wake(app.config.wakeful.url);
     app.contributionInputView.model = app.currentContribution;
     app.contributionInputView.undelegateEvents();
     app.contributionInputView.delegateEvents();
@@ -360,7 +360,7 @@ CK.Mobile = function() {
 
   app.startStudentTagging = function() {
     app.taggedContribution = new CK.Model.Contribution();
-    app.taggedContribution.wake(app.config.wakeful.url);
+    //app.taggedContribution.wake(app.config.wakeful.url);
 
     app.tagListView = new CK.Mobile.View.TagListView({
       el: jQuery('#tag-list'),
