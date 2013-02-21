@@ -38,22 +38,6 @@ class CK.Smartboard extends Sail.App
         @rollcall = new Rollcall.Client(@config.rollcall.url)
 
         @wall = new CK.Smartboard.View.Wall {el: jQuery('#wall')}
-        
-        @contributions = new CK.Model.Contributions()
-        @contributions.on 'add', (contrib) -> 
-            contrib.justAdded = true
-            bubbleContrib(contrib)
-
-        @contributions.on 'reset', (collection) -> 
-            collection.each bubbleContrib
-
-        @tags = new CK.Model.Tags()
-        @tags.on 'add', (tag) ->
-            tag.justAdded = true
-            view = bubbleTag(tag)
-
-        @tags.on 'reset', (collection) ->
-            collection.each bubbleTag
 
         #@states = new CK.Model.States()
         #@states.on 'change', (collection) ->
