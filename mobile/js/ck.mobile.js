@@ -78,9 +78,9 @@ CK.Mobile = function() {
  
     //var stateObj = {"type":"phase"};
     CK.getState("phase", function(s){
-      if (s && s.get('state') === "start_student_tagging"){
-        console.log('phase is start_student_tagging');
-        app.startStudentTagging();
+      if (s && s.get('state') === "start_analysis"){
+        console.log('phase is start_analysis');
+        app.startAnalysis();
 
         console.log('Check if contribution left to do or done with tagging');
         CK.getStateForUser("tablet", Sail.app.userData.account.login, "contribution_to_tag", function(user_state){
@@ -101,7 +101,7 @@ CK.Mobile = function() {
         });
       } if (s && s.get('state') === "start_synthesis") {
         console.log('phase is start_synthesis');
-        app.startStudentTagging();
+        app.startAnalysis();
 
         CK.getStateForUser("tablet", Sail.app.userData.account.login, "contribution_to_tag", function(user_state){
           if (user_state) {
@@ -150,7 +150,6 @@ CK.Mobile = function() {
         });
       });
 
-      // Colin there is already data about the user available
       app.userData = Sail.app.session;
 
       //jQuery('#logout-button').addClass('btn btn-warning').html('<a href="#">Logout</a>');
@@ -166,7 +165,6 @@ CK.Mobile = function() {
       console.log("Ready!");
 
       app.restoreState();
-
       // moved the view init here so that backbone is configured with URLs
       app.initViews();
     },
@@ -205,9 +203,9 @@ CK.Mobile = function() {
         });
       },
 
-      start_student_tagging: function(sev) {
-        console.log('start_student_tagging heard, creating TagView');
-        app.startStudentTagging();
+      start_analysis: function(sev) {
+        console.log('start_analysis heard, creating TagView');
+        app.startAnalysis();
       },
 
       contribution_to_tag: function(sev) {
@@ -284,21 +282,6 @@ CK.Mobile = function() {
     app.contributionList.fetch({
       data: { sort: JSON.stringify(sort) }
     });
-
-    // console.log('creating DetailsView');
-    // details = new CK.Model.Contribution();
-    // //app.contributionDetails.wake(app.config.wakeful.url);
-    // details.on('change', function(model) { console.log(model.changedAttributes()); });
-    
-    // detailsView = new CK.Mobile.View.ContributionDetailsView({
-    //   el: jQuery('#contribution-details'),
-    //   model: details
-    // });
-    // details.on('reset add', detailsView.render, detailsView); 
-
-    // to be altered when we get there TODO
-    app.tagList = new CK.Model.Tags();
-    app.tagList.on('change', function(model) { console.log(model.changedAttributes()); });   
     
   };
 
@@ -389,13 +372,15 @@ CK.Mobile = function() {
 
   /* State related function */
 
-  app.startStudentTagging = function() {
-    app.taggedContribution = new CK.Model.Contribution();
+  app.startAnalysis = function() {
+    tagList = new CK.Model.Tags();
+    tagList.on('change', function(model) { console.log(model.changedAttributes()); });   
+
     //app.taggedContribution.wake(app.config.wakeful.url);
 
-    app.tagListView = new CK.Mobile.View.TagListView({
+    tagListView = new CK.Mobile.View.TagListView({
       el: jQuery('#tag-list'),
-      collection: app.tagList
+      collection: tagList
     });
     app.tagList.on('reset add', app.tagListView.render);       // probably unnecessary, maybe even a bad idea?
 
@@ -404,13 +389,7 @@ CK.Mobile = function() {
       data: {
         sort: JSON.stringify(sort)
       }
-      // },
-      // success: function() {
-      //   app.flag = true;
-      // }
     });
-
-    //app.contributionInputView.render();
   };
 
   app.contributionToTag = function (contribution_id) {
