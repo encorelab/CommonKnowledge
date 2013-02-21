@@ -75,10 +75,12 @@ class CK.Smartboard extends Sail.App
         sev = new Sail.Event 'screen_unlock'
         @groupchat.sendEvent sev
         CK.setState('screen_lock', false)
+        if window.confirm 'Would you like me to reset the state to brainstorm?'
+            CK.setState('phase', 'brainstorm')
 
 
     startAnalysis: =>
-        sev = new Sail.Event 'start_student_tagging'
+        sev = new Sail.Event 'start_analysis'
         @groupchat.sendEvent sev
 
     startSynthesis: =>
@@ -128,7 +130,7 @@ class CK.Smartboard extends Sail.App
 
             CK.getState 'phase', (s) =>
                 if s
-                    if s.get('state') is 'start_student_tagging'
+                    if s.get('state') is 'start_analysis'
                         @switchToAnalysis()
                     else if s.get('state') is 'start_synthesis'
                         @switchToSynthesis()
@@ -188,7 +190,7 @@ class CK.Smartboard extends Sail.App
             screen_unlock: (sev) ->
                 @wall.unpause()
 
-            start_student_tagging: (sev) ->
+            start_analysis: (sev) ->
                 @switchToAnalysis()
 
             start_synthesis: (sev) ->
