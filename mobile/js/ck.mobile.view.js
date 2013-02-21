@@ -20,14 +20,9 @@
 
         // Removing background colors, then adding the correct one
         $target.children().first().addClass('selected');
-
         var contribId = $target.attr('id');
 
-        Sail.app.contributionDetails = Sail.app.contributionList.get(contribId);
-        //Sail.app.contributionDetails.wake(Sail.app.config.wakeful.url);
-        console.log('Clicked contribution: ' + Sail.app.contributionDetails);
-        
-        Sail.app.contributionDetailsView.render();
+        Sail.app.showDetails(Sail.app.contributionList.get(contribId));        
       },
 
       'click #new-note-btn': 'new-note'
@@ -35,16 +30,12 @@
 
     initialize: function () {
       console.log("Initializing ContributionListView...");
-
-      // this.model.on('change', this.render);
-      // Sail.app.contributionList.on('reset', function (collection) {
-      //   view.render();
-      // });
-      // Sail.app.contributionList.fetch();
     },
 
     'new-note': function () {
-      console.log("Creating a new note");
+      console.log("UI changes for new note");
+      jQuery('#note-body-entry').removeClass('disabled');
+      jQuery('#note-headline-entry').removeClass('disabled');      
       Sail.app.addNote('new');
     },
 
@@ -112,9 +103,9 @@
     initialize: function () {
       console.log("Initializing ContributionDetailsView...");
 
-      this.model.on('change', this.render);
+      //this.model.on('change', this.render);
 
-      jQuery('#contribution-details-build-on-btn').removeClass('hide');
+      //jQuery('#contribution-details-build-on-btn').removeClass('hide');           // probably readd me later
     },
 
     'build-on': function () {
@@ -127,21 +118,20 @@
     **/
     render: function () {
       console.log("rendering ContributionDetailsView!");
+      view = this;
 
       jQuery('#contribution-details .field').text('');
 
-      // created_at will return undefined, so need to check it exists...
-      // Armin: Sail.app.contributionDetails was sometimes undefined. Should be fixed in the click event,
-      // but checking for undefined would still be good.
-      if (Sail.app.contributionDetails && Sail.app.contributionDetails.get('created_at')) {
+      // created_at will return undefined, so need to check it exists... (not sure if this will happen in Beta, might be unnecessary)
+      if (view.model && view.model.get('created_at')) {
         // TODO - do this with a loop instead of manually
-        jQuery('#contribution-details .note-headline').text(Sail.app.contributionDetails.get('headline'));
-        jQuery('#contribution-details .note-body').text(Sail.app.contributionDetails.get('content'));
-        jQuery('#contribution-details .note-author').text('~'+Sail.app.contributionDetails.get('author'));
-        jQuery('#contribution-details .note-created-at').text(' (' + Sail.app.contributionDetails.get('created_at').toLocaleDateString() + ' ' + Sail.app.contributionDetails.get('created_at').toLocaleTimeString() + ')');
+        jQuery('#contribution-details .note-headline').text(view.model.get('headline'));
+        jQuery('#contribution-details .note-body').text(view.model.get('content'));
+        jQuery('#contribution-details .note-author').text('~'+view.model.get('author'));
+        jQuery('#contribution-details .note-created-at').text(' (' + view.model.get('created_at').toLocaleDateString() + ' ' + view.model.get('created_at').toLocaleTimeString() + ')');
 
         var buildOnEl = "<hr /><div>";
-        _.each(Sail.app.contributionDetails.get('build_ons'), function(b) {
+        _.each(view.model.get('build_ons'), function(b) {
           var date = new Date(b.created_at);
           buildOnEl += b.content + "<br />~" + b.author;
           buildOnEl += " (" + date.toLocaleDateString() + ' ' + date.toLocaleTimeString() + ")" +  "<hr />";
@@ -151,7 +141,7 @@
         buildOnEl = jQuery(buildOnEl);
         jQuery('#contribution-details .note-build-ons').append(buildOnEl);
       } else {
-        console.warn("ContributionDetailsView render is not working due to ?");
+        console.warn("ContributionDetailsView render skipped this contrib because created_at doesn't exist");
       }
     }
   });
@@ -186,53 +176,42 @@
         }
       },
 
-      'keyup :input': 'autoSave',
+      'keyup :input': function (ev) {
+        var view = this;
+        Sail.app.autoSave(view, ev);
+      },
 
       'click #share-note-btn': 'share'
-      //'click #cancel-note-btn': 'cancel'
     },
 
     initialize: function () {
       console.log("Initializing ContributionInputView...");
-
-      //this.model.on('change', this.render);
-    },
-
-    autoSave: function (ev) {
-      var view = this;
-      console.log("saving stuff as we go");
-      view.model.set('content', jQuery('#note-body-entry').val());
-      view.model.set('headline', jQuery('#note-headline-entry').val());
-      view.model.save();
     },
 
     share: function () {
       var view = this;
       // new note
-      if (view.model.get('kind') === 'new' || view.model.get('kind') === 'synthesis') {
+      if (view.model.get('kind') === 'new' || view.model.get('kind') === 'synthesis') {     // don't think this is needed any more
         if (view.model.has('content') && view.model.has('headline')) {
 
           view.model.set('published', true);
           console.log("Submitting contribution...");
-          // var self = this;
           
           view.model.save(null, {
             complete: function () {
               console.log('New note submitted!');
-
             },
             success: function () {
               console.log('Model saved');
-              Sail.app.sendContribution('newNote');
+              Sail.app.sendContribution('newNote', view.model);             // TODO do we still need this?
               jQuery().toastmessage('showSuccessToast', "Contribution submitted");
 
               // clear the old contribution plus ui fields
-              //view.model.clear();
-              Sail.app.clearModels();
-              Sail.app.contributionInputView.$el.find(".field").val(null);
-              view.model.set('justAdded', false);
-              Sail.app.contributionInputView.render();
-              jQuery('#tag-submission-container .tag-btn').addClass('disabled');
+              view.model.clear();   // I think this is actually enough now, can do away with clearModels
+              //Sail.app.clearModels();
+              //view.$el.find(".field").val(null);
+              //view.model.set('justAdded', false);
+              //Sail.app.contributionInputView.render();
             },
             failure: function(model, response) {
               console.log('Error submitting: ' + response);
@@ -243,31 +222,32 @@
         }        
       }
       // tagged contribution - this can only be an else as long as no New Notes on tagging phase
-      else if (Sail.app.taggedContribution) {
-        if (Sail.app.taggedContribution.get('tags').length > 0) {
-          console.log("Submitting tagged contribution...");
-          Sail.app.taggedContribution.save(null, {
-            complete: function () {
-              console.log('Submitted!');
-            },
-            success: function () {
-              console.log('Model saved');
-              Sail.app.sendContribution('taggedNote');
+      // else if (Sail.app.taggedContribution) {
+      //   if (Sail.app.taggedContribution.get('tags').length > 0) {
+      //     console.log("Submitting tagged contribution...");
+      //     Sail.app.taggedContribution.save(null, {
+      //       complete: function () {
+      //         console.log('Submitted!');
+      //       },
+      //       success: function () {
+      //         console.log('Model saved');
+      //         Sail.app.sendContribution('taggedNote');
 
-              Sail.app.taggedContribution.clear();
-              Sail.app.tagListView.render();
-              Sail.app.contributionDetailsView.render();
+      //         Sail.app.taggedContribution.clear();
+      //         Sail.app.tagListView.render();
+      //         Sail.app.contributionDetailsView.render();
 
-              jQuery().toastmessage('showSuccessToast', "Tagged note submitted");
-            },
-            failure: function(model, response) {
-              console.log('Error submitting: ' + response);
-            }
-          });
-        }
-      }
+      //         jQuery().toastmessage('showSuccessToast', "Tagged note submitted");
+      //       },
+      //       failure: function(model, response) {
+      //         console.log('Error submitting: ' + response);
+      //       }
+      //     });
+      //   }
+      // }
 
-      // build-on note
+      // build-on note - can we roll this in to the above now?
+      // TODO will need a big overhaul to deal with lack of globals now  
       if (view.model.kind === 'buildOn') {
         var tempBuildOnArray = [];
         // this if shouldn't be necessary (the first condition should always be met), but just in case...
@@ -328,27 +308,23 @@
           console.log('unknown note type');
         }
       } 
-      jQuery('#note-body-entry').removeClass('disabled');
-      jQuery('#note-headline-entry').removeClass('disabled');
+      // jQuery('#note-body-entry').removeClass('disabled'); CAN THIS BE DELETED?
+      // jQuery('#note-headline-entry').removeClass('disabled');
       
 
-      // TODO: make another view for buildon so I don't have to do all this nonsense
-      jQuery('#note-body-entry').val('');
-      jQuery('#note-headline-entry').val('');
+      // // TODO: make another view for buildon so I don't have to do all this nonsense
+      // jQuery('#note-body-entry').val('');
+      // jQuery('#note-headline-entry').val('');
 
-      if (contrib.get('kind') === 'new') {
-        jQuery('#note-body-entry').val(contrib.get('content'));
-        jQuery('#note-headline-entry').val(contrib.get('headline'));
-      } else if (contrib.kind === 'buildOn') {
+      if (contrib.kind === 'buildOn') {
         jQuery('#note-body-entry').val(Sail.app.currentBuildOn.content);
-      } else if (contrib.kind === 'synthesis') {
+      } else {
         jQuery('#note-body-entry').val(contrib.get('content'));
         jQuery('#note-headline-entry').val(contrib.get('headline'));
-      } else {
-        console.log('trying to render, but unknown note type');
       }
-
-      jQuery('.tag-btn').removeClass('active');
+      // else {
+      //   console.log('trying to render, but unknown note type');
+      // }
 
       //CK.getState('phase', function(s) {                      // TODO - fix me when model is done
         //if (s && s.get('state') === 'done_tagging') {
@@ -356,27 +332,28 @@
           // TODO - do this right: make sure model is actually syncing with view instead of manually doing this
           // jQuery('#tag-submission-container .tag-btn').removeClass('active');
 
-          Sail.app.tagList.each(function(tag) {
-            var tagButton = jQuery('button#note-tag-'+tag.id);
-            // length avoids duplicating (probably a better way to do this in backbone?)
-            //if (tagButton.length === 0 && tag.get('name') != "N/A") {
-            if (tagButton.length === 0) {
-              tagButton = jQuery('<button id=note-tag-'+tag.id+' type="button" class="btn tag-btn"></button>');
-              tagButton = jQuery(tagButton);
-              jQuery('#tag-submission-container').append(tagButton);
-            }
+          // I THINK THIS CAN ALL GO TOO
+          // Sail.app.tagList.each(function(tag) {
+          //   var tagButton = jQuery('button#note-tag-'+tag.id);
+          //   // length avoids duplicating (probably a better way to do this in backbone?)
+          //   //if (tagButton.length === 0 && tag.get('name') != "N/A") {
+          //   if (tagButton.length === 0) {
+          //     tagButton = jQuery('<button id=note-tag-'+tag.id+' type="button" class="btn tag-btn"></button>');
+          //     tagButton = jQuery(tagButton);
+          //     jQuery('#tag-submission-container').append(tagButton);
+          //   }
 
-            tagButton.text(tag.get('name'));
+          //   tagButton.text(tag.get('name'));
 
-            // add tagger and store the tag object in the button for later
-            tag.set('tagger',Sail.app.userData.account.login);
-            tagButton.data('tag',tag);
+          //   // add tagger and store the tag object in the button for later
+          //   tag.set('tagger',Sail.app.userData.account.login);
+          //   tagButton.data('tag',tag);
 
-            // turn button on if previously tagged with this tag
-            if (Sail.app.currentContribution.hasTag(tag)) {
-              tagButton.addClass('active');
-            }
-          });
+          //   // turn button on if previously tagged with this tag
+          //   if (Sail.app.currentContribution.hasTag(tag)) {
+          //     tagButton.addClass('active');
+          //   }
+          // });
         //}
       //});
 
