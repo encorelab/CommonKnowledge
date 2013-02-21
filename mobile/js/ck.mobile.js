@@ -309,20 +309,27 @@ CK.Mobile = function() {
     app.contributionDetails.on('reset add', app.contributionDetailsView.render);
     
     console.log('creating InputView');
-    app.contributionInputView = new CK.Mobile.View.ContributionInputView({
-      el: jQuery('#contribution-input'),
-      model: app.currentContribution
-    });
+    // app.contributionInputView = new CK.Mobile.View.ContributionInputView({
+    //   el: jQuery('#contribution-input'),
+    //   model: app.currentContribution
+    // });
     console.log("Views ARE GO!");
   };
 
   app.addNote = function(kind) {
     console.log('Preping to add a note...');
 
-    // just in case
-    app.clearModels();
+    var contrib = new CK.Model.Contribution();
 
-    app.currentContribution.justAdded = true;
+    var inputView = new CK.Mobile.View.ContributionInputView({
+      el: jQuery('#contribution-input'),
+      model: contrib
+    });
+
+    // just in case
+    //app.clearModels();
+
+    contrib.set('justAdded', true);
 
     // if (app.synthesisFlag) {
     //   app.currentContribution.kind = 'synthesis';
@@ -331,15 +338,15 @@ CK.Mobile = function() {
     //   app.currentContribution.kind = kind;
     // }
 
-    app.currentContribution.set('author', app.userData.account.login);
-    app.currentContribution.set('published', false);
-    app.currentContribution.set('tags', app.tagArray);
-    app.currentContribution.set('build_ons', app.buildOnArray);
-    app.currentContribution.set('kind', kind);
+    contrib.set('author', app.userData.account.login);
+    contrib.set('published', false);
+    contrib.set('tags', app.tagArray);
+    contrib.set('build_ons', app.buildOnArray);
+    contrib.set('kind', kind);
 
-    app.currentContribution.on('change sync', app.contributionInputView.render);
+    contrib.on('change sync', inputView.render, inputView);
 
-    app.currentContribution.save(null, {
+    contrib.save(null, {
       complete: function () {
         console.log('New note submitted!');
       },
@@ -352,7 +359,7 @@ CK.Mobile = function() {
       // !!!
     });
 
-    app.contributionList.add(app.currentContribution);
+    app.contributionList.add(contrib);
 
     //app.contributionInputView.render();
   };
@@ -361,9 +368,9 @@ CK.Mobile = function() {
     // clear all the old garbage out of the model, rebind
     app.currentContribution = new CK.Model.Contribution();
     app.currentContribution.wake(app.config.wakeful.url);
-    app.contributionInputView.model = app.currentContribution;
-    app.contributionInputView.undelegateEvents();
-    app.contributionInputView.delegateEvents();
+    //app.contributionInputView.model = app.currentContribution;
+    // app.contributionInputView.undelegateEvents();
+    // app.contributionInputView.delegateEvents();
 
     app.currentBuildOn = {};
   };

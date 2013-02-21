@@ -163,19 +163,21 @@
   self.ContributionInputView = Backbone.View.extend({
     events: {
       'change .field': function (ev) {
+        var view = this;
         var f;
-        if (Sail.app.currentContribution.get('kind') === 'new') {
+        if (view.model.get('kind') === 'new') {
           f = jQuery(ev.target);
           console.log("Setting "+f.attr("name")+" to "+f.val());
-          this.model.set(f.attr('name'), f.val());          
-        } else if (Sail.app.currentContribution.kind === 'buildOn') {
+          view.model.set(f.attr('name'), f.val());          
+        } else if (view.model.get('kind') === 'buildOn') {
+          // TODO: accessing currentBuildOn is wrong and object is {} -- empty
           console.log('setting build-on values');
           Sail.app.currentBuildOn.content = jQuery('#note-body-entry').val();
           Sail.app.currentBuildOn.author = Sail.app.userData.account.login;
           var d = new Date();
           Sail.app.currentBuildOn.created_at = d;
           console.log(d);
-        } else if (Sail.app.currentContribution.kind === 'synthesis') {
+        } else if (view.model.get('kind') === 'synthesis') {
           f = jQuery(ev.target);
           console.log("Setting "+f.attr("name")+" to "+f.val());
           this.model.set(f.attr('name'), f.val());          
@@ -191,19 +193,20 @@
     initialize: function () {
       console.log("Initializing ContributionInputView...");
 
-      this.model.on('change', this.render);
+      //this.model.on('change', this.render);
     },
 
     share: function () {
+      var view = this;
       // new note
-      if (Sail.app.currentContribution.get('kind') === 'new' || Sail.app.currentContribution.get('kind') === 'synthesis') {
-        if (Sail.app.currentContribution.has('content') && Sail.app.currentContribution.has('headline')) {
+      if (view.model.get('kind') === 'new' || view.model.get('kind') === 'synthesis') {
+        if (view.model.has('content') && view.model.has('headline')) {
 
-          Sail.app.currentContribution.set('published', true);
+          view.model.set('published', true);
           console.log("Submitting contribution...");
           // var self = this;
           
-          Sail.app.currentContribution.save(null, {
+          view.model.save(null, {
             complete: function () {
               console.log('New note submitted!');
 
@@ -214,10 +217,10 @@
               jQuery().toastmessage('showSuccessToast', "Contribution submitted");
 
               // clear the old contribution plus ui fields
-              //Sail.app.currentContribution.clear();
+              //view.model.clear();
               Sail.app.clearModels();
               Sail.app.contributionInputView.$el.find(".field").val(null);
-              Sail.app.currentContribution.justAdded = false;
+              view.model.set('justAdded', false);
               Sail.app.contributionInputView.render();
               jQuery('#tag-submission-container .tag-btn').addClass('disabled');
             },
@@ -255,7 +258,7 @@
       }
 
       // build-on note
-      if (Sail.app.currentContribution.kind === 'buildOn') {
+      if (view.model.kind === 'buildOn') {
         var tempBuildOnArray = [];
         // this if shouldn't be necessary (the first condition should always be met), but just in case...
         if (Sail.app.contributionDetails.get('build_ons')) {
@@ -279,10 +282,10 @@
             Sail.app.sendContribution('buildOn');
 
             // clear the old contribution plus ui fields
-            //Sail.app.currentContribution.clear();
+            //view.model.clear();
             Sail.app.clearModels();
             Sail.app.contributionInputView.$el.find(".field").val(null);
-            Sail.app.currentContribution.justAdded = false;
+            view.model.set('justAdded', false);
             Sail.app.contributionInputView.render();
             Sail.app.contributionDetailsView.render();
 
@@ -295,58 +298,42 @@
       }
     },
 
-    // cancel: function () {
-    //   console.log("Cancelling contribution...");
-
-    //   // clear the old contribution plus ui fields
-    //   Sail.app.currentContribution.clear();
-    //   Sail.app.contributionInputView.$el.find(".field").val(null);
-    //   // enable text entry
-    //   jQuery('#note-body-entry').addClass('disabled');
-    //   jQuery('#note-headline-entry').addClass('disabled');
-    // },
-
+    
     /**
       Triggers full update of all dynamic elements in the input view
     **/
     render: function () {
+      var view = this;
       console.log("rendering ContributionInputView...");
+      var contrib = view.model;
 
-      if (Sail.app.currentContribution.justAdded) {
-
-        if (Sail.app.currentContribution.get('kind') === 'new') {
+      if (contrib.get('justAdded')) {
+        if (contrib.get('kind') === 'new') {
           jQuery('#note-body-label').text('New Note');
-          jQuery('#note-body-entry').removeClass('disabled');
-          jQuery('#note-headline-entry').removeClass('disabled');
-          // we'll need to change the below to  gets, I think
-        } else if (Sail.app.currentContribution.kind === 'buildOn') {
+        } else if (contrib.kind === 'buildOn') {
           jQuery('#note-body-label').text('Build On Note');
-          jQuery('#note-body-entry').removeClass('disabled');
-          jQuery('#note-headline-entry').addClass('disabled');          
-        } else if (Sail.app.currentContribution.kind === 'synthesis') {
+        } else if (contrib.kind === 'synthesis') {
           jQuery('#note-body-label').text('Synthesis Note');
-          jQuery('#note-body-entry').removeClass('disabled');
-          jQuery('#note-headline-entry').removeClass('disabled');  
         } else {
           console.log('unknown note type');
         }
-      } else {
-        jQuery('#note-body-entry').addClass('disabled');
-        jQuery('#note-headline-entry').addClass('disabled');
-      }
+      } 
+      jQuery('#note-body-entry').removeClass('disabled');
+      jQuery('#note-headline-entry').removeClass('disabled');
+      
 
       // TODO: make another view for buildon so I don't have to do all this nonsense
       jQuery('#note-body-entry').val('');
       jQuery('#note-headline-entry').val('');
 
-      if (Sail.app.currentContribution.get('kind') === 'new') {
-        jQuery('#note-body-entry').val(Sail.app.currentContribution.get('content'));
-        jQuery('#note-headline-entry').val(Sail.app.currentContribution.get('headline'));
-      } else if (Sail.app.currentContribution.kind === 'buildOn') {
+      if (contrib.get('kind') === 'new') {
+        jQuery('#note-body-entry').val(contrib.get('content'));
+        jQuery('#note-headline-entry').val(contrib.get('headline'));
+      } else if (contrib.kind === 'buildOn') {
         jQuery('#note-body-entry').val(Sail.app.currentBuildOn.content);
-      } else if (Sail.app.currentContribution.kind === 'synthesis') {
-        jQuery('#note-body-entry').val(Sail.app.currentContribution.get('content'));
-        jQuery('#note-headline-entry').val(Sail.app.currentContribution.get('headline'));
+      } else if (contrib.kind === 'synthesis') {
+        jQuery('#note-body-entry').val(contrib.get('content'));
+        jQuery('#note-headline-entry').val(contrib.get('headline'));
       } else {
         console.log('trying to render, but unknown note type');
       }
@@ -384,7 +371,7 @@
       //});
 
 
-    }
+    } // end of render
   });
 
 
