@@ -5,16 +5,16 @@
     "url": "ws://badger.encorelab.org:5281/"
   },
 "rollcall": {
-    "url": "https://rollcall.badger.encorelab.org/"
+    "url": "http://rollcall.badger.encorelab.org"
   },
 "bosh": {
-    "url": "http://badger.encorelab.org:5280/http-bind/"
+    "url": "http://badger.encorelab.org:5280/http-bind"
   },
 "drowsy": {
-    "url": "https://drowsy.badger.encorelab.org"
+    "url": "http://drowsy.badger.encorelab.org"
   },
 "wakeful": {
-    "url": "ws://badger.encorelab.org:7777"
+    "url": "http://badger.encorelab.org:7777/faye"
   },
 "assets": {
     "url": "http://ck.badger.encorelab.org/assets"

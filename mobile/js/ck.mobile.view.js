@@ -19,7 +19,6 @@
         }
 
         // Removing background colors, then adding the correct one
-        //$target.children().first().removeClass('own-color');
         $target.children().first().addClass('selected');
 
         var contribId = $target.attr('id');
@@ -54,33 +53,38 @@
     **/
     render: function () {
       console.log("rendering ContributionListView!");
+      var view = this;
 
       jQuery('#contribution-list li').remove();
 
-      Sail.app.contributionList.each(function(contrib) {
-        console.log('headline: ' + contrib.get('headline'));
+      _.each(view.models, function(contrib) {
+        if (contrib.get('published') === true) {
+           console.log('headline: ' + contrib.get('headline'));
 
-        //var note = jQuery('li#'+contrib.id);
-        var note = "<li id=" + contrib.id + " class='list-item'><a class='note'><span class='headline'></span>";
-        note += "<br /><i class='icon-chevron-right'></i>";
-        note += "<span class='author'></span><span class='date'></span></a></li>";
-        note = jQuery(note);
+          //var note = jQuery('li#'+contrib.id);
+          var note = "<li id=" + contrib.id + " class='list-item'><a class='note'><span class='headline'></span>";
+          note += "<br /><i class='icon-chevron-right'></i>";
+          note += "<span class='author'></span><span class='date'></span></a></li>";
+          note = jQuery(note);
 
-        jQuery('#contribution-list .nav-list').append(note);
+          jQuery('#contribution-list .nav-list').append(note);
 
-        note.find('.headline').text(contrib.get('headline'));
-        note.find('.date').text(' (' + contrib.get('created_at').toLocaleDateString() + ' ' + contrib.get('created_at').toLocaleTimeString() + ')');
+          note.find('.headline').text(contrib.get('headline'));
+          note.find('.date').text(' (' + contrib.get('created_at').toLocaleDateString() + ' ' + contrib.get('created_at').toLocaleTimeString() + ')');
 
-        note.find('.author').text(contrib.get('author'));               
-        if (contrib.get('author') === Sail.app.userData.account.login) {
-          note.children().first().addClass('own-color');
+          note.find('.author').text(contrib.get('author'));               
+          if (contrib.get('author') === Sail.app.userData.account.login) {
+            note.children().first().addClass('own-color');
+          }
+          // TODO check if this is working, then add for tags as well, then port to where it's actually relevant
+          // _.each(contrib.get('build_ons'), function(b) {
+          //    if (contrib.get('author') === Sail.app.userData.account.login) {
+          //     note.children().first().addClass('own-color');
+          //   }
+          // });         
+        } else {
+          console.log(contrib.id, 'is unpublished');
         }
-        // TODO check if this is working, then add for tags as well, then port to where it's actually relevant
-        // _.each(contrib.get('build_ons'), function(b) {
-        //    if (contrib.get('author') === Sail.app.userData.account.login) {
-        //     note.children().first().addClass('own-color');
-        //   }
-        // });
 
       });        
           
@@ -158,21 +162,22 @@
   **/
   self.ContributionInputView = Backbone.View.extend({
     events: {
-      // for most fields
       'change .field': function (ev) {
+        var view = this;
         var f;
-        if (Sail.app.currentContribution.kind === 'new') {
+        if (view.model.get('kind') === 'new') {
           f = jQuery(ev.target);
           console.log("Setting "+f.attr("name")+" to "+f.val());
-          this.model.set(f.attr('name'), f.val());          
-        } else if (Sail.app.currentContribution.kind === 'buildOn') {
+          view.model.set(f.attr('name'), f.val());          
+        } else if (view.model.get('kind') === 'buildOn') {
+          // TODO: accessing currentBuildOn is wrong and object is {} -- empty
           console.log('setting build-on values');
           Sail.app.currentBuildOn.content = jQuery('#note-body-entry').val();
           Sail.app.currentBuildOn.author = Sail.app.userData.account.login;
           var d = new Date();
           Sail.app.currentBuildOn.created_at = d;
           console.log(d);
-        } else if (Sail.app.currentContribution.kind === 'synthesis') {
+        } else if (view.model.get('kind') === 'synthesis') {
           f = jQuery(ev.target);
           console.log("Setting "+f.attr("name")+" to "+f.val());
           this.model.set(f.attr('name'), f.val());          
@@ -181,33 +186,7 @@
         }
       },
 
-      'click #tag-submission-container .tag-btn': function (ev) {
-        var tag = jQuery(ev.target).data('tag');
-
-        // toggle the clicked tag in the model
-        if (Sail.app.currentContribution.hasTag(tag)) {
-          Sail.app.currentContribution.removeTag(tag);
-        } else {
-          // due to our deadlines, this is all hideous, and fighting backbone... TODO - fixme when there's more time
-          if (tag.get('name') === "N/A") {
-            Sail.app.currentContribution.set('tags',[]);                       // eeeewwwwwwww
-            jQuery('.tag-btn').removeClass('active');
-          } else {
-            var naTag = Sail.app.tagList.find(function(t) { return t.get('name') === "N/A"; } );
-            Sail.app.currentContribution.removeTag(naTag);
-            jQuery("button:contains('N/A')").removeClass('active');
-          }
-          Sail.app.currentContribution.addTag(tag, Sail.app.userData.account.login);
-        }
-
-        // enable/disable the Share button - dup'd in the render, probably a better way to do this
-        if (Sail.app.currentContribution.get('tags').length > 0) {
-          jQuery('#share-note-btn').removeClass('disabled');
-        } else {
-          jQuery('#share-note-btn').addClass('disabled');
-        }
-
-      },
+      'keyup :input': 'autoSave',
 
       'click #share-note-btn': 'share'
       //'click #cancel-note-btn': 'cancel'
@@ -216,17 +195,28 @@
     initialize: function () {
       console.log("Initializing ContributionInputView...");
 
-      this.model.on('change', this.render);
+      //this.model.on('change', this.render);
+    },
+
+    autoSave: function (ev) {
+      var view = this;
+      console.log("saving stuff as we go");
+      view.model.set('content', jQuery('#note-body-entry').val());
+      view.model.set('headline', jQuery('#note-headline-entry').val());
+      view.model.save();
     },
 
     share: function () {
+      var view = this;
       // new note
-      if (Sail.app.currentContribution.kind === 'new' || Sail.app.currentContribution.kind === 'synthesis') {
-        if (Sail.app.currentContribution.has('content') && Sail.app.currentContribution.has('headline')) {
+      if (view.model.get('kind') === 'new' || view.model.get('kind') === 'synthesis') {
+        if (view.model.has('content') && view.model.has('headline')) {
+
+          view.model.set('published', true);
           console.log("Submitting contribution...");
           // var self = this;
           
-          Sail.app.currentContribution.save(null, {
+          view.model.save(null, {
             complete: function () {
               console.log('New note submitted!');
 
@@ -237,10 +227,10 @@
               jQuery().toastmessage('showSuccessToast', "Contribution submitted");
 
               // clear the old contribution plus ui fields
-              //Sail.app.currentContribution.clear();
+              //view.model.clear();
               Sail.app.clearModels();
               Sail.app.contributionInputView.$el.find(".field").val(null);
-              Sail.app.currentContribution.justAdded = false;
+              view.model.set('justAdded', false);
               Sail.app.contributionInputView.render();
               jQuery('#tag-submission-container .tag-btn').addClass('disabled');
             },
@@ -278,7 +268,7 @@
       }
 
       // build-on note
-      if (Sail.app.currentContribution.kind === 'buildOn') {
+      if (view.model.kind === 'buildOn') {
         var tempBuildOnArray = [];
         // this if shouldn't be necessary (the first condition should always be met), but just in case...
         if (Sail.app.contributionDetails.get('build_ons')) {
@@ -302,10 +292,10 @@
             Sail.app.sendContribution('buildOn');
 
             // clear the old contribution plus ui fields
-            //Sail.app.currentContribution.clear();
+            //view.model.clear();
             Sail.app.clearModels();
             Sail.app.contributionInputView.$el.find(".field").val(null);
-            Sail.app.currentContribution.justAdded = false;
+            view.model.set('justAdded', false);
             Sail.app.contributionInputView.render();
             Sail.app.contributionDetailsView.render();
 
@@ -318,57 +308,42 @@
       }
     },
 
-    // cancel: function () {
-    //   console.log("Cancelling contribution...");
-
-    //   // clear the old contribution plus ui fields
-    //   Sail.app.currentContribution.clear();
-    //   Sail.app.contributionInputView.$el.find(".field").val(null);
-    //   // enable text entry
-    //   jQuery('#note-body-entry').addClass('disabled');
-    //   jQuery('#note-headline-entry').addClass('disabled');
-    // },
-
+    
     /**
       Triggers full update of all dynamic elements in the input view
     **/
     render: function () {
+      var view = this;
       console.log("rendering ContributionInputView...");
+      var contrib = view.model;
 
-      if (Sail.app.currentContribution.justAdded) {
-
-        if (Sail.app.currentContribution.kind === 'new') {
+      if (contrib.get('justAdded')) {
+        if (contrib.get('kind') === 'new') {
           jQuery('#note-body-label').text('New Note');
-          jQuery('#note-body-entry').removeClass('disabled');
-          jQuery('#note-headline-entry').removeClass('disabled');          
-        } else if (Sail.app.currentContribution.kind === 'buildOn') {
+        } else if (contrib.kind === 'buildOn') {
           jQuery('#note-body-label').text('Build On Note');
-          jQuery('#note-body-entry').removeClass('disabled');
-          jQuery('#note-headline-entry').addClass('disabled');          
-        } else if (Sail.app.currentContribution.kind === 'synthesis') {
+        } else if (contrib.kind === 'synthesis') {
           jQuery('#note-body-label').text('Synthesis Note');
-          jQuery('#note-body-entry').removeClass('disabled');
-          jQuery('#note-headline-entry').removeClass('disabled');  
         } else {
           console.log('unknown note type');
-        }  
-      } else {
-        jQuery('#note-body-entry').addClass('disabled');
-        jQuery('#note-headline-entry').addClass('disabled');
-      }
+        }
+      } 
+      jQuery('#note-body-entry').removeClass('disabled');
+      jQuery('#note-headline-entry').removeClass('disabled');
+      
 
       // TODO: make another view for buildon so I don't have to do all this nonsense
       jQuery('#note-body-entry').val('');
       jQuery('#note-headline-entry').val('');
 
-      if (Sail.app.currentContribution.kind === 'new') {
-        jQuery('#note-body-entry').val(Sail.app.currentContribution.get('content'));
-        jQuery('#note-headline-entry').val(Sail.app.currentContribution.get('headline'));
-      } else if (Sail.app.currentContribution.kind === 'buildOn') {
+      if (contrib.get('kind') === 'new') {
+        jQuery('#note-body-entry').val(contrib.get('content'));
+        jQuery('#note-headline-entry').val(contrib.get('headline'));
+      } else if (contrib.kind === 'buildOn') {
         jQuery('#note-body-entry').val(Sail.app.currentBuildOn.content);
-      } else if (Sail.app.currentContribution.kind === 'synthesis') {
-        jQuery('#note-body-entry').val(Sail.app.currentContribution.get('content'));
-        jQuery('#note-headline-entry').val(Sail.app.currentContribution.get('headline'));
+      } else if (contrib.kind === 'synthesis') {
+        jQuery('#note-body-entry').val(contrib.get('content'));
+        jQuery('#note-headline-entry').val(contrib.get('headline'));
       } else {
         console.log('trying to render, but unknown note type');
       }
@@ -406,7 +381,7 @@
       //});
 
 
-    }
+    } // end of render
   });
 
 

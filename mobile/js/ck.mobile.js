@@ -271,7 +271,7 @@ CK.Mobile = function() {
   app.initModels = function() {
     console.log('creating Models');
     app.currentContribution = new CK.Model.Contribution();
-    //app.currentContribution.wake(app.config.wakeful.url);
+    app.currentContribution.wake(app.config.wakeful.url);
     app.currentContribution.on('change', function(model) { console.log(model.changedAttributes()); });
     app.currentContribution.on('all', function() { console.log(arguments) });
 
@@ -309,46 +309,68 @@ CK.Mobile = function() {
     app.contributionDetails.on('reset add', app.contributionDetailsView.render);
     
     console.log('creating InputView');
-    app.contributionInputView = new CK.Mobile.View.ContributionInputView({
-      el: jQuery('#contribution-input'),
-      model: app.currentContribution
-    });
+    // app.contributionInputView = new CK.Mobile.View.ContributionInputView({
+    //   el: jQuery('#contribution-input'),
+    //   model: app.currentContribution
+    // });
     console.log("Views ARE GO!");
   };
 
   app.addNote = function(kind) {
     console.log('Preping to add a note...');
 
+    var contrib = new CK.Model.Contribution();
+
+    var inputView = new CK.Mobile.View.ContributionInputView({
+      el: jQuery('#contribution-input'),
+      model: contrib
+    });
+
     // just in case
-    app.clearModels();
+    //app.clearModels();
 
-    app.currentContribution.justAdded = true;
+    contrib.set('justAdded', true);
 
-    if (app.synthesisFlag) {
-      app.currentContribution.kind = 'synthesis';
-      app.currentContribution.set('kind','synthesis');             // sloppy - fix me (.kind is the key for a lot of the view)
-    } else {
-      app.currentContribution.kind = kind;
-    }
+    // if (app.synthesisFlag) {
+    //   app.currentContribution.kind = 'synthesis';
+    //   app.currentContribution.set('kind','synthesis');             // sloppy - fix me (.kind is the key for a lot of the view)
+    // } else {
+    //   app.currentContribution.kind = kind;
+    // }
 
-    jQuery('#tag-submission-container .tag-btn').removeClass('disabled');
+    contrib.set('author', app.userData.account.login);
+    contrib.set('published', false);
+    contrib.set('tags', app.tagArray);
+    contrib.set('build_ons', app.buildOnArray);
+    contrib.set('kind', kind);
 
-    app.currentContribution.on('change sync', app.contributionInputView.render);
+    contrib.on('change sync', inputView.render, inputView);
 
-    app.currentContribution.set('author', app.userData.account.login);
-    app.currentContribution.set('tags', app.tagArray);
-    app.currentContribution.set('build_ons', app.buildOnArray);
+    contrib.save(null, {
+      complete: function () {
+        console.log('New note submitted!');
+      },
+      success: function () {
+        console.log('Model saved');
+      },
+      failure: function(model, response) {
+        console.log('Error submitting: ' + response);
+      }
+      // !!!
+    });
 
-    app.contributionInputView.render();
+    app.contributionList.add(contrib);
+
+    //app.contributionInputView.render();
   };
 
   app.clearModels = function() {
     // clear all the old garbage out of the model, rebind
     app.currentContribution = new CK.Model.Contribution();
-    //app.currentContribution.wake(app.config.wakeful.url);
-    app.contributionInputView.model = app.currentContribution;
-    app.contributionInputView.undelegateEvents();
-    app.contributionInputView.delegateEvents();
+    app.currentContribution.wake(app.config.wakeful.url);
+    //app.contributionInputView.model = app.currentContribution;
+    // app.contributionInputView.undelegateEvents();
+    // app.contributionInputView.delegateEvents();
 
     app.currentBuildOn = {};
   };
