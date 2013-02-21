@@ -298,21 +298,25 @@ class CK.Smartboard.View.BalloonCloud
 
 
     addNode: (n) =>
-        unless n in @nodes
-            @nodes.push n
+        isNodePublished = n.get('published')
 
-        if n instanceof CK.Model.Contribution and n.has('tags')
-            for t in n.get('tags')
-                tag = _.find @nodes, (n) -> n.id is t.id
+        if n not instanceof CK.Model.Contribution or (n instanceof CK.Model.Contribution and isNodePublished is true)
+            unless n in @nodes
+                @nodes.push n
 
-                # TODO: create the tag if it doesn't exist?
-                if tag?
-                    @addLink(n, tag)
 
-        else if n instanceof CK.Model.Tag
-            for b in @nodes
-                if b.has('tags') and b.get('tags').some( (t) -> t.id is n.id )
-                    @addLink(b, n)
+            if n instanceof CK.Model.Contribution and n.has('tags')
+                for t in n.get('tags')
+                    tag = _.find @nodes, (n) -> n.id is t.id
+
+                    # TODO: create the tag if it doesn't exist?
+                    if tag?
+                        @addLink(n, tag)
+
+            else if n instanceof CK.Model.Tag
+                for b in @nodes
+                    if b.has('tags') and b.get('tags').some( (t) -> t.id is n.id )
+                        @addLink(b, n)
 
 
     addLink: (fromContribution, toTag) =>

@@ -234,39 +234,42 @@
     };
 
     BalloonCloud.prototype.addNode = function(n) {
-      var b, t, tag, _i, _j, _len, _len1, _ref, _ref1, _results, _results1;
-      if (__indexOf.call(this.nodes, n) < 0) {
-        this.nodes.push(n);
-      }
-      if (n instanceof CK.Model.Contribution && n.has('tags')) {
-        _ref = n.get('tags');
-        _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          t = _ref[_i];
-          tag = _.find(this.nodes, function(n) {
-            return n.id === t.id;
-          });
-          if (tag != null) {
-            _results.push(this.addLink(n, tag));
-          } else {
-            _results.push(void 0);
-          }
+      var b, isNodePublished, t, tag, _i, _j, _len, _len1, _ref, _ref1, _results, _results1;
+      isNodePublished = n.get('published');
+      if (!(n instanceof CK.Model.Contribution) || (n instanceof CK.Model.Contribution && isNodePublished === true)) {
+        if (__indexOf.call(this.nodes, n) < 0) {
+          this.nodes.push(n);
         }
-        return _results;
-      } else if (n instanceof CK.Model.Tag) {
-        _ref1 = this.nodes;
-        _results1 = [];
-        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-          b = _ref1[_j];
-          if (b.has('tags') && b.get('tags').some(function(t) {
-            return t.id === n.id;
-          })) {
-            _results1.push(this.addLink(b, n));
-          } else {
-            _results1.push(void 0);
+        if (n instanceof CK.Model.Contribution && n.has('tags')) {
+          _ref = n.get('tags');
+          _results = [];
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            t = _ref[_i];
+            tag = _.find(this.nodes, function(n) {
+              return n.id === t.id;
+            });
+            if (tag != null) {
+              _results.push(this.addLink(n, tag));
+            } else {
+              _results.push(void 0);
+            }
           }
+          return _results;
+        } else if (n instanceof CK.Model.Tag) {
+          _ref1 = this.nodes;
+          _results1 = [];
+          for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+            b = _ref1[_j];
+            if (b.has('tags') && b.get('tags').some(function(t) {
+              return t.id === n.id;
+            })) {
+              _results1.push(this.addLink(b, n));
+            } else {
+              _results1.push(void 0);
+            }
+          }
+          return _results1;
         }
-        return _results1;
       }
     };
 
