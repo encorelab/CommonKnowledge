@@ -186,6 +186,8 @@
         }
       },
 
+      'keyup :input': 'autoSave',
+
       'click #share-note-btn': 'share'
       //'click #cancel-note-btn': 'cancel'
     },
@@ -194,6 +196,14 @@
       console.log("Initializing ContributionInputView...");
 
       //this.model.on('change', this.render);
+    },
+
+    autoSave: function (ev) {
+      var view = this;
+      console.log("saving stuff as we go");
+      view.model.set('content', jQuery('#note-body-entry').val());
+      view.model.set('headline', jQuery('#note-headline-entry').val());
+      view.model.save();
     },
 
     share: function () {
