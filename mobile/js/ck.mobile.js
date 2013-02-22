@@ -282,7 +282,15 @@ CK.Mobile = function() {
     app.contributionList.fetch({
       data: { sort: JSON.stringify(sort) }
     });
-    
+
+
+
+    jQuery('#like-btn-on').click(function() {
+      app.toggleVote();
+    });
+    jQuery('#like-btn-off').click(function() {
+      app.toggleVote();
+    });
   };
 
   app.autoSave = function(view, ev) {
@@ -427,6 +435,18 @@ CK.Mobile = function() {
     jQuery('.brand').text('Common Knowledge - Synthesis');
     Sail.app.contributionInputView.render();
     jQuery('#tag-submission-container .tag-btn').addClass('disabled');
+  };
+
+  // TODO - fix me to work properly with views etc (see also SOMETHING)
+  app.toggleVote = function() {
+    // set the vote (or whatever) field in the object
+    if (jQuery('#like-btn-on').hasClass('hide')) {
+      jQuery('#like-btn-on').removeClass('hide')
+      jQuery('#like-btn-off').addClass('hide')
+    } else {
+      jQuery('#like-btn-on').addClass('hide')
+      jQuery('#like-btn-off').removeClass('hide')
+    }
   };
 
 };
