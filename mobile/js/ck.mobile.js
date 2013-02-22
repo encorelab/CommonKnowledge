@@ -284,7 +284,7 @@ CK.Mobile = function() {
     });
 
 
-
+    // just for testing - do this properly when the view is completed (see also 440)
     jQuery('#like-btn-on').click(function() {
       app.toggleVote();
     });
@@ -437,7 +437,7 @@ CK.Mobile = function() {
     jQuery('#tag-submission-container .tag-btn').addClass('disabled');
   };
 
-  // TODO - fix me to work properly with views etc (see also SOMETHING)
+  // TODO - fix me to work properly with views etc (see also initViews section)
   app.toggleVote = function() {
     // set the vote (or whatever) field in the object
     if (jQuery('#like-btn-on').hasClass('hide')) {
