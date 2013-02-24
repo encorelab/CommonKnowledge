@@ -120,6 +120,9 @@ class CK.Smartboard extends Sail.App
 
             @tags.on 'add', (tag) =>
                 @wall.cloud.addNode tag
+
+                tag.newlyAdded = true
+
                 @wall.cloud.render()
 
             @tags.on 'reset', (collection) =>
@@ -164,19 +167,20 @@ class CK.Smartboard extends Sail.App
 
         sail:
             contribution: (sev) ->
-                @contributions.fetch().done ->
-                    jQuery('#'+sev.payload._id).addClass('new')
-                    setTimeout ->
-                        jQuery('#'+sev.payload._id).removeClass('new')
-                    , 2000
+                @contributions.fetch().done =>
+                    @contributions.get(sev.payload._id).newlyAdded = true
 
             build_on: (sev) ->
                 @contributions.fetch().done ->
                     # TODO: move to view, plus do more (pop?)
                     jQuery('#'+sev.payload._id).effect('highlight', 2000)
 
-            new_tag: (sev) ->
-                @tags.fetch()
+            # new_tag: (sev) ->
+            #     @tags.fetch().done ->
+            #         jQuery('#'+sev.payload._id).addClass('new')
+            #         setTimeout ->
+            #             jQuery('#'+sev.payload._id).removeClass('new')
+            #         , 2000
 
             contribution_tagged: (sev) ->
                 @contributions.fetch()

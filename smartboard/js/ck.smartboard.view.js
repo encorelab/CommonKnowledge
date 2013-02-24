@@ -36,10 +36,10 @@
 
       this.findOrCreate = __bind(this.findOrCreate, this);
 
-      var hasPosition;
+      var alreadyPositioned;
       Base.__super__.constructor.call(this, options);
-      hasPosition = (this.$el.position().left != null) && this.$el.position().left > 0;
-      if ((this.model != null) && !hasPosition) {
+      alreadyPositioned = (this.$el.position().left != null) && this.$el.position().left > 0;
+      if ((this.model != null) && !alreadyPositioned) {
         this.$el.hide();
         if (this.model.has('pos')) {
           this.$el.css({

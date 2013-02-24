@@ -304,6 +304,12 @@
           d.view = view;
         }
         view.render();
+        if (d.newlyAdded) {
+          jQuery('#' + d.id).addClass('new');
+          setTimeout(function() {
+            return jQuery('#' + d.id).removeClass('new');
+          }, 2000);
+        }
         pos = view.$el.position();
         if (d.x == null) {
           d.x = pos.left + view.$el.outerWidth() / 2;

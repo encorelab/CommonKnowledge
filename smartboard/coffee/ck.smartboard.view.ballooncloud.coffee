@@ -345,6 +345,12 @@ class CK.Smartboard.View.BalloonCloud
 
             view.render()
 
+            if d.newlyAdded
+                jQuery('#'+d.id).addClass('new')
+                setTimeout ->
+                    jQuery('#'+d.id).removeClass('new')
+                , 2000
+
             pos = view.$el.position()
             d.x = pos.left + view.$el.outerWidth()/2 unless d.x?
             d.y = pos.top + view.$el.outerHeight()/2 unless d.y?
