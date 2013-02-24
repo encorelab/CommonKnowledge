@@ -288,12 +288,12 @@
         if (!d.view) {
           $el = $('#' + d.id);
           $el.unbind();
-          if (d instanceof CK.Model.Tag) {
+          if (d.collectionName === "tags") {
             view = new CK.Smartboard.View.TagBalloon({
               model: d,
               el: $el[0]
             });
-          } else if (d instanceof CK.Model.Contribution) {
+          } else if (d.collectionName === "contributions") {
             view = new CK.Smartboard.View.ContributionBalloon({
               model: d,
               el: $el[0]
