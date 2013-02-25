@@ -144,12 +144,9 @@
       var sev;
       sev = new Sail.Event('screen_unlock');
       this.groupchat.sendEvent(sev);
-      CK.getState('phase', function(s) {
+      return CK.getState('phase', function(s) {
         return CK.setState('phase', s.get('state'), false);
       });
-      if (window.confirm('Would you like me to reset the state to brainstorm?')) {
-        return CK.setState('phase', 'brainstorm');
-      }
     };
 
     Smartboard.prototype.startAnalysis = function() {

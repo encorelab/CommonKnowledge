@@ -82,10 +82,7 @@ class CK.Smartboard extends Sail.App
         CK.getState('phase', (s) ->
             CK.setState('phase', s.get('state'), false)
         )
-        if window.confirm 'Would you like me to reset the state to brainstorm?'
-            CK.setState('phase', 'brainstorm')
-
-
+        
     startAnalysis: =>
         sev = new Sail.Event 'start_analysis'
         @groupchat.sendEvent sev
