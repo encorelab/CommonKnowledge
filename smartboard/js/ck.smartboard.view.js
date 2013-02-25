@@ -140,9 +140,14 @@
           return Sail.app.startAnalysis();
         }
       },
-      'click #go-synthesize': function(ev) {
+      'click #go-propose': function(ev) {
         if (this.mode === 'analysis') {
-          return Sail.app.startSynthesis();
+          return Sail.app.startProposal();
+        }
+      },
+      'click #go-interpret': function(ev) {
+        if (this.mode === 'propose') {
+          return Sail.app.startInterpretation();
         }
       }
     };
@@ -322,9 +327,12 @@
       if (mode === 'analysis') {
         jQuery('body').removeClass('mode-synthesis').addClass('mode-analysis');
         return this.changeWatermark("analysis");
-      } else if (mode === 'synthesis') {
-        jQuery('body').removeClass('mode-analysis').addClass('mode-synthesis');
-        return this.changeWatermark("synthesis");
+      } else if (mode === 'propose') {
+        jQuery('body').removeClass('mode-analysis').addClass('mode-propose');
+        return this.changeWatermark("propose");
+      } else if (mode === 'interpret') {
+        jQuery('body').removeClass('mode-propose').addClass('mode-interpret');
+        return this.changeWatermark("interpret");
       } else {
         jQuery('body').removeClass('mode-analysis').removeClass('mode-synthesis');
         return this.changeWatermark("brainstorm");
@@ -410,7 +418,7 @@
     ContributionBalloon.prototype.render = function() {
       var body, headline, meta;
       this.$el.addClass('contribution');
-      if (this.model.get('kind') === 'synthesis') {
+      if (this.model.get('kind') === 'propose') {
         this.$el.addClass('synthesis');
       }
       headline = this.findOrCreate('.headline', "<h3 class='headline'></h3>");

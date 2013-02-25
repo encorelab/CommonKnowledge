@@ -103,9 +103,13 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             if !@mode? || @mode is 'brainstorm'
                 Sail.app.startAnalysis()
 
-        'click #go-synthesize': (ev) ->
+        'click #go-propose': (ev) ->
             if @mode is 'analysis'
-                Sail.app.startSynthesis()
+                Sail.app.startProposal()
+
+        'click #go-interpret': (ev) ->
+            if @mode is 'propose'
+                Sail.app.startInterpretation()
 
     constructor: (options) ->
         super(options)
@@ -261,11 +265,17 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                 .addClass('mode-analysis')
             @changeWatermark("analysis")
 
-        else if mode is 'synthesis'
+        else if mode is 'propose'
             jQuery('body')
                 .removeClass('mode-analysis')
-                .addClass('mode-synthesis')
-            @changeWatermark("synthesis")
+                .addClass('mode-propose')
+            @changeWatermark("propose")
+
+        else if mode is 'interpret'
+            jQuery('body')
+                .removeClass('mode-propose')
+                .addClass('mode-interpret')
+            @changeWatermark("interpret")
 
         else
             jQuery('body')
@@ -323,7 +333,7 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
     render: =>
         @$el.addClass('contribution')
 
-        if @model.get('kind') is 'synthesis'
+        if @model.get('kind') is 'propose'
             @$el.addClass('synthesis')
 
         headline = @findOrCreate '.headline', 

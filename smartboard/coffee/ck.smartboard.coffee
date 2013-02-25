@@ -90,15 +90,22 @@ class CK.Smartboard extends Sail.App
         sev = new Sail.Event 'start_analysis'
         @groupchat.sendEvent sev
 
-    startSynthesis: =>
-        sev = new Sail.Event 'start_synthesis'
+    startProposal: =>
+        sev = new Sail.Event 'start_proposal'
+        @groupchat.sendEvent sev
+
+    startInterpretation: =>
+        sev = new Sail.Event 'start_interpretation'
         @groupchat.sendEvent sev
 
     switchToAnalysis: =>
         @wall.setMode('analysis')
 
-    switchToSynthesis: =>
-        @wall.setMode('synthesis')
+    switchToProposal: =>
+        @wall.setMode('propose')
+
+    switchToInterpretation: =>
+        @wall.setMode('interpret')
 
     # set up all the Collections used by the board
     initModels: =>
@@ -137,10 +144,12 @@ class CK.Smartboard extends Sail.App
 
             CK.getState 'phase', (s) =>
                 if s
-                    if s.get('state') is 'start_analysis'
+                    if s.get('state') is 'analysis'
                         @switchToAnalysis()
-                    else if s.get('state') is 'start_synthesis'
-                        @switchToSynthesis()
+                    else if s.get('state') is 'proposal'
+                        @switchToProposal()
+                    else if s.get('state') is 'interpretation'
+                        @switchToInterpretation()
 
             @trigger('ready')
 
@@ -200,6 +209,8 @@ class CK.Smartboard extends Sail.App
             start_analysis: (sev) ->
                 @switchToAnalysis()
 
-            start_synthesis: (sev) ->
-                @switchToSynthesis()
+            start_proposal: (sev) ->
+                @switchToProposal()
 
+            start_interpretation: (sev) ->
+                @switchToInterpretation()
