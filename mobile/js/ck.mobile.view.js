@@ -206,6 +206,10 @@
               Sail.app.sendContribution('newNote', view.model);             // TODO do we still need this?
               jQuery().toastmessage('showSuccessToast', "Contribution submitted");
 
+              // I think we need to lock the fields again and force the student to use the new note button
+              jQuery('#note-body-entry').addClass('disabled');
+              jQuery('#note-headline-entry').addClass('disabled');
+
               // clear the old contribution plus ui fields
               view.model.clear();   // I think this is actually enough now, can do away with clearModels
               //Sail.app.clearModels();
