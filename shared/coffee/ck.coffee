@@ -23,7 +23,7 @@ CK.getStateForUser = (type, username, state_name, callback) ->
 
     states.fetch()
 
-CK.setState = (type, state) ->
+CK.setState = (type, state, screen_lock = false) ->
     CK.getState type, (s)->
         `if (typeof s === "undefined" || s === null ) {
             //create new state
@@ -32,6 +32,7 @@ CK.setState = (type, state) ->
         }
         `
         s.set('state', state)
+        s.set('screen_lock', screen_lock)
         s.save()
 
 CK.setStateForUser = (type, username, state, data_obj) ->

@@ -113,7 +113,9 @@
       var b, pos, sev, _i, _len, _ref, _results;
       sev = new Sail.Event('screen_lock');
       this.groupchat.sendEvent(sev);
-      CK.setState('screen_lock', true);
+      CK.getState('phase', function(s) {
+        return CK.setState('phase', s.get('state'), true);
+      });
       _ref = _.union(this.contributions.models, this.tags.models);
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -138,7 +140,9 @@
       var sev;
       sev = new Sail.Event('screen_unlock');
       this.groupchat.sendEvent(sev);
-      CK.setState('screen_lock', false);
+      CK.getState('phase', function(s) {
+        return CK.setState('phase', s.get('state'), false);
+      });
       if (window.confirm('Would you like me to reset the state to brainstorm?')) {
         return CK.setState('phase', 'brainstorm');
       }

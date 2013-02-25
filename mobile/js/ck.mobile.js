@@ -77,7 +77,7 @@ CK.Mobile = function() {
   app.restoreState = function () {
  
     //var stateObj = {"type":"phase"};
-    CK.getState("phase", function(s){
+    CK.getState("phase", function(s) {
       if (s && s.get('state') === "start_analysis"){
         console.log('phase is start_analysis');
         app.startAnalysis();
@@ -99,7 +99,7 @@ CK.Mobile = function() {
             console.log('I am on a boat');
           }
         });
-      } if (s && s.get('state') === "start_synthesis") {
+      } else if (s && s.get('state') === "start_synthesis") {
         console.log('phase is start_synthesis');
         app.startAnalysis();
 
@@ -126,6 +126,18 @@ CK.Mobile = function() {
       } else {
         console.log('could not find state for type phase');
       }
+
+      if (s && s.get('screen_lock') === true){
+        console.log('screen lock is active');
+        jQuery('#lock-screen').removeClass('hide');
+        jQuery('.row').addClass('disabled');
+      } else {
+        console.log('screen lock is NOT active');
+        jQuery('#lock-screen').addClass('hide');
+        jQuery('.row').removeClass('disabled');
+      }
+
+
     });
  
   };
