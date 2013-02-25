@@ -78,8 +78,8 @@ CK.Mobile = function() {
  
     //var stateObj = {"type":"phase"};
     CK.getState("phase", function(s) {
-      if (s && s.get('state') === "start_analysis"){
-        console.log('phase is start_analysis');
+      if (s && s.get('state') === "analysis"){
+        console.log('phase is analysis');
         app.startAnalysis();
 
         console.log('Check if contribution left to do or done with tagging');
@@ -127,6 +127,8 @@ CK.Mobile = function() {
         console.log('could not find state for type phase');
       }
 
+
+// TODO: This needs much more work
       if (s && s.get('screen_lock') === true){
         console.log('screen lock is active');
         jQuery('#lock-screen').removeClass('hide');
@@ -393,24 +395,44 @@ CK.Mobile = function() {
   /* State related function */
 
   app.startAnalysis = function() {
-    tagList = new CK.Model.Tags();
+    var tagList = new CK.Model.Tags();
     tagList.on('change', function(model) { console.log(model.changedAttributes()); });   
 
     //app.taggedContribution.wake(app.config.wakeful.url);
 
-    tagListView = new CK.Mobile.View.TagListView({
+    var tagListView = new CK.Mobile.View.TagListView({
       el: jQuery('#tag-list'),
       collection: tagList
     });
-    app.tagList.on('reset add', app.tagListView.render);       // probably unnecessary, maybe even a bad idea?
+    tagList.on('reset add', tagListView.render, tagListView);       // probably unnecessary, maybe even a bad idea?
 
     var sort = ['created_at', 'ASC'];
-    app.tagList.fetch({
+    tagList.fetch({
       data: {
         sort: JSON.stringify(sort)
       }
     });
   };
+
+  // app.tagContribution = function (contributionId) {
+  //   var contributionToTag = new CK.Model.Contribution();
+  //   tagList.on('change', function(model) { console.log(model.changedAttributes()); });   
+
+  //   //app.taggedContribution.wake(app.config.wakeful.url);
+
+  //   var taggingView = new CK.Mobile.View.TaggingView({
+  //     el: jQuery('#tag-list'),
+  //     collection: tagList
+  //   });
+  //   tagList.on('reset add', tagListView.render, tagListView);       // probably unnecessary, maybe even a bad idea?
+
+  //   var sort = ['created_at', 'ASC'];
+  //   tagList.fetch({
+  //     data: {
+  //       sort: JSON.stringify(sort)
+  //     }
+  //   });
+  // };
 
   app.contributionToTag = function (contribution_id) {
     app.contributionDetails.set('_id', contribution_id);
