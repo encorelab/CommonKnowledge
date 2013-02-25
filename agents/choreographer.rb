@@ -109,9 +109,14 @@ class Choreographer < Sail::Agent
       hand_out_assignment(data['origin'])  
     end
 
-    event :start_synthesis? do |stanza, data|
-      log "Recieved start_synthesis #{data.inspect}"
-      store_phase("start_synthesis")
+    event :start_proposal? do |stanza, data|
+      log "Recieved start_proposal #{data.inspect}"
+      store_phase("proposal")
+    end
+
+    event :start_interpretation? do |stanza, data|
+      log "Recieved start_interpretation #{data.inspect}"
+      store_phase("interpretation")
     end
 
   end
