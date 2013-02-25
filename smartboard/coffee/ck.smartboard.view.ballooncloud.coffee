@@ -4,8 +4,6 @@ class CK.Smartboard.View.BalloonCloud
         console.log("Cloudifying the wall...")
 
         @wall = wallView
-        @wallWidth = @wall.$el.innerWidth()
-        @wallHeight = @wall.$el.innerHeight()
 
         @nodes = []
         @links = []
@@ -360,6 +358,9 @@ class CK.Smartboard.View.BalloonCloud
             d.y = pos.top + view.$el.outerHeight()/2 unless d.y?
 
     render: (ev) =>
+
+        @wallWidth = @wall.$el.innerWidth()
+        @wallHeight = @wall.$el.innerHeight()
 
         # force2 = d3.layout.force()
         #     .charge(-300)

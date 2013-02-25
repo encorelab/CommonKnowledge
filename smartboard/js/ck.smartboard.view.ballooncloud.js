@@ -27,8 +27,6 @@
       this.generateForceFunction = __bind(this.generateForceFunction, this);
       console.log("Cloudifying the wall...");
       this.wall = wallView;
-      this.wallWidth = this.wall.$el.innerWidth();
-      this.wallHeight = this.wall.$el.innerHeight();
       this.nodes = [];
       this.links = [];
       this.vis = d3.select("#" + this.wall.id);
@@ -324,6 +322,8 @@
     };
 
     BalloonCloud.prototype.render = function(ev) {
+      this.wallWidth = this.wall.$el.innerWidth();
+      this.wallHeight = this.wall.$el.innerHeight();
       /*
               for n,i in @nodes
                   $n = jQuery(n)
@@ -331,6 +331,7 @@
                   n.x = pos.left + $n.outerWidth()/2 unless n.x?
                   n.y = pos.top + $n.outerHeight()/2 unless n.y?
       */
+
       this.vis.selectAll('div.balloon').data(this.nodes).enter().append('div').attr('id', function(d, i) {
         return d.id;
       }).attr('class', "balloon").call(this.inflateBalloons);
