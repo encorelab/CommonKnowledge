@@ -91,11 +91,14 @@
                         Build On
                     </a>
                 </div>
-                <div class="btn-container hide">
+                <div id="like-btn-container" class="btn-container hide">
                     Would you like to work on this?
-                    <a id="like-btn" onClick="alert('working')">
-                        <img src="img/success.png" />
+                    <a id="like-btn-on" class="hide">
+                        <img src="img/lightbulb_small_on.png" />
                     </a>
+                    <a id="like-btn-off">
+                        <img src="img/lightbulb_small_off.png" />
+                    </a>                    
                 </div>
             </div>   
 
@@ -131,7 +134,7 @@
             <!-- hidden until tablet hears event re moving to tagging -->
             <div id="tag-list" class="span16 view-container">
                 <div class="container-header">
-                    Choose your specialization!
+                    <b>Choose your specialization!</b>
                 </div>
                 <div id="tag-list-btn-container" class="tag-btn-group btn-group btn-group-vertical scrollable" data-toggle="buttons-checkbox">
                     <!-- filled by self.TagListView, which needs the colors added TODO -->

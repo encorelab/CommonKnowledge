@@ -25,12 +25,13 @@ CK.Mobile = function() {
     }
   };
 
-  // Global vars
+  // Global vars - a lot of this stuff can go TODO
   app.userData = null;
   app.currentBuildOn = {};
   app.tagArray = [];
   app.buildOnArray = [];
   app.synthesisFlag = false;
+  app.keyCount = 0;
   // app.currentState = {"type":"tablet"};
 
 
@@ -77,9 +78,9 @@ CK.Mobile = function() {
  
     //var stateObj = {"type":"phase"};
     CK.getState("phase", function(s){
-      if (s && s.get('state') === "start_student_tagging"){
-        console.log('phase is start_student_tagging');
-        app.startStudentTagging();
+      if (s && s.get('state') === "start_analysis"){
+        console.log('phase is start_analysis');
+        app.startAnalysis();
 
         console.log('Check if contribution left to do or done with tagging');
         CK.getStateForUser("tablet", Sail.app.userData.account.login, "contribution_to_tag", function(user_state){
@@ -100,7 +101,7 @@ CK.Mobile = function() {
         });
       } if (s && s.get('state') === "start_synthesis") {
         console.log('phase is start_synthesis');
-        app.startStudentTagging();
+        app.startAnalysis();
 
         CK.getStateForUser("tablet", Sail.app.userData.account.login, "contribution_to_tag", function(user_state){
           if (user_state) {
@@ -149,7 +150,6 @@ CK.Mobile = function() {
         });
       });
 
-      // Colin there is already data about the user available
       app.userData = Sail.app.session;
 
       //jQuery('#logout-button').addClass('btn btn-warning').html('<a href="#">Logout</a>');
@@ -165,9 +165,7 @@ CK.Mobile = function() {
       console.log("Ready!");
 
       app.restoreState();
-
       // moved the view init here so that backbone is configured with URLs
-      app.initModels();
       app.initViews();
     },
 
@@ -193,20 +191,21 @@ CK.Mobile = function() {
       contribution: function(sev) {
         console.log('heard a contribution');
 
-        // contrib = new CK.Model.Contribution(sev.payload);
-        // Sail.app.contributionList.add(contrib);
+        contrib = new CK.Model.Contribution(sev.payload);
+        Sail.app.contributionList.add(contrib);
         var sort = ['created_at', 'DESC'];
         // var selector = {"author": "matt"};
         app.contributionList.fetch({
           data: {
+
             sort: JSON.stringify(sort)
           }
         });
       },
 
-      start_student_tagging: function(sev) {
-        console.log('start_student_tagging heard, creating TagView');
-        app.startStudentTagging();
+      start_analysis: function(sev) {
+        console.log('start_analysis heard, creating TagView');
+        app.startAnalysis();
       },
 
       contribution_to_tag: function(sev) {
@@ -248,14 +247,12 @@ CK.Mobile = function() {
 
   /* Outgoing events */
 
-  app.sendContribution = function(kind) {
+  app.sendContribution = function(kind, model) {
     var sev;
     if (kind === 'newNote' || kind === 'synthesis') {
-      sev = new Sail.Event('contribution', app.currentContribution.toJSON());
+      sev = new Sail.Event('contribution', JSON.stringify(model.toJSON()));
     } else if (kind === 'buildOn') {
       sev = new Sail.Event('build_on', app.contributionDetails.toJSON());
-    } else if (kind === 'taggedNote') {
-      sev = new Sail.Event('contribution_tagged', app.taggedContribution.toJSON());
     } else {
       console('unknown type of submission, cant send contribution');
       return false;
@@ -268,28 +265,13 @@ CK.Mobile = function() {
 
   /* Helper functions */
 
-  app.initModels = function() {
-    console.log('creating Models');
-    app.currentContribution = new CK.Model.Contribution();
-    app.currentContribution.wake(app.config.wakeful.url);
-    app.currentContribution.on('change', function(model) { console.log(model.changedAttributes()); });
-    app.currentContribution.on('all', function() { console.log(arguments) });
-
-    app.contributionList = new CK.Model.Contributions();
-    //app.contributionList.wake(app.config.wakeful.url);
-    app.contributionList.on('change', function(model) { console.log(model.changedAttributes()); });
-
-    app.contributionDetails = new CK.Model.Contribution();
-    //app.contributionDetails.wake(app.config.wakeful.url);
-    app.contributionDetails.on('change', function(model) { console.log(model.changedAttributes()); });
-
-    app.tagList = new CK.Model.Tags();
-    //app.tagList.wake(app.config.wakeful.url);
-    app.tagList.on('change', function(model) { console.log(model.changedAttributes()); });    
-  };
 
   app.initViews = function() {
     console.log('creating ListView');
+    // FIX MY NAMESPACING
+    app.contributionList = new CK.Model.Contributions();
+    //app.contributionList.wake(app.config.wakeful.url);
+    app.contributionList.on('change', function(model) { console.log(model.changedAttributes()); });    
     app.contributionListView = new CK.Mobile.View.ContributionListView({
       el: jQuery('#contribution-list'),
       collection: app.contributionList
@@ -301,23 +283,32 @@ CK.Mobile = function() {
       data: { sort: JSON.stringify(sort) }
     });
 
-    console.log('creating DetailsView');
-    app.contributionDetailsView = new CK.Mobile.View.ContributionDetailsView({
-      el: jQuery('#contribution-details'),
-      model: app.contributionDetails
+
+    // just for testing - do this properly when the view is completed (see also 440)
+    jQuery('#like-btn-on').click(function() {
+      app.toggleVote();
     });
-    app.contributionDetails.on('reset add', app.contributionDetailsView.render);
-    
-    console.log('creating InputView');
-    // app.contributionInputView = new CK.Mobile.View.ContributionInputView({
-    //   el: jQuery('#contribution-input'),
-    //   model: app.currentContribution
-    // });
-    console.log("Views ARE GO!");
+    jQuery('#like-btn-off').click(function() {
+      app.toggleVote();
+    });
   };
 
+  app.autoSave = function(view, ev) {
+    //var view = this;
+    Sail.app.keyCount++;
+    console.log("saving stuff as we go at", Sail.app.keyCount);
+
+    if (Sail.app.keyCount > 9) {
+
+      view.model.set(ev.target.name, jQuery('#'+ev.target.id).val())
+      view.model.save();
+      Sail.app.keyCount = 0;
+    }
+
+  };  
+
   app.addNote = function(kind) {
-    console.log('Preping to add a note...');
+    console.log('Creating an inputView');
 
     var contrib = new CK.Model.Contribution();
 
@@ -331,48 +322,46 @@ CK.Mobile = function() {
 
     contrib.set('justAdded', true);
 
-    // if (app.synthesisFlag) {
-    //   app.currentContribution.kind = 'synthesis';
-    //   app.currentContribution.set('kind','synthesis');             // sloppy - fix me (.kind is the key for a lot of the view)
-    // } else {
-    //   app.currentContribution.kind = kind;
-    // }
-
     contrib.set('author', app.userData.account.login);
     contrib.set('published', false);
     contrib.set('tags', app.tagArray);
     contrib.set('build_ons', app.buildOnArray);
     contrib.set('kind', kind);
 
-    contrib.on('change sync', inputView.render, inputView);
+    // since we do manual saves, we don't need sync. We don't need both (used to be change and sync)
+    contrib.on('change', inputView.render, inputView);
 
-    contrib.save(null, {
-      complete: function () {
-        console.log('New note submitted!');
-      },
-      success: function () {
-        console.log('Model saved');
-      },
-      failure: function(model, response) {
-        console.log('Error submitting: ' + response);
-      }
-      // !!!
-    });
+    contrib.save();
 
     app.contributionList.add(contrib);
-
-    //app.contributionInputView.render();
   };
 
-  app.clearModels = function() {
+  app.showDetails = function(contrib) {
+    console.log('creating a new Details');
+
+    details = new CK.Model.Contribution();      // not sure if we want to create a new model instance here, or just set one view up in initViews and then rebind it to different contribs here...
+    details = contrib;
+    details.on('change', function(model) { console.log(model.changedAttributes()); });
+
+    detailsView = new CK.Mobile.View.ContributionDetailsView({
+      el: jQuery('#contribution-details'),
+      model: details
+    });
+    details.on('change', detailsView.render, detailsView);
+
+    // have to call this manually because there are no change events later
+    detailsView.render();
+  };
+
+  app.Models = function() {
     // clear all the old garbage out of the model, rebind
-    app.currentContribution = new CK.Model.Contribution();
-    app.currentContribution.wake(app.config.wakeful.url);
-    //app.contributionInputView.model = app.currentContribution;
+    // app.currentContribution = new CK.Model.Contribution();
+    // app.currentContribution.wake(app.config.wakeful.url);
+    // app.contributionInputView.model = app.currentContribution;
     // app.contributionInputView.undelegateEvents();
     // app.contributionInputView.delegateEvents();
 
-    app.currentBuildOn = {};
+    // app.currentBuildOn = {};
   };
 
   app.showWaitScreen = function() {
@@ -391,13 +380,15 @@ CK.Mobile = function() {
 
   /* State related function */
 
-  app.startStudentTagging = function() {
-    app.taggedContribution = new CK.Model.Contribution();
+  app.startAnalysis = function() {
+    tagList = new CK.Model.Tags();
+    tagList.on('change', function(model) { console.log(model.changedAttributes()); });   
+
     //app.taggedContribution.wake(app.config.wakeful.url);
 
-    app.tagListView = new CK.Mobile.View.TagListView({
+    tagListView = new CK.Mobile.View.TagListView({
       el: jQuery('#tag-list'),
-      collection: app.tagList
+      collection: tagList
     });
     app.tagList.on('reset add', app.tagListView.render);       // probably unnecessary, maybe even a bad idea?
 
@@ -406,13 +397,7 @@ CK.Mobile = function() {
       data: {
         sort: JSON.stringify(sort)
       }
-      // },
-      // success: function() {
-      //   app.flag = true;
-      // }
     });
-
-    app.contributionInputView.render();
   };
 
   app.contributionToTag = function (contribution_id) {
@@ -450,6 +435,18 @@ CK.Mobile = function() {
     jQuery('.brand').text('Common Knowledge - Synthesis');
     Sail.app.contributionInputView.render();
     jQuery('#tag-submission-container .tag-btn').addClass('disabled');
+  };
+
+  // TODO - fix me to work properly with views etc (see also initViews section)
+  app.toggleVote = function() {
+    // set the vote (or whatever) field in the object
+    if (jQuery('#like-btn-on').hasClass('hide')) {
+      jQuery('#like-btn-on').removeClass('hide')
+      jQuery('#like-btn-off').addClass('hide')
+    } else {
+      jQuery('#like-btn-on').addClass('hide')
+      jQuery('#like-btn-off').removeClass('hide')
+    }
   };
 
 };

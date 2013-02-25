@@ -26,9 +26,10 @@ class Choreographer < Sail::Agent
       # Setup MongoDB connection
       @mongo = Mongo::Connection.new.db(config[:database])
 
-      phase = @mongo.collection(:states).find("type" => "phase").first
-      unless phase
-        store_phase("brainstorming")
+      #phase = @mongo.collection(:states).find("type" => "phase").first
+      @phase = get_phase()
+      unless @phase
+        store_phase("brainstorm")
       end
       
       join_room
@@ -49,18 +50,18 @@ class Choreographer < Sail::Agent
       end
     end
 
-    someone_left_room do |stanza|
-      log "Stanza from #{stanza.from.inspect} received"
-      log "Student hash before removing #{@students.inspect}"
-      student_to_remove = @students.delete(Util.extract_login(stanza.from))
-      log "Student hash after removing #{@students.inspect}"
-    end
+    # someone_left_room do |stanza|
+    #   log "Stanza from #{stanza.from.inspect} received"
+    #   log "Student hash before removing #{@students.inspect}"
+    #   student_to_remove = @students.delete(Util.extract_login(stanza.from))
+    #   log "Student hash after removing #{@students.inspect}"
+    # end
     
-    event :start_student_tagging? do |stanza, data|
-      log "Received start_student_tagging #{data.inspect}"
+    event :start_analysis? do |stanza, data|
+      log "Received start_analysis #{data.inspect}"
 
       # this is done to help restore state for UI and others
-      store_phase("start_student_tagging")
+      store_phase("analysis")
       
       # Retrieve contributions to consider for tagging
       fill_contribution_buckets()
@@ -74,6 +75,30 @@ class Choreographer < Sail::Agent
       end
 
       log "There are #{@bucket.count} contributions with no tags and #{@na_bucket.count} contributions with N/A tags left for tagging"      
+    end
+
+    event :test? do |stanza, data|
+      log "Recieved test #{data.inspect}"
+      tag_group_missing = true
+      
+      #user_state = @mongo.collection(:states).find("type" => "tablet", "username" => "armin").first
+
+      @mongo.collection(:states).find("type" => "tablet").each do |us|
+        #log "#{us.inspect}"
+        if (!us['tag_group'] || us['tag_group'] == nil) then
+          log "tag group missing for #{us.inspect}"
+          tag_group_missing = true
+          break
+        end
+
+        tag_group_missing = false
+      end
+      
+      unless tag_group_missing then
+        log "All tag groups are set and we go :)"
+        create_tagging_buckets()
+      end
+
     end
 
     event :contribution_tagged? do |stanza, data|
@@ -125,6 +150,39 @@ class Choreographer < Sail::Agent
     end
     
     return stu
+  end
+
+  def create_tagging_buckets()
+    log "Function create_tagging_buckets called"
+    @buckets = {}
+    @tag_groups = {}
+    contributions = []
+
+    # retrieve all published observations
+    @mongo.collection(:contributions).find("published" => true).each do |c|
+      contrib = {"contib_id" => c['_id'].to_s, "assigned_user" => nil, "tagged" => false}
+      contributions.push(contrib)
+    end
+    log "All published contributions that are considered for tagging: #{contributions.inspect}"
+
+    # retrieve all users and tag_groups
+    @mongo.collection(:states).find("type" => "tablet").each do |s|
+      unless s['tag_group'].empty? or s['username'].empty?
+        if !@tag_groups[s['tag_group']] || @tag_groups[s['tag_group']].empty?
+          @tag_groups[s['tag_group']] = []
+        end
+
+        @tag_groups[s['tag_group']].push(s['username'])
+      end
+    end
+    log "All tag_groups with users #{@tag_groups}"
+    @tag_groups.map do |tag_group, usernames|
+      usernames.uniq!
+      @buckets[tag_group] = contributions
+    end
+    log "All tag_groups with users #{@tag_groups}"
+    log "buckets #{@buckets}"
+
   end
 
   def fill_contribution_buckets()
@@ -193,6 +251,10 @@ class Choreographer < Sail::Agent
   def send_done_tagging(user)
     log "Sending done_tagging for user '#{user.inspect}'"
     event!(:done_tagging, {:recipient => user})    
+  end
+
+  def get_phase()
+    return @mongo.collection(:states).find("type" => "phase").first
   end
 
   def store_phase(phaseName)

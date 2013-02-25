@@ -138,12 +138,15 @@
       var sev;
       sev = new Sail.Event('screen_unlock');
       this.groupchat.sendEvent(sev);
-      return CK.setState('screen_lock', false);
+      CK.setState('screen_lock', false);
+      if (window.confirm('Would you like me to reset the state to brainstorm?')) {
+        return CK.setState('phase', 'brainstorm');
+      }
     };
 
     Smartboard.prototype.startAnalysis = function() {
       var sev;
-      sev = new Sail.Event('start_student_tagging');
+      sev = new Sail.Event('start_analysis');
       return this.groupchat.sendEvent(sev);
     };
 
@@ -193,7 +196,7 @@
         });
         CK.getState('phase', function(s) {
           if (s) {
-            if (s.get('state') === 'start_student_tagging') {
+            if (s.get('state') === 'start_analysis') {
               return _this.switchToAnalysis();
             } else if (s.get('state') === 'start_synthesis') {
               return _this.switchToSynthesis();
@@ -246,7 +249,7 @@
         screen_unlock: function(sev) {
           return this.wall.unpause();
         },
-        start_student_tagging: function(sev) {
+        start_analysis: function(sev) {
           return this.switchToAnalysis();
         },
         start_synthesis: function(sev) {
