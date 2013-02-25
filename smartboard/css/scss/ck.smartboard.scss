@@ -25,7 +25,11 @@ body {
 
     @include transition(3s, background-color);
 
-    #go-synthesize {
+    #go-propose {
+        opacity: 0.4;
+    }
+
+    #go-interpret {
         opacity: 0.4;
     }
 
@@ -36,19 +40,43 @@ body {
             opacity: 0.4;
         }
 
-        #go-synthesize {
+        #go-propose {
             opacity: 1.0;
+        }
+
+        #go-interpret {
+            opacity: 0.4;
         }
     }
 
-    &.mode-synthesis {
+    &.mode-propose {
         background-color: #34ba70;
 
         #go-analyze {
             opacity: 0.4;
         }
 
-        #go-synthesize {
+        #go-propose {
+            opacity: 0.4;
+        }
+
+        #go-interpret {
+            opacity: 1.0;
+        }
+    }
+
+     &.mode-interpret {
+        background-color: #34bab3;
+
+        #go-analyze {
+            opacity: 0.4;
+        }
+
+        #go-propose {
+            opacity: 0.4;
+        }
+
+        #go-interpret {
             opacity: 0.4;
         }
     }
@@ -188,7 +216,7 @@ body {
         display: block;
     }
 
-    &.synthesis {
+    &.propose {
         background-color: rgba(255, 255, 0, 0.9);
     }
 
@@ -298,7 +326,10 @@ button {
 #go-analyze {
 }
 
-#go-synthesize {
+#go-propose {
+}
+
+#go-interpret {
 }
 
 #toggle-pause {
