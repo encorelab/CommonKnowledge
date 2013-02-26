@@ -35,7 +35,8 @@
     'new-note': function () {
       console.log("UI changes for new note");
       jQuery('#note-body-entry').removeClass('disabled');
-      jQuery('#note-headline-entry').removeClass('disabled');      
+      jQuery('#note-headline-entry').removeClass('disabled');
+      jQuery('#contribution-list .btn-container').addClass('disabled');
       Sail.app.addNote('new');
     },
 
@@ -209,6 +210,7 @@
               // I think we need to lock the fields again and force the student to use the new note button
               jQuery('#note-body-entry').addClass('disabled');
               jQuery('#note-headline-entry').addClass('disabled');
+              jQuery('#contribution-list .btn-container').removeClass('disabled');
 
               // clear the old contribution plus ui fields
               view.model.clear();   // I think this is actually enough now, can do away with clearModels
