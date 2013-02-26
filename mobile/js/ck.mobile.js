@@ -160,7 +160,7 @@ CK.Mobile = function() {
       CK.Model.init(app.config.drowsy.url, this.run.name)
       .done(function () {
         Wakeful.loadFayeClient(app.config.wakeful.url).done(function () {
-          app.trigger('ready')
+          app.trigger('ready');
         });
       });
 
@@ -205,7 +205,7 @@ CK.Mobile = function() {
       contribution: function(sev) {
         console.log('heard a contribution');
 
-        contrib = new CK.Model.Contribution(sev.payload);
+        var contrib = new CK.Model.Contribution(sev.payload);
         Sail.app.contributionList.add(contrib);
         var sort = ['created_at', 'DESC'];
         // var selector = {"author": "matt"};
@@ -314,7 +314,7 @@ CK.Mobile = function() {
 
     if (Sail.app.keyCount > 9) {
 
-      view.model.set(ev.target.name, jQuery('#'+ev.target.id).val())
+      view.model.set(ev.target.name, jQuery('#'+ev.target.id).val());
       view.model.save();
       Sail.app.keyCount = 0;
     }
@@ -353,11 +353,11 @@ CK.Mobile = function() {
   app.showDetails = function(contrib) {
     console.log('creating a new Details');
 
-    details = new CK.Model.Contribution();      // not sure if we want to create a new model instance here, or just set one view up in initViews and then rebind it to different contribs here...
+    var details = new CK.Model.Contribution();      // not sure if we want to create a new model instance here, or just set one view up in initViews and then rebind it to different contribs here...
     details = contrib;
     details.on('change', function(model) { console.log(model.changedAttributes()); });
 
-    detailsView = new CK.Mobile.View.ContributionDetailsView({
+    var detailsView = new CK.Mobile.View.ContributionDetailsView({
       el: jQuery('#contribution-details'),
       model: details
     });
@@ -412,6 +412,26 @@ CK.Mobile = function() {
         sort: JSON.stringify(sort)
       }
     });
+  };
+
+  /* 
+    Sends out and event with the tag group the user has chosen and stores the tag_group
+    in the states object associated with the student
+  */
+  app.choseTagGroup = function(tag_name) {
+    if (typeof tag_name !== 'undefined' && tag_name !== null && tag_name !== '') {
+      // create the object that hold the tag_group information
+      var metadata = {"tag_group":tag_name};
+      // save the tag name and id of the chosen tag_group to the student's metadata object
+      CK.setStateForUser("tablet", Sail.app.userData.account.login, "tag_group", metadata);
+      // send out and sail event
+      var sev = new Sail.Event('chosen_tag_group', JSON.stringify(metadata));
+      Sail.app.groupchat.sendEvent(sev);
+      // Show wait screen until agent answers with the contribution to be tagged
+      Sail.app.showWaitScreen();
+    } else {
+      console.warn('choseTagGroup called with empty tag_name');
+    }
   };
 
   // app.tagContribution = function (contributionId) {
@@ -475,11 +495,11 @@ CK.Mobile = function() {
   app.toggleVote = function() {
     // set the vote (or whatever) field in the object
     if (jQuery('#like-btn-on').hasClass('hide')) {
-      jQuery('#like-btn-on').removeClass('hide')
-      jQuery('#like-btn-off').addClass('hide')
+      jQuery('#like-btn-on').removeClass('hide');
+      jQuery('#like-btn-off').addClass('hide');
     } else {
-      jQuery('#like-btn-on').addClass('hide')
-      jQuery('#like-btn-off').removeClass('hide')
+      jQuery('#like-btn-on').addClass('hide');
+      jQuery('#like-btn-off').removeClass('hide');
     }
   };
 

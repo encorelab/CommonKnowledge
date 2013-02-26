@@ -109,7 +109,7 @@ i {
 	height: 100%;
 	width: 100%;
 	background-color: black;
-	z-index: 1;
+	z-index: 10; /*avoid buttons showing through*/
 	position: fixed;
 	left: 0;
 	top: 0;
