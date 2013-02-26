@@ -11,11 +11,15 @@
     function Smartboard() {
       this.initModels = __bind(this.initModels, this);
 
-      this.switchToSynthesis = __bind(this.switchToSynthesis, this);
+      this.switchToInterpretation = __bind(this.switchToInterpretation, this);
+
+      this.switchToProposal = __bind(this.switchToProposal, this);
 
       this.switchToAnalysis = __bind(this.switchToAnalysis, this);
 
-      this.startSynthesis = __bind(this.startSynthesis, this);
+      this.startInterpretation = __bind(this.startInterpretation, this);
+
+      this.startProposal = __bind(this.startProposal, this);
 
       this.startAnalysis = __bind(this.startAnalysis, this);
 
@@ -113,7 +117,9 @@
       var b, pos, sev, _i, _len, _ref, _results;
       sev = new Sail.Event('screen_lock');
       this.groupchat.sendEvent(sev);
-      CK.setState('screen_lock', true);
+      CK.getState('phase', function(s) {
+        return CK.setState('phase', s.get('state'), true);
+      });
       _ref = _.union(this.contributions.models, this.tags.models);
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -138,10 +144,9 @@
       var sev;
       sev = new Sail.Event('screen_unlock');
       this.groupchat.sendEvent(sev);
-      CK.setState('screen_lock', false);
-      if (window.confirm('Would you like me to reset the state to brainstorm?')) {
-        return CK.setState('phase', 'brainstorm');
-      }
+      return CK.getState('phase', function(s) {
+        return CK.setState('phase', s.get('state'), false);
+      });
     };
 
     Smartboard.prototype.startAnalysis = function() {
@@ -150,9 +155,15 @@
       return this.groupchat.sendEvent(sev);
     };
 
-    Smartboard.prototype.startSynthesis = function() {
+    Smartboard.prototype.startProposal = function() {
       var sev;
-      sev = new Sail.Event('start_synthesis');
+      sev = new Sail.Event('start_proposal');
+      return this.groupchat.sendEvent(sev);
+    };
+
+    Smartboard.prototype.startInterpretation = function() {
+      var sev;
+      sev = new Sail.Event('start_interpretation');
       return this.groupchat.sendEvent(sev);
     };
 
@@ -160,8 +171,12 @@
       return this.wall.setMode('analysis');
     };
 
-    Smartboard.prototype.switchToSynthesis = function() {
-      return this.wall.setMode('synthesis');
+    Smartboard.prototype.switchToProposal = function() {
+      return this.wall.setMode('propose');
+    };
+
+    Smartboard.prototype.switchToInterpretation = function() {
+      return this.wall.setMode('interpret');
     };
 
     Smartboard.prototype.initModels = function() {
@@ -196,10 +211,12 @@
         });
         CK.getState('phase', function(s) {
           if (s) {
-            if (s.get('state') === 'start_analysis') {
+            if (s.get('state') === 'analysis') {
               return _this.switchToAnalysis();
-            } else if (s.get('state') === 'start_synthesis') {
-              return _this.switchToSynthesis();
+            } else if (s.get('state') === 'proposal') {
+              return _this.switchToProposal();
+            } else if (s.get('state') === 'interpretation') {
+              return _this.switchToInterpretation();
             }
           }
         });
@@ -252,8 +269,11 @@
         start_analysis: function(sev) {
           return this.switchToAnalysis();
         },
-        start_synthesis: function(sev) {
-          return this.switchToSynthesis();
+        start_proposal: function(sev) {
+          return this.switchToProposal();
+        },
+        start_interpretation: function(sev) {
+          return this.switchToInterpretation();
         }
       }
     };

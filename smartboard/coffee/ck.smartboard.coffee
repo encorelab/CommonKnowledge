@@ -61,7 +61,11 @@ class CK.Smartboard extends Sail.App
     pause: =>
         sev = new Sail.Event 'screen_lock'
         @groupchat.sendEvent sev
-        CK.setState('screen_lock', true)
+        # CK.setState('screen_lock', true)
+        CK.getState('phase', (s) ->
+            CK.setState('phase', s.get('state'), true)
+        )
+        
 
         # take this opportunity to save positions
         for b in _.union(@contributions.models, @tags.models)
@@ -74,24 +78,31 @@ class CK.Smartboard extends Sail.App
     unpause: =>
         sev = new Sail.Event 'screen_unlock'
         @groupchat.sendEvent sev
-        CK.setState('screen_lock', false)
-        if window.confirm 'Would you like me to reset the state to brainstorm?'
-            CK.setState('phase', 'brainstorm')
-
-
+        # CK.setState('screen_lock', false)
+        CK.getState('phase', (s) ->
+            CK.setState('phase', s.get('state'), false)
+        )
+        
     startAnalysis: =>
         sev = new Sail.Event 'start_analysis'
         @groupchat.sendEvent sev
 
-    startSynthesis: =>
-        sev = new Sail.Event 'start_synthesis'
+    startProposal: =>
+        sev = new Sail.Event 'start_proposal'
+        @groupchat.sendEvent sev
+
+    startInterpretation: =>
+        sev = new Sail.Event 'start_interpretation'
         @groupchat.sendEvent sev
 
     switchToAnalysis: =>
         @wall.setMode('analysis')
 
-    switchToSynthesis: =>
-        @wall.setMode('synthesis')
+    switchToProposal: =>
+        @wall.setMode('propose')
+
+    switchToInterpretation: =>
+        @wall.setMode('interpret')
 
     # set up all the Collections used by the board
     initModels: =>
@@ -133,10 +144,12 @@ class CK.Smartboard extends Sail.App
 
             CK.getState 'phase', (s) =>
                 if s
-                    if s.get('state') is 'start_analysis'
+                    if s.get('state') is 'analysis'
                         @switchToAnalysis()
-                    else if s.get('state') is 'start_synthesis'
-                        @switchToSynthesis()
+                    else if s.get('state') is 'proposal'
+                        @switchToProposal()
+                    else if s.get('state') is 'interpretation'
+                        @switchToInterpretation()
 
             @trigger('ready')
 
@@ -197,6 +210,8 @@ class CK.Smartboard extends Sail.App
             start_analysis: (sev) ->
                 @switchToAnalysis()
 
-            start_synthesis: (sev) ->
-                @switchToSynthesis()
+            start_proposal: (sev) ->
+                @switchToProposal()
 
+            start_interpretation: (sev) ->
+                @switchToInterpretation()

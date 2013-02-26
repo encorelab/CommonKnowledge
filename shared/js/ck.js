@@ -32,7 +32,10 @@
     return states.fetch();
   };
 
-  CK.setState = function(type, state) {
+  CK.setState = function(type, state, screen_lock) {
+    if (screen_lock == null) {
+      screen_lock = false;
+    }
     return CK.getState(type, function(s) {
       if (typeof s === "undefined" || s === null ) {
             //create new state
@@ -41,6 +44,7 @@
         }
         ;
       s.set('state', state);
+      s.set('screen_lock', screen_lock);
       return s.save();
     });
   };
