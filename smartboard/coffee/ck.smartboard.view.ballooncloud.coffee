@@ -4,8 +4,6 @@ class CK.Smartboard.View.BalloonCloud
         console.log("Cloudifying the wall...")
 
         @wall = wallView
-        @wallWidth = @wall.$el.innerWidth()
-        @wallHeight = @wall.$el.innerHeight()
 
         @nodes = []
         @links = []
@@ -334,11 +332,11 @@ class CK.Smartboard.View.BalloonCloud
             unless d.view
                 $el = $('#'+d.id)
                 $el.unbind()
-                if d instanceof CK.Model.Tag
+                if d.collectionName is "tags"
                     view = new CK.Smartboard.View.TagBalloon
                         model: d
                         el: $el[0]
-                else if d instanceof CK.Model.Contribution
+                else if d.collectionName is "contributions"
                     view = new CK.Smartboard.View.ContributionBalloon
                         model: d
                         el: $el[0]
@@ -349,11 +347,20 @@ class CK.Smartboard.View.BalloonCloud
 
             view.render()
 
+            if d.newlyAdded
+                jQuery('#'+d.id).addClass('new')
+                setTimeout ->
+                    jQuery('#'+d.id).removeClass('new')
+                , 2000
+
             pos = view.$el.position()
             d.x = pos.left + view.$el.outerWidth()/2 unless d.x?
             d.y = pos.top + view.$el.outerHeight()/2 unless d.y?
 
     render: (ev) =>
+
+        @wallWidth = @wall.$el.innerWidth()
+        @wallHeight = @wall.$el.innerHeight()
 
         # force2 = d3.layout.force()
         #     .charge(-300)

@@ -28,9 +28,9 @@ class CK.Smartboard.View.Base extends Backbone.View
         #     @$el.css('position', 'absolute') # draggable() makes them 'relative' on webkit for some reason, which breaks shit
         #     jQuery('#wall').append(@$el)
 
-        hasPosition = this.$el.position().left? && this.$el.position().left > 0
+        alreadyPositioned = @$el.position().left? && @$el.position().left > 0
 
-        if @model? and !hasPosition
+        if @model? and not alreadyPositioned
             @$el.hide() # hide until positioned
             if @model.has('pos')
                 @$el.css
@@ -39,6 +39,10 @@ class CK.Smartboard.View.Base extends Backbone.View
             else
                 console.log("autopositioning", this)
                 @autoPosition()
+
+        # if @model
+        #     @model.x ?= @$el.position().left if @$el.position().left > 0
+        #     @model.y ?= @$el.position().top if @$el.position().top > 0
 
         @$el.show()
 

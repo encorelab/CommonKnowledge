@@ -27,8 +27,6 @@
       this.generateForceFunction = __bind(this.generateForceFunction, this);
       console.log("Cloudifying the wall...");
       this.wall = wallView;
-      this.wallWidth = this.wall.$el.innerWidth();
-      this.wallHeight = this.wall.$el.innerHeight();
       this.nodes = [];
       this.links = [];
       this.vis = d3.select("#" + this.wall.id);
@@ -291,12 +289,12 @@
         if (!d.view) {
           $el = $('#' + d.id);
           $el.unbind();
-          if (d instanceof CK.Model.Tag) {
+          if (d.collectionName === "tags") {
             view = new CK.Smartboard.View.TagBalloon({
               model: d,
               el: $el[0]
             });
-          } else if (d instanceof CK.Model.Contribution) {
+          } else if (d.collectionName === "contributions") {
             view = new CK.Smartboard.View.ContributionBalloon({
               model: d,
               el: $el[0]
@@ -307,6 +305,12 @@
           d.view = view;
         }
         view.render();
+        if (d.newlyAdded) {
+          jQuery('#' + d.id).addClass('new');
+          setTimeout(function() {
+            return jQuery('#' + d.id).removeClass('new');
+          }, 2000);
+        }
         pos = view.$el.position();
         if (d.x == null) {
           d.x = pos.left + view.$el.outerWidth() / 2;
@@ -318,6 +322,8 @@
     };
 
     BalloonCloud.prototype.render = function(ev) {
+      this.wallWidth = this.wall.$el.innerWidth();
+      this.wallHeight = this.wall.$el.innerHeight();
       /*
               for n,i in @nodes
                   $n = jQuery(n)
@@ -325,6 +331,7 @@
                   n.x = pos.left + $n.outerWidth()/2 unless n.x?
                   n.y = pos.top + $n.outerHeight()/2 unless n.y?
       */
+
       this.vis.selectAll('div.balloon').data(this.nodes).enter().append('div').attr('id', function(d, i) {
         return d.id;
       }).attr('class', "balloon").call(this.inflateBalloons);

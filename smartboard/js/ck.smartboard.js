@@ -202,6 +202,7 @@
         });
         _this.tags.on('add', function(tag) {
           _this.wall.cloud.addNode(tag);
+          tag.newlyAdded = true;
           return _this.wall.cloud.render();
         });
         _this.tags.on('reset', function(collection) {
@@ -246,20 +247,15 @@
       },
       sail: {
         contribution: function(sev) {
+          var _this = this;
           return this.contributions.fetch().done(function() {
-            jQuery('#' + sev.payload._id).addClass('new');
-            return setTimeout(function() {
-              return jQuery('#' + sev.payload._id).removeClass('new');
-            }, 2000);
+            return _this.contributions.get(sev.payload._id).newlyAdded = true;
           });
         },
         build_on: function(sev) {
           return this.contributions.fetch().done(function() {
             return jQuery('#' + sev.payload._id).effect('highlight', 2000);
           });
-        },
-        new_tag: function(sev) {
-          return this.tags.fetch();
         },
         contribution_tagged: function(sev) {
           return this.contributions.fetch();
