@@ -33,7 +33,7 @@
     }
 
     BalloonCloud.prototype.generateForceFunction = function() {
-      return d3.layout.force().charge(0).linkDistance(this.linkDistance).linkStrength(0.2).gravity(0).friction(0.2).size([this.wallWidth, this.wallHeight]).nodes(this.nodes).links(this.links).on('tick', this.tick);
+      return d3.layout.force().charge(0).linkDistance(this.linkDistance).linkStrength(0.2).gravity(0).friction(0.2).size([this.wallWidth, this.wallHeight]).nodes(this.nodes).links(this.links).alpha(0.03).on('tick', this.tick);
     };
 
     BalloonCloud.prototype.linkDistance = function(link, i) {
@@ -227,7 +227,7 @@
         this.force = this.generateForceFunction();
       }
       console.log("Starting force...");
-      this.force.start();
+      this.force.start().alpha(0.02);
       return this.balloons.call(this.force.drag);
     };
 

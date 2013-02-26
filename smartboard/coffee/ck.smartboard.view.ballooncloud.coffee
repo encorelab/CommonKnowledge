@@ -48,7 +48,10 @@ class CK.Smartboard.View.BalloonCloud
             .size([@wallWidth, @wallHeight])
             .nodes(@nodes)
             .links(@links)
+            .alpha(0.03)
             .on('tick', @tick)
+
+
 
     # calculate the length in pixels of a link connector
     linkDistance: (link, i) =>
@@ -290,7 +293,7 @@ class CK.Smartboard.View.BalloonCloud
             
 
         console.log("Starting force...")
-        @force.start()
+        @force.start().alpha(0.02)
 
         @balloons.call(@force.drag)
 
