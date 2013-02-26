@@ -77,7 +77,7 @@ class Choreographer < Sail::Agent
       log "There are #{@bucket.count} contributions with no tags and #{@na_bucket.count} contributions with N/A tags left for tagging"      
     end
 
-    event :test? do |stanza, data|
+    event :chosen_tag_group? do |stanza, data|
       log "Recieved test #{data.inspect}"
       tag_group_missing = true
       
@@ -85,7 +85,7 @@ class Choreographer < Sail::Agent
 
       @mongo.collection(:states).find("type" => "tablet").each do |us|
         #log "#{us.inspect}"
-        if (!us['tag_group'] || us['tag_group'] == nil) then
+        if (!us['data'] || !us['data']['tag_group'] || us['data']['tag_group'] == nil) then
           log "tag group missing for #{us.inspect}"
           tag_group_missing = true
           break
@@ -172,12 +172,14 @@ class Choreographer < Sail::Agent
 
     # retrieve all users and tag_groups
     @mongo.collection(:states).find("type" => "tablet").each do |s|
-      unless s['tag_group'].empty? or s['username'].empty?
-        if !@tag_groups[s['tag_group']] || @tag_groups[s['tag_group']].empty?
-          @tag_groups[s['tag_group']] = []
+      # (!us['data'] || !us['data']['tag_group'] || us['data']['tag_group'] == nil) then
+      if s['data'] and s['data']['tag_group'] and s['data']['tag_group'] != nil and s['username'] then
+        # check if object @tag_groups has a key tag_group and a value if not create an empty array
+        if !@tag_groups[s['data']['tag_group']] || @tag_groups[s['data']['tag_group']] == nil
+          @tag_groups[s['data']['tag_group']] = []
         end
 
-        @tag_groups[s['tag_group']].push(s['username'])
+        @tag_groups[s['data']['tag_group']].push(s['username'])
       end
     end
     log "All tag_groups with users #{@tag_groups}"
@@ -267,6 +269,7 @@ class Choreographer < Sail::Agent
 
     phase = @mongo.collection(:states).find("type" => "phase").each do |state|
       state['state'] = phaseName
+      state['modified_at'] = Time.now.utc
       log "Saving state #{state.inspect}"
       @mongo.collection(:states).save(state)
       done = true
@@ -275,7 +278,7 @@ class Choreographer < Sail::Agent
 
     unless done
       log "Inserting new state with state #{phaseName.inspect}"
-      @mongo.collection(:states).save("type" => "phase", "state" => phaseName)
+      @mongo.collection(:states).save("type" => "phase", "state" => phaseName, "created_at" => Time.now.utc)
     end 
   end
 
