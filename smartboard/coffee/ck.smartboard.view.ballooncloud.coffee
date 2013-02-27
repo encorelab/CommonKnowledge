@@ -329,6 +329,7 @@ class CK.Smartboard.View.BalloonCloud
             @links.push link
 
     inflateBalloons: (balloons) =>
+        mode = @wall.mode
         balloons.each (d,i) ->
             view = d.view
 
@@ -342,13 +343,16 @@ class CK.Smartboard.View.BalloonCloud
                 else if d.collectionName is "contributions"
                     view = new CK.Smartboard.View.ContributionBalloon
                         model: d
-                        el: $el[0]
+                        el: $el[0]   
                 else
                     console.error("Unrecognized Balloon type:", d)
 
                 d.view = view
 
             view.render()
+
+            if d.collectionName is "contributions" && mode is 'analysis'
+                view.minify()
 
             if d.newlyAdded
                 jQuery('#'+d.id).addClass('new')
@@ -384,8 +388,9 @@ class CK.Smartboard.View.BalloonCloud
         ###
 
         # link <div.balloon>s to the Tag and Contribution objects in @nodes
+        
         @vis.selectAll('div.balloon')
-        # create emtpy <div.balloon> nodes for the @nodes that don't yet exist
+            # create emtpy <div.balloon> nodes for the @nodes that don't yet exist
             .data(@nodes).enter()
             .append('div')
                 .attr('id', (d,i) -> d.id)

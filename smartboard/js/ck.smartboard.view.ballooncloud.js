@@ -283,6 +283,8 @@
     };
 
     BalloonCloud.prototype.inflateBalloons = function(balloons) {
+      var mode;
+      mode = this.wall.mode;
       return balloons.each(function(d, i) {
         var $el, pos, view;
         view = d.view;
@@ -305,6 +307,9 @@
           d.view = view;
         }
         view.render();
+        if (d.collectionName === "contributions" && mode === 'analysis') {
+          view.minify();
+        }
         if (d.newlyAdded) {
           jQuery('#' + d.id).addClass('new');
           setTimeout(function() {

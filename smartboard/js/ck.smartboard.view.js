@@ -106,18 +106,18 @@
         return this.submitNewTag();
       },
       'click #show-word-cloud': function(ev) {
+        var wordCloudObject;
+        wordCloudObject = jQuery('#show-word-cloud');
         if (this.showCloud) {
+          wordCloudObject.addClass('disabled');
+          wordCloudObject.text('Drawing cloud... Please wait...');
           this.showWordCloud();
-          jQuery('#show-word-cloud').text('Hide word Cloud');
           return this.showCloud = false;
         } else {
           this.hideWordCloud();
-          jQuery('#show-word-cloud').text('Show word Cloud');
+          wordCloudObject.text('Show word Cloud');
           return this.showCloud = true;
         }
-      },
-      'click #close-word-cloud': function(ev) {
-        return this.hideWordCloud();
       },
       'keydown #new-tag': function(ev) {
         if (ev.keyCode === 13) {
@@ -273,7 +273,7 @@
     };
 
     Wall.prototype.generateWordCloud = function(wordHash) {
-      var draw, fadeDiv, fill, height, width, wordCloud;
+      var draw, fadeDiv, fill, height, width, wordCloud, wordCloudObject;
       fadeDiv = jQuery('#fade');
       width = fadeDiv.width();
       height = fadeDiv.height();
@@ -292,11 +292,14 @@
         });
       };
       fill = d3.scale.category20();
-      return d3.layout.cloud().size([width, height]).words(wordHash).rotate(function() {
+      d3.layout.cloud().size([width, height]).words(wordHash).rotate(function() {
         return ~~(Math.random() * 5) * 30 - 60;
       }).font("Ubuntu").fontSize(function(d) {
         return d.size;
       }).on("end", draw).start();
+      wordCloudObject = jQuery('#show-word-cloud');
+      wordCloudObject.text('Hide word Cloud');
+      return wordCloudObject.removeClass('disabled');
     };
 
     Wall.prototype.pause = function() {
@@ -382,17 +385,6 @@
 
     __extends(ContributionBalloon, _super);
 
-    function ContributionBalloon() {
-      this.renderBuildons = __bind(this.renderBuildons, this);
-
-      this.renderTags = __bind(this.renderTags, this);
-
-      this.render = __bind(this.render, this);
-
-      this.id = __bind(this.id, this);
-      return ContributionBalloon.__super__.constructor.apply(this, arguments);
-    }
-
     ContributionBalloon.prototype.tagName = 'article';
 
     ContributionBalloon.prototype.className = 'contribution balloon';
@@ -400,6 +392,24 @@
     ContributionBalloon.prototype.id = function() {
       return this.domID();
     };
+
+    function ContributionBalloon(options) {
+      this.renderBuildons = __bind(this.renderBuildons, this);
+
+      this.renderTags = __bind(this.renderTags, this);
+
+      this.render = __bind(this.render, this);
+
+      this.maximize = __bind(this.maximize, this);
+
+      this.minify = __bind(this.minify, this);
+
+      this.id = __bind(this.id, this);
+
+      var isMinifiedObject;
+      ContributionBalloon.__super__.constructor.call(this, options);
+      isMinifiedObject = false;
+    }
 
     ContributionBalloon.prototype.events = {
       'mousedown': function(ev) {
@@ -409,18 +419,47 @@
         this.$el.toggleClass('opened');
         if (this.$el.hasClass('opened')) {
           if ((Sail.app.wall.cloud != null) && (Sail.app.wall.cloud.force != null)) {
-            return Sail.app.wall.cloud.force.stop();
+            Sail.app.wall.cloud.force.stop();
+            return this.maximize();
           }
+        } else if (this.isMinifiedObject) {
+          return this.minify();
         }
       }
     };
 
+    ContributionBalloon.prototype.minify = function() {
+      var balloonID, balloonObj;
+      this.isMinifiedObject = true;
+      balloonObj = jQuery(this.$el);
+      balloonObj.removeClass('whiteGradient');
+      balloonObj.addClass('minified-version');
+      balloonID = balloonObj.attr('id');
+      jQuery('#' + balloonID + ' .headline').hide();
+      jQuery('#' + balloonID + ' .body').hide();
+      jQuery('#' + balloonID + ' .meta').hide();
+      return jQuery('#' + balloonID + ' .balloon-note').fadeIn('fast');
+    };
+
+    ContributionBalloon.prototype.maximize = function() {
+      var balloonID, balloonObj;
+      balloonObj = jQuery(this.$el);
+      balloonObj.addClass('whiteGradient');
+      balloonID = balloonObj.attr('id');
+      jQuery('#' + balloonID + ' .balloon-note').hide();
+      jQuery('#' + balloonID + ' .headline').fadeIn('fast');
+      jQuery('#' + balloonID + ' .body').fadeIn('fast');
+      return jQuery('#' + balloonID + ' .meta').fadeIn('fast');
+    };
+
     ContributionBalloon.prototype.render = function() {
-      var body, headline, meta;
-      this.$el.addClass('contribution');
+      var body, headline, meta, nodeHeader;
+      this.$el.addClass('contribution').addClass('whiteGradient');
       if (this.model.get('kind') === 'propose') {
         this.$el.addClass('synthesis');
       }
+      nodeHeader = this.findOrCreate('.balloon-note', '<img class="balloon-note" src="/smartboard/img/note.png" alt="Note">');
+      nodeHeader.hide();
       headline = this.findOrCreate('.headline', "<h3 class='headline'></h3>");
       headline.text(this.model.get('headline'));
       body = this.findOrCreate('.body', "<div class='body'></div>");
