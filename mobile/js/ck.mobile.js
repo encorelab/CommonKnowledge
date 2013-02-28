@@ -234,12 +234,20 @@ CK.Mobile = function() {
         
         if (sev.payload.recipient === app.userData.account.login) {
           console.log('name: '+sev.payload.recipient);
-          // save the contribution to tag in the state then attempt tagging
-          var dataObj = {"contribution_id":sev.payload.contribution_id};
-          // CK.setStateForUser ("tablet", app.userData.account.login, "contribution_to_tag", dataObj);
-          CK.setUserState(app.userData.account.login, "contribution_to_tag", dataObj);
+          // This should happen in analysis (alternatively we could get the state from the db but maybe later)
+          CK.getUserState(app.userData.account.login, function(user_state){
+            // get the analysis value since we should be in analysis state
+            var data = user_state.get('analysis');
+            // extend the object with the contribution_id
+            data.contribution_id = sev.payload.contribution_id;
+            // CK.setStateForUser ("tablet", app.userData.account.login, "contribution_to_tag", dataObj);
+            // CK.setUserState(app.userData.account.login, "contribution_to_tag", dataObj);
+            // I think a save is in order
+            user_state.set('analysis', data);
+            user_state.save();
 
-          app.contributionToTag(sev.payload.contribution_id);
+            app.contributionToTag(sev.payload.contribution_id);
+          });
         }
 
       },
@@ -482,18 +490,27 @@ CK.Mobile = function() {
   // };
 
   app.contributionToTag = function (contribution_id) {
-    var contribution_to_tag = new CK.Model.Contribution({id: contribution_id});
-    contribution_to_tag.on('change', function(model) { console.log(model.changedAttributes()); });   
+    var contribution_to_tag = new CK.Model.Contribution({_id: contribution_id});
+    // contribution_to_tag.on('change', function(model) { console.log(model.changedAttributes()); });   
 
     //app.taggedContribution.wake(app.config.wakeful.url);
 
-    var tagListView = new CK.Mobile.View.TagListView({
-      el: jQuery('#tag-list'),
-      collection: tagList
+    var taggingView = new CK.Mobile.View.TaggingView({
+      el: jQuery('#tagging-screen'),
+      model: contribution_to_tag
     });
-    contribution_to_tag.on('reset add', tagListView.render, tagListView);       // probably unnecessary, maybe even a bad idea?
+    //contribution_to_tag.on('reset add', taggingView.render, taggingView);       // probably unnecessary, maybe even a bad idea?
+    contribution_to_tag.on('change sync', taggingView.render, taggingView);
 
-    contribution_to_tag.fetch();
+    function fetchSuccess (m) {
+      console.log('fetched contribution');
+    }
+
+    function fetchError (err) {
+      console.warn('error fetching contribution');
+    }
+
+    contribution_to_tag.fetch({success: fetchSuccess, error: fetchError});
 
     // app.contributionDetails.set('_id', contribution_id);
     // app.contributionDetails.fetch({

@@ -427,20 +427,24 @@
   **/
   self.TaggingView = Backbone.View.extend({
     events: {
-      // 'click #tag-list-btn-container .tag-btn': function (ev) {
-      //   var view = this;
-      //   var button = jQuery('#'+ev.currentTarget.id);
-      //   var chosenTag = button.text();
-      //   ok = confirm("Do you want to choose <"+ chosenTag + "> as your specialization?")
-      //   if (ok) {
-      //     var d = {"tag_group":{"tag_id":ev.currentTarget.id,"tag_name":chosenTag}};
-      //     // save the tag (ev.target.name? Or id?) to the student's metadata object
-      //     CK.setStateForUser("tablet", Sail.app.userData.account.login, "tag_group", d);
+      'click #selected-tag-btn-container .tag-btn': function (ev) {
+        //var view = this;
+        alert("Stop clicking man");
+        // var button = jQuery('#'+ev.currentTarget.id);
+        // var chosenTag = button.text();
+        // ok = confirm("Do you want to choose <"+ chosenTag + "> as your specialization?")
+        // if (ok) {
+        //   var d = {"tag_group":{"tag_id":ev.currentTarget.id,"tag_name":chosenTag}};
+        //   // save the tag (ev.target.name? Or id?) to the student's metadata object
+        //   CK.setStateForUser("tablet", Sail.app.userData.account.login, "tag_group", d);
 
-      //     var sev = new Sail.Event('chosen_tag_group', JSON.stringify(d));
-      //     Sail.app.groupchat.sendEvent(sev);
-      //   }
-      // }
+        //   var sev = new Sail.Event('chosen_tag_group', JSON.stringify(d));
+        //   Sail.app.groupchat.sendEvent(sev);
+        // }
+      },
+      'click #yes-btn': function () {
+        alert("clicked yes");
+      }
     },
 
     initialize: function () {
@@ -456,8 +460,14 @@
       Triggers full update of all dynamic elements in the list view
     **/
     render: function () {
-      //var view = this;
+      var view = this;
       console.log("rendering TaggingView!");
+
+      var headline = view.model.get('headline');
+      var content = view.model.get('content');
+
+      jQuery('#note-to-tag-container .container-header').text(headline);
+      jQuery('#note-to-tag-body').text(content);
     }
 
   });
