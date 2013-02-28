@@ -8,6 +8,8 @@
     function BalloonCloud(wallView) {
       this.render = __bind(this.render, this);
 
+      this.reRenderForState = __bind(this.reRenderForState, this);
+
       this.inflateBalloons = __bind(this.inflateBalloons, this);
 
       this.addLink = __bind(this.addLink, this);
@@ -283,8 +285,8 @@
     };
 
     BalloonCloud.prototype.inflateBalloons = function(balloons) {
-      var mode;
-      mode = this.wall.mode;
+      var state;
+      state = this.wall.mode;
       return balloons.each(function(d, i) {
         var $el, pos, view;
         view = d.view;
@@ -301,9 +303,8 @@
               model: d,
               el: $el[0]
             });
-            if (mode === 'analysis') {
+            if (state === 'analysis') {
               view.ballonContributionType = view.balloonContributionTypes.minified;
-              view.render();
             }
           } else {
             console.error("Unrecognized Balloon type:", d);
@@ -325,6 +326,24 @@
           return d.y = pos.top + view.$el.outerHeight() / 2;
         }
       });
+    };
+
+    BalloonCloud.prototype.reRenderForState = function(state) {
+      var b, view, _i, _len, _ref, _results;
+      console.log('Rerender nodes for state: ' + state);
+      _ref = this.nodes;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        b = _ref[_i];
+        view = b.view;
+        if (state === 'analysis' && b.collectionName === "contributions") {
+          view.ballonContributionType = view.balloonContributionTypes.minified;
+          _results.push(view.render());
+        } else {
+          _results.push(void 0);
+        }
+      }
+      return _results;
     };
 
     BalloonCloud.prototype.render = function(ev) {

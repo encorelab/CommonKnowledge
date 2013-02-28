@@ -245,7 +245,9 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
         wordCloudObject.removeClass('disabled') 
 
     pause: =>
-        @cloud.force.stop()
+        if (@cloud? and @cloud.force?)
+            @cloud.force.stop()
+
         jQuery('body').addClass('paused')
         @$el.find('#toggle-pause')
             .addClass('paused')
