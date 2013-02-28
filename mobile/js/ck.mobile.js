@@ -75,6 +75,7 @@ CK.Mobile = function() {
   };
 
   app.restoreState = function () {
+    app.hideWaitScreen();
  
     //var stateObj = {"type":"phase"};
     CK.getState("phase", function(s) {
@@ -101,7 +102,7 @@ CK.Mobile = function() {
         });
       } else if (s && s.get('state') === "start_synthesis") {
         console.log('phase is start_synthesis');
-        app.startAnalysis();
+        //app.startAnalysis();
 
         CK.getStateForUser("tablet", Sail.app.userData.account.login, "contribution_to_tag", function(user_state){
           if (user_state) {
@@ -228,13 +229,11 @@ CK.Mobile = function() {
         
         if (sev.payload.recipient === app.userData.account.login) {
           console.log('name: '+sev.payload.recipient);
-
-
-          app.contributionToTag(sev.payload.contribution_id);          
-
+          // save the contribution to tag in the state then attempt tagging
           var dataObj = {"contribution_id":sev.payload.contribution_id};
           CK.setStateForUser ("tablet", app.userData.account.login, "contribution_to_tag", dataObj);
 
+          app.contributionToTag(sev.payload.contribution_id);
         }
 
       },
@@ -353,8 +352,8 @@ CK.Mobile = function() {
   app.showDetails = function(contrib) {
     console.log('creating a new Details');
 
-    var details = new CK.Model.Contribution();      // not sure if we want to create a new model instance here, or just set one view up in initViews and then rebind it to different contribs here...
-    details = contrib;
+    //var details = new CK.Model.Contribution();      // not sure if we want to create a new model instance here, or just set one view up in initViews and then rebind it to different contribs here...
+    var details = contrib;
     details.on('change', function(model) { console.log(model.changedAttributes()); });
 
     var detailsView = new CK.Mobile.View.ContributionDetailsView({
@@ -395,6 +394,8 @@ CK.Mobile = function() {
   /* State related function */
 
   app.startAnalysis = function() {
+    CK.setStateForUser ("tablet", app.userData.account.login, "analysis", {});
+
     var tagList = new CK.Model.Tags();
     tagList.on('change', function(model) { console.log(model.changedAttributes()); });   
 
@@ -423,12 +424,29 @@ CK.Mobile = function() {
       // create the object that hold the tag_group information
       var metadata = {"tag_group":tag_name};
       // save the tag name and id of the chosen tag_group to the student's metadata object
-      CK.setStateForUser("tablet", Sail.app.userData.account.login, "tag_group", metadata);
-      // send out and sail event
-      var sev = new Sail.Event('chosen_tag_group', JSON.stringify(metadata));
-      Sail.app.groupchat.sendEvent(sev);
-      // Show wait screen until agent answers with the contribution to be tagged
-      Sail.app.showWaitScreen();
+      //CK.setStateForUser("tablet", Sail.app.userData.account.login, "analysis", metadata);
+      // WARNING: I don't use setStateForUser here because I only want to send the sail event
+      // AFTER the state was written to the MongoDB to avoid problems in the agent
+      CK.getStateForUser("tablet", Sail.app.userData.account.login, "analysis", function (state){
+        state.set('data', metadata);
+        state.save(null,
+        {
+          complete: function () {
+            console.log('New state submitted!');
+          },
+          success: function () {
+            console.log('State saved');
+            // send out and sail event
+            var sev = new Sail.Event('chosen_tag_group', JSON.stringify(metadata));
+            Sail.app.groupchat.sendEvent(sev);
+            // Show wait screen until agent answers with the contribution to be tagged
+            Sail.app.showWaitScreen();
+          },
+          failure: function(model, response) {
+            console.log('Error submitting state: ' + response);
+          }
+        });
+      });
     } else {
       console.warn('choseTagGroup called with empty tag_name');
     }
@@ -455,12 +473,25 @@ CK.Mobile = function() {
   // };
 
   app.contributionToTag = function (contribution_id) {
-    app.contributionDetails.set('_id', contribution_id);
-    app.contributionDetails.fetch({
-      success: function () {
-        app.taggedContribution = app.contributionDetails;
-      }
+    var contribution_to_tag = new CK.Model.Contribution({id: contribution_id});
+    contribution_to_tag.on('change', function(model) { console.log(model.changedAttributes()); });   
+
+    //app.taggedContribution.wake(app.config.wakeful.url);
+
+    var tagListView = new CK.Mobile.View.TagListView({
+      el: jQuery('#tag-list'),
+      collection: tagList
     });
+    contribution_to_tag.on('reset add', tagListView.render, tagListView);       // probably unnecessary, maybe even a bad idea?
+
+    contribution_to_tag.fetch();
+
+    // app.contributionDetails.set('_id', contribution_id);
+    // app.contributionDetails.fetch({
+    //   success: function () {
+    //     app.taggedContribution = app.contributionDetails;
+    //   }
+    // });
   };
 
   app.doneTagging = function() {
