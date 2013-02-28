@@ -17,6 +17,7 @@ CK.getStateForUser = (type, username, state_name, callback) ->
     states.on 'reset', (ss) ->
         state = ss.find (s) -> s.get('type') is type && s.get('username') is username && s.get('state') is state_name
         # unless state?
+        # if typeof state == 'undefined' || state == null
         #     state = new CK.Model.State()
 
         callback(state)
@@ -25,25 +26,23 @@ CK.getStateForUser = (type, username, state_name, callback) ->
 
 CK.setState = (type, state, screen_lock = false) ->
     CK.getState type, (s)->
-        `if (typeof s === "undefined" || s === null ) {
-            //create new state
-            s = new CK.Model.State();
-            s.set('type', type);
-        }
-        `
+        if (typeof s == "undefined" || s == null )
+            # //create new state
+            s = new CK.Model.State()
+            s.set('type', type)
+
         s.set('state', state)
         s.set('screen_lock', screen_lock)
         s.save()
 
 CK.setStateForUser = (type, username, state, data_obj) ->
     CK.getStateForUser type, username, state, (s)->
-        `if (typeof s === "undefined" || s === null ) {
-            //create new state
-            s = new CK.Model.State();
-            s.set('type', type);
-            s.set('username', username);
-            s.set('state', state);
-        }
-        `
+        if (typeof s == "undefined" || s == null )
+            # //create new state
+            s = new CK.Model.State()
+            s.set('type', type)
+            s.set('username', username)
+            s.set('state', state)
+        
         s.set('data', data_obj)
         s.save()

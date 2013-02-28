@@ -37,28 +37,24 @@
       screen_lock = false;
     }
     return CK.getState(type, function(s) {
-      if (typeof s === "undefined" || s === null ) {
-            //create new state
-            s = new CK.Model.State();
-            s.set('type', type);
-        }
-        ;
+      if (typeof s === "undefined" || s === null) {
+        s = new CK.Model.State();
+        s.set('type', type);
+      }
       s.set('state', state);
       s.set('screen_lock', screen_lock);
       return s.save();
     });
   };
 
-  CK.setStateForUser = function(type, username, state, data_obj) {
+  CK.setStateForUser = function(type, username, state, data_obj, callback) {
     return CK.getStateForUser(type, username, state, function(s) {
-      if (typeof s === "undefined" || s === null ) {
-            //create new state
-            s = new CK.Model.State();
-            s.set('type', type);
-            s.set('username', username);
-            s.set('state', state);
-        }
-        ;
+      if (typeof s === "undefined" || s === null) {
+        s = new CK.Model.State();
+        s.set('type', type);
+        s.set('username', username);
+        s.set('state', state);
+      }
       s.set('data', data_obj);
       return s.save();
     });
