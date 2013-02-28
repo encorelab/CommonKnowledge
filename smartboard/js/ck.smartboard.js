@@ -249,7 +249,9 @@
         contribution: function(sev) {
           var _this = this;
           return this.contributions.fetch().done(function() {
-            return _this.contributions.get(sev.payload._id).newlyAdded = true;
+            var thePayload;
+            thePayload = jQuery.parseJSON(sev.payload);
+            return _this.contributions.get(thePayload._id).newlyAdded = true;
           });
         },
         build_on: function(sev) {

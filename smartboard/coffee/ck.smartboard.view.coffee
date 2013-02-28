@@ -78,16 +78,19 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
         'click #submit-new-tag': (ev) -> @submitNewTag()
 
         'click #show-word-cloud': (ev) ->
+            wordCloudObject = jQuery('#show-word-cloud')
+            
             if (@showCloud)
-                @showWordCloud()
-                jQuery('#show-word-cloud').text('Hide word Cloud')
+                wordCloudObject.addClass('disabled')
+                wordCloudObject.text('Drawing cloud... Please wait...')
+                @showWordCloud()           
                 @showCloud = false
             else
                 @hideWordCloud()
-                jQuery('#show-word-cloud').text('Show word Cloud')
+                wordCloudObject.text('Show word Cloud')
                 @showCloud = true
 
-        'click #close-word-cloud': (ev) -> @hideWordCloud()
+        #'click #close-word-cloud': (ev) -> @hideWordCloud()
             
 
         'keydown #new-tag': (ev) -> @submitNewTag() if ev.keyCode is 13
@@ -236,6 +239,11 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             d.size
         ).on("end", draw).start()
 
+        # enable the clicking of the button once the word cloud is rendered
+        wordCloudObject = jQuery('#show-word-cloud')
+        wordCloudObject.text('Hide word Cloud')
+        wordCloudObject.removeClass('disabled') 
+
     pause: =>
         @cloud.force.stop()
         jQuery('body').addClass('paused')
@@ -317,7 +325,13 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
 class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
     tagName: 'article'
     className: 'contribution balloon'
+   
     id: => @domID()
+
+    constructor: (options) ->
+        super(options)
+
+        isMinifiedObject = false
 
     events:
         'mousedown': (ev) -> @moveToTop()
@@ -327,6 +341,12 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
             if @$el.hasClass('opened')
                 if Sail.app.wall.cloud? && Sail.app.wall.cloud.force?
                     Sail.app.wall.cloud.force.stop()
+                    @maximize()
+
+            else if (@isMinifiedObject)
+                @minify()
+            
+                    
                     
 
 
@@ -334,11 +354,37 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
     #     # make this View accessible from the element
     #     @$el.data('view', @)
 
+    minify: =>
+        @isMinifiedObject = true
+        balloonObj = jQuery(@$el)
+        balloonObj.removeClass('whiteGradient')
+        balloonObj.addClass('minified-version')
+        balloonID = balloonObj.attr('id')
+        jQuery('#' + balloonID + ' .headline').hide()
+        jQuery('#' + balloonID + ' .body').hide()
+        jQuery('#' + balloonID + ' .meta').hide()
+        jQuery('#' + balloonID + ' .balloon-note').fadeIn('fast')
+
+        #balloonObj.hide();
+
+    maximize: =>
+        balloonObj = jQuery(@$el)
+        balloonObj.addClass('whiteGradient')
+        balloonID = balloonObj.attr('id')
+        jQuery('#' + balloonID + ' .balloon-note').hide()
+        jQuery('#' + balloonID + ' .headline').fadeIn('fast')
+        jQuery('#' + balloonID + ' .body').fadeIn('fast')
+        jQuery('#' + balloonID + ' .meta').fadeIn('fast')
+        
+
     render: =>
-        @$el.addClass('contribution')
+        @$el.addClass('contribution').addClass('whiteGradient')
 
         if @model.get('kind') is 'propose'
             @$el.addClass('synthesis')
+
+        nodeHeader = @findOrCreate '.balloon-note', '<img class="balloon-note" src="/smartboard/img/note.png" alt="Note">'
+        nodeHeader.hide()
 
         headline = @findOrCreate '.headline', 
             "<h3 class='headline'></h3>"

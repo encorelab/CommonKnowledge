@@ -11,6 +11,9 @@ $tag-text-color: black;
 $widget-background-color: #ffa100;
 $widget-accent-color: #c8271a;
 
+.disabled {
+    opacity: 0.4;
+}
 
 @mixin transition($duration, $property: all, $timing: ease, $delay: 0) {
     -webkit-transition: $property $duration $timing $delay;
@@ -111,6 +114,20 @@ body {
   }
 }
 
+img.balloon-note {
+    margin-left:auto;
+    margin-right:auto;
+    display: block;
+    width: 64px;
+}
+
+.contribution.balloon.whiteGradient {
+    background: -moz-linear-gradient(top, rgba(226,226,226,0.85) 0%, rgba(219,219,219,0.85) 50%, rgba(209,209,209,0.85) 51%, rgba(254,254,254,0.85) 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(226,226,226,0.85)), color-stop(50%,rgba(219,219,219,0.85)), color-stop(51%,rgba(209,209,209,0.85)), color-stop(100%,rgba(254,254,254,0.85))); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top, rgba(226,226,226,0.85) 0%,rgba(219,219,219,0.85) 50%,rgba(209,209,209,0.85) 51%,rgba(254,254,254,0.85) 100%); /* Chrome10+,Safari5.1+ */
+    background: linear-gradient(to bottom, rgba(226,226,226,0.85) 0%,rgba(219,219,219,0.85) 50%,rgba(209,209,209,0.85) 51%,rgba(254,254,254,0.85) 100%); /* W3C */
+    box-shadow: rgba(#000, 0.3) 0px 2px 10px;
+}
 
 .contribution.balloon {
     position: absolute;
@@ -118,8 +135,13 @@ body {
     display: inline-block;
 
     border-radius: 15px;
-    background-color: rgba($contribution-bubble-color, 0.85);
-    box-shadow: rgba(#000, 0.3) 0px 2px 10px;
+    //background-color: rgba($contribution-bubble-color, 0.85);
+    background-color: transparent;
+    
+
+    ///
+
+    
 
     max-height: 95%;
     overflow-y: auto;
@@ -142,7 +164,7 @@ body {
     // }
 
     .meta .author {
-        color: rgba(black, 0.4);
+        color: rgba(black, 0.8);
         font-size: 11px;
         margin-bottom: 1em;
         padding: 2px;
@@ -208,6 +230,7 @@ body {
     &.opened {
         width: 200px;
         background-color: rgba($contribution-bubble-color, 1.0);
+        //background: rgba($contribution-bubble-color, 1.0);
     }
     &.opened .body {
         display: block;

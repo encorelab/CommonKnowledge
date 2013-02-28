@@ -183,7 +183,9 @@ class CK.Smartboard extends Sail.App
         sail:
             contribution: (sev) ->
                 @contributions.fetch().done =>
-                    @contributions.get(sev.payload._id).newlyAdded = true
+                    #payload is not a json object so make it one!
+                    thePayload = jQuery.parseJSON(sev.payload)
+                    @contributions.get(thePayload._id).newlyAdded = true
 
             build_on: (sev) ->
                 @contributions.fetch().done ->
