@@ -406,9 +406,9 @@
 
       this.render = __bind(this.render, this);
 
-      this.maximize = __bind(this.maximize, this);
+      this.toggleAnalysis = __bind(this.toggleAnalysis, this);
 
-      this.minify = __bind(this.minify, this);
+      this.toggleProposal = __bind(this.toggleProposal, this);
 
       this.processContributionByType = __bind(this.processContributionByType, this);
 
@@ -418,7 +418,9 @@
       ContributionBalloon.__super__.constructor.call(this, options);
       this.balloonContributionTypes = {
         "default": 'default',
-        minified: 'minified'
+        analysis: 'analysis',
+        propose: 'propose',
+        interpret: 'interpret'
       };
       this.ballonContributionType = this.balloonContributionTypes["default"];
       this.colorClass = "whiteGradient";
@@ -442,46 +444,54 @@
     };
 
     ContributionBalloon.prototype.processContributionByType = function() {
-      if (this.$el.hasClass('opened')) {
-        if (this.ballonContributionType === this.balloonContributionTypes.minified) {
-          return this.maximize();
-        }
-      } else if (this.ballonContributionType === this.balloonContributionTypes.minified) {
-        return this.minify();
+      if (this.ballonContributionType === this.balloonContributionTypes.analysis) {
+        return this.toggleAnalysis();
+      } else if (this.ballonContributionType === this.balloonContributionTypes.propose) {
+        return this.toggleProposal();
       }
     };
 
-    ContributionBalloon.prototype.minify = function() {
+    ContributionBalloon.prototype.toggleProposal = function() {
       var balloonID, balloonObj;
       balloonObj = jQuery(this.$el);
-      balloonObj.removeClass(this.colorClass);
       balloonID = balloonObj.attr('id');
-      jQuery('#' + balloonID + ' .headline').hide();
-      jQuery('#' + balloonID + ' .body').hide();
-      jQuery('#' + balloonID + ' .meta').hide();
-      return jQuery('#' + balloonID + ' .balloon-note').fadeIn('fast');
+      if (this.$el.hasClass('opened')) {
+        return jQuery('#' + balloonID + ' .idea-counter').fadeIn('fast');
+      } else {
+        return jQuery('#' + balloonID + ' .idea-counter').hide();
+      }
     };
 
-    ContributionBalloon.prototype.maximize = function() {
+    ContributionBalloon.prototype.toggleAnalysis = function() {
       var balloonID, balloonObj;
       balloonObj = jQuery(this.$el);
-      balloonObj.addClass(this.colorClass);
+      balloonObj.toggleClass(this.colorClass);
       balloonID = balloonObj.attr('id');
-      jQuery('#' + balloonID + ' .balloon-note').hide();
-      jQuery('#' + balloonID + ' .headline').fadeIn('fast');
-      jQuery('#' + balloonID + ' .body').fadeIn('fast');
-      return jQuery('#' + balloonID + ' .meta').fadeIn('fast');
+      if (this.$el.hasClass('opened')) {
+        jQuery('#' + balloonID + ' .balloon-note').hide();
+        jQuery('#' + balloonID + ' .headline').fadeIn('fast');
+        jQuery('#' + balloonID + ' .body').fadeIn('fast');
+        return jQuery('#' + balloonID + ' .meta').fadeIn('fast');
+      } else {
+        jQuery('#' + balloonID + ' .headline').hide();
+        jQuery('#' + balloonID + ' .body').hide();
+        jQuery('#' + balloonID + ' .meta').hide();
+        return jQuery('#' + balloonID + ' .balloon-note').fadeIn('fast');
+      }
     };
 
     ContributionBalloon.prototype.render = function() {
-      var body, headline, meta, nodeHeader;
+      var body, headline, ideaCounter, meta, nodeHeader;
       this.$el.addClass('contribution').addClass(this.colorClass);
       if (this.model.get('kind') === 'propose') {
         this.$el.addClass('synthesis');
       }
-      if (this.ballonContributionType === this.balloonContributionTypes.minified) {
+      if (this.ballonContributionType === this.balloonContributionTypes.analysis) {
         nodeHeader = this.findOrCreate('.balloon-note', '<img class="balloon-note" src="/smartboard/img/note.png" alt="Note">');
         nodeHeader.hide();
+      } else if (this.ballonContributionType === this.balloonContributionTypes.propose) {
+        ideaCounter = this.findOrCreate('.idea-counter', '<div class="idea-counter"><span>99</span></div>');
+        ideaCounter.hide();
       }
       headline = this.findOrCreate('.headline', "<h3 class='headline'></h3>");
       headline.text(this.model.get('headline'));

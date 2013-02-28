@@ -159,6 +159,27 @@ img.balloon-note {
   .contribution.balloon.propose {
     background-color: rgba(255, 255, 0, 0.9); }
 
+.idea-counter {
+  background-image: url("/smartboard/img/lightbulb_big_on.png");
+  background-repeat: no-repeat;
+  background-size: 70px 70px;
+  height: 70px;
+  width: 70px;
+  display: inline-block;
+  float: right;
+  margin-top: 1em; }
+
+.idea-counter span {
+  position: relative;
+  top: 20px;
+  left: 24px;
+  color: #000000;
+  font-size: 1.0em;
+  overflow: visible;
+  text-align: center;
+  height: 1em;
+  width: 3em; }
+
 .group1-color {
   background-color: rgba(123, 105, 240, 0.9);
   background: -moz-linear-gradient(top, rgba(184, 175, 247, 0) 0%, #7b69f0 100%);

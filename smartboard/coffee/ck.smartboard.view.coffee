@@ -338,7 +338,9 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
 
         @balloonContributionTypes = {
             default:  'default',
-            minified: 'minified'
+            analysis: 'analysis',
+            propose: 'propose',
+            interpret: 'interpret'
         }
 
         @ballonContributionType = @balloonContributionTypes.default
@@ -362,34 +364,37 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
     #     @$el.data('view', @)
 
     processContributionByType: =>
-        if @$el.hasClass('opened')
-            if (@ballonContributionType is @balloonContributionTypes.minified)
-                @maximize()
-        else if (@ballonContributionType is @balloonContributionTypes.minified)
-                @minify()
+        if (@ballonContributionType is @balloonContributionTypes.analysis)
+            @toggleAnalysis()
+        else if (@ballonContributionType is @balloonContributionTypes.propose)
+            @toggleProposal()
 
-
-    minify: =>
+    toggleProposal: => 
         balloonObj = jQuery(@$el)
-        balloonObj.removeClass(@colorClass)
-        #balloonObj.css({height: '64px', width: '64px'})
         balloonID = balloonObj.attr('id')
-        jQuery('#' + balloonID + ' .headline').hide()
-        jQuery('#' + balloonID + ' .body').hide()
-        jQuery('#' + balloonID + ' .meta').hide()
-        jQuery('#' + balloonID + ' .balloon-note').fadeIn('fast')
-
-
-    maximize: =>
-        balloonObj = jQuery(@$el)
-        balloonObj.addClass(@colorClass)
-        #balloonObj.css({height: @height + 'px', width: @width + 'px'})
-        balloonID = balloonObj.attr('id')
-        jQuery('#' + balloonID + ' .balloon-note').hide()
-        jQuery('#' + balloonID + ' .headline').fadeIn('fast')
-        jQuery('#' + balloonID + ' .body').fadeIn('fast')
-        jQuery('#' + balloonID + ' .meta').fadeIn('fast')
         
+        if @$el.hasClass('opened')
+            jQuery('#' + balloonID + ' .idea-counter').fadeIn('fast')
+        else
+            jQuery('#' + balloonID + ' .idea-counter').hide()
+
+    toggleAnalysis: =>
+        balloonObj = jQuery(@$el)
+        balloonObj.toggleClass(@colorClass)
+        balloonID = balloonObj.attr('id')
+       
+        
+        if @$el.hasClass('opened')
+            jQuery('#' + balloonID + ' .balloon-note').hide()
+            jQuery('#' + balloonID + ' .headline').fadeIn('fast')
+            jQuery('#' + balloonID + ' .body').fadeIn('fast')
+            jQuery('#' + balloonID + ' .meta').fadeIn('fast') 
+        else
+            jQuery('#' + balloonID + ' .headline').hide()
+            jQuery('#' + balloonID + ' .body').hide()
+            jQuery('#' + balloonID + ' .meta').hide()
+            jQuery('#' + balloonID + ' .balloon-note').fadeIn('fast')
+
 
     render: =>
         @$el.addClass('contribution').addClass(@colorClass)
@@ -397,9 +402,12 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
         if @model.get('kind') is 'propose'
             @$el.addClass('synthesis')
 
-        if (@ballonContributionType is @balloonContributionTypes.minified)
+        if (@ballonContributionType is @balloonContributionTypes.analysis)
             nodeHeader = @findOrCreate '.balloon-note', '<img class="balloon-note" src="/smartboard/img/note.png" alt="Note">'
             nodeHeader.hide()
+        else if (@ballonContributionType is @balloonContributionTypes.propose)
+            ideaCounter = @findOrCreate '.idea-counter', '<div class="idea-counter"><span>99</span></div>'
+            ideaCounter.hide()
 
         headline = @findOrCreate '.headline', 
             "<h3 class='headline'></h3>"

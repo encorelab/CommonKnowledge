@@ -346,9 +346,11 @@ class CK.Smartboard.View.BalloonCloud
                         el: $el[0]
                     
                     if state is 'analysis'
-                        view.ballonContributionType = view.balloonContributionTypes.minified
-                        #view.render()
-
+                        view.ballonContributionType = view.balloonContributionTypes.analysis
+                    else if state is 'propose'
+                        view.ballonContributionType = view.balloonContributionTypes.propose
+                    else if state is 'interpret'
+                        view.ballonContributionType = view.balloonContributionTypes.interpret
                 else
                     console.error("Unrecognized Balloon type:", d)
 
@@ -370,10 +372,17 @@ class CK.Smartboard.View.BalloonCloud
         console.log 'Rerender nodes for state: ' + state
         for b in @nodes
             view = b.view
-            
-            if (state is 'analysis' and b.collectionName is "contributions")
-                 view.ballonContributionType = view.balloonContributionTypes.minified
-                 view.render()
+            if b.collectionName is "contributions"
+                if (state is 'analysis')
+                    view.ballonContributionType = view.balloonContributionTypes.analysis
+                else if (state is 'propose')
+                    view.ballonContributionType = view.balloonContributionTypes.propose
+                else if (state is 'interpret')
+                    view.ballonContributionType = view.balloonContributionTypes.interpret
+                else 
+                    view.ballonContributionType = view.balloonContributionTypes.default
+                    
+            view.render()
 
 
 

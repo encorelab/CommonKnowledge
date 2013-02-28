@@ -23,6 +23,8 @@ $tag-bubble-color-group4-to: #ED11C1;
 $widget-background-color: #ffa100;
 $widget-accent-color: #c8271a;
 
+$lightbulb-height: 70px;
+
 .disabled {
     opacity: 0.4;
 }
@@ -260,6 +262,29 @@ img.balloon-note {
     }
 
     @include transition(0.5s, height);
+}
+
+.idea-counter {
+    background-image: url('/smartboard/img/lightbulb_big_on.png');
+    background-repeat: no-repeat; 
+    background-size:$lightbulb-height $lightbulb-height;
+    height: $lightbulb-height;
+    width: $lightbulb-height;
+    display: inline-block;
+    float: right;   
+    margin-top: 1em;
+}
+
+.idea-counter span {
+    position: relative;
+    top: 20px;
+    left: 24px;
+    color: #000000;
+    font-size: 1.0em;
+    overflow: visible;
+    text-align:center;
+    height: 1em;
+    width: 3em;
 }
 
 .group1-color {
