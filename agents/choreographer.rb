@@ -19,6 +19,7 @@ class Choreographer < Sail::Agent
     @students = {}
     @bucket = []
     @na_bucket = []
+    @buckets_created = false
   end
 
   def behaviour
@@ -64,40 +65,60 @@ class Choreographer < Sail::Agent
       store_phase("analysis")
       
       # Retrieve contributions to consider for tagging
-      fill_contribution_buckets()
-      log "Found #{@bucket.count} contributions with no tags and #{@na_bucket.count} contributions with N/A tags to hand out to #{@students.inspect}"
+      # fill_contribution_buckets()
+      # log "Found #{@bucket.count} contributions with no tags and #{@na_bucket.count} contributions with N/A tags to hand out to #{@students.inspect}"
       
-      # Handout contributions to all present users
-      log "Sending out first wave of tagging events"
-      @students.each do |student|
-        studentName = student.first
-        hand_out_assignment(studentName)        
-      end
+      # # Handout contributions to all present users
+      # log "Sending out first wave of tagging events"
+      # @students.each do |student|
+      #   studentName = student.first
+      #   hand_out_assignment(studentName)        
+      # end
 
-      log "There are #{@bucket.count} contributions with no tags and #{@na_bucket.count} contributions with N/A tags left for tagging"      
+      # log "There are #{@bucket.count} contributions with no tags and #{@na_bucket.count} contributions with N/A tags left for tagging"      
     end
 
     event :chosen_tag_group? do |stanza, data|
-      log "Recieved test #{data.inspect}"
+      log "Recieved chosen_tag_group #{data.inspect}"
       tag_group_missing = true
       
-      #user_state = @mongo.collection(:states).find("type" => "tablet", "username" => "armin").first
-
-      @mongo.collection(:states).find("type" => "tablet").each do |us|
-        #log "#{us.inspect}"
-        if (!us['data'] || !us['data']['tag_group'] || us['data']['tag_group'] == nil) then
-          log "tag group missing for #{us.inspect}"
-          tag_group_missing = true
-          break
-        end
-
-        tag_group_missing = false
-      end
-      
-      unless tag_group_missing then
+      #select states with type:tablet and state:analysis from DB and once all have a tag_group set fill go on
+      unless @mongo.collection(:states).find("type" => "tablet", "state" => "analysis").any? {|s| (!s['data']['tag_group'] || s['data']['tag_group'] == nil) && s['username'] != data['origin'] } then
         log "All tag groups are set and we go :)"
-        create_tagging_buckets()
+        unless @buckets_created then
+          @buckets_created = create_tagging_buckets()
+
+          if @buckets and @buckets != nil and @tag_groups and @tag_groups != nil then
+            log "Buckets are filled lets send out first wave of assignments"
+            hand_out_initial_assignments()
+          end
+        else
+          log "Trigger happy?"
+        end
       end
+
+
+
+      # @mongo.collection(:states).find("type" => "tablet", "state" => "analysis").each do |us|
+      #   #log "#{us.inspect}"
+      #   if (!us['data']['tag_group'] || us['data']['tag_group'] == nil) and us['username'] != data['origin'] then
+      #     log "tag group missing for #{us.inspect}"
+      #     tag_group_missing = true
+      #     break
+      #   end
+
+      #   tag_group_missing = false
+      # end
+      
+      # unless tag_group_missing then
+      #   log "All tag groups are set and we go :)"
+      #   create_tagging_buckets()
+
+      #   if @buckets and @buckets != nil and @tag_groups and @tag_groups != nil then
+      #     log "Buckets are filled lets send out first wave of assignments"
+      #     hand_out_initial_assignments()
+      #   end
+      # end
 
     end
 
@@ -165,15 +186,16 @@ class Choreographer < Sail::Agent
 
     # retrieve all published observations
     @mongo.collection(:contributions).find("published" => true).each do |c|
-      contrib = {"contib_id" => c['_id'].to_s, "assigned_user" => nil, "tagged" => false}
+      #contrib = {"contib_id" => c['_id'].to_s, "assigned_user" => nil, "tagged" => false}
+      contrib = c['_id'].to_s
       contributions.push(contrib)
     end
     log "All published contributions that are considered for tagging: #{contributions.inspect}"
 
     # retrieve all users and tag_groups
-    @mongo.collection(:states).find("type" => "tablet").each do |s|
+    @mongo.collection(:states).find("type" => "tablet", "state" => "analysis").each do |s|
       # (!us['data'] || !us['data']['tag_group'] || us['data']['tag_group'] == nil) then
-      if s['data'] and s['data']['tag_group'] and s['data']['tag_group'] != nil and s['username'] then
+      if s['data']['tag_group'] and s['data']['tag_group'] != nil and s['username'] then
         # check if object @tag_groups has a key tag_group and a value if not create an empty array
         if !@tag_groups[s['data']['tag_group']] || @tag_groups[s['data']['tag_group']] == nil
           @tag_groups[s['data']['tag_group']] = []
@@ -182,41 +204,67 @@ class Choreographer < Sail::Agent
         @tag_groups[s['data']['tag_group']].push(s['username'])
       end
     end
-    log "All tag_groups with users #{@tag_groups}"
+    #log "All tag_groups with users #{@tag_groups}"
     @tag_groups.map do |tag_group, usernames|
       usernames.uniq!
-      @buckets[tag_group] = contributions
+      @buckets[tag_group] = contributions.clone
     end
     log "All tag_groups with users #{@tag_groups}"
-    log "buckets #{@buckets}"
+    log "All buckets #{@buckets}"
 
+    return true
   end
 
-  def fill_contribution_buckets()
-    #empty bucket
-    @bucket = []
-    @na_bucket = []
+  # def fill_contribution_buckets()
+  #   #empty bucket
+  #   @bucket = []
+  #   @na_bucket = []
     
-    # retrieve all contributions that make up the bucket of contribs to be tagged
-    # @mongo.collection(:contributions).find("tags" => { "$exists" => true}, "author" => { "$exists" => true }, "headline" => { "$exists" => true }, "content" => { "$exists" => true }).each do |contrib|
-    @mongo.collection(:contributions).find("tags" => { "$exists" => true}).each do |contrib|
-      contributionId = contrib['_id'].to_s
+  #   # retrieve all contributions that make up the bucket of contribs to be tagged
+  #   # @mongo.collection(:contributions).find("tags" => { "$exists" => true}, "author" => { "$exists" => true }, "headline" => { "$exists" => true }, "content" => { "$exists" => true }).each do |contrib|
+  #   @mongo.collection(:contributions).find("tags" => { "$exists" => true}).each do |contrib|
+  #     contributionId = contrib['_id'].to_s
 
-      if (!contrib['tags'].empty? && contrib['tags'].any?{|t| t['name'] == "N/A"})
-        log "#{contrib.inspect}"
-      end
+  #     if (!contrib['tags'].empty? && contrib['tags'].any?{|t| t['name'] == "N/A"})
+  #       log "#{contrib.inspect}"
+  #     end
 
-      # only work on contributions that are not tagged yet or that have n/a tag
-      if contrib['tags'].empty?
-        @bucket.push(contributionId)
-      elsif (!contrib['tags'].empty? && contrib['tags'].any?{|t| t['name'] == "N/A"})
-        na_tag = contrib['tags'].select{|v| v['name'] == "N/A"}
-        log "na_tag content #{na_tag}"
-        @na_bucket.push({"contribution_id" => contributionId, "tagger" => na_tag.first['tagger']})
+  #     # only work on contributions that are not tagged yet or that have n/a tag
+  #     if contrib['tags'].empty?
+  #       @bucket.push(contributionId)
+  #     elsif (!contrib['tags'].empty? && contrib['tags'].any?{|t| t['name'] == "N/A"})
+  #       na_tag = contrib['tags'].select{|v| v['name'] == "N/A"}
+  #       log "na_tag content #{na_tag}"
+  #       @na_bucket.push({"contribution_id" => contributionId, "tagger" => na_tag.first['tagger']})
+  #     end
+  #   end
+
+  #   log "bucket #{@bucket.count} / na bucket #{@na_bucket.count}"
+  # end
+
+  def hand_out_initial_assignments()
+    log "Function hand_out_initial_assignments"
+    # go over the tag groups and assign each user to a contribution for tagging
+    @tag_groups.map do |group, users|
+      log "Handing out for tag_group: #{group.inspect}"
+      bucket = @buckets[group]
+      log "from bucket: #{bucket.inspect}"
+      # iterate over all users of a tag_group and assign them with a contribution to tag
+      users.each do |user|
+        # Are there contributions left for assignment
+        #if bucket.any?{|c| c['assigned_user'] == nil} then
+        unless bucket.empty? then
+          # contribution = bucket.select!{|c| c['assigned_user'] == nil}.first
+          # send_tag_assignment(user, contribution['contib_id'])
+          # contribution['assigned_user'] = user
+          send_tag_assignment(user, bucket.pop())
+        else
+          log "No contribution in tag_group #{group.inspect} left for user #{user.inspect}"
+#TODO do we send a message saying that was it??????
+        end
       end
+      log "bucket for #{group.inspect}: #{@buckets[group].inspect}"
     end
-
-    log "bucket #{@bucket.count} / na bucket #{@na_bucket.count}"
   end
 
   # important: Run fill_contribution_buckets first
