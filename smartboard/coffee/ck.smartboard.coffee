@@ -101,10 +101,14 @@ class CK.Smartboard extends Sail.App
         @wall.cloud.reRenderForState(mode)
 
     switchToProposal: =>
-        @wall.setMode('propose')
+        mode = 'propose'
+        @wall.setMode(mode)
+        @wall.cloud.reRenderForState(mode)
 
     switchToInterpretation: =>
-        @wall.setMode('interpret')
+        mode = 'interpret'
+        @wall.setMode(mode)
+        @wall.cloud.reRenderForState(mode)
 
     # set up all the Collections used by the board
     initModels: =>

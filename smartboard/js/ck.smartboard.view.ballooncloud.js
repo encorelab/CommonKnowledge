@@ -304,7 +304,11 @@
               el: $el[0]
             });
             if (state === 'analysis') {
-              view.ballonContributionType = view.balloonContributionTypes.minified;
+              view.ballonContributionType = view.balloonContributionTypes.analysis;
+            } else if (state === 'propose') {
+              view.ballonContributionType = view.balloonContributionTypes.propose;
+            } else if (state === 'interpret') {
+              view.ballonContributionType = view.balloonContributionTypes.interpret;
             }
           } else {
             console.error("Unrecognized Balloon type:", d);
@@ -336,12 +340,18 @@
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         b = _ref[_i];
         view = b.view;
-        if (state === 'analysis' && b.collectionName === "contributions") {
-          view.ballonContributionType = view.balloonContributionTypes.minified;
-          _results.push(view.render());
-        } else {
-          _results.push(void 0);
+        if (b.collectionName === "contributions") {
+          if (state === 'analysis') {
+            view.ballonContributionType = view.balloonContributionTypes.analysis;
+          } else if (state === 'propose') {
+            view.ballonContributionType = view.balloonContributionTypes.propose;
+          } else if (state === 'interpret') {
+            view.ballonContributionType = view.balloonContributionTypes.interpret;
+          } else {
+            view.ballonContributionType = view.balloonContributionTypes["default"];
+          }
         }
+        _results.push(view.render());
       }
       return _results;
     };
