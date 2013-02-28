@@ -168,7 +168,10 @@
     };
 
     Smartboard.prototype.switchToAnalysis = function() {
-      return this.wall.setMode('analysis');
+      var mode;
+      mode = 'analysis';
+      this.wall.setMode(mode);
+      return this.wall.cloud.reRenderForState(mode);
     };
 
     Smartboard.prototype.switchToProposal = function() {
@@ -211,6 +214,9 @@
         });
         CK.getState('phase', function(s) {
           if (s) {
+            if (s.get('screen_lock') === true) {
+              _this.wall.pause();
+            }
             if (s.get('state') === 'analysis') {
               return _this.switchToAnalysis();
             } else if (s.get('state') === 'proposal') {

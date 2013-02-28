@@ -303,7 +303,9 @@
     };
 
     Wall.prototype.pause = function() {
-      this.cloud.force.stop();
+      if ((this.cloud != null) && (this.cloud.force != null)) {
+        this.cloud.force.stop();
+      }
       jQuery('body').addClass('paused');
       this.$el.find('#toggle-pause').addClass('paused').text('Resume');
       return this.changeWatermark("Paused");

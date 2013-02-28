@@ -329,7 +329,7 @@ class CK.Smartboard.View.BalloonCloud
             @links.push link
 
     inflateBalloons: (balloons) =>
-        mode = @wall.mode
+        state = @wall.mode
         balloons.each (d,i) ->
             view = d.view
 
@@ -345,9 +345,9 @@ class CK.Smartboard.View.BalloonCloud
                         model: d
                         el: $el[0]
                     
-                    if mode is 'analysis'
+                    if state is 'analysis'
                         view.ballonContributionType = view.balloonContributionTypes.minified
-                        view.render()
+                        #view.render()
 
                 else
                     console.error("Unrecognized Balloon type:", d)
@@ -365,6 +365,17 @@ class CK.Smartboard.View.BalloonCloud
             pos = view.$el.position()
             d.x = pos.left + view.$el.outerWidth()/2 unless d.x?
             d.y = pos.top + view.$el.outerHeight()/2 unless d.y?
+
+    reRenderForState: (state) =>
+        console.log 'Rerender nodes for state: ' + state
+        for b in @nodes
+            view = b.view
+            
+            if (state is 'analysis' and b.collectionName is "contributions")
+                 view.ballonContributionType = view.balloonContributionTypes.minified
+                 view.render()
+
+
 
     render: (ev) =>
 

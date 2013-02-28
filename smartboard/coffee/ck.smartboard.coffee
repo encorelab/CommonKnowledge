@@ -61,7 +61,7 @@ class CK.Smartboard extends Sail.App
     pause: =>
         sev = new Sail.Event 'screen_lock'
         @groupchat.sendEvent sev
-        # CK.setState('screen_lock', true)
+        
         CK.getState('phase', (s) ->
             CK.setState('phase', s.get('state'), true)
         )
@@ -78,9 +78,9 @@ class CK.Smartboard extends Sail.App
     unpause: =>
         sev = new Sail.Event 'screen_unlock'
         @groupchat.sendEvent sev
-        # CK.setState('screen_lock', false)
         CK.getState('phase', (s) ->
             CK.setState('phase', s.get('state'), false)
+            #CK.setState('phase', 'brainstorm', false)
         )
         
     startAnalysis: =>
@@ -96,7 +96,9 @@ class CK.Smartboard extends Sail.App
         @groupchat.sendEvent sev
 
     switchToAnalysis: =>
-        @wall.setMode('analysis')
+        mode = 'analysis'
+        @wall.setMode(mode)
+        @wall.cloud.reRenderForState(mode)
 
     switchToProposal: =>
         @wall.setMode('propose')
@@ -144,6 +146,10 @@ class CK.Smartboard extends Sail.App
 
             CK.getState 'phase', (s) =>
                 if s
+                    # restore pause state if there is one set
+                    if s.get('screen_lock') is true
+                        @wall.pause()
+
                     if s.get('state') is 'analysis'
                         @switchToAnalysis()
                     else if s.get('state') is 'proposal'
