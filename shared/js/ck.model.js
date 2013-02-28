@@ -208,7 +208,7 @@
         return State;
 
       })(this.db.Document('states'));
-      return this.States = (function(_super) {
+      this.States = (function(_super) {
 
         __extends(States, _super);
 
@@ -221,6 +221,30 @@
         return States;
 
       })(this.db.Collection('states'));
+      this.UserState = (function(_super) {
+
+        __extends(UserState, _super);
+
+        function UserState() {
+          return UserState.__super__.constructor.apply(this, arguments);
+        }
+
+        return UserState;
+
+      })(this.db.Document('user_states'));
+      return this.UserStates = (function(_super) {
+
+        __extends(UserStates, _super);
+
+        function UserStates() {
+          return UserStates.__super__.constructor.apply(this, arguments);
+        }
+
+        UserStates.prototype.model = CK.Model.UserState;
+
+        return UserStates;
+
+      })(this.db.Collection('user_states'));
     };
 
     return Model;

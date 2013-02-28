@@ -138,4 +138,9 @@ class CK.Model
 
         class @States extends @db.Collection('states')
             model: CK.Model.State
+
+        class @UserState extends @db.Document('user_states')
+
+        class @UserStates extends @db.Collection('user_states')
+            model: CK.Model.UserState
             

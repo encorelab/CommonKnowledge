@@ -79,21 +79,28 @@ class Choreographer < Sail::Agent
     end
 
     event :chosen_tag_group? do |stanza, data|
-      log "Recieved chosen_tag_group #{data.inspect}"
-      tag_group_missing = true
-      
-      #select states with type:tablet and state:analysis from DB and once all have a tag_group set fill go on
-      unless @mongo.collection(:states).find("type" => "tablet", "state" => "analysis").any? {|s| (!s['data']['tag_group'] || s['data']['tag_group'] == nil) && s['username'] != data['origin'] } then
-        log "All tag groups are set and we go :)"
-        unless @buckets_created then
-          @buckets_created = create_tagging_buckets()
+      @phase = get_phase()
+      phase_name = @phase['state']
+      log "#{@phase.inspect} and #{phase_name.inspect}"
+      if phase_name and phase_name == 'analysis' then
+        log "Recieved chosen_tag_group #{data.inspect}"
+        tag_group_missing = true
+        
+        #select states with type:tablet and state:analysis from DB and once all have a tag_group set fill go on
+        unless @mongo.collection(:user_states).find().any? {|s| (!s[phase_name]['tag_group'] || s[phase_name]['tag_group'] == nil) && s['username'] != data['origin'] } then
+          log "All tag groups are set and we go :)"
+          unless @buckets_created then
+            @buckets_created = create_tagging_buckets(phase_name)
 
-          if @buckets and @buckets != nil and @tag_groups and @tag_groups != nil then
-            log "Buckets are filled lets send out first wave of assignments"
-            hand_out_initial_assignments()
+            if @buckets and @buckets != nil and @tag_groups and @tag_groups != nil then
+              log "Buckets are filled lets send out first wave of assignments"
+              hand_out_initial_assignments()
+            end
+          else
+            log "Trigger happy?"
           end
         else
-          log "Trigger happy?"
+          log "Not ready for tagging yet"
         end
       end
 
@@ -178,8 +185,8 @@ class Choreographer < Sail::Agent
     return stu
   end
 
-  def create_tagging_buckets()
-    log "Function create_tagging_buckets called"
+  def create_tagging_buckets(phase_name)
+    log "Function create_tagging_buckets called with phase_name: #{phase_name}"
     @buckets = {}
     @tag_groups = {}
     contributions = []
@@ -193,15 +200,17 @@ class Choreographer < Sail::Agent
     log "All published contributions that are considered for tagging: #{contributions.inspect}"
 
     # retrieve all users and tag_groups
-    @mongo.collection(:states).find("type" => "tablet", "state" => "analysis").each do |s|
+    
+    #@mongo.collection(:states).find("type" => "tablet", "state" => "analysis").each do |s|
+    @mongo.collection(:user_states).find(phase_name => { "$exists" => true}).each do |s|
       # (!us['data'] || !us['data']['tag_group'] || us['data']['tag_group'] == nil) then
-      if s['data']['tag_group'] and s['data']['tag_group'] != nil and s['username'] then
+      if s[phase_name]['tag_group'] and s[phase_name]['tag_group'] != nil and s['username'] then
         # check if object @tag_groups has a key tag_group and a value if not create an empty array
-        if !@tag_groups[s['data']['tag_group']] || @tag_groups[s['data']['tag_group']] == nil
-          @tag_groups[s['data']['tag_group']] = []
+        if !@tag_groups[s[phase_name]['tag_group']] || @tag_groups[s[phase_name]['tag_group']] == nil
+          @tag_groups[s[phase_name]['tag_group']] = []
         end
 
-        @tag_groups[s['data']['tag_group']].push(s['username'])
+        @tag_groups[s[phase_name]['tag_group']].push(s['username'])
       end
     end
     #log "All tag_groups with users #{@tag_groups}"

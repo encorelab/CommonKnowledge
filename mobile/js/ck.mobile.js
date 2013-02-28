@@ -79,16 +79,18 @@ CK.Mobile = function() {
  
     //var stateObj = {"type":"phase"};
     CK.getState("phase", function(s) {
-      if (s && s.get('state') === "analysis"){
-        console.log('phase is analysis');
-        app.startAnalysis();
+      // once phase is retrieved get the user_state
+      CK.getUserState(Sail.app.userData.account.login, function(user_state){
+        if (s && s.get('state') === "analysis"){
+          console.log('phase is analysis');
+          app.startAnalysis();
 
-        console.log('Check if contribution left to do or done with tagging');
-        CK.getStateForUser("tablet", Sail.app.userData.account.login, "contribution_to_tag", function(user_state){
-          if (user_state) {
-            var data_from_state = user_state.get('data');
+          console.log('Check if contribution left to do or done with tagging');
+          // CK.getUserState(Sail.app.userData.account.login, "contribution_to_tag", function(user_state){
+          if (data_from_state = user_state.get('contribution_to_tag')) {
+            // var data_from_state = user_state.get('data');
             if (data_from_state.done_tagging === true) {
-              CK.getStateForUser("tablet", Sail.app.userData.account.login, "done_tagging", function(s3) {
+              CK.getUserState(Sail.app.userData.account.login, "done_tagging", function(s3) {
                 // go to done tagging
                 app.doneTagging();
               });
@@ -99,34 +101,37 @@ CK.Mobile = function() {
           } else {
             console.log('I am on a boat');
           }
-        });
-      } else if (s && s.get('state') === "start_synthesis") {
-        console.log('phase is start_synthesis');
-        //app.startAnalysis();
+          // });
+        } else if (s && s.get('state') === "start_synthesis") {
+          console.log('phase is start_synthesis');
+          //app.startAnalysis();
 
-        CK.getStateForUser("tablet", Sail.app.userData.account.login, "contribution_to_tag", function(user_state){
-          if (user_state) {
-            var data_from_state = user_state.get('data');
-            if (data_from_state.done_tagging === true) {
-              CK.getStateForUser("tablet", Sail.app.userData.account.login, "done_tagging", function(s3) {
-                console.log('state is start_synthesis and we are done_tagging so call doneTagging and startSynthesis');
-  // TODO for Colin: Figure out the side effects that are necessary to have everything in place for this restore to work.
-                
-                Sail.app.doneTagging();
-                Sail.app.startSynthesis();
-              });
-            } else if (data_from_state.contribution_id !== "") {
-              console.log('state is start_synthesis buy we need to work on contribution with id: '+data_from_state.contribution_id);
-              app.contributionToTag(data_from_state.contribution_id);
+          // CK.getStateForUser("tablet", Sail.app.userData.account.login, "contribution_to_tag", function(user_state){
+            if (user_state.contribution_to_tag) {
+              var data_from_state = user_state.get('data');
+              if (data_from_state.done_tagging === true) {
+                // CK.getStateForUser("tablet", Sail.app.userData.account.login, "done_tagging", function(s3) {
+                if (typeof user_state.done_tagging !== 'undefined' && user_state.done_tagging !== null) {
+                  console.log('state is start_synthesis and we are done_tagging so call doneTagging and startSynthesis');
+    // TODO for Colin: Figure out the side effects that are necessary to have everything in place for this restore to work.
+                  
+                  Sail.app.doneTagging();
+                  Sail.app.startSynthesis();
+                // });
+                }
+              } else if (data_from_state.contribution_id !== "") {
+                console.log('state is start_synthesis buy we need to work on contribution with id: '+data_from_state.contribution_id);
+                app.contributionToTag(data_from_state.contribution_id);
+              }
+            } else {
+              console.log('I am on a boat');
             }
-          } else {
-            console.log('I am on a boat');
-          }
-        });
-        
-      } else {
-        console.log('could not find state for type phase');
-      }
+          // });
+          
+        } else {
+          console.log('could not find state for type phase');
+        }
+      });
 
 
 // TODO: This needs much more work
@@ -231,7 +236,8 @@ CK.Mobile = function() {
           console.log('name: '+sev.payload.recipient);
           // save the contribution to tag in the state then attempt tagging
           var dataObj = {"contribution_id":sev.payload.contribution_id};
-          CK.setStateForUser ("tablet", app.userData.account.login, "contribution_to_tag", dataObj);
+          // CK.setStateForUser ("tablet", app.userData.account.login, "contribution_to_tag", dataObj);
+          CK.setUserState(app.userData.account.login, "contribution_to_tag", dataObj);
 
           app.contributionToTag(sev.payload.contribution_id);
         }
@@ -242,12 +248,14 @@ CK.Mobile = function() {
         console.log('done_tagging event heard');
         if (sev.payload.recipient === app.userData.account.login) {
           // CK.setStateForUser('tablet', Sail.app.userData.account.login, 'done_tagging');     TODO - implement me once the model is done
+          // use this CK.setUserState(app.userData.account.login, "done_tagging", dataObj);
           app.doneTagging();
         }
 
         // store state for restoreState ;)
         var dataObj = {'done_tagging':true};
-        CK.setStateForUser ("tablet", app.userData.account.login, "contribution_to_tag", dataObj);
+        // CK.setStateForUser ("tablet", app.userData.account.login, "contribution_to_tag", dataObj);
+        CK.setUserState(app.userData.account.login, "contribution_to_tag", dataObj);
       },
 
       start_synthesis: function(sev) {
@@ -394,7 +402,8 @@ CK.Mobile = function() {
   /* State related function */
 
   app.startAnalysis = function() {
-    CK.setStateForUser ("tablet", app.userData.account.login, "analysis", {});
+    // CK.setStateForUser ("tablet", app.userData.account.login, "analysis", {});
+    CK.setUserState(app.userData.account.login, "analysis", {});
 
     var tagList = new CK.Model.Tags();
     tagList.on('change', function(model) { console.log(model.changedAttributes()); });   
@@ -427,12 +436,12 @@ CK.Mobile = function() {
       //CK.setStateForUser("tablet", Sail.app.userData.account.login, "analysis", metadata);
       // WARNING: I don't use setStateForUser here because I only want to send the sail event
       // AFTER the state was written to the MongoDB to avoid problems in the agent
-      CK.getStateForUser("tablet", Sail.app.userData.account.login, "analysis", function (state){
-        state.set('data', metadata);
-        state.save(null,
+      CK.getUserState(Sail.app.userData.account.login, function (user_state){
+        user_state.set('analysis', metadata);
+        user_state.save(null,
         {
           complete: function () {
-            console.log('New state submitted!');
+            console.log('New user_state submitted!');
           },
           success: function () {
             console.log('State saved');
@@ -443,7 +452,7 @@ CK.Mobile = function() {
             Sail.app.showWaitScreen();
           },
           failure: function(model, response) {
-            console.log('Error submitting state: ' + response);
+            console.log('Error submitting user_state: ' + response);
           }
         });
       });
@@ -512,7 +521,8 @@ CK.Mobile = function() {
   app.startSynthesis = function() {
     // setting done_tagging just in case we missed it
     var dataObj = {'done_tagging':true};
-    CK.setStateForUser ("tablet", app.userData.account.login, "contribution_to_tag", dataObj);    
+    // CK.setStateForUser ("tablet", app.userData.account.login, "contribution_to_tag", dataObj);    
+    CK.setUserState(app.userData.account.login, "contribution_to_tag", dataObj);
     app.doneTagging();
     
     jQuery('#contribution-details-build-on-btn').addClass('hide');    
