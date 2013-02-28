@@ -190,7 +190,7 @@ img.balloon-note {
     cursor: pointer; }
   #tags-panel #tags-editor {
     background-color: #ffa100;
-    border: 3px solid #C8271A;
+    border: 3px solid #c8271a;
     border-left: none;
     padding: 10px;
     min-height: 200px;

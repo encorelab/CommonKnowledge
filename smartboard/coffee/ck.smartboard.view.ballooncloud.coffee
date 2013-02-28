@@ -343,7 +343,9 @@ class CK.Smartboard.View.BalloonCloud
                 else if d.collectionName is "contributions"
                     view = new CK.Smartboard.View.ContributionBalloon
                         model: d
-                        el: $el[0]   
+                        el: $el[0]
+                    view.ballonContributionType = view.balloonContributionTypes.minified
+                    view.setColorClass('whiteGradient')  
                 else
                     console.error("Unrecognized Balloon type:", d)
 

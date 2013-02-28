@@ -327,11 +327,23 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
     className: 'contribution balloon'
    
     id: => @domID()
+    balloonContributionTypes: => @balloonContributionTypes
+    
+    setColorClass: (colorClass) =>
+        @colorClass = colorClass
 
     constructor: (options) ->
         super(options)
 
-        isMinifiedObject = false
+        balloonContributionTypes = {
+            default:  'default',
+            minified: 'minified'
+        }
+
+        ballonContributionType = "default"
+        colorClass = "whiteGradient"
+        width = 0
+        height = 0
 
     events:
         'mousedown': (ev) -> @moveToTop()
@@ -341,35 +353,36 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
             if @$el.hasClass('opened')
                 if Sail.app.wall.cloud? && Sail.app.wall.cloud.force?
                     Sail.app.wall.cloud.force.stop()
-                    @maximize()
-
-            else if (@isMinifiedObject)
-                @minify()
             
-                    
-                    
-
+            @processContributionByType()
 
     # initialize: =>
     #     # make this View accessible from the element
     #     @$el.data('view', @)
 
+    processContributionByType: =>
+        if @$el.hasClass('opened')
+            if (@ballonContributionType is @balloonContributionTypes.minified)
+                @maximize()
+        else if (@ballonContributionType is @balloonContributionTypes.minified)
+                @minify()
+
+
     minify: =>
-        @isMinifiedObject = true
         balloonObj = jQuery(@$el)
-        balloonObj.removeClass('whiteGradient')
-        balloonObj.addClass('minified-version')
+        balloonObj.removeClass(@colorClass)
+        #balloonObj.css({height: '64px', width: '64px'})
         balloonID = balloonObj.attr('id')
         jQuery('#' + balloonID + ' .headline').hide()
         jQuery('#' + balloonID + ' .body').hide()
         jQuery('#' + balloonID + ' .meta').hide()
         jQuery('#' + balloonID + ' .balloon-note').fadeIn('fast')
 
-        #balloonObj.hide();
 
     maximize: =>
         balloonObj = jQuery(@$el)
-        balloonObj.addClass('whiteGradient')
+        balloonObj.addClass(@colorClass)
+        #balloonObj.css({height: @height + 'px', width: @width + 'px'})
         balloonID = balloonObj.attr('id')
         jQuery('#' + balloonID + ' .balloon-note').hide()
         jQuery('#' + balloonID + ' .headline').fadeIn('fast')
@@ -378,13 +391,15 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
         
 
     render: =>
-        @$el.addClass('contribution').addClass('whiteGradient')
+        @processContributionByType()
+        @$el.addClass('contribution').addClass(@colorClass)
 
         if @model.get('kind') is 'propose'
             @$el.addClass('synthesis')
 
-        nodeHeader = @findOrCreate '.balloon-note', '<img class="balloon-note" src="/smartboard/img/note.png" alt="Note">'
-        nodeHeader.hide()
+        if (@ballonContributionType is @balloonContributionTypes.minified)
+            nodeHeader = @findOrCreate '.balloon-note', '<img class="balloon-note" src="/smartboard/img/note.png" alt="Note">'
+            nodeHeader.hide()
 
         headline = @findOrCreate '.headline', 
             "<h3 class='headline'></h3>"
@@ -406,6 +421,10 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
             .addClass("author-#{@model.get('author')}")
 
         # @renderTags()
+
+        @height =  @$el.height()
+        @width = @$el.width()
+        console.log "Render: Colour Class = " + @colorClass + " Balloon Height = " + @height + ", Width = " + @width
 
         @renderBuildons()
 

@@ -393,6 +393,14 @@
       return this.domID();
     };
 
+    ContributionBalloon.prototype.balloonContributionTypes = function() {
+      return this.balloonContributionTypes;
+    };
+
+    ContributionBalloon.prototype.setColorClass = function(colorClass) {
+      return this.colorClass = colorClass;
+    };
+
     function ContributionBalloon(options) {
       this.renderBuildons = __bind(this.renderBuildons, this);
 
@@ -404,11 +412,24 @@
 
       this.minify = __bind(this.minify, this);
 
+      this.processContributionByType = __bind(this.processContributionByType, this);
+
+      this.setColorClass = __bind(this.setColorClass, this);
+
+      this.balloonContributionTypes = __bind(this.balloonContributionTypes, this);
+
       this.id = __bind(this.id, this);
 
-      var isMinifiedObject;
+      var ballonContributionType, balloonContributionTypes, colorClass, height, width;
       ContributionBalloon.__super__.constructor.call(this, options);
-      isMinifiedObject = false;
+      balloonContributionTypes = {
+        "default": 'default',
+        minified: 'minified'
+      };
+      ballonContributionType = "default";
+      colorClass = "whiteGradient";
+      width = 0;
+      height = 0;
     }
 
     ContributionBalloon.prototype.events = {
@@ -420,20 +441,26 @@
         if (this.$el.hasClass('opened')) {
           if ((Sail.app.wall.cloud != null) && (Sail.app.wall.cloud.force != null)) {
             Sail.app.wall.cloud.force.stop();
-            return this.maximize();
           }
-        } else if (this.isMinifiedObject) {
-          return this.minify();
         }
+        return this.processContributionByType();
+      }
+    };
+
+    ContributionBalloon.prototype.processContributionByType = function() {
+      if (this.$el.hasClass('opened')) {
+        if (this.ballonContributionType === this.balloonContributionTypes.minified) {
+          return this.maximize();
+        }
+      } else if (this.ballonContributionType === this.balloonContributionTypes.minified) {
+        return this.minify();
       }
     };
 
     ContributionBalloon.prototype.minify = function() {
       var balloonID, balloonObj;
-      this.isMinifiedObject = true;
       balloonObj = jQuery(this.$el);
-      balloonObj.removeClass('whiteGradient');
-      balloonObj.addClass('minified-version');
+      balloonObj.removeClass(this.colorClass);
       balloonID = balloonObj.attr('id');
       jQuery('#' + balloonID + ' .headline').hide();
       jQuery('#' + balloonID + ' .body').hide();
@@ -444,7 +471,7 @@
     ContributionBalloon.prototype.maximize = function() {
       var balloonID, balloonObj;
       balloonObj = jQuery(this.$el);
-      balloonObj.addClass('whiteGradient');
+      balloonObj.addClass(this.colorClass);
       balloonID = balloonObj.attr('id');
       jQuery('#' + balloonID + ' .balloon-note').hide();
       jQuery('#' + balloonID + ' .headline').fadeIn('fast');
@@ -454,12 +481,15 @@
 
     ContributionBalloon.prototype.render = function() {
       var body, headline, meta, nodeHeader;
-      this.$el.addClass('contribution').addClass('whiteGradient');
+      this.processContributionByType();
+      this.$el.addClass('contribution').addClass(this.colorClass);
       if (this.model.get('kind') === 'propose') {
         this.$el.addClass('synthesis');
       }
-      nodeHeader = this.findOrCreate('.balloon-note', '<img class="balloon-note" src="/smartboard/img/note.png" alt="Note">');
-      nodeHeader.hide();
+      if (this.ballonContributionType === this.balloonContributionTypes.minified) {
+        nodeHeader = this.findOrCreate('.balloon-note', '<img class="balloon-note" src="/smartboard/img/note.png" alt="Note">');
+        nodeHeader.hide();
+      }
       headline = this.findOrCreate('.headline', "<h3 class='headline'></h3>");
       headline.text(this.model.get('headline'));
       body = this.findOrCreate('.body', "<div class='body'></div>");
@@ -470,6 +500,9 @@
       }
       meta = this.findOrCreate('.meta', "<div class='meta'><span class='author'></span></div>");
       meta.find('.author').text(this.model.get('author')).addClass("author-" + (this.model.get('author')));
+      this.height = this.$el.height();
+      this.width = this.$el.width();
+      console.log("Render: Colour Class = " + this.colorClass + " Balloon Height = " + this.height + ", Width = " + this.width);
       this.renderBuildons();
       return this;
     };

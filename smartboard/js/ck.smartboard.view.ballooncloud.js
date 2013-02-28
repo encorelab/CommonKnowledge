@@ -301,6 +301,8 @@
               model: d,
               el: $el[0]
             });
+            view.ballonContributionType = view.balloonContributionTypes.minified;
+            view.setColorClass('whiteGradient');
           } else {
             console.error("Unrecognized Balloon type:", d);
           }
