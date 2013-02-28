@@ -301,17 +301,16 @@
               model: d,
               el: $el[0]
             });
-            view.ballonContributionType = view.balloonContributionTypes.minified;
-            view.setColorClass('whiteGradient');
+            if (mode === 'analysis') {
+              view.ballonContributionType = view.balloonContributionTypes.minified;
+              view.render();
+            }
           } else {
             console.error("Unrecognized Balloon type:", d);
           }
           d.view = view;
         }
         view.render();
-        if (d.collectionName === "contributions" && mode === 'analysis') {
-          view.minify();
-        }
         if (d.newlyAdded) {
           jQuery('#' + d.id).addClass('new');
           setTimeout(function() {

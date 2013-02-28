@@ -344,17 +344,17 @@ class CK.Smartboard.View.BalloonCloud
                     view = new CK.Smartboard.View.ContributionBalloon
                         model: d
                         el: $el[0]
-                    view.ballonContributionType = view.balloonContributionTypes.minified
-                    view.setColorClass('whiteGradient')  
+                    
+                    if mode is 'analysis'
+                        view.ballonContributionType = view.balloonContributionTypes.minified
+                        view.render()
+
                 else
                     console.error("Unrecognized Balloon type:", d)
 
                 d.view = view
 
             view.render()
-
-            if d.collectionName is "contributions" && mode is 'analysis'
-                view.minify()
 
             if d.newlyAdded
                 jQuery('#'+d.id).addClass('new')

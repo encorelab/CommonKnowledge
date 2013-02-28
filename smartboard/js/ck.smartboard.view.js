@@ -393,10 +393,6 @@
       return this.domID();
     };
 
-    ContributionBalloon.prototype.balloonContributionTypes = function() {
-      return this.balloonContributionTypes;
-    };
-
     ContributionBalloon.prototype.setColorClass = function(colorClass) {
       return this.colorClass = colorClass;
     };
@@ -416,20 +412,16 @@
 
       this.setColorClass = __bind(this.setColorClass, this);
 
-      this.balloonContributionTypes = __bind(this.balloonContributionTypes, this);
-
       this.id = __bind(this.id, this);
-
-      var ballonContributionType, balloonContributionTypes, colorClass, height, width;
       ContributionBalloon.__super__.constructor.call(this, options);
-      balloonContributionTypes = {
+      this.balloonContributionTypes = {
         "default": 'default',
         minified: 'minified'
       };
-      ballonContributionType = "default";
-      colorClass = "whiteGradient";
-      width = 0;
-      height = 0;
+      this.ballonContributionType = this.balloonContributionTypes["default"];
+      this.colorClass = "whiteGradient";
+      this.width = 0;
+      this.height = 0;
     }
 
     ContributionBalloon.prototype.events = {
@@ -481,7 +473,6 @@
 
     ContributionBalloon.prototype.render = function() {
       var body, headline, meta, nodeHeader;
-      this.processContributionByType();
       this.$el.addClass('contribution').addClass(this.colorClass);
       if (this.model.get('kind') === 'propose') {
         this.$el.addClass('synthesis');
@@ -504,6 +495,7 @@
       this.width = this.$el.width();
       console.log("Render: Colour Class = " + this.colorClass + " Balloon Height = " + this.height + ", Width = " + this.width);
       this.renderBuildons();
+      this.processContributionByType();
       return this;
     };
 

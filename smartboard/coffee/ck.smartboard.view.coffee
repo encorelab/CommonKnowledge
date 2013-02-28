@@ -327,7 +327,6 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
     className: 'contribution balloon'
    
     id: => @domID()
-    balloonContributionTypes: => @balloonContributionTypes
     
     setColorClass: (colorClass) =>
         @colorClass = colorClass
@@ -335,15 +334,15 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
     constructor: (options) ->
         super(options)
 
-        balloonContributionTypes = {
+        @balloonContributionTypes = {
             default:  'default',
             minified: 'minified'
         }
 
-        ballonContributionType = "default"
-        colorClass = "whiteGradient"
-        width = 0
-        height = 0
+        @ballonContributionType = @balloonContributionTypes.default
+        @colorClass = "whiteGradient"
+        @width = 0
+        @height = 0
 
     events:
         'mousedown': (ev) -> @moveToTop()
@@ -391,7 +390,6 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
         
 
     render: =>
-        @processContributionByType()
         @$el.addClass('contribution').addClass(@colorClass)
 
         if @model.get('kind') is 'propose'
@@ -427,6 +425,7 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
         console.log "Render: Colour Class = " + @colorClass + " Balloon Height = " + @height + ", Width = " + @width
 
         @renderBuildons()
+        @processContributionByType()
 
         return this # return this for chaining
 
