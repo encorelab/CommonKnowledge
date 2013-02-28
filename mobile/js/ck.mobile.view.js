@@ -294,7 +294,6 @@
       }
     },
 
-    
     /**
       Triggers full update of all dynamic elements in the input view
     **/
@@ -473,6 +472,10 @@
   });
 
 
+  var proposalDetails;
+  var proposalOpenFlag = false;
+  // WARNING: do not look directly at this code - it will make your eyes bleed
+
   /**
     ProposalView
   **/
@@ -488,10 +491,13 @@
         }
         var contribId = $target.attr('id');
 
-        // Sail.app.showDetails(Sail.app.contributionList.get(contribId));
+        proposalDetails = Sail.app.contributionList.get(contribId);
+        proposalOpenFlag = true;
 
         jQuery('#proposal-contribution-list .list').addClass('hide');
-        jQuery('#proposal-contribution-list .selected-note').removeClass('hide');        
+        jQuery('#proposal-contribution-list .selected-note').removeClass('hide'); 
+
+        Sail.app.proposalListView.render();       
       },
 
       'click #group-btn': 'create-group',
@@ -515,76 +521,77 @@
     },
 
     'close-note': function () {
+      proposalOpenFlag = false;
       jQuery('#proposal-contribution-list .selected-note').addClass('hide');
       jQuery('#proposal-contribution-list .list').removeClass('hide');
     },
 
 
 
-    // var details = new CK.Model.Contribution();  
-
-    // jQuery('#proposal-contribution-list .field').text('');
-
-    // // created_at will return undefined, so need to check it exists... (not sure if this will happen in Beta, might be unnecessary)
-    // if (view.model && view.model.get('created_at')) {
-    //   jQuery('#proposal-contribution-list .note-headline').text(view.model.get('headline'));
-    //   jQuery('#proposal-contribution-list .note-body').text(view.model.get('content'));
-    //   jQuery('#proposal-contribution-list .note-author').text('~'+view.model.get('author'));
-    //   jQuery('#proposal-contribution-list .note-created-at').text(' (' + view.model.get('created_at').toLocaleDateString() + ' ' + view.model.get('created_at').toLocaleTimeString() + ')');
-
-    //   var buildOnEl = "<hr /><div>";
-    //   _.each(view.model.get('build_ons'), function(b) {
-    //     var date = new Date(b.created_at);
-    //     buildOnEl += b.content + "<br />~" + b.author;
-    //     buildOnEl += " (" + date.toLocaleDateString() + ' ' + date.toLocaleTimeString() + ")" +  "<hr />";
-    //   });
-
-    //   buildOnEl += "</div>";
-    //   buildOnEl = jQuery(buildOnEl);
-    //   jQuery('#proposal-contribution-list .note-build-ons').append(buildOnEl);
-    // } else {
-    //   console.warn("ContributionDetailsView render skipped this contrib because created_at doesn't exist");
-    // }
-
     /**
       Triggers full update of all dynamic elements in the list view
     **/
     render: function () {
-      console.log("rendering ProposalListView!");
-      var view = this;
+      if (proposalOpenFlag) {
+        jQuery('#proposal-contribution-list .field').text('');
 
-      jQuery('#proposal-contribution-list li').remove();
+        // created_at will return undefined, so need to check it exists... (not sure if this will happen in Beta, might be unnecessary)
+        if (proposalDetails && proposalDetails.get('created_at')) {
+          jQuery('#proposal-contribution-list .note-headline').text(proposalDetails.get('headline'));
+          jQuery('#proposal-contribution-list .note-body').text(proposalDetails.get('content'));
+          jQuery('#proposal-contribution-list .note-author').text('~'+proposalDetails.get('author'));
+          jQuery('#proposal-contribution-list .note-created-at').text(' (' + proposalDetails.get('created_at').toLocaleDateString() + ' ' + proposalDetails.get('created_at').toLocaleTimeString() + ')');
 
-      _.each(view.models, function(contrib) {
-        if (contrib.get('published') === true) {
-          console.log('headline: ' + contrib.get('headline'));
+          var buildOnEl = "<hr /><div>";
+          _.each(proposalDetails.get('build_ons'), function(b) {
+            var date = new Date(b.created_at);
+            buildOnEl += b.content + "<br />~" + b.author;
+            buildOnEl += " (" + date.toLocaleDateString() + ' ' + date.toLocaleTimeString() + ")" +  "<hr />";
+          });
 
-          var note = "<li id=" + contrib.id + " class='list-item'><a class='note'><span class='headline'></span>";
-          note += "<br /><i class='icon-chevron-right'></i>";
-          note += "<span class='author'></span><span class='date'></span></a></li>";
-          note = jQuery(note);
-
-          jQuery('#proposal-contribution-list .nav-list').append(note);
-
-          note.find('.headline').text(contrib.get('headline'));
-          note.find('.date').text(' (' + contrib.get('created_at').toLocaleDateString() + ' ' + contrib.get('created_at').toLocaleTimeString() + ')');
-
-          note.find('.author').text(contrib.get('author'));               
-          if (contrib.get('author') === Sail.app.userData.account.login) {
-            note.children().first().addClass('own-color');
-          }
-          // TODO check if this is working, then add for tags as well, then port to where it's actually relevant
-          // _.each(contrib.get('build_ons'), function(b) {
-          //    if (contrib.get('author') === Sail.app.userData.account.login) {
-          //     note.children().first().addClass('own-color');
-          //   }
-          // });         
+          buildOnEl += "</div>";
+          buildOnEl = jQuery(buildOnEl);
+          jQuery('#proposal-contribution-list .note-build-ons').append(buildOnEl);
         } else {
-          console.log(contrib.id, 'is unpublished');
+          console.warn("ContributionDetailsView render skipped this contrib because created_at doesn't exist");
         }
+      } else {
+        console.log("rendering ProposalListView!");
+        var view = this;
 
-      });
-    }
+        jQuery('#proposal-contribution-list li').remove();
+
+        _.each(view.models, function(contrib) {
+          if (contrib.get('published') === true) {
+            console.log('headline: ' + contrib.get('headline'));
+
+            var note = "<li id=" + contrib.id + " class='list-item'><a class='note'><span class='headline'></span>";
+            note += "<br /><i class='icon-chevron-right'></i>";
+            note += "<span class='author'></span><span class='date'></span></a></li>";
+            note = jQuery(note);
+
+            jQuery('#proposal-contribution-list .nav-list').append(note);
+
+            note.find('.headline').text(contrib.get('headline'));
+            note.find('.date').text(' (' + contrib.get('created_at').toLocaleDateString() + ' ' + contrib.get('created_at').toLocaleTimeString() + ')');
+
+            note.find('.author').text(contrib.get('author'));               
+            if (contrib.get('author') === Sail.app.userData.account.login) {
+              note.children().first().addClass('own-color');
+            }
+            // TODO check if this is working, then add for tags as well, then port to where it's actually relevant
+            // _.each(contrib.get('build_ons'), function(b) {
+            //    if (contrib.get('author') === Sail.app.userData.account.login) {
+            //     note.children().first().addClass('own-color');
+            //   }
+            // });         
+          } else {
+            console.log(contrib.id, 'is unpublished');
+          }
+
+        });
+      }
+    }      
 
   });
 
