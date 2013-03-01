@@ -31,6 +31,8 @@
       this.wall = wallView;
       this.nodes = [];
       this.links = [];
+      this.tagList = {};
+      this.uniqueTagCount = 0;
       this.vis = d3.select("#" + this.wall.id);
     }
 
@@ -234,11 +236,21 @@
     };
 
     BalloonCloud.prototype.addNode = function(n) {
-      var b, isNodePublished, t, tag, _i, _j, _len, _len1, _ref, _ref1, _results, _results1;
+      var b, isNodePublished, t, tag, tagAttributes, tagClass, _i, _j, _len, _len1, _ref, _ref1, _results, _results1;
       isNodePublished = n.get('published');
       if (!(n instanceof CK.Model.Contribution) || (n instanceof CK.Model.Contribution && isNodePublished === true)) {
         if (__indexOf.call(this.nodes, n) < 0) {
           this.nodes.push(n);
+          if (n instanceof CK.Model.Tag) {
+            tagAttributes = n.attributes;
+            tagClass = '';
+            if (tagAttributes.name.toLowerCase() !== 'n/a') {
+              tagClass = 'group' + (++this.uniqueTagCount) + '-color';
+            }
+            this.tagList[n.id] = {
+              'className': tagClass
+            };
+          }
         }
         if (n instanceof CK.Model.Contribution && n.has('tags')) {
           _ref = n.get('tags');
@@ -285,8 +297,9 @@
     };
 
     BalloonCloud.prototype.inflateBalloons = function(balloons) {
-      var state;
+      var state, tagListing;
       state = this.wall.mode;
+      tagListing = this.tagList;
       return balloons.each(function(d, i) {
         var $el, pos, view;
         view = d.view;
@@ -298,11 +311,22 @@
               model: d,
               el: $el[0]
             });
+            if ((tagListing[d.id] != null) && tagListing[d.id].className) {
+              view.setColorClass(tagListing[d.id].className);
+            }
           } else if (d.collectionName === "contributions") {
-            view = new CK.Smartboard.View.ContributionBalloon({
-              model: d,
-              el: $el[0]
-            });
+            if (state !== 'propose' && state !== 'interpret') {
+              view = new CK.Smartboard.View.ContributionBalloon({
+                model: d,
+                el: $el[0]
+              });
+            } else {
+              view = new CK.Smartboard.View.ContributionProposalBalloon({
+                model: d,
+                el: $el[0]
+              });
+            }
+            console.log('state is ' + state);
             if (state === 'analysis') {
               view.ballonContributionType = view.balloonContributionTypes.analysis;
             } else if (state === 'propose') {

@@ -366,7 +366,172 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
     processContributionByType: =>
         if (@ballonContributionType is @balloonContributionTypes.analysis)
             @toggleAnalysis()
-        else if (@ballonContributionType is @balloonContributionTypes.propose)
+       
+    toggleAnalysis: =>
+        console.log 'Toggle Analysis'
+        balloonObj = jQuery(@$el)
+
+        balloonObj.toggleClass('balloon-note').toggleClass(@colorClass)
+        balloonID = balloonObj.attr('id')
+       
+        
+        if @$el.hasClass('opened')
+            jQuery('#' + balloonID + ' img.balloon-note').hide()
+            jQuery('#' + balloonID + ' .headline').fadeIn('fast')
+            jQuery('#' + balloonID + ' .body').fadeIn('fast')
+            jQuery('#' + balloonID + ' .meta').fadeIn('fast') 
+        else
+            jQuery('#' + balloonID + ' .headline').hide()
+            jQuery('#' + balloonID + ' .body').hide()
+            jQuery('#' + balloonID + ' .meta').hide()
+            jQuery('#' + balloonID + ' img.balloon-note').fadeIn('fast')
+
+
+    render: =>
+        @$el.addClass('contribution').addClass(@colorClass)
+
+        if @model.get('kind') is 'propose'
+            @$el.addClass('synthesis')
+
+        #if (@ballonContributionType is @balloonContributionTypes.analysis)
+        nodeHeader = @findOrCreate '.balloon-note', '<img style="display: none;" class="balloon-note" src="/smartboard/img/note.png" alt="Note">'
+        
+        headline = @findOrCreate '.headline', 
+            "<h3 class='headline'></h3>"
+        headline.text @model.get('headline')
+
+        body = @findOrCreate '.body', 
+            "<div class='body'></div>"
+
+        if @model.get('content_type') is 'text'
+            body.text @model.get('content')
+        else
+            body.text @model.get('content')
+            # console.warn "Contribution #{@model.id} has an unrecognized content type: ", @model.get('content_type'), " ... assuming 'text'."
+
+        meta = @findOrCreate '.meta',
+            "<div class='meta'><span class='author'></span></div>"
+        meta.find('.author')
+            .text(@model.get('author'))
+            .addClass("author-#{@model.get('author')}")
+
+        # @renderTags()
+
+        @height =  @$el.height()
+        @width = @$el.width()
+        console.log "Render: Colour Class = " + @colorClass + " Balloon Height = " + @height + ", Width = " + @width
+
+        @renderBuildons()
+        @processContributionByType()
+
+        return this # return this for chaining
+
+    # FIXME: tags are automatically rendered as they are added (via the tag collection event bindings)
+    # ... so this method is mostly vestigial... need to get rid of this
+    renderTags: =>
+        # tagsContainer = @findOrCreate '.tags',
+        #     "<div class='tags'></div>"
+
+        return unless @model.has('tags')
+
+        # validTagClasses = []
+        # for tagText in @model.get('tags')
+        #     # hacky way to convert the tag into something that can be used as a CSS clas
+        #     md5tag = MD5.hexdigest(tagText)
+        #     tagClass = "tag-#{md5tag}"
+        #     validTagClasses.push tagClass 
+        #     tagSpan = CK.Smartboard.View.findOrCreate tagsContainer, ".#{tagClass}",
+        #         "<span class='tag #{tagClass}></span>"
+        #     tagSpan.text tagText
+
+        # # now remove tags that are no longer present in the model
+        # tagsContainer.find('.tag').not(validTagClasses.join(",")).remove()
+
+        tagIds = (tag.id for tag in @model.get('tags'))
+
+        @$el.attr('data-tags', tagIds.join(" "))
+
+
+        return @ # return this for chaining
+
+    renderBuildons: =>
+        return unless @model.has('build_ons')
+
+        buildons = @model.get('build_ons')
+
+        container = @findOrCreate '.buildons',
+            "<div class='buildons'></div>"
+
+        changed = false
+        if buildons.length isnt container.find('div.buildon').length
+            changed = true
+
+        container.children('div.buildon').remove()
+
+        counter = CK.Smartboard.View.findOrCreate @$el.find('.meta'), '.buildon-counter',
+            "<div class='buildon-counter'></div>"
+        counter.html('')
+
+        for b in buildons
+            counter.append("•")
+
+            $b = jQuery("
+                <div class='buildon'>
+                    <div class='author'></div>
+                    <div class='content'></div>
+                </div>
+            ")
+            $b.find('.author').text(b.author)
+            $b.find('.content').text(b.content)
+            container.append $b
+
+        # if changed
+        #     @$el.effect('highlight', 2000)
+
+
+class CK.Smartboard.View.ContributionProposalBalloon extends CK.Smartboard.View.Balloon
+    tagName: 'article'
+    className: 'contribution balloon'
+   
+    id: => @domID()
+    
+    setColorClass: (colorClass) =>
+        @colorClass = colorClass
+
+    constructor: (options) ->
+        super(options)
+
+        @balloonContributionTypes = {
+            default:  'default',
+            analysis: 'analysis',
+            propose: 'propose',
+            interpret: 'interpret'
+        }
+
+        console.log @balloonContributionTypes
+
+        @ballonContributionType = @balloonContributionTypes.default
+        @colorClass = "whiteGradient"
+        @width = 0
+        @height = 0
+
+    events:
+        'mousedown': (ev) -> @moveToTop()
+
+        'click': (ev) ->
+            @$el.toggleClass('opened')
+            if @$el.hasClass('opened')
+                if Sail.app.wall.cloud? && Sail.app.wall.cloud.force?
+                    Sail.app.wall.cloud.force.stop()
+            
+            @processContributionByType()
+
+    # initialize: =>
+    #     # make this View accessible from the element
+    #     @$el.data('view', @)
+
+    processContributionByType: =>
+        if (@ballonContributionType is @balloonContributionTypes.propose)
             @toggleProposal()
         else if (@ballonContributionType is @balloonContributionTypes.interpret)
             @toggleInterpret()
@@ -397,25 +562,6 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
         balloonObj = jQuery(@$el)
         balloonID = balloonObj.attr('id')
 
-
-    toggleAnalysis: =>
-        console.log 'Toggle Analysis'
-        balloonObj = jQuery(@$el)
-
-        balloonObj.toggleClass('balloon-note').toggleClass(@colorClass)
-        balloonID = balloonObj.attr('id')
-       
-        
-        if @$el.hasClass('opened')
-            jQuery('#' + balloonID + ' img.balloon-note').hide()
-            jQuery('#' + balloonID + ' .headline').fadeIn('fast')
-            jQuery('#' + balloonID + ' .body').fadeIn('fast')
-            jQuery('#' + balloonID + ' .meta').fadeIn('fast') 
-        else
-            jQuery('#' + balloonID + ' .headline').hide()
-            jQuery('#' + balloonID + ' .body').hide()
-            jQuery('#' + balloonID + ' .meta').hide()
-            jQuery('#' + balloonID + ' img.balloon-note').fadeIn('fast')
 
     setIdeaCount: (count) => 
         balloonObj = jQuery(@$el)
@@ -547,6 +693,9 @@ class CK.Smartboard.View.TagBalloon extends CK.Smartboard.View.Balloon
     tagName: 'div'
     className: 'tag balloon'
     id: => @domID()
+    
+    setColorClass: (className) => 
+        @$el.addClass(className)
 
     events:
         'mousedown': (ev) -> @moveToTop()

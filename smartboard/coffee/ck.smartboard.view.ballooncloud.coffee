@@ -7,6 +7,8 @@ class CK.Smartboard.View.BalloonCloud
 
         @nodes = []
         @links = []
+        @tagList = {}
+        @uniqueTagCount = 0
 
         # for n,i in @nodes
         #     $n = jQuery(n)
@@ -300,11 +302,21 @@ class CK.Smartboard.View.BalloonCloud
 
     addNode: (n) =>
         isNodePublished = n.get('published')
+        
 
         if n not instanceof CK.Model.Contribution or (n instanceof CK.Model.Contribution and isNodePublished is true)
             unless n in @nodes
                 @nodes.push n
 
+                if n instanceof CK.Model.Tag
+                    tagAttributes = n.attributes
+                    tagClass = ''
+
+                    if tagAttributes.name.toLowerCase() isnt 'n/a'
+                        tagClass = 'group' + (++@uniqueTagCount) + '-color'
+                    
+                    @tagList[n.id] = {'className' :  tagClass}
+                        
 
             if n instanceof CK.Model.Contribution and n.has('tags')
                 for t in n.get('tags')
@@ -330,6 +342,8 @@ class CK.Smartboard.View.BalloonCloud
 
     inflateBalloons: (balloons) =>
         state = @wall.mode
+        tagListing = @tagList
+
         balloons.each (d,i) ->
             view = d.view
 
@@ -340,11 +354,23 @@ class CK.Smartboard.View.BalloonCloud
                     view = new CK.Smartboard.View.TagBalloon
                         model: d
                         el: $el[0]
-                else if d.collectionName is "contributions"
-                    view = new CK.Smartboard.View.ContributionBalloon
-                        model: d
-                        el: $el[0]
                     
+                    if tagListing[d.id]? and tagListing[d.id].className
+                        view.setColorClass(tagListing[d.id].className)
+                            
+
+                else if d.collectionName is "contributions"
+                    
+                    if (state isnt 'propose' and state isnt 'interpret')
+                        view = new CK.Smartboard.View.ContributionBalloon
+                            model: d
+                            el: $el[0]
+                    else 
+                        view = new CK.Smartboard.View.ContributionProposalBalloon
+                            model: d
+                            el: $el[0]
+                    
+                    console.log 'state is ' + state
                     if state is 'analysis'
                         view.ballonContributionType = view.balloonContributionTypes.analysis
                     else if state is 'propose'
