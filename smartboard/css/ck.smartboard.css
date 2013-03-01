@@ -65,7 +65,13 @@ img.balloon-note {
   margin-left: auto;
   margin-right: auto;
   display: block;
+  height: 64px;
   width: 64px; }
+
+.contribution.balloon-note {
+  height: 64px !important;
+  width: 64px !important;
+  min-height: 64px; }
 
 .contribution.balloon.whiteGradient {
   background: white;
@@ -90,6 +96,7 @@ img.balloon-note {
   position: absolute;
   width: 150px;
   display: inline-block;
+  min-height: 64px;
   border-radius: 15px;
   background-color: transparent;
   max-height: 95%;

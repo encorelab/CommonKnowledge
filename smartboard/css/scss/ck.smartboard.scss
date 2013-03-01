@@ -23,6 +23,7 @@ $tag-bubble-color-group4-to: #ED11C1;
 $widget-background-color: #ffa100;
 $widget-accent-color: #c8271a;
 
+$balloon-note-height: 64px;
 $lightbulb-height: 70px;
 
 .disabled {
@@ -132,7 +133,14 @@ img.balloon-note {
     margin-left:auto;
     margin-right:auto;
     display: block;
-    width: 64px;
+    height: $balloon-note-height;
+    width: $balloon-note-height;
+}
+
+.contribution.balloon-note {
+    height: $balloon-note-height !important;
+    width: $balloon-note-height !important; 
+    min-height: $balloon-note-height;
 }
 
 .contribution.balloon.whiteGradient {
@@ -151,6 +159,7 @@ img.balloon-note {
     position: absolute;
     width: 150px;
     display: inline-block;
+    min-height: $balloon-note-height;
 
     border-radius: 15px;
     //background-color: rgba($contribution-bubble-color, 0.85);

@@ -368,9 +368,11 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
             @toggleAnalysis()
         else if (@ballonContributionType is @balloonContributionTypes.propose)
             @toggleProposal()
+        else if (@ballonContributionType is @balloonContributionTypes.interpret)
+            @toggleInterpret()
 
-    toggleProposal: => 
-        console.log 'Toggle Proposal'
+    toggleInterpret: => 
+        console.log 'Toggle Interpret'
         balloonObj = jQuery(@$el)
         balloonID = balloonObj.attr('id')
 
@@ -390,14 +392,22 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
         else
             jQuery('#' + balloonID + ' .idea-counter').hide()
 
-    toggleAnalysis: =>
+    toggleProposal: => 
+        console.log 'Toggle Proposal'
         balloonObj = jQuery(@$el)
-        balloonObj.toggleClass(@colorClass)
+        balloonID = balloonObj.attr('id')
+
+
+    toggleAnalysis: =>
+        console.log 'Toggle Analysis'
+        balloonObj = jQuery(@$el)
+
+        balloonObj.toggleClass('balloon-note').toggleClass(@colorClass)
         balloonID = balloonObj.attr('id')
        
         
         if @$el.hasClass('opened')
-            jQuery('#' + balloonID + ' .balloon-note').hide()
+            jQuery('#' + balloonID + ' img.balloon-note').hide()
             jQuery('#' + balloonID + ' .headline').fadeIn('fast')
             jQuery('#' + balloonID + ' .body').fadeIn('fast')
             jQuery('#' + balloonID + ' .meta').fadeIn('fast') 
@@ -405,7 +415,7 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
             jQuery('#' + balloonID + ' .headline').hide()
             jQuery('#' + balloonID + ' .body').hide()
             jQuery('#' + balloonID + ' .meta').hide()
-            jQuery('#' + balloonID + ' .balloon-note').fadeIn('fast')
+            jQuery('#' + balloonID + ' img.balloon-note').fadeIn('fast')
 
     setIdeaCount: (count) => 
         balloonObj = jQuery(@$el)

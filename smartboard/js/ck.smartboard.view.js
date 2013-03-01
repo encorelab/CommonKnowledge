@@ -412,6 +412,8 @@
 
       this.toggleProposal = __bind(this.toggleProposal, this);
 
+      this.toggleInterpret = __bind(this.toggleInterpret, this);
+
       this.processContributionByType = __bind(this.processContributionByType, this);
 
       this.setColorClass = __bind(this.setColorClass, this);
@@ -450,12 +452,14 @@
         return this.toggleAnalysis();
       } else if (this.ballonContributionType === this.balloonContributionTypes.propose) {
         return this.toggleProposal();
+      } else if (this.ballonContributionType === this.balloonContributionTypes.interpret) {
+        return this.toggleInterpret();
       }
     };
 
-    ContributionBalloon.prototype.toggleProposal = function() {
+    ContributionBalloon.prototype.toggleInterpret = function() {
       var balloonID, balloonObj;
-      console.log('Toggle Proposal');
+      console.log('Toggle Interpret');
       balloonObj = jQuery(this.$el);
       balloonID = balloonObj.attr('id');
       if (jQuery('#' + balloonID + ' .headline').is(':hidden')) {
@@ -472,13 +476,21 @@
       }
     };
 
+    ContributionBalloon.prototype.toggleProposal = function() {
+      var balloonID, balloonObj;
+      console.log('Toggle Proposal');
+      balloonObj = jQuery(this.$el);
+      return balloonID = balloonObj.attr('id');
+    };
+
     ContributionBalloon.prototype.toggleAnalysis = function() {
       var balloonID, balloonObj;
+      console.log('Toggle Analysis');
       balloonObj = jQuery(this.$el);
-      balloonObj.toggleClass(this.colorClass);
+      balloonObj.toggleClass('balloon-note').toggleClass(this.colorClass);
       balloonID = balloonObj.attr('id');
       if (this.$el.hasClass('opened')) {
-        jQuery('#' + balloonID + ' .balloon-note').hide();
+        jQuery('#' + balloonID + ' img.balloon-note').hide();
         jQuery('#' + balloonID + ' .headline').fadeIn('fast');
         jQuery('#' + balloonID + ' .body').fadeIn('fast');
         return jQuery('#' + balloonID + ' .meta').fadeIn('fast');
@@ -486,7 +498,7 @@
         jQuery('#' + balloonID + ' .headline').hide();
         jQuery('#' + balloonID + ' .body').hide();
         jQuery('#' + balloonID + ' .meta').hide();
-        return jQuery('#' + balloonID + ' .balloon-note').fadeIn('fast');
+        return jQuery('#' + balloonID + ' img.balloon-note').fadeIn('fast');
       }
     };
 
