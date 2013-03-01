@@ -456,16 +456,19 @@ CK.Mobile = function() {
     Sends out and event with the tag group the user has chosen and stores the tag_group
     in the states object associated with the student
   */
-  app.choseTagGroup = function(tag_name) {
+  app.choseTagGroup = function(tag_name, tag_id) {
     if (typeof tag_name !== 'undefined' && tag_name !== null && tag_name !== '') {
       // create the object that hold the tag_group information
-      var metadata = {"tag_group":tag_name};
+      //var metadata = {"tag_group":tag_name, "tag_group_id":tag_id};
       // save the tag name and id of the chosen tag_group to the student's metadata object
       //CK.setStateForUser("tablet", Sail.app.userData.account.login, "analysis", metadata);
       // WARNING: I don't use setStateForUser here because I only want to send the sail event
       // AFTER the state was written to the MongoDB to avoid problems in the agent
       CK.getUserState(Sail.app.userData.account.login, function (user_state){
-        user_state.set('analysis', metadata);
+        var analysis_obj = user_state.get('analysis');
+        analysis_obj.tag_group = tag_name;
+        analysis_obj.tag_group_id = tag_id;
+        user_state.set('analysis', analysis_obj);
         user_state.save(null,
         {
           complete: function () {
@@ -474,7 +477,7 @@ CK.Mobile = function() {
           success: function () {
             console.log('State saved');
             // send out and sail event
-            var sev = new Sail.Event('chosen_tag_group', JSON.stringify(metadata));
+            var sev = new Sail.Event('chosen_tag_group', JSON.stringify(analysis_obj));
             Sail.app.groupchat.sendEvent(sev);
             // Show wait screen until agent answers with the contribution to be tagged
             Sail.app.showWaitScreen();
@@ -522,7 +525,35 @@ CK.Mobile = function() {
 
   app.tagContribution = function (contributionId, tagged) {
     console.log('Contribution <'+contributionId+'> tagged: '+tagged);
+    var sail_data = {'contribution_id':contributionId};
+    var sev = new Sail.Event('contribution_tagged', JSON.stringify(sail_data));
 
+    if (tagged) {
+      CK.getUserState(Sail.app.userData.account.login, function (user_state) {
+        var taggedContribution = new CK.Model.Contribution({_id: contributionId});
+
+        function fetchSuccess (contrib) {
+          console.log('fetched contribution');
+          var data = user_state.get('analysis');
+          var new_tag = {'id':data.tag_group_id,'name':data.tag_group,'tagger':app.userData.account.login,'tagged_at':Date()};
+          var contrib_tags = taggedContribution.get('tags');
+          contrib_tags.push(new_tag);
+          taggedContribution.set('tags', contrib_tags);
+          taggedContribution.save();
+
+          Sail.app.groupchat.sendEvent(sev);
+        }
+
+        function fetchError (err) {
+          console.warn('error fetching contribution');
+        }
+
+        taggedContribution.fetch({success: fetchSuccess, error: fetchError});
+      });
+    } else {
+      console.log('Contribution: '+contributionId+' not tagged');
+      Sail.app.groupchat.sendEvent(sev);
+    }
   };
 
   app.doneTagging = function() {

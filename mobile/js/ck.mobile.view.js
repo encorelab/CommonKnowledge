@@ -373,10 +373,11 @@
   self.TagListView = Backbone.View.extend({
     events: {
       'click #tag-list-btn-container .tag-btn': function (ev) {
-        var chosenTag = jQuery('#'+ev.currentTarget.id).text();
+        var chosenTagId = ev.currentTarget.id;
+        var chosenTag = jQuery('#'+chosenTagId).text();
         var ok = confirm("Do you want to choose <"+ chosenTag + "> as your specialization?");
         if (ok) {
-          Sail.app.choseTagGroup(chosenTag);
+          Sail.app.choseTagGroup(chosenTag, chosenTagId);
         }
       }
     },
@@ -443,6 +444,7 @@
       jQuery('#index-screen').addClass('hide');
       jQuery('#choose-tag-screen').addClass('hide');
       jQuery('#tagging-screen').removeClass('hide');
+      Sail.app.hideWaitScreen();
     },
 
     /**
