@@ -131,15 +131,15 @@ class Choreographer < Sail::Agent
 
     event :contribution_tagged? do |stanza, data|
       log "Recieved contribution_tagged #{data.inspect}" 
-      fill_contribution_buckets()
-      log "Found #{@bucket.count} contributions with no tags and #{@na_bucket.count} contributions with N/A tags to hand out"
-      # goes through buckets of contributions to tag and sends out contribution_to_tag or done_tagging
-      hand_out_assignment(data['origin'])  
+      # fill_contribution_buckets()
+      # log "Found #{@bucket.count} contributions with no tags and #{@na_bucket.count} contributions with N/A tags to hand out"
+      # # goes through buckets of contributions to tag and sends out contribution_to_tag or done_tagging
+      # hand_out_assignment(data['origin'])  
     end
 
     event :start_proposal? do |stanza, data|
       log "Recieved start_proposal #{data.inspect}"
-      store_phase("proposal")
+      # store_phase("proposal")
     end
 
     event :start_interpretation? do |stanza, data|
