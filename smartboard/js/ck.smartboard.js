@@ -175,11 +175,17 @@
     };
 
     Smartboard.prototype.switchToProposal = function() {
-      return this.wall.setMode('propose');
+      var mode;
+      mode = 'propose';
+      this.wall.setMode(mode);
+      return this.wall.cloud.reRenderForState(mode);
     };
 
     Smartboard.prototype.switchToInterpretation = function() {
-      return this.wall.setMode('interpret');
+      var mode;
+      mode = 'interpret';
+      this.wall.setMode(mode);
+      return this.wall.cloud.reRenderForState(mode);
     };
 
     Smartboard.prototype.initModels = function() {

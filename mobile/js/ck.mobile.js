@@ -274,9 +274,14 @@ CK.Mobile = function() {
         });
       },
 
-      start_synthesis: function(sev) {
-        console.log('start_synthesis heard');
-        app.startSynthesis();
+      // start_synthesis: function(sev) {
+      //   console.log('start_synthesis heard');
+      //   app.startSynthesis();
+      // }
+
+      start_proposal: function(sev) {
+        console.log('start_proposal heard');
+        app.startProposal();
       }
 
     }
@@ -535,19 +540,38 @@ CK.Mobile = function() {
     //app.contributionDetailsView.render();
   };
 
-  app.startSynthesis = function() {
-    // setting done_tagging just in case we missed it
-    var dataObj = {'done_tagging':true};
-    // CK.setStateForUser ("tablet", app.userData.account.login, "contribution_to_tag", dataObj);    
-    CK.setUserState(app.userData.account.login, "contribution_to_tag", dataObj);
-    app.doneTagging();
+  // app.startSynthesis = function() {
+  //   // setting done_tagging just in case we missed it
+  //   var dataObj = {'done_tagging':true};
+  //   // CK.setStateForUser ("tablet", app.userData.account.login, "contribution_to_tag", dataObj);    
+  //   CK.setUserState(app.userData.account.login, "contribution_to_tag", dataObj);
+  //   app.doneTagging();
     
-    jQuery('#contribution-details-build-on-btn').addClass('hide');    
-    app.synthesisFlag = true;
-    jQuery('.brand').text('Common Knowledge - Synthesis');
-    Sail.app.contributionInputView.render();
-    jQuery('#tag-submission-container .tag-btn').addClass('disabled');
-  };
+  //   jQuery('#contribution-details-build-on-btn').addClass('hide');    
+  //   app.synthesisFlag = true;
+  //   jQuery('.brand').text('Common Knowledge - Synthesis');
+  //   Sail.app.contributionInputView.render();
+  //   jQuery('#tag-submission-container .tag-btn').addClass('disabled');
+  // };
+
+  app.startProposal = function() {
+    CK.setUserState(app.userData.account.login, "proposal", {});
+
+    console.log('creating ProposalListView');
+
+    app.contributionList = new CK.Model.Contributions();
+    //app.contributionList.wake(app.config.wakeful.url);
+    app.contributionList.on('change', function(model) { console.log(model.changedAttributes()); });    
+    app.proposalListView = new CK.Mobile.View.ProposalListView({
+      el: jQuery('#proposal-contribution-list'),
+      collection: app.contributionList
+    });
+    app.contributionList.on('reset add', app.proposalListView.render);
+    var sort = ['created_at', 'DESC'];
+    app.contributionList.fetch({
+      data: { sort: JSON.stringify(sort) }
+    });
+  };  
 
   // TODO - fix me to work properly with views etc (see also initViews section)
   app.toggleVote = function() {
