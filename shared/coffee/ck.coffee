@@ -56,6 +56,7 @@ CK.getUserState = (username, callback) ->
         # unless user_state?
         if typeof user_state == 'undefined' || user_state == null
             user_state = new CK.Model.UserState()
+            user_state.set('username', username)
             user_state.set('created_at', Date())
 
         callback(user_state)

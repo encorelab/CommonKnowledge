@@ -79,72 +79,77 @@ CK.Mobile = function() {
  
     //var stateObj = {"type":"phase"};
     CK.getState("phase", function(s) {
-      // once phase is retrieved get the user_state
-      CK.getUserState(Sail.app.userData.account.login, function(user_state){
-        if (s && s.get('state') === "analysis"){
-          console.log('phase is analysis');
-          app.startAnalysis();
+      if (s && s.get('state')) {
+        var phase = s.get('state');
+        // once phase is retrieved get the user_state
+        CK.getUserState(Sail.app.userData.account.login, function(user_state){
+          if (phase === "analysis"){
+            console.log('phase is analysis');
+            app.startAnalysis(function (){
+              var data_for_state = user_state.get(phase);
 
-          console.log('Check if contribution left to do or done with tagging');
-          // CK.getUserState(Sail.app.userData.account.login, "contribution_to_tag", function(user_state){
-          if (data_from_state = user_state.get('contribution_to_tag')) {
-            // var data_from_state = user_state.get('data');
-            if (data_from_state.done_tagging === true) {
-              CK.getUserState(Sail.app.userData.account.login, "done_tagging", function(s3) {
-                // go to done tagging
-                app.doneTagging();
-              });
-            } else if (data_from_state.contribution_id !== "") {
-              console.log('Need to work on contribution with id: '+data_from_state.contribution_id);
-              app.contributionToTag(data_from_state.contribution_id);
-            }
-          } else {
-            console.log('I am on a boat');
-          }
-          // });
-        } else if (s && s.get('state') === "start_synthesis") {
-          console.log('phase is start_synthesis');
-          //app.startAnalysis();
-
-          // CK.getStateForUser("tablet", Sail.app.userData.account.login, "contribution_to_tag", function(user_state){
-            if (user_state.contribution_to_tag) {
-              var data_from_state = user_state.get('data');
-              if (data_from_state.done_tagging === true) {
-                // CK.getStateForUser("tablet", Sail.app.userData.account.login, "done_tagging", function(s3) {
-                if (typeof user_state.done_tagging !== 'undefined' && user_state.done_tagging !== null) {
-                  console.log('state is start_synthesis and we are done_tagging so call doneTagging and startSynthesis');
-    // TODO for Colin: Figure out the side effects that are necessary to have everything in place for this restore to work.
-                  
-                  Sail.app.doneTagging();
-                  Sail.app.startSynthesis();
-                // });
+              console.log('Check if contribution left to do or done with tagging');
+              // CK.getUserState(Sail.app.userData.account.login, "contribution_to_tag", function(user_state){
+              if (data_for_state && data_for_state.contribution_to_tag) {
+                // var data_from_state = user_state.get('data');
+                if (data_for_state.done_tagging === true) {
+                  CK.getUserState(Sail.app.userData.account.login, "done_tagging", function(s3) {
+                    // go to done tagging
+                    app.doneTagging();
+                  });
+                } else if (data_for_state.contribution_to_tag.contribution_id !== "") {
+                  console.log('Need to work on contribution with id: '+data_for_state.contribution_to_tag.contribution_id);
+                  app.contributionToTag(data_for_state.contribution_to_tag.contribution_id);
                 }
-              } else if (data_from_state.contribution_id !== "") {
-                console.log('state is start_synthesis buy we need to work on contribution with id: '+data_from_state.contribution_id);
-                app.contributionToTag(data_from_state.contribution_id);
+              } else {
+                console.log('I am on a boat');
               }
-            } else {
-              console.log('I am on a boat');
-            }
-          // });
-          
+            });
+          } else if (phase === "start_synthesis") {
+            console.log('phase is start_synthesis');
+            //app.startAnalysis();
+// TODO this will not work this way !!!!!!!!!!!!!!!!
+            // CK.getStateForUser("tablet", Sail.app.userData.account.login, "contribution_to_tag", function(user_state){
+              if (user_state.contribution_to_tag) {
+                var data_from_state = user_state.get('data');
+                if (data_from_state.done_tagging === true) {
+                  // CK.getStateForUser("tablet", Sail.app.userData.account.login, "done_tagging", function(s3) {
+                  if (typeof user_state.done_tagging !== 'undefined' && user_state.done_tagging !== null) {
+                    console.log('state is start_synthesis and we are done_tagging so call doneTagging and startSynthesis');
+      // TODO for Colin: Figure out the side effects that are necessary to have everything in place for this restore to work.
+                    
+                    Sail.app.doneTagging();
+                    Sail.app.startSynthesis();
+                  // });
+                  }
+                } else if (data_from_state.contribution_id !== "") {
+                  console.log('state is start_synthesis buy we need to work on contribution with id: '+data_from_state.contribution_id);
+                  app.contributionToTag(data_from_state.contribution_id);
+                }
+              } else {
+                console.log('I am on a boat');
+              }
+            // });
+            
+          } else {
+            console.log('could not find state for type phase');
+          }
+        });
+
+
+  // TODO: This needs much more work
+        if (s && s.get('screen_lock') === true){
+          console.log('screen lock is active');
+          jQuery('#lock-screen').removeClass('hide');
+          jQuery('.row').addClass('disabled');
         } else {
-          console.log('could not find state for type phase');
+          console.log('screen lock is NOT active');
+          jQuery('#lock-screen').addClass('hide');
+          jQuery('.row').removeClass('disabled');
         }
-      });
-
-
-// TODO: This needs much more work
-      if (s && s.get('screen_lock') === true){
-        console.log('screen lock is active');
-        jQuery('#lock-screen').removeClass('hide');
-        jQuery('.row').addClass('disabled');
       } else {
-        console.log('screen lock is NOT active');
-        jQuery('#lock-screen').addClass('hide');
-        jQuery('.row').removeClass('disabled');
+        console.warn("Seems like the state object was invalid which means we are in trouble");
       }
-
 
     });
  
@@ -225,7 +230,9 @@ CK.Mobile = function() {
 
       start_analysis: function(sev) {
         console.log('start_analysis heard, creating TagView');
-        app.startAnalysis();
+        app.startAnalysis(function (){
+          console.log('startAnalysis completed');
+        });
       },
 
       contribution_to_tag: function(sev) {
@@ -238,11 +245,8 @@ CK.Mobile = function() {
           CK.getUserState(app.userData.account.login, function(user_state){
             // get the analysis value since we should be in analysis state
             var data = user_state.get('analysis');
-            // extend the object with the contribution_id
-            data.contribution_id = sev.payload.contribution_id;
-            // CK.setStateForUser ("tablet", app.userData.account.login, "contribution_to_tag", dataObj);
-            // CK.setUserState(app.userData.account.login, "contribution_to_tag", dataObj);
-            // I think a save is in order
+            data.contribution_to_tag = {'contribution_id': sev.payload.contribution_id};
+
             user_state.set('analysis', data);
             user_state.save();
 
@@ -263,7 +267,11 @@ CK.Mobile = function() {
         // store state for restoreState ;)
         var dataObj = {'done_tagging':true};
         // CK.setStateForUser ("tablet", app.userData.account.login, "contribution_to_tag", dataObj);
-        CK.setUserState(app.userData.account.login, "contribution_to_tag", dataObj);
+        //CK.setUserState(app.userData.account.login, "contribution_to_tag", dataObj);
+        CK.getUserState(app.userData.account.login, function (user_state){
+          var analysis_data = user_state.get('analysis');
+          analysis_data.contribution_to_tag = dataObj;
+        });
       },
 
       start_synthesis: function(sev) {
@@ -409,26 +417,33 @@ CK.Mobile = function() {
 
   /* State related function */
 
-  app.startAnalysis = function() {
-    // CK.setStateForUser ("tablet", app.userData.account.login, "analysis", {});
-    CK.setUserState(app.userData.account.login, "analysis", {});
-
-    var tagList = new CK.Model.Tags();
-    tagList.on('change', function(model) { console.log(model.changedAttributes()); });   
-
-    //app.taggedContribution.wake(app.config.wakeful.url);
-
-    var tagListView = new CK.Mobile.View.TagListView({
-      el: jQuery('#tag-list'),
-      collection: tagList
-    });
-    tagList.on('reset add', tagListView.render, tagListView);       // probably unnecessary, maybe even a bad idea?
-
-    var sort = ['created_at', 'ASC'];
-    tagList.fetch({
-      data: {
-        sort: JSON.stringify(sort)
+  app.startAnalysis = function(callback) {
+    CK.getUserState(app.userData.account.login, function (user_state){
+      var analysis_obj = user_state.get('analysis');
+      if (!analysis_obj || analysis_obj === null || analysis_obj === "") {
+        analysis_obj = {};
+        user_state.set('analysis', analysis_obj);
       }
+      user_state.save();
+
+      var tagList = new CK.Model.Tags();
+      tagList.on('change', function(model) { console.log(model.changedAttributes()); });   
+
+      //app.taggedContribution.wake(app.config.wakeful.url);
+
+      var tagListView = new CK.Mobile.View.TagListView({
+        el: jQuery('#tag-list'),
+        collection: tagList
+      });
+      tagList.on('reset add', tagListView.render, tagListView);       // probably unnecessary, maybe even a bad idea?
+
+      var sort = ['created_at', 'ASC'];
+      tagList.fetch({
+        data: {
+          sort: JSON.stringify(sort)
+        }
+      });
+      callback();    
     });
   };
 
@@ -469,26 +484,6 @@ CK.Mobile = function() {
     }
   };
 
-  // app.tagContribution = function (contributionId) {
-  //   var contributionToTag = new CK.Model.Contribution();
-  //   tagList.on('change', function(model) { console.log(model.changedAttributes()); });   
-
-  //   //app.taggedContribution.wake(app.config.wakeful.url);
-
-  //   var taggingView = new CK.Mobile.View.TaggingView({
-  //     el: jQuery('#tag-list'),
-  //     collection: tagList
-  //   });
-  //   tagList.on('reset add', tagListView.render, tagListView);       // probably unnecessary, maybe even a bad idea?
-
-  //   var sort = ['created_at', 'ASC'];
-  //   tagList.fetch({
-  //     data: {
-  //       sort: JSON.stringify(sort)
-  //     }
-  //   });
-  // };
-
   app.contributionToTag = function (contribution_id) {
     var contribution_to_tag = new CK.Model.Contribution({_id: contribution_id});
     // contribution_to_tag.on('change', function(model) { console.log(model.changedAttributes()); });   
@@ -518,6 +513,11 @@ CK.Mobile = function() {
     //     app.taggedContribution = app.contributionDetails;
     //   }
     // });
+  };
+
+  app.tagContribution = function (contributionId, tagged) {
+    console.log('Contribution <'+contributionId+'> tagged: '+tagged);
+
   };
 
   app.doneTagging = function() {
