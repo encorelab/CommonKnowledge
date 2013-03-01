@@ -264,7 +264,18 @@ img.balloon-note {
     @include transition(0.5s, height);
 }
 
-.idea-counter {
+.idea-counter-off {
+    background-image: url('/smartboard/img/lightbulb_big_off.png');
+    background-repeat: no-repeat; 
+    background-size:$lightbulb-height $lightbulb-height;
+    height: $lightbulb-height;
+    width: $lightbulb-height;
+    display: inline-block;
+    float: right;   
+    margin-top: 1em;
+}
+
+.idea-counter-on {
     background-image: url('/smartboard/img/lightbulb_big_on.png');
     background-repeat: no-repeat; 
     background-size:$lightbulb-height $lightbulb-height;

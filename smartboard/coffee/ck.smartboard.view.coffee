@@ -370,9 +370,21 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
             @toggleProposal()
 
     toggleProposal: => 
+        console.log 'Toggle Proposal'
         balloonObj = jQuery(@$el)
         balloonID = balloonObj.attr('id')
-        
+
+        # we are transitioning from analysis to proposal so hide the notes and show all the data 
+        # in whatever state we are in (either opened or closed)
+        if (jQuery('#' + balloonID + ' .headline').is(':hidden'))
+            balloonObj.addClass(@colorClass)
+            jQuery('#' + balloonID + ' .balloon-note').hide()
+            jQuery('#' + balloonID + ' .headline').fadeIn('fast')
+            jQuery('#' + balloonID + ' .body').fadeIn('fast')
+            jQuery('#' + balloonID + ' .meta').fadeIn('fast') 
+            
+        #
+
         if @$el.hasClass('opened')
             jQuery('#' + balloonID + ' .idea-counter').fadeIn('fast')
         else
@@ -395,6 +407,24 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
             jQuery('#' + balloonID + ' .meta').hide()
             jQuery('#' + balloonID + ' .balloon-note').fadeIn('fast')
 
+    setIdeaCount: (count) => 
+        balloonObj = jQuery(@$el)
+        balloonID = balloonObj.attr('id')
+        ideaCounterObj = jQuery('#' + balloonID + ' div.idea-counter span.idea-count')
+        ideaCounterContainer = jQuery('#' + balloonID + ' div.idea-counter')
+        
+        countNumber = parseInt(count, 10)
+        
+        if countNumber < 1
+            ideaCounterContainer.removeClass('idea-counter-on').addClass('idea-counter-off')
+            ideaCounterObj.html('&nbsp;')
+        else if countNumber < 10
+            ideaCounterContainer.removeClass('idea-counter-off').addClass('idea-counter-on')
+            ideaCounterObj.html('&nbsp;' + countNumber)
+        else 
+            ideaCounterContainer.removeClass('idea-counter-off').addClass('idea-counter-on')
+            ideaCounterObj.html(countNumber)
+
 
     render: =>
         @$el.addClass('contribution').addClass(@colorClass)
@@ -402,12 +432,12 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
         if @model.get('kind') is 'propose'
             @$el.addClass('synthesis')
 
-        if (@ballonContributionType is @balloonContributionTypes.analysis)
-            nodeHeader = @findOrCreate '.balloon-note', '<img class="balloon-note" src="/smartboard/img/note.png" alt="Note">'
-            nodeHeader.hide()
-        else if (@ballonContributionType is @balloonContributionTypes.propose)
-            ideaCounter = @findOrCreate '.idea-counter', '<div class="idea-counter"><span>99</span></div>'
-            ideaCounter.hide()
+        #if (@ballonContributionType is @balloonContributionTypes.analysis)
+        nodeHeader = @findOrCreate '.balloon-note', '<img class="balloon-note" src="/smartboard/img/note.png" alt="Note">'
+        nodeHeader.hide()
+        #else if (@ballonContributionType is @balloonContributionTypes.propose)
+        ideaCounter = @findOrCreate '.idea-counter', '<div class="idea-counter idea-counter-off"><span class="idea-count">&nbsp;</span></div>'
+        ideaCounter.hide()
 
         headline = @findOrCreate '.headline', 
             "<h3 class='headline'></h3>"

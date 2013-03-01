@@ -406,6 +406,8 @@
 
       this.render = __bind(this.render, this);
 
+      this.setIdeaCount = __bind(this.setIdeaCount, this);
+
       this.toggleAnalysis = __bind(this.toggleAnalysis, this);
 
       this.toggleProposal = __bind(this.toggleProposal, this);
@@ -453,8 +455,16 @@
 
     ContributionBalloon.prototype.toggleProposal = function() {
       var balloonID, balloonObj;
+      console.log('Toggle Proposal');
       balloonObj = jQuery(this.$el);
       balloonID = balloonObj.attr('id');
+      if (jQuery('#' + balloonID + ' .headline').is(':hidden')) {
+        balloonObj.addClass(this.colorClass);
+        jQuery('#' + balloonID + ' .balloon-note').hide();
+        jQuery('#' + balloonID + ' .headline').fadeIn('fast');
+        jQuery('#' + balloonID + ' .body').fadeIn('fast');
+        jQuery('#' + balloonID + ' .meta').fadeIn('fast');
+      }
       if (this.$el.hasClass('opened')) {
         return jQuery('#' + balloonID + ' .idea-counter').fadeIn('fast');
       } else {
@@ -480,19 +490,35 @@
       }
     };
 
+    ContributionBalloon.prototype.setIdeaCount = function(count) {
+      var balloonID, balloonObj, countNumber, ideaCounterContainer, ideaCounterObj;
+      balloonObj = jQuery(this.$el);
+      balloonID = balloonObj.attr('id');
+      ideaCounterObj = jQuery('#' + balloonID + ' div.idea-counter span.idea-count');
+      ideaCounterContainer = jQuery('#' + balloonID + ' div.idea-counter');
+      countNumber = parseInt(count, 10);
+      if (countNumber < 1) {
+        ideaCounterContainer.removeClass('idea-counter-on').addClass('idea-counter-off');
+        return ideaCounterObj.html('&nbsp;');
+      } else if (countNumber < 10) {
+        ideaCounterContainer.removeClass('idea-counter-off').addClass('idea-counter-on');
+        return ideaCounterObj.html('&nbsp;' + countNumber);
+      } else {
+        ideaCounterContainer.removeClass('idea-counter-off').addClass('idea-counter-on');
+        return ideaCounterObj.html(countNumber);
+      }
+    };
+
     ContributionBalloon.prototype.render = function() {
       var body, headline, ideaCounter, meta, nodeHeader;
       this.$el.addClass('contribution').addClass(this.colorClass);
       if (this.model.get('kind') === 'propose') {
         this.$el.addClass('synthesis');
       }
-      if (this.ballonContributionType === this.balloonContributionTypes.analysis) {
-        nodeHeader = this.findOrCreate('.balloon-note', '<img class="balloon-note" src="/smartboard/img/note.png" alt="Note">');
-        nodeHeader.hide();
-      } else if (this.ballonContributionType === this.balloonContributionTypes.propose) {
-        ideaCounter = this.findOrCreate('.idea-counter', '<div class="idea-counter"><span>99</span></div>');
-        ideaCounter.hide();
-      }
+      nodeHeader = this.findOrCreate('.balloon-note', '<img class="balloon-note" src="/smartboard/img/note.png" alt="Note">');
+      nodeHeader.hide();
+      ideaCounter = this.findOrCreate('.idea-counter', '<div class="idea-counter idea-counter-off"><span class="idea-count">&nbsp;</span></div>');
+      ideaCounter.hide();
       headline = this.findOrCreate('.headline', "<h3 class='headline'></h3>");
       headline.text(this.model.get('headline'));
       body = this.findOrCreate('.body', "<div class='body'></div>");
