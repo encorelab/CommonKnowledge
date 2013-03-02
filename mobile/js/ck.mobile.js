@@ -93,10 +93,8 @@ CK.Mobile = function() {
               if (data_for_state && data_for_state.contribution_to_tag) {
                 // var data_from_state = user_state.get('data');
                 if (data_for_state.done_tagging === true) {
-                  CK.getUserState(Sail.app.userData.account.login, "done_tagging", function(s3) {
-                    // go to done tagging
-                    app.doneTagging();
-                  });
+                  // go to done tagging
+                  app.doneTagging();
                 } else if (data_for_state.contribution_to_tag.contribution_id !== "") {
                   console.log('Need to work on contribution with id: '+data_for_state.contribution_to_tag.contribution_id);
                   app.contributionToTag(data_for_state.contribution_to_tag.contribution_id);
@@ -242,7 +240,7 @@ CK.Mobile = function() {
         if (sev.payload.recipient === app.userData.account.login) {
           console.log('name: '+sev.payload.recipient);
           // This should happen in analysis (alternatively we could get the state from the db but maybe later)
-          CK.getUserState(app.userData.account.login, function(user_state){
+          CK.getUserState(app.userData.account.login, function (user_state){
             // get the analysis value since we should be in analysis state
             var data = user_state.get('analysis');
             data.contribution_to_tag = {'contribution_id': sev.payload.contribution_id};
@@ -259,19 +257,19 @@ CK.Mobile = function() {
       done_tagging: function(sev) {
         console.log('done_tagging event heard');
         if (sev.payload.recipient === app.userData.account.login) {
-          // CK.setStateForUser('tablet', Sail.app.userData.account.login, 'done_tagging');     TODO - implement me once the model is done
-          // use this CK.setUserState(app.userData.account.login, "done_tagging", dataObj);
-          app.doneTagging();
+          // store state for restoreState ;)
+          CK.getUserState(app.userData.account.login, function (user_state){
+            var data = user_state.get('analysis');
+            data.done_tagging = true;
+
+            user_state.set('analysis', data);
+            user_state.save();
+
+            app.doneTagging();
+          });
         }
 
-        // store state for restoreState ;)
-        var dataObj = {'done_tagging':true};
-        // CK.setStateForUser ("tablet", app.userData.account.login, "contribution_to_tag", dataObj);
-        //CK.setUserState(app.userData.account.login, "contribution_to_tag", dataObj);
-        CK.getUserState(app.userData.account.login, function (user_state){
-          var analysis_data = user_state.get('analysis');
-          analysis_data.contribution_to_tag = dataObj;
-        });
+        
       },
 
       // start_synthesis: function(sev) {
@@ -420,6 +418,16 @@ CK.Mobile = function() {
     jQuery('.row').removeClass('disabled');
   };
 
+  app.hideAll = function() {
+    console.log('hiding all screens');
+    jQuery('#wait-screen').addClass('hide');
+    jQuery('#lock-screen').addClass('hide');
+    jQuery('#index-screen').addClass('hide');
+    jQuery('#choose-tag-screen').addClass('hide');
+    jQuery('#tagging-screen').addClass('hide');
+    jQuery('#proposal-screen').addClass('hide');
+  };
+
   /* State related function */
 
   app.startAnalysis = function(callback) {
@@ -557,11 +565,13 @@ CK.Mobile = function() {
   };
 
   app.doneTagging = function() {
+    app.hideAll();
+    jQuery('#index-screen').removeClass('hide');
     jQuery('.brand').text('Common Knowledge - Notes');
     jQuery('#tag-list').addClass('hide');
     jQuery('#contribution-list').removeClass('hide');
 
-    app.contributionInputView.render();
+    //app.contributionInputView.render();
     jQuery('#tag-submission-container .tag-btn').addClass('disabled');
 
     //app.contributionDetails = new CK.Model.Contribution();
