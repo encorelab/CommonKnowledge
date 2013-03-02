@@ -406,13 +406,7 @@
 
       this.render = __bind(this.render, this);
 
-      this.setIdeaCount = __bind(this.setIdeaCount, this);
-
       this.toggleAnalysis = __bind(this.toggleAnalysis, this);
-
-      this.toggleProposal = __bind(this.toggleProposal, this);
-
-      this.toggleInterpret = __bind(this.toggleInterpret, this);
 
       this.processContributionByType = __bind(this.processContributionByType, this);
 
@@ -450,37 +444,7 @@
     ContributionBalloon.prototype.processContributionByType = function() {
       if (this.ballonContributionType === this.balloonContributionTypes.analysis) {
         return this.toggleAnalysis();
-      } else if (this.ballonContributionType === this.balloonContributionTypes.propose) {
-        return this.toggleProposal();
-      } else if (this.ballonContributionType === this.balloonContributionTypes.interpret) {
-        return this.toggleInterpret();
       }
-    };
-
-    ContributionBalloon.prototype.toggleInterpret = function() {
-      var balloonID, balloonObj;
-      console.log('Toggle Interpret');
-      balloonObj = jQuery(this.$el);
-      balloonID = balloonObj.attr('id');
-      if (jQuery('#' + balloonID + ' .headline').is(':hidden')) {
-        balloonObj.addClass(this.colorClass);
-        jQuery('#' + balloonID + ' .balloon-note').hide();
-        jQuery('#' + balloonID + ' .headline').fadeIn('fast');
-        jQuery('#' + balloonID + ' .body').fadeIn('fast');
-        jQuery('#' + balloonID + ' .meta').fadeIn('fast');
-      }
-      if (this.$el.hasClass('opened')) {
-        return jQuery('#' + balloonID + ' .idea-counter').fadeIn('fast');
-      } else {
-        return jQuery('#' + balloonID + ' .idea-counter').hide();
-      }
-    };
-
-    ContributionBalloon.prototype.toggleProposal = function() {
-      var balloonID, balloonObj;
-      console.log('Toggle Proposal');
-      balloonObj = jQuery(this.$el);
-      return balloonID = balloonObj.attr('id');
     };
 
     ContributionBalloon.prototype.toggleAnalysis = function() {
@@ -502,35 +466,13 @@
       }
     };
 
-    ContributionBalloon.prototype.setIdeaCount = function(count) {
-      var balloonID, balloonObj, countNumber, ideaCounterContainer, ideaCounterObj;
-      balloonObj = jQuery(this.$el);
-      balloonID = balloonObj.attr('id');
-      ideaCounterObj = jQuery('#' + balloonID + ' div.idea-counter span.idea-count');
-      ideaCounterContainer = jQuery('#' + balloonID + ' div.idea-counter');
-      countNumber = parseInt(count, 10);
-      if (countNumber < 1) {
-        ideaCounterContainer.removeClass('idea-counter-on').addClass('idea-counter-off');
-        return ideaCounterObj.html('&nbsp;');
-      } else if (countNumber < 10) {
-        ideaCounterContainer.removeClass('idea-counter-off').addClass('idea-counter-on');
-        return ideaCounterObj.html('&nbsp;' + countNumber);
-      } else {
-        ideaCounterContainer.removeClass('idea-counter-off').addClass('idea-counter-on');
-        return ideaCounterObj.html(countNumber);
-      }
-    };
-
     ContributionBalloon.prototype.render = function() {
-      var body, headline, ideaCounter, meta, nodeHeader;
+      var body, headline, meta, nodeHeader;
       this.$el.addClass('contribution').addClass(this.colorClass);
       if (this.model.get('kind') === 'propose') {
         this.$el.addClass('synthesis');
       }
-      nodeHeader = this.findOrCreate('.balloon-note', '<img class="balloon-note" src="/smartboard/img/note.png" alt="Note">');
-      nodeHeader.hide();
-      ideaCounter = this.findOrCreate('.idea-counter', '<div class="idea-counter idea-counter-off"><span class="idea-count">&nbsp;</span></div>');
-      ideaCounter.hide();
+      nodeHeader = this.findOrCreate('.balloon-note', '<img style="display: none;" class="balloon-note" src="/smartboard/img/note.png" alt="Note">');
       headline = this.findOrCreate('.headline', "<h3 class='headline'></h3>");
       headline.text(this.model.get('headline'));
       body = this.findOrCreate('.body', "<div class='body'></div>");
@@ -598,12 +540,207 @@
 
   })(CK.Smartboard.View.Balloon);
 
+  CK.Smartboard.View.ContributionProposalBalloon = (function(_super) {
+
+    __extends(ContributionProposalBalloon, _super);
+
+    ContributionProposalBalloon.prototype.tagName = 'article';
+
+    ContributionProposalBalloon.prototype.className = 'contribution balloon';
+
+    ContributionProposalBalloon.prototype.id = function() {
+      return this.domID();
+    };
+
+    ContributionProposalBalloon.prototype.setColorClass = function(colorClass) {
+      return this.colorClass = colorClass;
+    };
+
+    function ContributionProposalBalloon(options) {
+      this.renderBuildons = __bind(this.renderBuildons, this);
+
+      this.renderTags = __bind(this.renderTags, this);
+
+      this.render = __bind(this.render, this);
+
+      this.setIdeaCount = __bind(this.setIdeaCount, this);
+
+      this.toggleProposal = __bind(this.toggleProposal, this);
+
+      this.toggleInterpret = __bind(this.toggleInterpret, this);
+
+      this.processContributionByType = __bind(this.processContributionByType, this);
+
+      this.setColorClass = __bind(this.setColorClass, this);
+
+      this.id = __bind(this.id, this);
+      ContributionProposalBalloon.__super__.constructor.call(this, options);
+      this.balloonContributionTypes = {
+        "default": 'default',
+        analysis: 'analysis',
+        propose: 'propose',
+        interpret: 'interpret'
+      };
+      console.log(this.balloonContributionTypes);
+      this.ballonContributionType = this.balloonContributionTypes["default"];
+      this.colorClass = "whiteGradient";
+      this.width = 0;
+      this.height = 0;
+    }
+
+    ContributionProposalBalloon.prototype.events = {
+      'mousedown': function(ev) {
+        return this.moveToTop();
+      },
+      'click': function(ev) {
+        this.$el.toggleClass('opened');
+        if (this.$el.hasClass('opened')) {
+          if ((Sail.app.wall.cloud != null) && (Sail.app.wall.cloud.force != null)) {
+            Sail.app.wall.cloud.force.stop();
+          }
+        }
+        return this.processContributionByType();
+      }
+    };
+
+    ContributionProposalBalloon.prototype.processContributionByType = function() {
+      if (this.ballonContributionType === this.balloonContributionTypes.propose) {
+        return this.toggleProposal();
+      } else if (this.ballonContributionType === this.balloonContributionTypes.interpret) {
+        return this.toggleInterpret();
+      }
+    };
+
+    ContributionProposalBalloon.prototype.toggleInterpret = function() {
+      var balloonID, balloonObj;
+      console.log('Toggle Interpret');
+      balloonObj = jQuery(this.$el);
+      balloonID = balloonObj.attr('id');
+      if (jQuery('#' + balloonID + ' .headline').is(':hidden')) {
+        balloonObj.addClass(this.colorClass);
+        jQuery('#' + balloonID + ' .balloon-note').hide();
+        jQuery('#' + balloonID + ' .headline').fadeIn('fast');
+        jQuery('#' + balloonID + ' .body').fadeIn('fast');
+        jQuery('#' + balloonID + ' .meta').fadeIn('fast');
+      }
+      if (this.$el.hasClass('opened')) {
+        return jQuery('#' + balloonID + ' .idea-counter').fadeIn('fast');
+      } else {
+        return jQuery('#' + balloonID + ' .idea-counter').hide();
+      }
+    };
+
+    ContributionProposalBalloon.prototype.toggleProposal = function() {
+      var balloonID, balloonObj;
+      console.log('Toggle Proposal');
+      balloonObj = jQuery(this.$el);
+      return balloonID = balloonObj.attr('id');
+    };
+
+    ContributionProposalBalloon.prototype.setIdeaCount = function(count) {
+      var balloonID, balloonObj, countNumber, ideaCounterContainer, ideaCounterObj;
+      balloonObj = jQuery(this.$el);
+      balloonID = balloonObj.attr('id');
+      ideaCounterObj = jQuery('#' + balloonID + ' div.idea-counter span.idea-count');
+      ideaCounterContainer = jQuery('#' + balloonID + ' div.idea-counter');
+      countNumber = parseInt(count, 10);
+      if (countNumber < 1) {
+        ideaCounterContainer.removeClass('idea-counter-on').addClass('idea-counter-off');
+        return ideaCounterObj.html('&nbsp;');
+      } else if (countNumber < 10) {
+        ideaCounterContainer.removeClass('idea-counter-off').addClass('idea-counter-on');
+        return ideaCounterObj.html('&nbsp;' + countNumber);
+      } else {
+        ideaCounterContainer.removeClass('idea-counter-off').addClass('idea-counter-on');
+        return ideaCounterObj.html(countNumber);
+      }
+    };
+
+    ContributionProposalBalloon.prototype.render = function() {
+      var body, headline, ideaCounter, meta, nodeHeader;
+      this.$el.addClass('contribution').addClass(this.colorClass);
+      if (this.model.get('kind') === 'propose') {
+        this.$el.addClass('synthesis');
+      }
+      nodeHeader = this.findOrCreate('.balloon-note', '<img class="balloon-note" src="/smartboard/img/note.png" alt="Note">');
+      nodeHeader.hide();
+      ideaCounter = this.findOrCreate('.idea-counter', '<div class="idea-counter idea-counter-off"><span class="idea-count">&nbsp;</span></div>');
+      ideaCounter.hide();
+      headline = this.findOrCreate('.headline', "<h3 class='headline'></h3>");
+      headline.text(this.model.get('headline'));
+      body = this.findOrCreate('.body', "<div class='body'></div>");
+      if (this.model.get('content_type') === 'text') {
+        body.text(this.model.get('content'));
+      } else {
+        body.text(this.model.get('content'));
+      }
+      meta = this.findOrCreate('.meta', "<div class='meta'><span class='author'></span></div>");
+      meta.find('.author').text(this.model.get('author')).addClass("author-" + (this.model.get('author')));
+      this.height = this.$el.height();
+      this.width = this.$el.width();
+      console.log("Render: Colour Class = " + this.colorClass + " Balloon Height = " + this.height + ", Width = " + this.width);
+      this.renderBuildons();
+      this.processContributionByType();
+      return this;
+    };
+
+    ContributionProposalBalloon.prototype.renderTags = function() {
+      var tag, tagIds;
+      if (!this.model.has('tags')) {
+        return;
+      }
+      tagIds = (function() {
+        var _i, _len, _ref, _results;
+        _ref = this.model.get('tags');
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          tag = _ref[_i];
+          _results.push(tag.id);
+        }
+        return _results;
+      }).call(this);
+      this.$el.attr('data-tags', tagIds.join(" "));
+      return this;
+    };
+
+    ContributionProposalBalloon.prototype.renderBuildons = function() {
+      var $b, b, buildons, changed, container, counter, _i, _len, _results;
+      if (!this.model.has('build_ons')) {
+        return;
+      }
+      buildons = this.model.get('build_ons');
+      container = this.findOrCreate('.buildons', "<div class='buildons'></div>");
+      changed = false;
+      if (buildons.length !== container.find('div.buildon').length) {
+        changed = true;
+      }
+      container.children('div.buildon').remove();
+      counter = CK.Smartboard.View.findOrCreate(this.$el.find('.meta'), '.buildon-counter', "<div class='buildon-counter'></div>");
+      counter.html('');
+      _results = [];
+      for (_i = 0, _len = buildons.length; _i < _len; _i++) {
+        b = buildons[_i];
+        counter.append("•");
+        $b = jQuery("                <div class='buildon'>                    <div class='author'></div>                    <div class='content'></div>                </div>            ");
+        $b.find('.author').text(b.author);
+        $b.find('.content').text(b.content);
+        _results.push(container.append($b));
+      }
+      return _results;
+    };
+
+    return ContributionProposalBalloon;
+
+  })(CK.Smartboard.View.Balloon);
+
   CK.Smartboard.View.TagBalloon = (function(_super) {
 
     __extends(TagBalloon, _super);
 
     function TagBalloon() {
       this.render = __bind(this.render, this);
+
+      this.setColorClass = __bind(this.setColorClass, this);
 
       this.id = __bind(this.id, this);
       return TagBalloon.__super__.constructor.apply(this, arguments);
@@ -615,6 +752,10 @@
 
     TagBalloon.prototype.id = function() {
       return this.domID();
+    };
+
+    TagBalloon.prototype.setColorClass = function(className) {
+      return this.$el.addClass(className);
     };
 
     TagBalloon.prototype.events = {
