@@ -50,7 +50,7 @@ class CK.Smartboard.View.BalloonCloud
             .size([@wallWidth, @wallHeight])
             .nodes(@nodes)
             .links(@links)
-            .alpha(0.03)
+            #.alpha(0.03)
             .on('tick', @tick)
 
 
@@ -66,6 +66,7 @@ class CK.Smartboard.View.BalloonCloud
 
     # a tick of the d3 animation
     tick: =>
+
         @balloons
             .style 'left', (d) =>
                 balloonWidth = d.view.$el.outerWidth()
@@ -73,14 +74,16 @@ class CK.Smartboard.View.BalloonCloud
                     d.x = @wallWidth - balloonWidth/2
                 else if d.x - balloonWidth/2 < 0
                     d.x = 0 + balloonWidth/2
-                return (d.x - balloonWidth/2) + 'px'
+                
+                (d.x - balloonWidth/2) + 'px'
             .style 'top', (d) =>
                 balloonHeight = d.view.$el.outerHeight()
                 if d.y + balloonHeight/2 > @wallHeight
                     d.y = @wallHeight - balloonHeight/2
                 else if d.y - balloonHeight/2 < 0
                     d.y = 0 + balloonHeight/2
-                return (d.y - balloonHeight/2) + 'px'
+                
+                (d.y - balloonHeight/2) + 'px'
             .each (d) =>
                 if d.view.$el.hasClass('pinned')
                     d.fixed = true
@@ -204,6 +207,8 @@ class CK.Smartboard.View.BalloonCloud
         # based on collision detection example 
         #   from https://gist.github.com/3116713
 
+        return unless b.x? and b.y?
+
         $b = b.view.$el
         bWidth = $b.outerWidth()
         bHeight = $b.outerHeight()
@@ -216,8 +221,10 @@ class CK.Smartboard.View.BalloonCloud
         bIsTag = $b.hasClass('tag')
 
         return (quad, x1, y1, x2, y2) =>
+            return unless quad.point? and quad.point.x? and quad.point.y?
+
             if quad.point && quad.point isnt b # don't try to collide with self
-                
+
                 qWidth = quad.point.view.$el.outerWidth()
                 qHeight = quad.point.view.$el.outerHeight()
 
@@ -295,7 +302,7 @@ class CK.Smartboard.View.BalloonCloud
             
 
         console.log("Starting force...")
-        @force.start().alpha(0.02)
+        @force.start()#.alpha(0.02)
 
         @balloons.call(@force.drag)
 
@@ -391,8 +398,8 @@ class CK.Smartboard.View.BalloonCloud
                 , 2000
 
             pos = view.$el.position()
-            d.x = pos.left + view.$el.outerWidth()/2 unless d.x?
-            d.y = pos.top + view.$el.outerHeight()/2 unless d.y?
+            d.x = view.leftToX(pos.left) unless d.x?
+            d.y = view.topToY(pos.top) unless d.y?
 
     reRenderForState: (state) =>
         console.log 'Rerender nodes for state: ' + state

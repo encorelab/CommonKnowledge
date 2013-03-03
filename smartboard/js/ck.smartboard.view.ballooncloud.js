@@ -37,7 +37,7 @@
     }
 
     BalloonCloud.prototype.generateForceFunction = function() {
-      return d3.layout.force().charge(0).linkDistance(this.linkDistance).linkStrength(0.2).gravity(0).friction(0.2).size([this.wallWidth, this.wallHeight]).nodes(this.nodes).links(this.links).alpha(0.03).on('tick', this.tick);
+      return d3.layout.force().charge(0).linkDistance(this.linkDistance).linkStrength(0.2).gravity(0).friction(0.2).size([this.wallWidth, this.wallHeight]).nodes(this.nodes).links(this.links).on('tick', this.tick);
     };
 
     BalloonCloud.prototype.linkDistance = function(link, i) {
@@ -178,6 +178,9 @@
     BalloonCloud.prototype.detectCollision = function(b) {
       var $b, bHeight, bIsTag, bWidth, nx1, nx2, ny1, ny2,
         _this = this;
+      if (!((b.x != null) && (b.y != null))) {
+        return;
+      }
       $b = b.view.$el;
       bWidth = $b.outerWidth();
       bHeight = $b.outerHeight();
@@ -188,6 +191,9 @@
       bIsTag = $b.hasClass('tag');
       return function(quad, x1, y1, x2, y2) {
         var $q, h, qHeight, qIsTag, qWidth, w, xDist, xNudge, xOverlap, yDist, yNudge, yOverlap;
+        if (!((quad.point != null) && (quad.point.x != null) && (quad.point.y != null))) {
+          return;
+        }
         if (quad.point && quad.point !== b) {
           qWidth = quad.point.view.$el.outerWidth();
           qHeight = quad.point.view.$el.outerHeight();
@@ -231,7 +237,7 @@
         this.force = this.generateForceFunction();
       }
       console.log("Starting force...");
-      this.force.start().alpha(0.02);
+      this.force.start();
       return this.balloons.call(this.force.drag);
     };
 
@@ -348,10 +354,10 @@
         }
         pos = view.$el.position();
         if (d.x == null) {
-          d.x = pos.left + view.$el.outerWidth() / 2;
+          d.x = view.leftToX(pos.left);
         }
         if (d.y == null) {
-          return d.y = pos.top + view.$el.outerHeight() / 2;
+          return d.y = view.topToY(pos.top);
         }
       });
     };
