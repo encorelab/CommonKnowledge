@@ -23,23 +23,12 @@
       this.dbURL = "" + url + "/" + db;
       this.server = new Drowsy.Server(url);
       this.db = this.server.database(db);
-      this.createNecessaryCollections(['contributions', 'tags', 'states']).then(function() {
+      this.createNecessaryCollections(['contributions', 'tags', 'states', 'user_states']).then(function() {
         var tags;
         _this.defineModelClasses();
         tags = new CK.Model.Tags();
         return tags.fetch({
           success: function(tags) {
-            var tag;
-            if (tags.find(function(t) {
-              return t.get('name') === "N/A";
-            })) {
-              console.log("Not creating 'N/A' tag because it already exists");
-            } else {
-              console.log("Creating 'N/A' tag...");
-              tag = new CK.Model.Tag();
-              tag.set('name', "N/A");
-              tag.save();
-            }
             return deferredConfigure.resolve();
           }
         });

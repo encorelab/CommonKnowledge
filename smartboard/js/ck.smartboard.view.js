@@ -32,6 +32,14 @@
     };
 
     function Base(options) {
+      this.yToTop = __bind(this.yToTop, this);
+
+      this.xToLeft = __bind(this.xToLeft, this);
+
+      this.topToY = __bind(this.topToY, this);
+
+      this.leftToX = __bind(this.leftToX, this);
+
       this.domID = __bind(this.domID, this);
 
       this.findOrCreate = __bind(this.findOrCreate, this);
@@ -58,8 +66,8 @@
       var left, top, wallHeight, wallWidth;
       wallWidth = jQuery('#wall').width();
       wallHeight = jQuery('#wall').height();
-      left = Math.random() * (wallWidth - this.$el.width());
-      top = Math.random() * (wallHeight - this.$el.height());
+      left = Math.random() * (wallWidth - this.$el.outerWidth());
+      top = Math.random() * (wallHeight - this.$el.outerHeight());
       this.$el.css({
         left: left + 'px',
         top: top + 'px'
@@ -74,6 +82,22 @@
 
     Base.prototype.domID = function() {
       return this.model.id;
+    };
+
+    Base.prototype.leftToX = function(left) {
+      return left + this.$el.outerWidth() / 2;
+    };
+
+    Base.prototype.topToY = function(top) {
+      return top + this.$el.outerHeight() / 2;
+    };
+
+    Base.prototype.xToLeft = function(x) {
+      return x - this.$el.outerWidth() / 2;
+    };
+
+    Base.prototype.yToTop = function(y) {
+      return y - this.$el.outerHeight() / 2;
     };
 
     return Base;
@@ -367,6 +391,8 @@
     __extends(Balloon, _super);
 
     function Balloon() {
+      this.render = __bind(this.render, this);
+
       this.moveToTop = __bind(this.moveToTop, this);
       return Balloon.__super__.constructor.apply(this, arguments);
     }
@@ -377,6 +403,15 @@
         return parseInt(jQuery(this).zIndex()) + 1;
       }));
       return this.$el.zIndex(maxZ);
+    };
+
+    Balloon.prototype.render = function() {
+      if (this.x != null) {
+        this.$el.css('left', this.xToLeft(this.x));
+      }
+      if (this.y != null) {
+        return this.$el.css('top', this.yToTop(this.y));
+      }
     };
 
     return Balloon;
@@ -422,8 +457,6 @@
       };
       this.ballonContributionType = this.balloonContributionTypes["default"];
       this.colorClass = "whiteGradient";
-      this.width = 0;
-      this.height = 0;
     }
 
     ContributionBalloon.prototype.events = {
@@ -468,6 +501,7 @@
 
     ContributionBalloon.prototype.render = function() {
       var body, headline, meta, nodeHeader;
+      ContributionBalloon.__super__.render.call(this);
       this.$el.addClass('contribution').addClass(this.colorClass);
       if (this.model.get('kind') === 'propose') {
         this.$el.addClass('synthesis');
@@ -483,9 +517,6 @@
       }
       meta = this.findOrCreate('.meta', "<div class='meta'><span class='author'></span></div>");
       meta.find('.author').text(this.model.get('author')).addClass("author-" + (this.model.get('author')));
-      this.height = this.$el.height();
-      this.width = this.$el.width();
-      console.log("Render: Colour Class = " + this.colorClass + " Balloon Height = " + this.height + ", Width = " + this.width);
       this.renderBuildons();
       this.processContributionByType();
       return this;
@@ -584,8 +615,6 @@
       console.log(this.balloonContributionTypes);
       this.ballonContributionType = this.balloonContributionTypes["default"];
       this.colorClass = "whiteGradient";
-      this.width = 0;
-      this.height = 0;
     }
 
     ContributionProposalBalloon.prototype.events = {
@@ -658,6 +687,7 @@
 
     ContributionProposalBalloon.prototype.render = function() {
       var body, headline, ideaCounter, meta, nodeHeader;
+      ContributionProposalBalloon.__super__.render.call(this);
       this.$el.addClass('contribution').addClass(this.colorClass);
       if (this.model.get('kind') === 'propose') {
         this.$el.addClass('synthesis');
@@ -676,9 +706,6 @@
       }
       meta = this.findOrCreate('.meta', "<div class='meta'><span class='author'></span></div>");
       meta.find('.author').text(this.model.get('author')).addClass("author-" + (this.model.get('author')));
-      this.height = this.$el.height();
-      this.width = this.$el.width();
-      console.log("Render: Colour Class = " + this.colorClass + " Balloon Height = " + this.height + ", Width = " + this.width);
       this.renderBuildons();
       this.processContributionByType();
       return this;
@@ -806,6 +833,7 @@
 
     TagBalloon.prototype.render = function() {
       var name;
+      TagBalloon.__super__.render.call(this);
       this.$el.addClass('tag');
       name = this.findOrCreate('.name', "<h3 class='name'></h3>");
       name.text(this.model.get('name'));

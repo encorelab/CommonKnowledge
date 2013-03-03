@@ -16,7 +16,8 @@ class CK.Model
         @createNecessaryCollections([
             'contributions',
             'tags',
-            'states'
+            'states',
+            'user_states'
         ]).then =>
             @defineModelClasses()
 
@@ -24,13 +25,13 @@ class CK.Model
             tags = new CK.Model.Tags()
             tags.fetch
                 success: (tags) =>
-                    if tags.find( (t) => t.get('name') is "N/A" )
-                        console.log("Not creating 'N/A' tag because it already exists")
-                    else
-                        console.log("Creating 'N/A' tag...")
-                        tag = new CK.Model.Tag()
-                        tag.set('name', "N/A")
-                        tag.save()
+                    # if tags.find( (t) => t.get('name') is "N/A" )
+                    #     console.log("Not creating 'N/A' tag because it already exists")
+                    # else
+                    #     console.log("Creating 'N/A' tag...")
+                    #     tag = new CK.Model.Tag()
+                    #     tag.set('name', "N/A")
+                    #     tag.save()
 
                     deferredConfigure.resolve()
 
