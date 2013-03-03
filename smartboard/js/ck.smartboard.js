@@ -197,11 +197,11 @@
           return console.log(_this.contributions.url, ev, data);
         });
         _this.contributions.on('add', function(contrib) {
-          _this.wall.cloud.addNode(contrib);
+          _this.wall.cloud.ensureNode(contrib);
           return _this.wall.cloud.render();
         });
         _this.contributions.on('reset', function(collection) {
-          collection.each(_this.wall.cloud.addNode);
+          collection.each(_this.wall.cloud.ensureNode);
           return _this.wall.cloud.render();
         });
         _this.tags = new CK.Model.Tags();
@@ -210,12 +210,12 @@
           return console.log(_this.contributions.url, ev, data);
         });
         _this.tags.on('add', function(tag) {
-          _this.wall.cloud.addNode(tag);
+          _this.wall.cloud.ensureNode(tag);
           tag.newlyAdded = true;
           return _this.wall.cloud.render();
         });
         _this.tags.on('reset', function(collection) {
-          collection.each(_this.wall.cloud.addNode);
+          collection.each(_this.wall.cloud.ensureNode);
           return _this.wall.cloud.render();
         });
         CK.getState('phase', function(s) {

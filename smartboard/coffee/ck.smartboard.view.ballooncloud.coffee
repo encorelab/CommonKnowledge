@@ -306,13 +306,15 @@ class CK.Smartboard.View.BalloonCloud
 
         @balloons.call(@force.drag)
 
-
-    addNode: (n) =>
+    # adds a node (balloon) to the cloud if it doesn't already exists
+    ensureNode: (n) =>
         isNodePublished = n.get('published')
         
 
         if n not instanceof CK.Model.Contribution or (n instanceof CK.Model.Contribution and isNodePublished is true)
-            unless n in @nodes
+            # make sure node n doesn't already exist
+            unless _.any(@nodes, 
+                    (node) -> node.id is n.id)
                 @nodes.push n
 
                 if n instanceof CK.Model.Tag
@@ -331,20 +333,23 @@ class CK.Smartboard.View.BalloonCloud
 
                     # TODO: create the tag if it doesn't exist?
                     if tag?
-                        @addLink(n, tag)
+                        @ensureLink(n, tag)
 
             else if n instanceof CK.Model.Tag
                 for b in @nodes
                     if b.has('tags') and b.get('tags').some( (t) -> t.id is n.id )
-                        @addLink(b, n)
+                        @ensureLink(b, n)
 
 
-    addLink: (fromContribution, toTag) =>
+    # adds a link (connector) to the cloud if it doesn't already exists
+    ensureLink: (fromContribution, toTag) =>
         link =
             source: fromContribution
             target: toTag
 
-        unless link in @links
+        # make sure link doesn't already exist
+        unless _.any(@links, 
+                (l) -> l.source.id is fromContribution.id and l.target.id is toTag.id)
             @links.push link
 
     inflateBalloons: (balloons) =>
