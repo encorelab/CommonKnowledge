@@ -23,7 +23,7 @@
       this.dbURL = "" + url + "/" + db;
       this.server = new Drowsy.Server(url);
       this.db = this.server.database(db);
-      this.createNecessaryCollections(['contributions', 'tags', 'states']).then(function() {
+      this.createNecessaryCollections(['contributions', 'tags', 'states', 'user_states']).then(function() {
         var tags;
         _this.defineModelClasses();
         tags = new CK.Model.Tags();

@@ -16,7 +16,8 @@ class CK.Model
         @createNecessaryCollections([
             'contributions',
             'tags',
-            'states'
+            'states',
+            'user_states'
         ]).then =>
             @defineModelClasses()
 
