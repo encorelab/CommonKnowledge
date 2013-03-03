@@ -261,9 +261,7 @@
         contribution: function(sev) {
           var _this = this;
           return this.contributions.fetch().done(function() {
-            var thePayload;
-            thePayload = jQuery.parseJSON(sev.payload);
-            return _this.contributions.get(thePayload._id).newlyAdded = true;
+            return _this.contributions.get(sev.payload).newlyAdded = true;
           });
         },
         build_on: function(sev) {

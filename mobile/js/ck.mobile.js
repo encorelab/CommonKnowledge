@@ -290,7 +290,7 @@ CK.Mobile = function() {
   app.sendContribution = function(kind, model) {
     var sev;
     if (kind === 'newNote' || kind === 'synthesis') {
-      sev = new Sail.Event('contribution', JSON.stringify(model.toJSON()));
+      sev = new Sail.Event('contribution', model.toJSON());
     } else if (kind === 'buildOn') {
       sev = new Sail.Event('build_on', app.contributionDetails.toJSON());
     } else {
@@ -485,7 +485,7 @@ CK.Mobile = function() {
           success: function () {
             console.log('State saved');
             // send out and sail event
-            var sev = new Sail.Event('chosen_tag_group', JSON.stringify(analysis_obj));
+            var sev = new Sail.Event('chosen_tag_group', analysis_obj);
             Sail.app.groupchat.sendEvent(sev);
             // Show wait screen until agent answers with the contribution to be tagged
             Sail.app.showWaitScreen();
@@ -534,7 +534,7 @@ CK.Mobile = function() {
   app.tagContribution = function (contributionId, tagged) {
     console.log('Contribution <'+contributionId+'> tagged: '+tagged);
     var sail_data = {'contribution_id':contributionId};
-    var sev = new Sail.Event('contribution_tagged', JSON.stringify(sail_data));
+    var sev = new Sail.Event('contribution_tagged', sail_data);
 
     if (tagged) {
       CK.getUserState(Sail.app.userData.account.login, function (user_state) {
