@@ -394,7 +394,7 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
             @$el.addClass('synthesis')
 
         #if (@ballonContributionType is @balloonContributionTypes.analysis)
-        nodeHeader = @findOrCreate '.balloon-note', '<img style="display: none;" class="balloon-note" src="/smartboard/img/note.png" alt="Note">'
+        nodeHeader = @findOrCreate '.balloon-note', '<img style="display: none;" class="balloon-note" src="/smartboard/img/notes_large.png" alt="Note">'
         
         headline = @findOrCreate '.headline', 
             "<h3 class='headline'></h3>"
