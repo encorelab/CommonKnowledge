@@ -116,6 +116,9 @@ class CK.Smartboard extends Sail.App
             @contributions = new CK.Model.Contributions()
             @contributions.wake @config.wakeful.url
 
+            @proposals = new CK.Model.Proposals()
+            @proposals.wake @config.wakeful.url
+
             # FIXME: for the 'reset' event, we should wait until
             #        BOTH the tags and contributions are fetched
             #        before calling cloud.render()

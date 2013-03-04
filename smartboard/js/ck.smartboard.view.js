@@ -689,6 +689,7 @@
       var body, headline, ideaCounter, meta, nodeHeader;
       ContributionProposalBalloon.__super__.render.call(this);
       this.$el.addClass('contribution').addClass(this.colorClass);
+      console.log('Rendering propose balloon.');
       if (this.model.get('kind') === 'propose') {
         this.$el.addClass('synthesis');
       }

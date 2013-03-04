@@ -193,6 +193,8 @@
       return Wakeful.loadFayeClient(this.config.wakeful.url).done(function() {
         _this.contributions = new CK.Model.Contributions();
         _this.contributions.wake(_this.config.wakeful.url);
+        _this.proposals = new CK.Model.Proposals();
+        _this.proposals.wake(_this.config.wakeful.url);
         _this.contributions.on('all', function(ev, data) {
           return console.log(_this.contributions.url, ev, data);
         });

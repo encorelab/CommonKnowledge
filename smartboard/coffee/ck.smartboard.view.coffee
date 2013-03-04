@@ -592,6 +592,7 @@ class CK.Smartboard.View.ContributionProposalBalloon extends CK.Smartboard.View.
         super()
 
         @$el.addClass('contribution').addClass(@colorClass)
+        console.log 'Rendering propose balloon.'
 
         if @model.get('kind') is 'propose'
             @$el.addClass('synthesis')
