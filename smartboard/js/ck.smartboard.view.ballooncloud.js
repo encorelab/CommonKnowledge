@@ -323,27 +323,29 @@
               view.setColorClass(tagListing[d.id].className);
             }
           } else if (d.collectionName === "contributions") {
-            if (state !== 'propose' && state !== 'interpret') {
-              view = new CK.Smartboard.View.ContributionBalloon({
-                model: d,
-                el: $el[0]
-              });
-            } else {
-              view = new CK.Smartboard.View.ContributionProposalBalloon({
-                model: d,
-                el: $el[0]
-              });
-            }
-            console.log('state is ' + state);
+            view = new CK.Smartboard.View.ContributionBalloon({
+              model: d,
+              el: $el[0]
+            });
+            console.log('Contribution View Instantiated - state is ' + state);
             if (state === 'analysis') {
               view.ballonContributionType = view.balloonContributionTypes.analysis;
-            } else if (state === 'propose') {
-              view.ballonContributionType = view.balloonContributionTypes.propose;
-            } else if (state === 'interpret') {
+            } else {
+              view.balloonContributionType = view.balloonContributionTypes["default"];
+            }
+          } else if (d.collectionName === "proposals") {
+            view = new CK.Smartboard.View.ContributionProposalBalloon({
+              model: d,
+              el: $el[0]
+            });
+            console.log('Proposal View Instantiated - state is ' + state);
+            if (state === 'interpret') {
               view.ballonContributionType = view.balloonContributionTypes.interpret;
+            } else {
+              view.ballonContributionType = view.balloonContributionTypes.propose;
             }
           } else {
-            console.error("Unrecognized Balloon type:", d);
+            console.error("Unrecognized Balloon type:", d.collectionName);
           }
           d.view = view;
         }
@@ -365,10 +367,10 @@
     };
 
     BalloonCloud.prototype.reRenderForState = function(state) {
-      var b, view, _i, _len, _ref, _results;
+      var b, i, view, _i, _len, _ref;
       console.log('Rerender nodes for state: ' + state);
+      i = 0;
       _ref = this.nodes;
-      _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         b = _ref[_i];
         view = b.view;
@@ -376,16 +378,27 @@
           if (state === 'analysis') {
             view.ballonContributionType = view.balloonContributionTypes.analysis;
           } else if (state === 'propose') {
-            view.ballonContributionType = view.balloonContributionTypes.propose;
+            view.remove();
+            view = null;
           } else if (state === 'interpret') {
             view.ballonContributionType = view.balloonContributionTypes.interpret;
           } else {
             view.ballonContributionType = view.balloonContributionTypes["default"];
           }
         }
-        _results.push(view.render());
+        i++;
+        if (view != null) {
+          view.render();
+        }
       }
-      return _results;
+      if (state === 'propose') {
+        this.nodes.filter(function(n) {
+          return !(n instanceof CK.Model.Contribution);
+        });
+        this.links = [];
+        jQuery('div.connector').unbind().remove();
+        return this.render();
+      }
     };
 
     BalloonCloud.prototype.render = function(ev) {

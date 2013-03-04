@@ -134,6 +134,18 @@ class CK.Smartboard extends Sail.App
                 collection.each @wall.cloud.ensureNode
                 @wall.cloud.render()
 
+
+            @proposals.on 'all', (ev, data) => 
+                console.log(@proposals.url, ev, data)
+
+            @proposals.on 'add', (proposal) =>
+                @wall.cloud.ensureNode proposal
+                @wall.cloud.render()
+
+            @proposals.on 'reset', (collection) => 
+                collection.each @wall.cloud.ensureNode
+                @wall.cloud.render()
+
             @tags = new CK.Model.Tags()
             @tags.wake @config.wakeful.url
 

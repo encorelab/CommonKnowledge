@@ -205,6 +205,17 @@
           collection.each(_this.wall.cloud.ensureNode);
           return _this.wall.cloud.render();
         });
+        _this.proposals.on('all', function(ev, data) {
+          return console.log(_this.proposals.url, ev, data);
+        });
+        _this.proposals.on('add', function(proposal) {
+          _this.wall.cloud.ensureNode(proposal);
+          return _this.wall.cloud.render();
+        });
+        _this.proposals.on('reset', function(collection) {
+          collection.each(_this.wall.cloud.ensureNode);
+          return _this.wall.cloud.render();
+        });
         _this.tags = new CK.Model.Tags();
         _this.tags.wake(_this.config.wakeful.url);
         _this.contributions.on('all', function(ev, data) {
