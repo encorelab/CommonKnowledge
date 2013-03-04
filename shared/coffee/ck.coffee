@@ -23,7 +23,10 @@ CK.getStateForUser = (type, username, state_name, callback) ->
 
     states.fetch()
 
-CK.setState = (type, state, screen_lock = false) ->
+CK.setState = (type, state, screen_lock) ->
+    if (typeof screen_lock == "undefined" || screen_lock == null )
+        screen_lock = false
+
     CK.getState type, (s)->
         if (typeof s == "undefined" || s == null )
             # //create new state

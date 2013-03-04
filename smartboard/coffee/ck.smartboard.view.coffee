@@ -50,8 +50,8 @@ class CK.Smartboard.View.Base extends Backbone.View
         wallWidth = jQuery('#wall').width()
         wallHeight = jQuery('#wall').height()
 
-        left = Math.random() * (wallWidth - @$el.width())
-        top = Math.random() * (wallHeight - @$el.height())
+        left = Math.random() * (wallWidth - @$el.outerWidth())
+        top = Math.random() * (wallHeight - @$el.outerHeight())
 
         @$el.css
             left: left + 'px'
@@ -60,6 +60,12 @@ class CK.Smartboard.View.Base extends Backbone.View
         @model.save {pos: {left: left, top: top}}
 
     domID: => @model.id
+
+    # these are used in CK.Smartboard.View.BalloonCloud
+    leftToX: (left) => left + @$el.outerWidth() / 2
+    topToY: (top) => top + @$el.outerHeight() / 2
+    xToLeft: (x) => x - @$el.outerWidth() / 2
+    yToTop: (y) => y - @$el.outerHeight() / 2
 
 class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
     tagName: 'div'
@@ -323,6 +329,12 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
             parseInt(jQuery(this).zIndex()) + 1
         @$el.zIndex maxZ
 
+    render: =>
+        if @x?
+            @$el.css 'left', @xToLeft(@x)
+        if @y?
+            @$el.css 'top', @yToTop(@y)
+
 
 class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
     tagName: 'article'
@@ -345,8 +357,6 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
 
         @ballonContributionType = @balloonContributionTypes.default
         @colorClass = "whiteGradient"
-        @width = 0
-        @height = 0
 
     events:
         'mousedown': (ev) -> @moveToTop()
@@ -388,13 +398,15 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
 
 
     render: =>
+        super()
+
         @$el.addClass('contribution').addClass(@colorClass)
 
         if @model.get('kind') is 'propose'
             @$el.addClass('synthesis')
 
         #if (@ballonContributionType is @balloonContributionTypes.analysis)
-        nodeHeader = @findOrCreate '.balloon-note', '<img style="display: none;" class="balloon-note" src="/smartboard/img/note.png" alt="Note">'
+        nodeHeader = @findOrCreate '.balloon-note', '<img style="display: none;" class="balloon-note" src="/smartboard/img/notes_large.png" alt="Note">'
         
         headline = @findOrCreate '.headline', 
             "<h3 class='headline'></h3>"
@@ -416,10 +428,6 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
             .addClass("author-#{@model.get('author')}")
 
         # @renderTags()
-
-        @height =  @$el.height()
-        @width = @$el.width()
-        console.log "Render: Colour Class = " + @colorClass + " Balloon Height = " + @height + ", Width = " + @width
 
         @renderBuildons()
         @processContributionByType()
@@ -512,8 +520,6 @@ class CK.Smartboard.View.ContributionProposalBalloon extends CK.Smartboard.View.
 
         @ballonContributionType = @balloonContributionTypes.default
         @colorClass = "whiteGradient"
-        @width = 0
-        @height = 0
 
     events:
         'mousedown': (ev) -> @moveToTop()
@@ -583,7 +589,10 @@ class CK.Smartboard.View.ContributionProposalBalloon extends CK.Smartboard.View.
 
 
     render: =>
+        super()
+
         @$el.addClass('contribution').addClass(@colorClass)
+        console.log 'Rendering propose balloon.'
 
         if @model.get('kind') is 'propose'
             @$el.addClass('synthesis')
@@ -615,10 +624,6 @@ class CK.Smartboard.View.ContributionProposalBalloon extends CK.Smartboard.View.
             .addClass("author-#{@model.get('author')}")
 
         # @renderTags()
-
-        @height =  @$el.height()
-        @width = @$el.width()
-        console.log "Render: Colour Class = " + @colorClass + " Balloon Height = " + @height + ", Width = " + @width
 
         @renderBuildons()
         @processContributionByType()
@@ -740,6 +745,8 @@ class CK.Smartboard.View.TagBalloon extends CK.Smartboard.View.Balloon
             #     console.log("Couldn't save pinned tag's position -- couldn't find a tag with id: ", tid)
 
     render: => 
+        super()
+
         @$el.addClass('tag')
 
         name = @findOrCreate '.name', 

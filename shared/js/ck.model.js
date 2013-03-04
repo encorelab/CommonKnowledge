@@ -23,7 +23,7 @@
       this.dbURL = "" + url + "/" + db;
       this.server = new Drowsy.Server(url);
       this.db = this.server.database(db);
-      this.createNecessaryCollections(['contributions', 'tags', 'states']).then(function() {
+      this.createNecessaryCollections(['contributions', 'tags', 'states', 'user_states', 'proposals']).then(function() {
         var tags;
         _this.defineModelClasses();
         tags = new CK.Model.Tags();
@@ -149,6 +149,87 @@
         return Contribution;
 
       })(this.db.Document('contributions'));
+      this.Proposal = (function(_super) {
+
+        __extends(Proposal, _super);
+
+        function Proposal() {
+          this.hasTag = __bind(this.hasTag, this);
+
+          this.removeTag = __bind(this.removeTag, this);
+
+          this.addTag = __bind(this.addTag, this);
+
+          this.get = __bind(this.get, this);
+
+          this.initialize = __bind(this.initialize, this);
+          return Proposal.__super__.constructor.apply(this, arguments);
+        }
+
+        Proposal.prototype.initialize = function() {
+          Proposal.__super__.initialize.call(this);
+          if (!this.get('created_at')) {
+            return this.set('created_at', new Date());
+          }
+        };
+
+        Proposal.prototype.get = function(attr) {
+          var date, val;
+          val = Proposal.__super__.get.call(this, attr);
+          if (attr === 'created_at') {
+            if (!(val instanceof Date)) {
+              date = new Date(val);
+              if (!isNaN(date.getTime())) {
+                val = date;
+              }
+            }
+          }
+          return val;
+        };
+
+        Proposal.prototype.addTag = function(tag) {
+          var existingTagID;
+          if (!(tag instanceof CK.Model.Tag)) {
+            console.error("Cannot addTag ", tag, " because it is not a CK.Model.Tag instance!");
+            throw "Invalid tag (doesn't exist)";
+          }
+          if (!tag.id) {
+            console.error("Cannot addTag ", tag, " to contribution ", this, " because it doesn't have an id!");
+            throw "Invalid tag (no id)";
+          }
+          existingTagID = this.get('tag_group_id') || null;
+          if (existingTagID === tag.id) {
+            console.warn("Cannot addTag ", tag, " to contribution ", this, " because it already has this tag.");
+            return this;
+          }
+          this.set('tag_group_name', tag.name);
+          this.set('tag_group_id', tag.id);
+          return this;
+        };
+
+        Proposal.prototype.removeTag = function(tag) {
+          var tagID, tagName;
+          tagID = this.get('tag_group_id');
+          tagName = this.get('tag_group_name');
+          if (tagID === tag.id || tagName === tag.name) {
+            this.set('tag_group_id', null);
+            return this.set('tag_group_name', null);
+          }
+        };
+
+        Proposal.prototype.hasTag = function(tag) {
+          var tagID;
+          tagID = this.get('tag_group_id');
+          if (tag.id === tagID) {
+            return true;
+          } else {
+            return false;
+          }
+        };
+
+        return Proposal;
+
+      })(this.db.Document('proposals'));
       this.Contributions = (function(_super) {
 
         __extends(Contributions, _super);
@@ -162,6 +243,19 @@
         return Contributions;
 
       })(this.db.Collection('contributions'));
+      this.Proposals = (function(_super) {
+
+        __extends(Proposals, _super);
+
+        function Proposals() {
+          return Proposals.__super__.constructor.apply(this, arguments);
+        }
+
+        Proposals.prototype.model = CK.Model.Proposal;
+
+        return Proposals;
+
+      })(this.db.Collection('proposals'));
       this.Tag = (function(_super) {
 
         __extends(Tag, _super);

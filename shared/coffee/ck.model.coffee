@@ -16,7 +16,9 @@ class CK.Model
         @createNecessaryCollections([
             'contributions',
             'tags',
-            'states'
+            'states',
+            'user_states',
+            'proposals'
         ]).then =>
             @defineModelClasses()
 
@@ -126,8 +128,67 @@ class CK.Model
                         (not tagger? || t.tagger is tagger)
 
 
+        class @Proposal extends @db.Document('proposals')
+
+            initialize: =>
+                super()
+                unless @get('created_at')
+                    @set 'created_at', new Date()
+
+            get: (attr) =>
+                val = super(attr)
+                # previous versions of CK did not store created_at as a proper ISODate
+                if attr is 'created_at'
+                    unless val instanceof Date
+                        date = new Date(val)
+                        unless isNaN date.getTime()
+                            val = date
+                
+                return val
+            
+            addTag: (tag) =>
+                unless tag instanceof CK.Model.Tag
+                    console.error("Cannot addTag ", tag ," because it is not a CK.Model.Tag instance!")
+                    throw "Invalid tag (doesn't exist)"
+
+                unless tag.id
+                    console.error("Cannot addTag ", tag ," to contribution ", @ ," because it doesn't have an id!")
+                    throw "Invalid tag (no id)"
+
+                existingTagID = @get('tag_group_id') || null
+
+                if existingTagID is tag.id
+                    console.warn("Cannot addTag ", tag ," to contribution ", @ , " because it already has this tag.")
+                    return @
+
+
+                @set 'tag_group_name', tag.name
+                @set 'tag_group_id', tag.id
+
+                return @
+
+            removeTag: (tag) =>
+                tagID = @get('tag_group_id')
+                tagName = @get('tag_group_name')
+               
+
+                if tagID is tag.id || tagName is tag.name
+                    @set('tag_group_id', null)
+                    @set('tag_group_name', null)
+
+            hasTag: (tag) =>
+                tagID = @get('tag_group_id')
+                if tag.id is tagID
+                    true
+                else
+                    false
+                
+
         class @Contributions extends @db.Collection('contributions')
             model: CK.Model.Contribution
+
+        class @Proposals extends @db.Collection('proposals')
+            model: CK.Model.Proposal
 
         class @Tag extends @db.Document('tags')
 
@@ -143,4 +204,5 @@ class CK.Model
 
         class @UserStates extends @db.Collection('user_states')
             model: CK.Model.UserState
+
             

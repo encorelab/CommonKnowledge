@@ -116,6 +116,9 @@ class CK.Smartboard extends Sail.App
             @contributions = new CK.Model.Contributions()
             @contributions.wake @config.wakeful.url
 
+            @proposals = new CK.Model.Proposals()
+            @proposals.wake @config.wakeful.url
+
             # FIXME: for the 'reset' event, we should wait until
             #        BOTH the tags and contributions are fetched
             #        before calling cloud.render()
@@ -124,11 +127,11 @@ class CK.Smartboard extends Sail.App
                 console.log(@contributions.url, ev, data)
 
             @contributions.on 'add', (contrib) =>
-                @wall.cloud.addNode contrib
+                @wall.cloud.ensureNode contrib
                 @wall.cloud.render()
 
             @contributions.on 'reset', (collection) => 
-                collection.each @wall.cloud.addNode
+                collection.each @wall.cloud.ensureNode
                 @wall.cloud.render()
 
             @tags = new CK.Model.Tags()
@@ -138,14 +141,14 @@ class CK.Smartboard extends Sail.App
                 console.log(@contributions.url, ev, data)
 
             @tags.on 'add', (tag) =>
-                @wall.cloud.addNode tag
+                @wall.cloud.ensureNode tag
 
                 tag.newlyAdded = true
 
                 @wall.cloud.render()
 
             @tags.on 'reset', (collection) =>
-                collection.each @wall.cloud.addNode
+                collection.each @wall.cloud.ensureNode
                 @wall.cloud.render()
 
             CK.getState 'phase', (s) =>
@@ -193,9 +196,7 @@ class CK.Smartboard extends Sail.App
         sail:
             contribution: (sev) ->
                 @contributions.fetch().done =>
-                    #payload is not a json object so make it one!
-                    thePayload = jQuery.parseJSON(sev.payload)
-                    @contributions.get(thePayload._id).newlyAdded = true
+                    @contributions.get(sev.payload).newlyAdded = true
 
             build_on: (sev) ->
                 @contributions.fetch().done ->
@@ -210,6 +211,7 @@ class CK.Smartboard extends Sail.App
             #         , 2000
 
             contribution_tagged: (sev) ->
+                #@contributions.get(sev.payload._id).fetch()
                 @contributions.fetch()
                     
 

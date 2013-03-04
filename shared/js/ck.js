@@ -33,7 +33,7 @@
   };
 
   CK.setState = function(type, state, screen_lock) {
-    if (screen_lock == null) {
+    if (typeof screen_lock === "undefined" || screen_lock === null) {
       screen_lock = false;
     }
     return CK.getState(type, function(s) {

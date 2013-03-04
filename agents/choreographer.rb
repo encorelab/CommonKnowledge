@@ -292,15 +292,16 @@ class Choreographer < Sail::Agent
   end
 
   def send_tag_assignment(user, contributionId)
-    user_state = @mongo.collection(:user_states).find(:username => user).first
-    if user_state then
-      # log "user_state #{user_state.inspect}"
-      data = user_state['analysis'] 
-      # log "data #{data.inspect}"
-      data['contribution_to_tag'] = {:contribution_id => contributionId}
-      @mongo.collection(:user_states).save(user_state)
-      log "Saved contribution_to_tag #{user_state.inspect}"
-    end
+    # user_state = @mongo.collection(:user_states).find(:username => user).first
+    # if user_state then
+    #   # log "user_state #{user_state.inspect}"
+    #   data = user_state['analysis'] 
+    #   # log "data #{data.inspect}"
+    #   data['contribution_to_tag'] = {:contribution_id => contributionId}
+    #   @mongo.collection(:user_states).save(user_state)
+    #   log "Saved contribution_to_tag #{user_state.inspect}"
+    # end
+    store_user_state (user, 'analysis', 'contribution_to_tag'], {:contribution_id => contributionId})
     # find a problem with assigned 'false'
     # user_to_contribution_id_assignments.map do |user, contributionId|
       log "Sending tag_assignment for user '#{user.inspect}' for contributionId '#{contributionId.inspect}'"
@@ -309,6 +310,16 @@ class Choreographer < Sail::Agent
   end
 
   def send_done_tagging(user)
+    # user_state = @mongo.collection(:user_states).find(:username => user).first
+    # if user_state then
+    #   # log "user_state #{user_state.inspect}"
+    #   data = user_state['analysis'] 
+    #   # log "data #{data.inspect}"
+    #   data['done_tagging'] = true
+    #   @mongo.collection(:user_states).save(user_state)
+    #   log "Saved done_tagging #{user_state.inspect}"
+    # end
+    store_user_state (user, 'analysis', 'done_tagging'], true)
     log "Sending done_tagging for user '#{user.inspect}'"
     event!(:done_tagging, {:recipient => user})    
   end
@@ -333,6 +344,18 @@ class Choreographer < Sail::Agent
       log "Inserting new state with state #{phaseName.inspect}"
       @mongo.collection(:states).save("type" => "phase", "state" => phaseName, "created_at" => Time.now.utc)
     end 
+  end
+
+  def store_user_state (username, phase, store_where, store_what)
+    user_state = @mongo.collection(:user_states).find(:username => username).first
+    if user_state then
+      # log "user_state #{user_state.inspect}"
+      data = user_state[phase] 
+      # log "data #{data.inspect}"
+      data[store_where] = store_what
+      @mongo.collection(:user_states).save(user_state)
+      log "Saved #{store_where.inspect} #{user_state.inspect}"
+    end
   end
 
   def get_agent_data()
