@@ -32,6 +32,7 @@ CK.Mobile = function() {
   app.buildOnArray = [];
   app.synthesisFlag = false;
   app.keyCount = 0;
+  app.contributionInputView = null;
   // app.currentState = {"type":"tablet"};
 
 
@@ -303,6 +304,13 @@ CK.Mobile = function() {
       data: { sort: JSON.stringify(sort) }
     });
 
+    // adding view object to global object and instanciate with null
+    // this is necessary to ensure view is not created over and over again.
+    // having the global pointer at a view allows us to detach a model before we attach a newly created one
+    app.inputView = null;
+    app.tagListView = null;
+    app.taggingView = null;
+
 
     // just for testing - do this properly when the view is completed (see also 440)
     jQuery('#like-btn-on').click(function() {
@@ -332,10 +340,17 @@ CK.Mobile = function() {
 
     var contrib = new CK.Model.Contribution();
 
-    var inputView = new CK.Mobile.View.ContributionInputView({
-      el: jQuery('#contribution-input'),
-      model: contrib
-    });
+    if (app.inputView === null) {
+      app.inputView = new CK.Mobile.View.ContributionInputView({
+        el: jQuery('#contribution-input'),
+        model: contrib
+      });
+    } else {
+      if (typeof app.inputView.model !== 'undefined' && app.inputView.model !== null) {
+        app.inputView.stopListening(app.inputView.model);
+      }
+      app.inputView.model = contrib;
+    }
 
     // just in case
     //app.clearModels();
@@ -348,7 +363,7 @@ CK.Mobile = function() {
     contrib.set('kind', kind);
 
     // since we do manual saves, we don't need sync. We don't need both (used to be change and sync)
-    contrib.on('change', inputView.render, inputView);
+    contrib.on('change', app.inputView.render, app.inputView);
 
     contrib.save();
 
@@ -421,13 +436,25 @@ CK.Mobile = function() {
       var tagList = new CK.Model.Tags();
       tagList.on('change', function(model) { console.log(model.changedAttributes()); });   
 
+      if (app.tagListView === null) {
+        app.tagListView = new CK.Mobile.View.TagListView({
+          el: jQuery('#tag-list'),
+          collection: tagList
+        });
+      } else {
+        if (typeof app.tagListView.collection !== 'undefined' && app.tagListView.collection !== null) {
+          app.tagListView.stopListening(app.tagListView.collection);
+        }
+        app.tagListView.collection = tagList;
+      }
+
       //app.taggedContribution.wake(app.config.wakeful.url);
 
-      var tagListView = new CK.Mobile.View.TagListView({
-        el: jQuery('#tag-list'),
-        collection: tagList
-      });
-      tagList.on('reset add', tagListView.render, tagListView);       // probably unnecessary, maybe even a bad idea?
+      // app.tagListView = new CK.Mobile.View.TagListView({
+      //   el: jQuery('#tag-list'),
+      //   collection: tagList
+      // });
+      tagList.on('reset add', app.tagListView.render, app.tagListView);       // probably unnecessary, maybe even a bad idea?
 
       var sort = ['created_at', 'ASC'];
       tagList.fetch({
@@ -479,37 +506,36 @@ CK.Mobile = function() {
     }
   };
 
+  /** called via event or restoreState - pulling up the contribution that should be tagged */
   app.contributionToTag = function (contribution_id) {
+    // create a new model using an existing ID (get data from backend)
     var contribution_to_tag = new CK.Model.Contribution({_id: contribution_id});
-    // contribution_to_tag.on('change', function(model) { console.log(model.changedAttributes()); });   
-
-    //app.taggedContribution.wake(app.config.wakeful.url);
-
-    var taggingView = new CK.Mobile.View.TaggingView({
-      el: jQuery('#tagging-screen'),
-      model: contribution_to_tag
-    });
-    //contribution_to_tag.on('reset add', taggingView.render, taggingView);       // probably unnecessary, maybe even a bad idea?
-    contribution_to_tag.on('change sync', taggingView.render, taggingView);
-
-    function fetchSuccess (m) {
-      console.log('fetched contribution');
+  
+    // check if view exists or not
+    if (app.taggingView === null) {
+      // create the view, attach to DOM and hand in model
+      app.taggingView = new CK.Mobile.View.TaggingView({
+        el: jQuery('#tagging-screen'),
+        model: contribution_to_tag
+      });
+    } else {
+      // check if view has a model
+      if (typeof app.taggingView.model !== 'undefined' && app.taggingView.model !== null) {
+        // stop listening to event (avoid multiple reactions)
+        app.taggingView.stopListening(app.taggingView.model);
+      }
+      // overwrite the model with the newly created model
+      app.taggingView.model = contribution_to_tag;
     }
 
-    function fetchError (err) {
-      console.warn('error fetching contribution');
-    }
+    // if model changes or syncs render view
+    contribution_to_tag.on('change sync', app.taggingView.render, app.taggingView);
 
-    contribution_to_tag.fetch({success: fetchSuccess, error: fetchError});
-
-    // app.contributionDetails.set('_id', contribution_id);
-    // app.contributionDetails.fetch({
-    //   success: function () {
-    //     app.taggedContribution = app.contributionDetails;
-    //   }
-    // });
+    // fetch data
+    contribution_to_tag.fetch();
   };
 
+   /** Do the tagging, update DB, send out an sail event */
   app.tagContribution = function (contributionId, tagged) {
     console.log('Contribution <'+contributionId+'> tagged: '+tagged);
     var sail_data = {'contribution_id':contributionId};
