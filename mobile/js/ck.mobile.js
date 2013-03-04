@@ -1,5 +1,5 @@
 /*jshint browser: true, devel: true, strict: false, unused:false */
-/*globals jQuery, _, Sail, CK, Rollcall */
+/*globals jQuery, _, Sail, CK, Rollcall, Wakeful */
 
 window.CK = window.CK || {};
 
