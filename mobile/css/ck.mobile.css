@@ -116,6 +116,15 @@ i {
 	overflow: hidden;
 }
 
+#grouping-screen {
+	height: 200px;
+	width: 200px;
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	background-color: grey;
+}
+
 #contribution-details, #selected-tag-container {
 	margin-left: 0;
 	border-left-width: 0px;				/* overwritting .view-container to prevent dup borders btw 1/2 */

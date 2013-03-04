@@ -469,9 +469,10 @@
   });
 
 
-  var proposalDetails;
-  var proposalOpenFlag = false;
+
   // WARNING: do not look directly at this code - it will make your eyes bleed
+  var proposalDetails;
+  var proposalOpenFlag = false;  
 
   /**
     ProposalView
@@ -514,7 +515,8 @@
     },
 
     'create-group': function () {
-      alert('eventually Im going to be used to create a group');
+      jQuery('.row').addClass('disabled');
+      jQuery('#grouping-screen').removeClass('hide');
     },
 
     'close-note': function () {
@@ -591,6 +593,40 @@
     }      
 
   });
+
+
+  /**
+    GroupingView
+  **/
+  self.GroupingView = Backbone.View.extend({
+    events: {
+      'click #close-group-btn': function () {
+        jQuery('.row').removeClass('disabled');
+        jQuery('#grouping-screen').addClass('hide');        
+      }
+
+    },
+
+    initialize: function () {
+      console.log("Initializing GroupingView...");
+
+    },
+
+    /**
+      Triggers full update of all dynamic elements in the list view
+    **/
+    render: function () {
+      // var view = this;
+      // view.collection.each(state) {
+      //   console.log(state);
+      // }
+      // START HERE
+    }
+
+  });
+
+
+
 
 
   CK.Mobile.View = self;

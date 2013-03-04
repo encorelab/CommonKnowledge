@@ -83,7 +83,7 @@ CK.Mobile = function() {
         var phase = s.get('state');
         // once phase is retrieved get the user_state
         CK.getUserState(Sail.app.userData.account.login, function(user_state){
-          if (phase === "analysis"){
+          if (phase === "analysis") {
             console.log('phase is analysis');
             app.startAnalysis(function (){
               var data_for_state = user_state.get(phase);
@@ -103,31 +103,10 @@ CK.Mobile = function() {
                 console.log('I am on a boat');
               }
             });
-          } else if (phase === "start_synthesis") {
-            console.log('phase is start_synthesis');
-            //app.startAnalysis();
-// TODO this will not work this way !!!!!!!!!!!!!!!!
-            // CK.getStateForUser("tablet", Sail.app.userData.account.login, "contribution_to_tag", function(user_state){
-              if (user_state.contribution_to_tag) {
-                var data_from_state = user_state.get('data');
-                if (data_from_state.done_tagging === true) {
-                  // CK.getStateForUser("tablet", Sail.app.userData.account.login, "done_tagging", function(s3) {
-                  if (typeof user_state.done_tagging !== 'undefined' && user_state.done_tagging !== null) {
-                    console.log('state is start_synthesis and we are done_tagging so call doneTagging and startSynthesis');
-      // TODO for Colin: Figure out the side effects that are necessary to have everything in place for this restore to work.
-                    
-                    Sail.app.doneTagging();
-                    Sail.app.startSynthesis();
-                  // });
-                  }
-                } else if (data_from_state.contribution_id !== "") {
-                  console.log('state is start_synthesis buy we need to work on contribution with id: '+data_from_state.contribution_id);
-                  app.contributionToTag(data_from_state.contribution_id);
-                }
-              } else {
-                console.log('I am on a boat');
-              }
-            // });
+          } else if (phase === "proposal") {
+            console.log('phase is proposal');
+            app.startProposal();
+            // TODO expend this to deal with proposal object that are being worked on
             
           } else {
             console.log('could not find state for type phase');
@@ -279,6 +258,7 @@ CK.Mobile = function() {
 
       start_proposal: function(sev) {
         console.log('start_proposal heard');
+        CK.setState("phase", "proposal");
         app.startProposal();
       }
 
@@ -596,8 +576,7 @@ CK.Mobile = function() {
   // };
 
   app.startProposal = function() {
-    CK.setUserState(app.userData.account.login, "proposal", {});
-
+    CK.setUserState(app.userData.account.login, "proposal", {});     // do we need this?
     console.log('creating ProposalListView');
 
     app.contributionList = new CK.Model.Contributions();
@@ -612,7 +591,48 @@ CK.Mobile = function() {
     app.contributionList.fetch({
       data: { sort: JSON.stringify(sort) }
     });
-  };  
+
+    // for grouping
+    var states = new CK.Model.UserStates();
+    var tagGroupName = "";
+    states.on('change', function(model) { console.log(model.changedAttributes()); });
+
+    groupingView = new CK.Mobile.View.GroupingView({
+      el: jQuery('#grouping-screen'),
+      collection: states
+    });
+    states.on('reset add', groupingView.render);
+    // start here!
+
+
+    function fetchSuccess (m) {
+      console.log('fetched user states. User states are:', states);
+      // get user tag group
+      _.each(states.models, function(s) {
+        if (s.attributes.username === app.userData.account.login) {
+          // grrrooossssss. Too bad I don't have a getter...
+          tagGroupName = s.attributes.analysis.tag_group;
+        }
+      });
+      // get user's group
+      _.each(states.models, function(s) {
+        if (s.attributes.analysis.tag_group === tagGroupName) {
+          // move this to the view
+          console.log(s.attributes.username, 'is in the group');
+        }
+      });      
+      
+    }
+
+    function fetchError (err) {
+      console.warn('error fetching user states');
+    }
+
+    states.fetch({success: fetchSuccess, error: fetchError});
+
+
+
+  };
 
   // TODO - fix me to work properly with views etc (see also initViews section)
   app.toggleVote = function() {
