@@ -17,7 +17,8 @@ class CK.Model
             'contributions',
             'tags',
             'states',
-            'user_states'
+            'user_states',
+            'proposals'
         ]).then =>
             @defineModelClasses()
 
