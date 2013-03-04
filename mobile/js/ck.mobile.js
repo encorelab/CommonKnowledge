@@ -614,7 +614,7 @@ CK.Mobile = function() {
     states.fetch({success: fetchSuccess, error: fetchError});
   };
 
-  app.newProposal = function() {
+  app.newProposal = function(group) {
     // for proposal entry view
     var proposal = new CK.Model.Proposal();
 
@@ -625,10 +625,8 @@ CK.Mobile = function() {
       model: proposal
     });
 
-    var tempGroupObject = 'ck1-ck3';
-
     proposal.set('published', false);
-    proposal.set('author', tempGroupObject);
+    proposal.set('author', group);
     proposal.set('tag_group_id', 'tempID');
     proposal.set('tag_group_name', 'tempName');
 
@@ -660,13 +658,14 @@ CK.Mobile = function() {
 
   app.createGroup = function() {
     console.log('creating group...');
-    // check which buttons are toggled
-
-    // create group object
-
-    // put group object into DB - or maybe not. What, really is the difference between a group and a proposal?
+    var groupStr = "";
+    groupStr += app.userData.account.login;
+    groupStr += "-";
+    groupStr += jQuery('.user-btn').attr('checked', true).val();
     
-    app.newProposal();
+    app.newProposal(groupStr);
+
+    // what is the different between a group and a proposal, really? Each prop has one group, each group has one prop. What about ungrouping?
   };
 
   // TODO - fix me to work properly with views etc (see also initViews section)

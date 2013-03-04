@@ -659,7 +659,7 @@
         if (user.analysis.tag_group === tagGroupName && user.username !== Sail.app.userData.account.login) {
           var userButton = jQuery('button#'+user.analysis.tag_group_id);
           if (userButton.length === 0) {
-            userButton = jQuery('<button id=user-btn-'+user.username+' type="button" class="btn user-btn btn-success">'+user.username+'</button>');
+            userButton = jQuery('<button id=user-btn-'+user.username+' type="button" value='+user.username+' class="btn user-btn btn-success" data-toggle="button">'+user.username+'</button>');
             jQuery('#grouping-btn-container').append(userButton);
           }
         }
