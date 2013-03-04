@@ -341,7 +341,6 @@ CK.Mobile = function() {
     //app.clearModels();
 
     contrib.set('justAdded', true);
-
     contrib.set('author', app.userData.account.login);
     contrib.set('published', false);
     contrib.set('tags', app.tagArray);
@@ -576,6 +575,7 @@ CK.Mobile = function() {
   // };
 
   app.startProposal = function() {
+    // for list view
     CK.setUserState(app.userData.account.login, "proposal", {});     // do we need this?
     console.log('creating ProposalListView');
 
@@ -592,7 +592,7 @@ CK.Mobile = function() {
       data: { sort: JSON.stringify(sort) }
     });
 
-    // for grouping
+    // for grouping view
     var states = new CK.Model.UserStates();
 
     states.on('change', function(model) { console.log(model.changedAttributes()); });
@@ -612,9 +612,61 @@ CK.Mobile = function() {
     }
 
     states.fetch({success: fetchSuccess, error: fetchError});
+  };
+
+  app.newProposal = function() {
+    // for proposal entry view
+    var proposal = new CK.Model.Proposal();
+
+    proposal.on('change', function(model) { console.log(model.changedAttributes()); });    
+
+    proposalInputView = new CK.Mobile.View.ProposalInputView({
+      el: jQuery('#proposal-justification-container'),
+      model: proposal
+    });
+
+    var tempGroupObject = 'ck1-ck3';
+
+    proposal.set('published', false);
+    proposal.set('author', tempGroupObject);
+    proposal.set('tag_group_id', 'tempID');
+    proposal.set('tag_group_name', 'tempName');
+
+    proposal.on('reset add', proposalInputView.render, proposalInputView);
+
+    proposal.save();
+
+  };
+
+// proposal
+// {
+//     "_id": "508aaf357e59cb52d600003",
+//     "headline": "This is a great headline",
+//     "title": "Blub",
+//     "description": "bla bla bla",
+//     "justification": "bla bla bla",
+//     "author": "ck1-ck2"
+
+// "published": "true",
+//     "votes": 4,
+
+// "created_at": "Mon Oct 29 2012 13:31:49 GMT-0400 (EDT)",
+
+// "tag_group_id": "423478239",
+
+// "tag_group_name": "birds"
+// }
 
 
+  app.createGroup = function() {
+    console.log('creating group...');
+    // check which buttons are toggled
 
+    // create group object
+
+    // put group object into DB - or maybe not. What, really is the difference between a group and a proposal?
+    
+    app.newProposal();
   };
 
   // TODO - fix me to work properly with views etc (see also initViews section)
@@ -627,7 +679,7 @@ CK.Mobile = function() {
       jQuery('#like-btn-on').addClass('hide');
       jQuery('#like-btn-off').removeClass('hide');
     }
-  };
+  };  
 
 };
 
