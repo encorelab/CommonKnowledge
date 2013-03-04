@@ -382,7 +382,8 @@ class CK.Smartboard.View.BalloonCloud
                     
                     if state is 'analysis'
                         view.ballonContributionType = view.balloonContributionTypes.analysis
-                    
+                    else 
+                        view.balloonContributionType = view.balloonContributionTypes.default
 
                 else if d.collectionName is "proposals"
 

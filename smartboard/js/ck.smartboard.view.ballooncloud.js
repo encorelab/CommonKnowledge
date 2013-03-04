@@ -330,6 +330,8 @@
             console.log('Contribution View Instantiated - state is ' + state);
             if (state === 'analysis') {
               view.ballonContributionType = view.balloonContributionTypes.analysis;
+            } else {
+              view.balloonContributionType = view.balloonContributionTypes["default"];
             }
           } else if (d.collectionName === "proposals") {
             view = new CK.Smartboard.View.ContributionProposalBalloon({
