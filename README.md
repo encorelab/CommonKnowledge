@@ -8,6 +8,25 @@ the REST interface for the database - Drowsy Dromedary (https://github.com/zuk/D
 
 Drowsy Dromodary, Rollcall, and the Agents require Ruby 1.9.3 to be installed.
 
+## Using Grunt to do the Grunt work
+We want some JS files to pass JSHint, have coffee script that needs to be compiled into JS, and SCSS files that should
+be transformed into CSS. We use grunt for this.
+
+Install the grunt command line interface (CLI):
+`npm install -g grunt-cli`
+
+Running `grunt` on the command line will say that grunt is missing stuff.
+
+The dependencies for gruntare added to the package.json file so the install should be easy by issuing (in the ck folder)
+
+`npm install`
+
+Once the install is done (without errors) you should be able to do all the mentioned tasks by issuing (in the ck folder)
+
+`grunt`
+
+Try removing a ; in the mobile JS files and you should get a JSHint error.
+
 ## Agents
 Make sure you have Ruby 1.9.3 installed and add the users *eventlogger* and *choreographer* to Rollcall.
 Make sure to use the hashed password in the daemon.rb file.
