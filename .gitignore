@@ -12,3 +12,6 @@ config.json
 mobile/js/sail.js
 
 .sass-cache
+
+config.bak
+mongo_backup/
