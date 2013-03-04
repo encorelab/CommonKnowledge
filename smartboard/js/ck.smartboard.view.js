@@ -712,21 +712,12 @@
     };
 
     ContributionProposalBalloon.prototype.renderTags = function() {
-      var tag, tagIds;
-      if (!this.model.has('tags')) {
+      var tagId;
+      if (!this.model.has('tag_group_id')) {
         return;
       }
-      tagIds = (function() {
-        var _i, _len, _ref, _results;
-        _ref = this.model.get('tags');
-        _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          tag = _ref[_i];
-          _results.push(tag.id);
-        }
-        return _results;
-      }).call(this);
-      this.$el.attr('data-tags', tagIds.join(" "));
+      tagId = this.model.get('tag_group_id');
+      this.$el.attr('data-tags', tagId);
       return this;
     };
 

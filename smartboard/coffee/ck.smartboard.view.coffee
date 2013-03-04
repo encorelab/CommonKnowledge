@@ -636,7 +636,7 @@ class CK.Smartboard.View.ContributionProposalBalloon extends CK.Smartboard.View.
         # tagsContainer = @findOrCreate '.tags',
         #     "<div class='tags'></div>"
 
-        return unless @model.has('tags')
+        return unless @model.has('tag_group_id')
 
         # validTagClasses = []
         # for tagText in @model.get('tags')
@@ -651,9 +651,9 @@ class CK.Smartboard.View.ContributionProposalBalloon extends CK.Smartboard.View.
         # # now remove tags that are no longer present in the model
         # tagsContainer.find('.tag').not(validTagClasses.join(",")).remove()
 
-        tagIds = (tag.id for tag in @model.get('tags'))
+        tagId = @model.get('tag_group_id')
 
-        @$el.attr('data-tags', tagIds.join(" "))
+        @$el.attr('data-tags', tagId)
 
 
         return @ # return this for chaining

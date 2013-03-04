@@ -362,6 +362,7 @@ class CK.Smartboard.View.BalloonCloud
             unless d.view
                 $el = $('#'+d.id)
                 $el.unbind()
+                
                 if d.collectionName is "tags"
                     view = new CK.Smartboard.View.TagBalloon
                         model: d
@@ -373,24 +374,31 @@ class CK.Smartboard.View.BalloonCloud
 
                 else if d.collectionName is "contributions"
                     
-                    if (state isnt 'propose' and state isnt 'interpret')
-                        view = new CK.Smartboard.View.ContributionBalloon
-                            model: d
-                            el: $el[0]
-                    else 
-                        view = new CK.Smartboard.View.ContributionProposalBalloon
-                            model: d
-                            el: $el[0]
+                    view = new CK.Smartboard.View.ContributionBalloon
+                        model: d
+                        el: $el[0]
+                       
+                    console.log 'Contribution View Instantiated - state is ' + state
                     
-                    console.log 'state is ' + state
                     if state is 'analysis'
                         view.ballonContributionType = view.balloonContributionTypes.analysis
-                    else if state is 'propose'
-                        view.ballonContributionType = view.balloonContributionTypes.propose
-                    else if state is 'interpret'
+                    
+
+                else if d.collectionName is "proposals"
+
+                    view = new CK.Smartboard.View.ContributionProposalBalloon
+                            model: d
+                            el: $el[0]
+
+                    console.log 'Proposal View Instantiated - state is ' + state
+
+                    if state is 'interpret'
                         view.ballonContributionType = view.balloonContributionTypes.interpret
+                    else
+                        view.ballonContributionType = view.balloonContributionTypes.propose
+
                 else
-                    console.error("Unrecognized Balloon type:", d)
+                    console.error("Unrecognized Balloon type:", d.collectionName)
 
                 d.view = view
 
@@ -408,19 +416,42 @@ class CK.Smartboard.View.BalloonCloud
 
     reRenderForState: (state) =>
         console.log 'Rerender nodes for state: ' + state
+        i = 0;
+
         for b in @nodes
             view = b.view
             if b.collectionName is "contributions"
                 if (state is 'analysis')
                     view.ballonContributionType = view.balloonContributionTypes.analysis
                 else if (state is 'propose')
-                    view.ballonContributionType = view.balloonContributionTypes.propose
+                    #view.ballonContributionType = view.balloonContributionTypes.propose
+
+                    #remove previous backbone views and all the events that are tied to it
+                    view.remove()
+                    view = null
                 else if (state is 'interpret')
                     view.ballonContributionType = view.balloonContributionTypes.interpret
                 else 
                     view.ballonContributionType = view.balloonContributionTypes.default
-                    
-            view.render()
+        
+            i++
+
+            if view?
+                view.render()
+
+       
+        if state is 'propose'
+            # remove the node from d3's internal store
+            @nodes.filter (n) -> not (n instanceof CK.Model.Contribution)
+
+            # blow away all the links from d3
+            @links = []
+
+            # remove the connector elements
+            jQuery('div.connector').unbind().remove()
+
+            #re-render the cloud
+            @render()
 
 
 
