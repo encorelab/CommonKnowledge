@@ -11,9 +11,13 @@
     "type": "git",
     "url": "git://github.com/encorelab/CommonKnowledge.git"
   },
-   "dependencies" : {
-    "http-proxy" : "*",
-    "node-static" :  "*"
+  "dependencies": {
+    "http-proxy": "*",
+    "node-static": "*"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.0",
+    "grunt-contrib": "~0.4.0"
   },
   "author": "ENCORE Lab",
   "license": "MIT"
