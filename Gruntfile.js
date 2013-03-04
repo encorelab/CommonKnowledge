@@ -19,7 +19,17 @@ module.exports = function(grunt) {
       compile: {
         files: {
           'shared/js/ck.model.js': 'shared/coffee/ck.model.coffee',
-          'shared/js/ck.js': 'shared/coffee/ck.coffee'
+          'shared/js/ck.js': 'shared/coffee/ck.coffee',
+          'smartboard/js/ck.smartboard.js': 'smartboard/coffee/ck.smartboard.coffee',
+          'smartboard/js/ck.smartboard.view.ballooncloud.js': 'smartboard/coffee/ck.smartboard.view.ballooncloud.coffee',
+          'smartboard/js/ck.smartboard.view.js': 'smartboard/coffee/ck.smartboard.view.coffee'
+        }
+      }
+    },
+    sass: {
+      compile: {
+        files: {
+          'smartboard/css/ck.smartboard.css': 'smartboard/css/scss/ck.smartboard.scss'
         }
       }
     }
@@ -33,7 +43,7 @@ module.exports = function(grunt) {
 
   // Default task(s).
   // grunt.registerTask('default', ['uglify']);
-  grunt.registerTask('default', ['jshint']);
+  grunt.registerTask('default', ['jshint', 'coffee', 'sass']);
   
 
 };
