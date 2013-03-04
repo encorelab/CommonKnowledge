@@ -594,7 +594,7 @@ CK.Mobile = function() {
 
     // for grouping
     var states = new CK.Model.UserStates();
-    var tagGroupName = "";
+
     states.on('change', function(model) { console.log(model.changedAttributes()); });
 
     groupingView = new CK.Mobile.View.GroupingView({
@@ -602,26 +602,9 @@ CK.Mobile = function() {
       collection: states
     });
     states.on('reset add', groupingView.render);
-    // start here!
-
 
     function fetchSuccess (m) {
       console.log('fetched user states. User states are:', states);
-      // get user tag group
-      _.each(states.models, function(s) {
-        if (s.attributes.username === app.userData.account.login) {
-          // grrrooossssss. Too bad I don't have a getter...
-          tagGroupName = s.attributes.analysis.tag_group;
-        }
-      });
-      // get user's group
-      _.each(states.models, function(s) {
-        if (s.attributes.analysis.tag_group === tagGroupName) {
-          // move this to the view
-          console.log(s.attributes.username, 'is in the group');
-        }
-      });      
-      
     }
 
     function fetchError (err) {

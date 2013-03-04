@@ -600,32 +600,69 @@
   **/
   self.GroupingView = Backbone.View.extend({
     events: {
+      'click #join-group-btn': 'join-group',
+
       'click #close-group-btn': function () {
         jQuery('.row').removeClass('disabled');
-        jQuery('#grouping-screen').addClass('hide');        
+        jQuery('#grouping-screen').addClass('hide');
       }
-
     },
 
     initialize: function () {
       console.log("Initializing GroupingView...");
+    },
 
+    'join-group': function () {
+        jQuery('.row').removeClass('disabled');
+        jQuery('#grouping-screen').addClass('hide');
+        // do the actual grouping stuff here
     },
 
     /**
       Triggers full update of all dynamic elements in the list view
     **/
     render: function () {
-      // var view = this;
-      // view.collection.each(state) {
-      //   console.log(state);
-      // }
-      // START HERE
+      var view = this;
+      var tagGroupName = "";
+      // get this user tag group
+      _.each(view.models, function(s) {
+        if (s.attributes.username === Sail.app.userData.account.login) {
+          // grrrooossssss. Too bad I don't have a getter...
+          tagGroupName = s.attributes.analysis.tag_group;
+        }
+      });
+      // get the other members in this users tag group, and then create the button elements for them
+      // ugg - why are we storing tag_group in analysis subsection of user_states?!
+      _.each(view.models, function(s) {
+        var user = s.attributes;
+        // TODO - check on id instead? Shouldn't matter
+        if (user.analysis.tag_group === tagGroupName && user.username !== Sail.app.userData.account.login) {
+          var userButton = jQuery('button#'+user.analysis.tag_group_id);
+          if (userButton.length === 0) {
+            userButton = jQuery('<button id=user-btn-'+user.username+' type="button" class="btn user-btn">'+user.username+'</button>');
+            jQuery('#grouping-btn-container').append(userButton);
+          }
+        }
+      }); 
+
     }
 
   });
 
 
+
+
+        // if (tag.get('name') !== "N/A") {
+        //   var tagButton = jQuery('button#'+tag.id);
+        //   // length avoids duplicating (probably a better way to do this in backbone?)
+        //   //if (tagButton.length === 0 && tag.get('name') != "N/A") {
+        //   if (tagButton.length === 0) {
+        //     tagButton = jQuery('<button id='+tag.id+' type="button" class="btn tag-btn"></button>');
+        //     //tagButton = jQuery(tagButton);
+        //     jQuery('#tag-list .tag-btn-group').append(tagButton);
+        //   }
+
+        //   tagButton.text(tag.get('name'));
 
 
 

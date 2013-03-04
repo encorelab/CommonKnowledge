@@ -117,12 +117,16 @@ i {
 }
 
 #grouping-screen {
-	height: 200px;
-	width: 200px;
+	height: 400px;
+	width: 300px;
 	position: absolute;
-	left: 50%;
 	top: 50%;
-	background-color: grey;
+	margin-top: -200px;	
+	left: 50%;
+	margin-left: -150px;
+	background-color: black;
+	text-align: center;
+	border-radius: 8px 8px 8px 8px;	
 }
 
 #contribution-details, #selected-tag-container {
@@ -245,7 +249,7 @@ i {
 	width: 90%;
 }
 
-#tag-list .tag-btn, #tag-submission-container .tag-btn, #selected-tag-btn-container .tag-btn {
+#tag-list .tag-btn, #tag-submission-container .tag-btn, #selected-tag-btn-container .tag-btn, #grouping-screen .user-btn {
   	-webkit-border-radius: 4px 4px 4px 4px;
     -moz-border-radius: 4px 4px 4px 4px;
     border-radius: 4px 4px 4px 4px;		
@@ -280,6 +284,20 @@ i {
 #close-btn {
 	float: right;
 }
+
+#grouping-header {
+	margin-top: 10px;
+	color: white;
+}
+
+#grouping-btn-container .user-btn {
+	margin-top: 10px;
+}
+
+#join-group-btn {
+	margin-right: 112px;
+}
+
 
 
 /* Overwriting and adding CSS rules for Sail.js elements (like Rollcall added login boxes)*/
