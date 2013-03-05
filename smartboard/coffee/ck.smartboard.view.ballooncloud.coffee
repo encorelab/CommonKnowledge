@@ -309,36 +309,38 @@ class CK.Smartboard.View.BalloonCloud
     # adds a node (balloon) to the cloud if it doesn't already exists
     ensureNode: (n) =>
         isNodePublished = n.get('published')
-        
+        screenState = @wall.mode
+    
+        if n instanceof CK.Model.Contribution and (isNodePublished isnt true or screenState is 'propose' or screenState is 'interpret')
+            return
 
-        if n not instanceof CK.Model.Contribution or (n instanceof CK.Model.Contribution and isNodePublished is true)
-            # make sure node n doesn't already exist
-            unless _.any(@nodes, 
-                    (node) -> node.id is n.id)
-                @nodes.push n
+        # make sure node n doesn't already exist
+        unless _.any(@nodes, 
+                (node) -> node.id is n.id)
+            @nodes.push n
 
-                if n instanceof CK.Model.Tag
-                    tagAttributes = n.attributes
-                    tagClass = ''
+            if n instanceof CK.Model.Tag
+                tagAttributes = n.attributes
+                tagClass = ''
 
-                    if tagAttributes.name.toLowerCase() isnt 'n/a'
-                        tagClass = 'group' + (++@uniqueTagCount) + '-color'
+                if tagAttributes.name.toLowerCase() isnt 'n/a'
+                    tagClass = 'group' + (++@uniqueTagCount) + '-color'
+                
+                @tagList[n.id] = {'className' :  tagClass}
                     
-                    @tagList[n.id] = {'className' :  tagClass}
-                        
 
-            if n instanceof CK.Model.Contribution and n.has('tags')
-                for t in n.get('tags')
-                    tag = _.find @nodes, (n) -> n.id is t.id
+        if n instanceof CK.Model.Contribution and n.has('tags')
+            for t in n.get('tags')
+                tag = _.find @nodes, (n) -> n.id is t.id
 
-                    # TODO: create the tag if it doesn't exist?
-                    if tag?
-                        @ensureLink(n, tag)
+                # TODO: create the tag if it doesn't exist?
+                if tag?
+                    @ensureLink(n, tag)
 
-            else if n instanceof CK.Model.Tag
-                for b in @nodes
-                    if b.has('tags') and b.get('tags').some( (t) -> t.id is n.id )
-                        @ensureLink(b, n)
+        else if n instanceof CK.Model.Tag
+            for b in @nodes
+                if b.has('tags') and b.get('tags').some( (t) -> t.id is n.id )
+                    @ensureLink(b, n)
 
 
     # adds a link (connector) to the cloud if it doesn't already exists
@@ -353,7 +355,7 @@ class CK.Smartboard.View.BalloonCloud
             @links.push link
 
     inflateBalloons: (balloons) =>
-        state = @wall.mode
+        screenState = @wall.mode
         tagListing = @tagList
 
         balloons.each (d,i) ->
@@ -372,15 +374,15 @@ class CK.Smartboard.View.BalloonCloud
                         view.setColorClass(tagListing[d.id].className)
                             
 
-                else if d.collectionName is "contributions" and state isnt 'propose' and state isnt 'interpret'
+                else if d.collectionName is "contributions"
                     
                     view = new CK.Smartboard.View.ContributionBalloon
                         model: d
                         el: $el[0]
                        
-                    console.log 'Contribution View Instantiated - state is ' + state
+                    console.log 'Contribution View Instantiated - state is ' + screenState
                     
-                    if state is 'analysis'
+                    if screenState is 'analysis'
                         view.ballonContributionType = view.balloonContributionTypes.analysis
                     else 
                         view.balloonContributionType = view.balloonContributionTypes.default
@@ -393,13 +395,13 @@ class CK.Smartboard.View.BalloonCloud
                             model: d
                             el: $el[0]
 
-                    console.log 'Proposal View Instantiated - state is ' + state
+                    console.log 'Proposal View Instantiated - state is ' + screenState
 
                     # if the proposal has a tag color associated to it then set the color
                     if (tagID? and tagListing[tagID]? and tagListing[tagID].className)
                         view.setColorClass(tagListing[tagID].className)
 
-                    if state is 'interpret'
+                    if screenState is 'interpret'
                         view.ballonContributionType = view.balloonContributionTypes.interpret
                     else
                         view.ballonContributionType = view.balloonContributionTypes.propose
