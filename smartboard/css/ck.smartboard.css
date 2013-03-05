@@ -157,7 +157,8 @@ img.balloon-note {
       .contribution.balloon .buildons .buildon .content {
         font-size: 13px; }
   .contribution.balloon.opened {
-    width: 200px;
+    min-width: 200px;
+    max-width: 220px;
     background-color: white; }
   .contribution.balloon.opened .body {
     display: block; }

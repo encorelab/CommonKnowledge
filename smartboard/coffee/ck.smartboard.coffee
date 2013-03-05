@@ -70,8 +70,10 @@ class CK.Smartboard extends Sail.App
         # take this opportunity to save positions
         for b in _.union(@contributions.models, @tags.models)
             pos = @wall.$el.find('#'+b.id).position()
-            b.set({pos: {left: pos.left, top: pos.top}}, {silent: true})
-            b.save({}, {silent: true})
+            
+            if pos?
+                b.set({pos: {left: pos.left, top: pos.top}}, {silent: true})
+                b.save({}, {silent: true})
 
         
 
@@ -175,6 +177,15 @@ class CK.Smartboard extends Sail.App
                         @switchToProposal()
                     else if s.get('state') is 'interpretation'
                         @switchToInterpretation()
+                    else
+                        @wall.setMode('brainstorm')
+
+            # test state change
+            # w = @switchToProposal
+            # test = (a) ->
+            #     w()
+        
+            # setTimeout(test, 5000)
 
             @trigger('ready')
 

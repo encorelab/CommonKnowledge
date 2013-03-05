@@ -124,17 +124,21 @@
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         b = _ref[_i];
         pos = this.wall.$el.find('#' + b.id).position();
-        b.set({
-          pos: {
-            left: pos.left,
-            top: pos.top
-          }
-        }, {
-          silent: true
-        });
-        _results.push(b.save({}, {
-          silent: true
-        }));
+        if (pos != null) {
+          b.set({
+            pos: {
+              left: pos.left,
+              top: pos.top
+            }
+          }, {
+            silent: true
+          });
+          _results.push(b.save({}, {
+            silent: true
+          }));
+        } else {
+          _results.push(void 0);
+        }
       }
       return _results;
     };
@@ -241,6 +245,8 @@
               return _this.switchToProposal();
             } else if (s.get('state') === 'interpretation') {
               return _this.switchToInterpretation();
+            } else {
+              return _this.wall.setMode('brainstorm');
             }
           }
         });

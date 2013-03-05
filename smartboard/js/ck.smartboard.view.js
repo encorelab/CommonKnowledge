@@ -354,17 +354,18 @@
       this.mode = mode;
       if (mode === 'analysis') {
         jQuery('body').removeClass('mode-synthesis').addClass('mode-analysis');
-        return this.changeWatermark("analysis");
+        this.changeWatermark("analysis");
       } else if (mode === 'propose') {
         jQuery('body').removeClass('mode-analysis').addClass('mode-propose');
-        return this.changeWatermark("propose");
+        this.changeWatermark("propose");
       } else if (mode === 'interpret') {
         jQuery('body').removeClass('mode-propose').addClass('mode-interpret');
-        return this.changeWatermark("interpret");
+        this.changeWatermark("interpret");
       } else {
         jQuery('body').removeClass('mode-analysis').removeClass('mode-synthesis');
-        return this.changeWatermark("brainstorm");
+        this.changeWatermark("brainstorm");
       }
+      return console.log('Wall Mode is now: ' + mode);
     };
 
     Wall.prototype.bubbleContrib = function(contrib) {};
@@ -464,11 +465,6 @@
       },
       'click': function(ev) {
         this.$el.toggleClass('opened');
-        if (this.$el.hasClass('opened')) {
-          if ((Sail.app.wall.cloud != null) && (Sail.app.wall.cloud.force != null)) {
-            Sail.app.wall.cloud.force.stop();
-          }
-        }
         return this.processContributionByType();
       }
     };
@@ -622,11 +618,6 @@
       },
       'click': function(ev) {
         this.$el.toggleClass('opened');
-        if (this.$el.hasClass('opened')) {
-          if ((Sail.app.wall.cloud != null) && (Sail.app.wall.cloud.force != null)) {
-            Sail.app.wall.cloud.force.stop();
-          }
-        }
         return this.processContributionByType();
       }
     };
@@ -662,7 +653,20 @@
       var balloonID, balloonObj;
       console.log('Toggle Proposal');
       balloonObj = jQuery(this.$el);
-      return balloonID = balloonObj.attr('id');
+      balloonID = balloonObj.attr('id');
+      balloonObj.toggleClass('balloon-note').toggleClass(this.colorClass);
+      balloonID = balloonObj.attr('id');
+      if (this.$el.hasClass('opened')) {
+        jQuery('#' + balloonID + ' img.balloon-note').hide();
+        jQuery('#' + balloonID + ' .headline').fadeIn('fast');
+        jQuery('#' + balloonID + ' .description').fadeIn('fast');
+        return jQuery('#' + balloonID + ' .meta').fadeIn('fast');
+      } else {
+        jQuery('#' + balloonID + ' .headline').hide();
+        jQuery('#' + balloonID + ' .description').hide();
+        jQuery('#' + balloonID + ' .meta').hide();
+        return jQuery('#' + balloonID + ' img.balloon-note').fadeIn('fast');
+      }
     };
 
     ContributionProposalBalloon.prototype.setIdeaCount = function(count) {
@@ -685,25 +689,25 @@
     };
 
     ContributionProposalBalloon.prototype.render = function() {
-      var body, headline, ideaCounter, meta, nodeHeader;
+      var headline, ideaCounter, justification, meta, nodeHeader, proposal;
       ContributionProposalBalloon.__super__.render.call(this);
       this.$el.addClass('contribution').addClass(this.colorClass);
       console.log('Rendering propose balloon.');
-      if (this.model.get('kind') === 'propose') {
-        this.$el.addClass('synthesis');
-      }
-      nodeHeader = this.findOrCreate('.balloon-note', '<img class="balloon-note" src="/smartboard/img/note.png" alt="Note">');
-      nodeHeader.hide();
+      nodeHeader = this.findOrCreate('.balloon-note', '<img style="display: none;" class="balloon-note" src="/smartboard/img/notes_large.png" alt="Note">');
       ideaCounter = this.findOrCreate('.idea-counter', '<div class="idea-counter idea-counter-off"><span class="idea-count">&nbsp;</span></div>');
       ideaCounter.hide();
       headline = this.findOrCreate('.headline', "<h3 class='headline'></h3>");
       headline.text(this.model.get('headline'));
-      body = this.findOrCreate('.body', "<div class='body'></div>");
-      if (this.model.get('content_type') === 'text') {
-        body.text(this.model.get('content'));
-      } else {
-        body.text(this.model.get('content'));
-      }
+      proposal = this.findOrCreate('.proposal', "<div class='proposal'>Proposal<div class='proposal-body' tyle='display: none'></div></div>");
+      proposal.find('.proposal-body').text(this.model.get('description'));
+      proposal.click(function(obj) {
+        return this.find('.proposal-body').slideToggle('fast');
+      });
+      justification = this.findOrCreate('.justification', "<div class='justification'>Justification<div class='justification-body' style='display: none'></div></div>");
+      justification.find('.justification-body').text(this.model.get('justification'));
+      justification.click(function(obj) {
+        return this.find('.justification-body').slideToggle('fast');
+      });
       meta = this.findOrCreate('.meta', "<div class='meta'><span class='author'></span></div>");
       meta.find('.author').text(this.model.get('author')).addClass("author-" + (this.model.get('author')));
       this.renderBuildons();
