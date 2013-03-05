@@ -52,7 +52,7 @@
 
       _.each(view.models, function(contrib) {
         if (contrib.get('published') === true) {
-           console.log('headline: ' + contrib.get('headline'));
+          console.log('headline: ' + contrib.get('headline'));
 
           //var note = jQuery('li#'+contrib.id);
           var note = "<li id=" + contrib.id + " class='list-item'><a class='note'><span class='headline'></span>";

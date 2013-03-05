@@ -264,6 +264,12 @@ CK.Mobile = function() {
         console.log('start_proposal heard');
         CK.setState("phase", "proposal");
         app.startProposal();
+      },
+
+      start_interpretation: function(sev) {
+        console.log('start_proposal heard');
+        // CK.setState("phase", "interpretation");
+        // app.startInterpretation();
       }
 
     }
@@ -661,17 +667,33 @@ CK.Mobile = function() {
 
   app.bindProposal = function(prop) {
     if (prop.get('initiator') === Sail.app.userData.account.login || prop.get('receiver') === Sail.app.userData.account.login) {
+      // Something added
+      if (typeof app.proposalInputView.model !== 'undefined' && app.proposalInputView.model !== null) {
+        app.proposalInputView.stopListening(app.proposalInputView.model);
+      }
+
       prop.wake(Sail.app.config.wakeful.url);
       prop.on('change', app.proposalInputView.render, app.proposalInputView);
+
       app.proposalInputView.model = prop;
       app.proposalInputView.render();
     }
   };
 
+
   app.checkProposalPublishState = function() {
     if (app.proposalInputView.model.get('headline_published') === true && app.proposalInputView.model.get('proposal_published') && app.proposalInputView.model.get('justification_published') === true) {
-      console.log('setting proposal state to true...');
+      console.log('setting proposal published state to true...');
       app.proposalInputView.model.set('published', true);
+      app.proposalInputView.model.save();
+      
+      jQuery('#proposal-headline-entry').addClass('disabled');
+      jQuery('#share-proposal-headline-btn').addClass('disabled');
+      jQuery('#proposal-body-entry').addClass('disabled');
+      jQuery('#share-proposal-body-btn').addClass('disabled');
+      jQuery('#justification-body-entry').addClass('disabled');
+      jQuery('#share-justification-body-btn').addClass('disabled');
+      app.proposalInputView.model.clear();
     }
   };
 
