@@ -647,7 +647,7 @@ CK.Mobile = function() {
     proposal.set('published', false);
     proposal.set('headline_published', false);
     proposal.set('proposal_published', false);
-    proposal.set('headline_published', false);
+    proposal.set('justification_published', false);
     proposal.set('author', groupName);
     proposal.set('initiator', initiator);
     proposal.set('receiver', receiver);
@@ -668,8 +668,11 @@ CK.Mobile = function() {
     }
   };
 
-  app.checkProposalPublished = function() {
-    // if (app.proposalInputView.model)
+  app.checkProposalPublishState = function() {
+    if (app.proposalInputView.model.get('headline_published') === true && app.proposalInputView.model.get('proposal_published') && app.proposalInputView.model.get('justification_published') === true) {
+      console.log('setting proposal state to true...');
+      app.proposalInputView.model.set('published', true);
+    }
   }
 
   app.createGroup = function(tagGroupName, tagGroupId) {
