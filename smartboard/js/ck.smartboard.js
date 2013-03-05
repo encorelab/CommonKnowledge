@@ -10,6 +10,8 @@
     function Smartboard() {
       this.initModels = __bind(this.initModels, this);
 
+      this.createNewProposal = __bind(this.createNewProposal, this);
+
       this.switchToInterpretation = __bind(this.switchToInterpretation, this);
 
       this.switchToProposal = __bind(this.switchToProposal, this);
@@ -189,6 +191,23 @@
       mode = 'interpret';
       this.wall.setMode(mode);
       return this.wall.cloud.reRenderForState(mode);
+    };
+
+    Smartboard.prototype.createNewProposal = function(headline, description, justification, voteNumber, tagID, tagName) {
+      var proposal;
+      proposal = new CK.Model.Proposal();
+      proposal.wake(this.config.wakeful.url);
+      proposal.set({
+        'headline': headline,
+        'title': headline,
+        'description': description,
+        'published': true,
+        'author': 'ck1-ck2',
+        'votes': voteNumber,
+        'tag_group_id': tagID,
+        'tag_group_name': tagName
+      });
+      return proposal.save();
     };
 
     Smartboard.prototype.initModels = function() {
