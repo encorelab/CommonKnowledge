@@ -43,7 +43,7 @@ module.exports = function(grunt) {
 
   // Default task(s).
   // grunt.registerTask('default', ['uglify']);
-  grunt.registerTask('default', ['jshint', 'coffee']);
+  grunt.registerTask('default', ['jshint', 'coffee', 'sass']);
   
 
 };
