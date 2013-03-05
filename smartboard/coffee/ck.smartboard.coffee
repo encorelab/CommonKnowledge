@@ -39,6 +39,7 @@ class CK.Smartboard extends Sail.App
 
         @wall = new CK.Smartboard.View.Wall {el: jQuery('#wall')}
 
+        @tagCount = 0;
         #@states = new CK.Model.States()
         #@states.on 'change', (collection) ->
         #    console.log  'States Collection Changed!'
@@ -49,9 +50,17 @@ class CK.Smartboard extends Sail.App
         else
             Rollcall.Authenticator.requestRun()
 
+    getColourTagClassName: =>
+        if @tagCount > 4
+            console.warn 'Adding more tags then you have tag classes'
+
+        'group' + (++@tagCount) + '-color'
+
     # initializes and persists a new CK.Model.Tag with the given name
     createNewTag: (name) =>
-        tag = new CK.Model.Tag({name: name})
+        colourClassName = @getColourTagClassName()
+
+        tag = new CK.Model.Tag({'name': name, 'colourClass': colourClassName})
         tag.wake @config.wakeful.url
         tag.save {},
             success: =>
@@ -116,7 +125,7 @@ class CK.Smartboard extends Sail.App
     createNewProposal: (headline, description, justification, voteNumber, tagID, tagName) =>
         proposal = new CK.Model.Proposal()
         proposal.wake @config.wakeful.url
-        proposal.set({'headline': headline, 'title': headline, 'description': description, 'published': true, 'author': 'ck1-ck2', 
+        proposal.set({'headline': headline, 'title': headline, 'description': description, 'justification': justification, 'published': true, 'author': 'ck1-ck2', 
         'votes': voteNumber, 'tag_group_id': tagID, 'tag_group_name': tagName})
         proposal.save()
 
@@ -172,6 +181,8 @@ class CK.Smartboard extends Sail.App
                 @wall.cloud.render()
 
             @tags.on 'reset', (collection) =>
+                @tagCount = collection.length
+                console.log "Number of Tags: " + @tagCount
                 collection.each @wall.cloud.ensureNode
                 @wall.cloud.render()
 
@@ -191,11 +202,8 @@ class CK.Smartboard extends Sail.App
                         @wall.setMode('brainstorm')
 
             # test state change
-            
-            # test = (a) =>
-            #     @switchToProposal()
         
-            # setTimeout(test, 5000)
+            #setTimeout (=> @switchToInterpretation()), 5000
 
             #
             #@createNewProposal('cookie headlines are great!', 'cookie descriptions are not as cool but whatever...', 
@@ -226,10 +234,8 @@ class CK.Smartboard extends Sail.App
             console.log "Ready..."
             
             @wall.render()
-
-            @contributions.fetch()
-            @proposals.fetch()
-            @tags.fetch()
+            
+            @tags.fetch().done => @contributions.fetch().done => @proposals.fetch()
 
         sail:
             contribution: (sev) ->

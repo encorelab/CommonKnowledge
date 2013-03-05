@@ -9,6 +9,7 @@ class CK.Smartboard.View.BalloonCloud
         @links = []
         @tagList = {}
         @uniqueTagCount = 0
+        @d3QuadTree  = null
 
         # for n,i in @nodes
         #     $n = jQuery(n)
@@ -88,10 +89,8 @@ class CK.Smartboard.View.BalloonCloud
                 if d.view.$el.hasClass('pinned')
                     d.fixed = true
 
-        # quad tree used for collision detection
-        q = d3.geom.quadtree(@nodes)
         for i in [0...@nodes.length]
-            q.visit(@detectCollision(@nodes[i]))
+            @d3QuadTree.visit(@detectCollision(@nodes[i]))
 
         @connectors
             .style("z-index", -1)
@@ -300,6 +299,8 @@ class CK.Smartboard.View.BalloonCloud
             @force = @generateForceFunction()
             # make the <div.balloons> draggable via the force-directed layout
             
+        # quad tree used for collision detection
+        @d3QuadTree = d3.geom.quadtree(@nodes)
 
         console.log("Starting force...")
         @force.start()#.alpha(0.02)
@@ -314,6 +315,9 @@ class CK.Smartboard.View.BalloonCloud
         if n instanceof CK.Model.Contribution and (isNodePublished isnt true or screenState is 'propose' or screenState is 'interpret')
             return
 
+        if n instanceof CK.Model.Proposal and (isNodePublished is false or (screenState isnt 'propose' and screenState isnt 'interpret'))
+            return
+
         # make sure node n doesn't already exist
         unless _.any(@nodes, 
                 (node) -> node.id is n.id)
@@ -323,10 +327,12 @@ class CK.Smartboard.View.BalloonCloud
                 tagAttributes = n.attributes
                 tagClass = ''
 
-                if tagAttributes.name.toLowerCase() isnt 'n/a'
-                    tagClass = 'group' + (++@uniqueTagCount) + '-color'
+                #if tagAttributes.name.toLowerCase() isnt 'n/a'
+                #    tagClass = 'group' + (++@uniqueTagCount) + '-color'
                 
-                @tagList[n.id] = {'className' :  tagClass}
+                if n.has('colourClass')
+                    @tagList[n.id] = {'className' :  n.get('colourClass')}
+
                     
 
         if n instanceof CK.Model.Contribution and n.has('tags')
@@ -336,6 +342,14 @@ class CK.Smartboard.View.BalloonCloud
                 # TODO: create the tag if it doesn't exist?
                 if tag?
                     @ensureLink(n, tag)
+
+        if n instanceof CK.Model.Proposal and n.has('tag_group_id')
+            tagID = n.get('tag_group_id')
+            tag = _.find @nodes, (n) -> n.id is tagID
+
+            # TODO: create the tag if it doesn't exist?
+            if tag?
+                @ensureLink(n, tag)
 
         else if n instanceof CK.Model.Tag
             for b in @nodes
@@ -397,6 +411,7 @@ class CK.Smartboard.View.BalloonCloud
 
                     console.log 'Proposal View Instantiated - state is ' + screenState + ' tag ID is ' + tagID
 
+
                     # if the proposal has a tag color associated to it then set the color
                     if tagListing[tagID]? and tagListing[tagID].className
                         console.log 'Proposal tag color is ' + tagListing[tagID].className
@@ -414,6 +429,9 @@ class CK.Smartboard.View.BalloonCloud
 
             if view?
                 view.render()
+
+                if d.collectionName is "contributions" or d.collectionName is "proposals" 
+                    view.resetView() 
 
                 if d.newlyAdded
                     jQuery('#'+d.id).addClass('new')
@@ -434,18 +452,30 @@ class CK.Smartboard.View.BalloonCloud
                 if (state is 'analysis')
                     view.ballonContributionType = view.balloonContributionTypes.analysis
                 else if (state is 'propose')
-                    #view.ballonContributionType = view.balloonContributionTypes.propose
-
                     #remove previous backbone views and all the events that are tied to it
                     view.remove()
                     view = null
-                else if (state is 'interpret')
-                    view.ballonContributionType = view.balloonContributionTypes.interpret
                 else 
                     view.ballonContributionType = view.balloonContributionTypes.default
 
+            else if b.collectionName is 'proposals'
+                if (state is 'interpret')
+                    view.ballonContributionType = view.balloonContributionTypes.interpret
+                else
+                    view.ballonContributionType = view.balloonContributionTypes.propose
+
             if view?
                 view.render()
+
+                if b.collectionName is "contributions" or b.collectionName is "proposals" 
+                    view.resetView() 
+
+                
+
+                
+                    
+
+
 
         # on state change to proposal remove all contributions from the board
         # and remove the links associating contributions to tags
