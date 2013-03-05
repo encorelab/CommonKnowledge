@@ -341,8 +341,9 @@
               model: d,
               el: $el[0]
             });
-            console.log('Proposal View Instantiated - state is ' + screenState);
-            if ((tagID != null) && (tagListing[tagID] != null) && tagListing[tagID].className) {
+            console.log('Proposal View Instantiated - state is ' + screenState + ' tag ID is ' + tagID);
+            if ((tagListing[tagID] != null) && tagListing[tagID].className) {
+              console.log('Proposal tag color is ' + tagListing[tagID].className);
               view.setColorClass(tagListing[tagID].className);
             }
             if (screenState === 'interpret') {

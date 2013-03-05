@@ -392,14 +392,15 @@ class CK.Smartboard.View.BalloonCloud
                     tagID = d.get('tag_group_id')
 
                     view = new CK.Smartboard.View.ContributionProposalBalloon
-                            model: d
-                            el: $el[0]
+                        model: d
+                        el: $el[0]
 
-                    console.log 'Proposal View Instantiated - state is ' + screenState
+                    console.log 'Proposal View Instantiated - state is ' + screenState + ' tag ID is ' + tagID
 
                     # if the proposal has a tag color associated to it then set the color
-                    if (tagID? and tagListing[tagID]? and tagListing[tagID].className)
-                        view.setColorClass(tagListing[tagID].className)
+                    if tagListing[tagID]? and tagListing[tagID].className
+                        console.log 'Proposal tag color is ' + tagListing[tagID].className
+                        view.setColorClass tagListing[tagID].className
 
                     if screenState is 'interpret'
                         view.ballonContributionType = view.balloonContributionTypes.interpret
