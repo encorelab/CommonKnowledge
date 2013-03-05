@@ -670,7 +670,7 @@ CK.Mobile = function() {
 
   app.checkProposalPublished = function() {
     // if (app.proposalInputView.model)
-  }
+  };
 
   app.createGroup = function(tagGroupName, tagGroupId) {
     console.log('creating group...');
