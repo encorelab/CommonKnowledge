@@ -659,11 +659,13 @@
       if (this.$el.hasClass('opened')) {
         jQuery('#' + balloonID + ' img.balloon-note').hide();
         jQuery('#' + balloonID + ' .headline').fadeIn('fast');
-        jQuery('#' + balloonID + ' .description').fadeIn('fast');
+        jQuery('#' + balloonID + ' .proposal').fadeIn('fast');
+        jQuery('#' + balloonID + ' .justification').fadeIn('fast');
         return jQuery('#' + balloonID + ' .meta').fadeIn('fast');
       } else {
         jQuery('#' + balloonID + ' .headline').hide();
-        jQuery('#' + balloonID + ' .description').hide();
+        jQuery('#' + balloonID + ' .proposal').hide();
+        jQuery('#' + balloonID + ' .justification').hide();
         jQuery('#' + balloonID + ' .meta').hide();
         return jQuery('#' + balloonID + ' img.balloon-note').fadeIn('fast');
       }
