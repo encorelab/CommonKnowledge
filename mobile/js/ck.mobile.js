@@ -175,6 +175,15 @@ CK.Mobile = function() {
       //       currently this just waits until CK.Model is initialized
       console.log("Ready!");
 
+      // Disable logout button
+      jQuery('#logout-button').unbind();
+      jQuery('#logout-button a').unbind();
+      jQuery('#logout-button a').click( function() {
+        console.log('reload');
+        window.location.reload();
+      });
+
+
       app.restoreState();
       // moved the view init here so that backbone is configured with URLs
       app.initViews();
