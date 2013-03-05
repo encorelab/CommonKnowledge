@@ -615,7 +615,52 @@
   **/
   self.ProposalInputView = Backbone.View.extend({
     events: {
+      // 'change .field': function (ev) {
+      //   var view = this;
+      //   var f;
+        // if (view.model.get('kind') === 'new') {
+        //   f = jQuery(ev.target);
+        //   console.log("Setting "+f.attr("name")+" to "+f.val());
+        //   view.model.set(f.attr('name'), f.val());          
+        // } else if (view.model.get('kind') === 'buildOn') {
+        //   // TODO: accessing currentBuildOn is wrong and object is {} -- empty
+        //   console.log('setting build-on values');
+        //   Sail.app.currentBuildOn.content = jQuery('#note-body-entry').val();
+        //   Sail.app.currentBuildOn.author = Sail.app.userData.account.login;
+        //   var d = new Date();
+        //   Sail.app.currentBuildOn.created_at = d;
+        //   console.log(d);
+        // } else if (view.model.get('kind') === 'synthesis') {
+        //   f = jQuery(ev.target);
+        //   console.log("Setting "+f.attr("name")+" to "+f.val());
+        //   this.model.set(f.attr('name'), f.val());          
+        // } else {
+        //   console.log('unknown note type');
+        // }
+      // },
 
+      'keyup :input': function (ev) {
+        var view = this;
+        Sail.app.autoSave(view, ev);
+      },
+
+      'click #share-proposal-headline-btn': function() {
+        this.model.set('headline_published', true);
+        Sail.app.checkProposalPublishState();
+        this.model.save();
+      },
+
+      'click #share-proposal-body-btn': function() {
+        this.model.set('proposal_published', true);
+        Sail.app.checkProposalPublishState();
+        this.model.save();
+      },
+
+      'click #share-justification-body-btn': function() {
+        this.model.set('justification_published', true);
+        Sail.app.checkProposalPublishState();
+        this.model.save();
+      }
     },
 
     initialize: function () {
@@ -626,6 +671,47 @@
       Triggers full update of all dynamic elements in the list view
     **/
     render: function () {
+      console.log('rendering ProposalInputView');
+      var view = this;
+      // only do this rendering on the first pass (then set this flag to false)
+      if (!view.initialRender) {
+        jQuery('#proposal-headline-entry').text(view.model.get('headline'));
+        jQuery('#proposal-body-entry').text(view.model.get('proposal'));
+        jQuery('#justification-body-entry').text(view.model.get('justification'));
+        view.initialRender = true;
+      }
+
+      if (Sail.app.userData.account.login === view.model.get('initiator')) {
+        if (view.model.get('headline_published') === false) {
+          jQuery('#proposal-headline-entry').removeClass('disabled');
+          jQuery('#share-proposal-headline-btn').removeClass('disabled');
+        } else {
+          jQuery('#proposal-headline-entry').addClass('disabled');
+          jQuery('#share-proposal-headline-btn').addClass('disabled');
+        }
+        if (view.model.get('proposal_published') === false) {
+          jQuery('#proposal-body-entry').removeClass('disabled');
+          jQuery('#share-proposal-body-btn').removeClass('disabled');
+        } else {
+          jQuery('#proposal-body-entry').addClass('disabled');
+          jQuery('#share-proposal-body-btn').addClass('disabled');
+        }
+        jQuery('#justification-body-entry').text(view.model.get('justification'));
+
+      } else if (Sail.app.userData.account.login === view.model.get('receiver')) {
+        if (view.model.get('justification_published') === false) {
+          jQuery('#justification-body-entry').removeClass('disabled');
+          jQuery('#share-justification-body-btn').removeClass('disabled');
+        } else {
+          jQuery('#justification-body-entry').addClass('disabled');
+          jQuery('#share-justification-body-btn').addClass('disabled');
+        }
+        jQuery('#proposal-headline-entry').text(view.model.get('headline'));
+        jQuery('#proposal-body-entry').text(view.model.get('proposal'));
+
+      } else {
+        console.log('skipping render... somehow not related to this user?!');
+      }
 
     }
 
@@ -651,7 +737,10 @@
     'create-group': function () {
       jQuery('.row').removeClass('disabled');
       jQuery('#grouping-screen').addClass('hide');
-      Sail.app.createGroup();
+      CK.getUserState(Sail.app.userData.account.login, function(us) {
+        Sail.app.createGroup(us.get('analysis').tag_group, us.get('analysis').tag_group_id);
+      });
+      
     },
 
     /**
@@ -660,7 +749,7 @@
     render: function () {
       var view = this;
       var tagGroupName = "";
-      // get this user tag group
+      // get this user tag group (TODO - convert to using the getUserState getter)
       _.each(view.models, function(s) {
         if (s.attributes.username === Sail.app.userData.account.login) {
           // grrrooossssss. Too bad I don't have a getter...

@@ -41,6 +41,7 @@ CK.Mobile = function() {
   app.inputView = null;
   app.tagListView = null;
   app.taggingView = null;
+  app.proposalInputView = null;
 
 
   app.init = function() {
@@ -48,7 +49,7 @@ CK.Mobile = function() {
     
     Sail.modules
       // Enable multi-picker login for CommonKnowledge curnit - asking for run (must be linked to curnit)
-      .load('Rollcall.Authenticator', {mode: 'multi-picker', askForRun: true, curnit: 'CommonKnowledge'})
+      .load('Rollcall.Authenticator', {mode: 'picker', askForRun: true, curnit: 'CommonKnowledge'})
       .load('Strophe.AutoConnector')
       .load('AuthStatusWidget', {indicatorContainer: '#logout-container'})
       .thenRun(function () {
@@ -259,11 +260,6 @@ CK.Mobile = function() {
         
       },
 
-      // start_synthesis: function(sev) {
-      //   console.log('start_synthesis heard');
-      //   app.startSynthesis();
-      // }
-
       start_proposal: function(sev) {
         console.log('start_proposal heard');
         CK.setState("phase", "proposal");
@@ -326,7 +322,7 @@ CK.Mobile = function() {
     Sail.app.keyCount++;
     console.log("saving stuff as we go at", Sail.app.keyCount);
 
-    if (Sail.app.keyCount > 9) {
+    if (Sail.app.keyCount > 2) {
 
       view.model.set(ev.target.name, jQuery('#'+ev.target.id).val());
       view.model.save();
@@ -351,9 +347,6 @@ CK.Mobile = function() {
       }
       app.inputView.model = contrib;
     }
-
-    // just in case
-    //app.clearModels();
 
     contrib.set('justAdded', true);
     contrib.set('author', app.userData.account.login);
@@ -587,19 +580,6 @@ CK.Mobile = function() {
     //app.contributionDetailsView.render();
   };
 
-  // app.startSynthesis = function() {
-  //   // setting done_tagging just in case we missed it
-  //   var dataObj = {'done_tagging':true};
-  //   // CK.setStateForUser ("tablet", app.userData.account.login, "contribution_to_tag", dataObj);    
-  //   CK.setUserState(app.userData.account.login, "contribution_to_tag", dataObj);
-  //   app.doneTagging();
-    
-  //   jQuery('#contribution-details-build-on-btn').addClass('hide');    
-  //   app.synthesisFlag = true;
-  //   jQuery('.brand').text('Common Knowledge - Synthesis');
-  //   Sail.app.contributionInputView.render();
-  //   jQuery('#tag-submission-container .tag-btn').addClass('disabled');
-  // };
 
   app.startProposal = function() {
     // for list view
@@ -619,6 +599,22 @@ CK.Mobile = function() {
       data: { sort: JSON.stringify(sort) }
     });
 
+    // for singular proposal
+    if (app.proposalInputView === null) {
+      app.proposalInputView = new CK.Mobile.View.ProposalInputView({
+        el: jQuery('#proposal-justification-container')
+      });
+    }
+
+    // for proposal collection
+    var proposals = new CK.Model.Proposals();
+    proposals.wake(Sail.app.config.wakeful.url);
+    proposals.on('add', app.bindProposal);
+    proposals.on('reset', function(props) {
+      props.each(app.bindProposal);
+    });
+    proposals.fetch();
+
     // for grouping view
     var states = new CK.Model.UserStates();
 
@@ -633,7 +629,6 @@ CK.Mobile = function() {
     function fetchSuccess (m) {
       console.log('fetched user states. User states are:', states);
     }
-
     function fetchError (err) {
       console.warn('error fetching user states');
     }
@@ -641,56 +636,52 @@ CK.Mobile = function() {
     states.fetch({success: fetchSuccess, error: fetchError});
   };
 
-  app.newProposal = function(group) {
+  app.newProposal = function(initiator, receiver, tagGroupName, tagGroupId) {
     // for proposal entry view
     var proposal = new CK.Model.Proposal();
+    proposal.wake(Sail.app.config.wakeful.url);
 
     proposal.on('change', function(model) { console.log(model.changedAttributes()); });    
 
-    proposalInputView = new CK.Mobile.View.ProposalInputView({
-      el: jQuery('#proposal-justification-container'),
-      model: proposal
-    });
-
+    var groupName = initiator + '-' + receiver;
     proposal.set('published', false);
-    proposal.set('author', group);
-    proposal.set('tag_group_id', 'tempID');
-    proposal.set('tag_group_name', 'tempName');
+    proposal.set('headline_published', false);
+    proposal.set('proposal_published', false);
+    proposal.set('justification_published', false);
+    proposal.set('author', groupName);
+    proposal.set('initiator', initiator);
+    proposal.set('receiver', receiver);
+    proposal.set('tag_group_id', tagGroupName);
+    proposal.set('tag_group_name', tagGroupId);
 
-    proposal.on('reset add', proposalInputView.render, proposalInputView);
+    proposal.on('reset add', app.proposalInputView.render, app.proposalInputView);
 
     proposal.save();
-
   };
 
-// proposal
-// {
-//     "_id": "508aaf357e59cb52d600003",
-//     "headline": "This is a great headline",
-//     "title": "Blub",
-//     "description": "bla bla bla",
-//     "justification": "bla bla bla",
-//     "author": "ck1-ck2"
+  app.bindProposal = function(prop) {
+    if (prop.get('initiator') === Sail.app.userData.account.login || prop.get('receiver') === Sail.app.userData.account.login) {
+      prop.wake(Sail.app.config.wakeful.url);
+      prop.on('change', app.proposalInputView.render, app.proposalInputView);
+      app.proposalInputView.model = prop;
+      app.proposalInputView.render();
+    }
+  };
 
-// "published": "true",
-//     "votes": 4,
+  app.checkProposalPublishState = function() {
+    if (app.proposalInputView.model.get('headline_published') === true && app.proposalInputView.model.get('proposal_published') && app.proposalInputView.model.get('justification_published') === true) {
+      console.log('setting proposal state to true...');
+      app.proposalInputView.model.set('published', true);
+    }
+  };
 
-// "created_at": "Mon Oct 29 2012 13:31:49 GMT-0400 (EDT)",
-
-// "tag_group_id": "423478239",
-
-// "tag_group_name": "birds"
-// }
-
-
-  app.createGroup = function() {
+  app.createGroup = function(tagGroupName, tagGroupId) {
     console.log('creating group...');
-    var groupStr = "";
-    groupStr += app.userData.account.login;
-    groupStr += "-";
-    groupStr += jQuery('.user-btn').attr('checked', true).val();
+
+    var initiator = app.userData.account.login;
+    var receiver = jQuery('.user-btn').attr('checked', true).val();
     
-    app.newProposal(groupStr);
+    app.newProposal(initiator, receiver, tagGroupName, tagGroupId);
 
     // what is the different between a group and a proposal, really? Each prop has one group, each group has one prop. What about ungrouping?
   };

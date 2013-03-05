@@ -3,6 +3,10 @@
 // color theme: https://kuler.adobe.com/#themeID/2129122
 
 $wall-color: #ab2;
+$wall-color-analysis: #51ba34;
+$wall-color-propose: #34ba70;
+$wall-color-interpret: #34bab3;
+
 $contribution-bubble-color: #fff;
 
 $tag-bubble-border-color: #c8271a;
@@ -52,7 +56,7 @@ body {
     }
 
     &.mode-analysis {
-        background-color: #51ba34;
+        background-color: $wall-color-analysis;
 
         #go-analyze {
             opacity: 0.4;
@@ -68,7 +72,7 @@ body {
     }
 
     &.mode-propose {
-        background-color: #34ba70;
+        background-color: $wall-color-propose;
 
         #go-analyze {
             opacity: 0.4;
@@ -84,7 +88,7 @@ body {
     }
 
      &.mode-interpret {
-        background-color: #34bab3;
+        background-color: $wall-color-interpret;
 
         #go-analyze {
             opacity: 0.4;
