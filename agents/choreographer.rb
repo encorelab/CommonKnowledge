@@ -171,6 +171,7 @@ class Choreographer < Sail::Agent
 
   def create_tagging_buckets(phase_name)
     log "Function create_tagging_buckets called with phase_name: #{phase_name}"
+    @buckets_created = true # might have to do it early to survive bombardment of messages
     @buckets = {}
     @tag_groups = {}
     contributions = []
