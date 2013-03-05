@@ -579,11 +579,13 @@ class CK.Smartboard.View.ContributionProposalBalloon extends CK.Smartboard.View.
         if @$el.hasClass('opened')
             jQuery('#' + balloonID + ' img.balloon-note').hide()
             jQuery('#' + balloonID + ' .headline').fadeIn('fast')
-            jQuery('#' + balloonID + ' .description').fadeIn('fast')
+            jQuery('#' + balloonID + ' .proposal').fadeIn('fast')
+            jQuery('#' + balloonID + ' .justification').fadeIn('fast') 
             jQuery('#' + balloonID + ' .meta').fadeIn('fast') 
         else
             jQuery('#' + balloonID + ' .headline').hide()
-            jQuery('#' + balloonID + ' .description').hide()
+            jQuery('#' + balloonID + ' .proposal').hide()
+            jQuery('#' + balloonID + ' .justification').hide() 
             jQuery('#' + balloonID + ' .meta').hide()
             jQuery('#' + balloonID + ' img.balloon-note').fadeIn('fast')
 
@@ -629,7 +631,7 @@ class CK.Smartboard.View.ContributionProposalBalloon extends CK.Smartboard.View.
 
         proposal.find('.proposal-body').text @model.get('description')
 
-        proposal.click( (obj) -> @.find('.proposal-body').slideToggle('fast'))
+        proposal.click( (obj) -> this.find('.proposal-body').slideToggle('fast'))
 
 
         justification = @findOrCreate '.justification', 
@@ -637,7 +639,7 @@ class CK.Smartboard.View.ContributionProposalBalloon extends CK.Smartboard.View.
 
         justification.find('.justification-body').text @model.get('justification')
 
-        justification.click( (obj) -> @.find('.justification-body').slideToggle('fast'))
+        justification.click( (obj) -> this.find('.justification-body').slideToggle('fast'))
         
             # console.warn "Contribution #{@model.id} has an unrecognized content type: ", @model.get('content_type'), " ... assuming 'text'."
 
