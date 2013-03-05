@@ -39,6 +39,7 @@ class CK.Smartboard extends Sail.App
 
         @wall = new CK.Smartboard.View.Wall {el: jQuery('#wall')}
 
+        @tagCount = 0;
         #@states = new CK.Model.States()
         #@states.on 'change', (collection) ->
         #    console.log  'States Collection Changed!'
@@ -49,9 +50,17 @@ class CK.Smartboard extends Sail.App
         else
             Rollcall.Authenticator.requestRun()
 
+    getColourTagClassName: =>
+        if @tagCount > 4
+            console.warn 'Adding more tags then you have tag classes'
+
+        'group' + (++@tagCount) + '-color'
+
     # initializes and persists a new CK.Model.Tag with the given name
     createNewTag: (name) =>
-        tag = new CK.Model.Tag({name: name})
+        colourClassName = @getColourTagClassName()
+
+        tag = new CK.Model.Tag({'name': name, 'colourClass': colourClassName})
         tag.wake @config.wakeful.url
         tag.save {},
             success: =>
@@ -172,6 +181,8 @@ class CK.Smartboard extends Sail.App
                 @wall.cloud.render()
 
             @tags.on 'reset', (collection) =>
+                @tagCount = collection.length
+                console.log "Number of Tags: " + @tagCount
                 collection.each @wall.cloud.ensureNode
                 @wall.cloud.render()
 

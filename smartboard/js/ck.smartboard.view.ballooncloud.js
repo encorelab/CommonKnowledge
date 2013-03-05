@@ -257,12 +257,11 @@
         if (n instanceof CK.Model.Tag) {
           tagAttributes = n.attributes;
           tagClass = '';
-          if (tagAttributes.name.toLowerCase() !== 'n/a') {
-            tagClass = 'group' + (++this.uniqueTagCount) + '-color';
+          if (n.has('colourClass')) {
+            this.tagList[n.id] = {
+              'className': n.get('colourClass')
+            };
           }
-          this.tagList[n.id] = {
-            'className': tagClass
-          };
         }
       }
       if (n instanceof CK.Model.Contribution && n.has('tags')) {

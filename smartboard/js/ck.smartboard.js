@@ -30,6 +30,8 @@
 
       this.createNewTag = __bind(this.createNewTag, this);
 
+      this.getColourTagClassName = __bind(this.getColourTagClassName, this);
+
       this.authenticate = __bind(this.authenticate, this);
 
       this.init = __bind(this.init, this);
@@ -85,9 +87,10 @@
         return _this.trigger('initialized');
       });
       this.rollcall = new Rollcall.Client(this.config.rollcall.url);
-      return this.wall = new CK.Smartboard.View.Wall({
+      this.wall = new CK.Smartboard.View.Wall({
         el: jQuery('#wall')
       });
+      return this.tagCount = 0;
     };
 
     Smartboard.prototype.authenticate = function() {
@@ -98,11 +101,20 @@
       }
     };
 
+    Smartboard.prototype.getColourTagClassName = function() {
+      if (this.tagCount > 4) {
+        console.warn('Adding more tags then you have tag classes');
+      }
+      return 'group' + (++this.tagCount) + '-color';
+    };
+
     Smartboard.prototype.createNewTag = function(name) {
-      var tag,
+      var colourClassName, tag,
         _this = this;
+      colourClassName = this.getColourTagClassName();
       tag = new CK.Model.Tag({
-        name: name
+        'name': name,
+        'colourClass': colourClassName
       });
       tag.wake(this.config.wakeful.url);
       return tag.save({}, {
@@ -251,6 +263,8 @@
           return _this.wall.cloud.render();
         });
         _this.tags.on('reset', function(collection) {
+          _this.tagCount = collection.length;
+          console.log("Number of Tags: " + _this.tagCount);
           collection.each(_this.wall.cloud.ensureNode);
           return _this.wall.cloud.render();
         });
