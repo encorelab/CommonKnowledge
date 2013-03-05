@@ -168,7 +168,35 @@ img.balloon-note {
 
     ///
 
-    
+    .proposal {
+        font-weight: bold;
+        margin-top: 10px;
+        font-bottom: 5px;
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+    .proposal-body {
+        font-weight: normal;
+        border-top: solid 1px;
+        border-color: #333333;
+        border-width: 60%;
+    }
+
+    .justification {
+        font-weight: bold;
+        margin-top: 10px;
+        margin-bottom: 5px;
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+    .justification-body {
+        font-weight: normal;
+        border-top: solid 1px;
+        border-color: #333333;
+        border-width: 60%;
+    }
 
     max-height: 95%;
     overflow-y: auto;

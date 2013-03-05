@@ -443,6 +443,8 @@
 
       this.toggleAnalysis = __bind(this.toggleAnalysis, this);
 
+      this.resetView = __bind(this.resetView, this);
+
       this.processContributionByType = __bind(this.processContributionByType, this);
 
       this.setColorClass = __bind(this.setColorClass, this);
@@ -473,6 +475,22 @@
       if (this.ballonContributionType === this.balloonContributionTypes.analysis) {
         return this.toggleAnalysis();
       }
+    };
+
+    ContributionBalloon.prototype.resetView = function() {
+      var balloonID, balloonObj;
+      balloonObj = jQuery(this.$el);
+      balloonID = balloonObj.attr('id');
+      if (this.ballonContributionType === this.balloonContributionTypes["default"]) {
+        balloonObj.addClass(this.colorClass);
+        return;
+      }
+      console.log('Reset Proposal Views');
+      balloonObj.removeClass('opened').removeClass(this.colorClass);
+      jQuery('#' + balloonID + ' .headline').hide();
+      jQuery('#' + balloonID + ' .body').hide();
+      jQuery('#' + balloonID + ' .meta').hide();
+      return jQuery('#' + balloonID + ' img.balloon-note').fadeIn('fast');
     };
 
     ContributionBalloon.prototype.toggleAnalysis = function() {
@@ -595,6 +613,8 @@
 
       this.toggleInterpret = __bind(this.toggleInterpret, this);
 
+      this.resetView = __bind(this.resetView, this);
+
       this.processContributionByType = __bind(this.processContributionByType, this);
 
       this.setColorClass = __bind(this.setColorClass, this);
@@ -608,7 +628,7 @@
         interpret: 'interpret'
       };
       console.log(this.balloonContributionTypes);
-      this.ballonContributionType = this.balloonContributionTypes["default"];
+      this.ballonContributionType = this.balloonContributionTypes.propose;
       this.colorClass = "whiteGradient";
     }
 
@@ -618,6 +638,7 @@
       },
       'click': function(ev) {
         this.$el.toggleClass('opened');
+        this.$el.toggleClass('balloon-note').toggleClass(this.colorClass);
         return this.processContributionByType();
       }
     };
@@ -630,22 +651,43 @@
       }
     };
 
+    ContributionProposalBalloon.prototype.resetView = function() {
+      var balloonID, balloonObj;
+      console.log('Reset Proposal Views');
+      balloonObj = jQuery(this.$el);
+      balloonID = balloonObj.attr('id');
+      balloonObj.removeClass(this.colorClass).removeClass('opened').addClass('balloon-note');
+      jQuery('#' + balloonID + ' .headline').hide();
+      jQuery('#' + balloonID + ' .proposal').hide();
+      jQuery('#' + balloonID + ' .proposal-body').hide();
+      jQuery('#' + balloonID + ' .justification').hide();
+      jQuery('#' + balloonID + ' .justification-body').hide();
+      jQuery('#' + balloonID + ' .meta').hide();
+      jQuery('#' + balloonID + ' .idea-counter').hide();
+      return jQuery('#' + balloonID + ' img.balloon-note').fadeIn('fast');
+    };
+
     ContributionProposalBalloon.prototype.toggleInterpret = function() {
       var balloonID, balloonObj;
       console.log('Toggle Interpret');
       balloonObj = jQuery(this.$el);
       balloonID = balloonObj.attr('id');
-      if (jQuery('#' + balloonID + ' .headline').is(':hidden')) {
-        balloonObj.addClass(this.colorClass);
-        jQuery('#' + balloonID + ' .balloon-note').hide();
-        jQuery('#' + balloonID + ' .headline').fadeIn('fast');
-        jQuery('#' + balloonID + ' .body').fadeIn('fast');
-        jQuery('#' + balloonID + ' .meta').fadeIn('fast');
-      }
       if (this.$el.hasClass('opened')) {
+        jQuery('#' + balloonID + ' img.balloon-note').hide();
+        jQuery('#' + balloonID + ' .headline').fadeIn('fast');
+        jQuery('#' + balloonID + ' .proposal').fadeIn('fast');
+        jQuery('#' + balloonID + ' .justification').fadeIn('fast');
+        jQuery('#' + balloonID + ' .meta').fadeIn('fast');
         return jQuery('#' + balloonID + ' .idea-counter').fadeIn('fast');
       } else {
-        return jQuery('#' + balloonID + ' .idea-counter').hide();
+        jQuery('#' + balloonID + ' .headline').hide();
+        jQuery('#' + balloonID + ' .proposal').hide();
+        jQuery('#' + balloonID + ' .proposal-body').hide();
+        jQuery('#' + balloonID + ' .justification').hide();
+        jQuery('#' + balloonID + ' .justification-body').hide();
+        jQuery('#' + balloonID + ' .meta').hide();
+        jQuery('#' + balloonID + ' .idea-counter').hide();
+        return jQuery('#' + balloonID + ' img.balloon-note').fadeIn('fast');
       }
     };
 
@@ -654,7 +696,6 @@
       console.log('Toggle Proposal');
       balloonObj = jQuery(this.$el);
       balloonID = balloonObj.attr('id');
-      balloonObj.toggleClass('balloon-note').toggleClass(this.colorClass);
       balloonID = balloonObj.attr('id');
       if (this.$el.hasClass('opened')) {
         jQuery('#' + balloonID + ' img.balloon-note').hide();
@@ -665,7 +706,9 @@
       } else {
         jQuery('#' + balloonID + ' .headline').hide();
         jQuery('#' + balloonID + ' .proposal').hide();
+        jQuery('#' + balloonID + ' .proposal-body').hide();
         jQuery('#' + balloonID + ' .justification').hide();
+        jQuery('#' + balloonID + ' .justification-body').hide();
         jQuery('#' + balloonID + ' .meta').hide();
         return jQuery('#' + balloonID + ' img.balloon-note').fadeIn('fast');
       }
@@ -691,29 +734,35 @@
     };
 
     ContributionProposalBalloon.prototype.render = function() {
-      var headline, ideaCounter, justification, meta, nodeHeader, proposal;
+      var headline, ideaCounter, justification, meta, nodeHeader, numberOfVotes, proposal;
       ContributionProposalBalloon.__super__.render.call(this);
-      this.$el.addClass('contribution').addClass(this.colorClass);
+      this.$el.addClass('contribution').toggleClass('balloon-note');
       console.log('Rendering propose balloon.');
       nodeHeader = this.findOrCreate('.balloon-note', '<img style="display: none;" class="balloon-note" src="/smartboard/img/notes_large.png" alt="Note">');
-      ideaCounter = this.findOrCreate('.idea-counter', '<div class="idea-counter idea-counter-off"><span class="idea-count">&nbsp;</span></div>');
-      ideaCounter.hide();
+      ideaCounter = this.findOrCreate('.idea-counter', '<div class="idea-counter idea-counter-off" style="display: none"><span class="idea-count">&nbsp;</span></div>');
       headline = this.findOrCreate('.headline', "<h3 class='headline'></h3>");
       headline.text(this.model.get('headline'));
-      proposal = this.findOrCreate('.proposal', "<div class='proposal'>Proposal<div class='proposal-body' tyle='display: none'></div></div>");
+      proposal = this.findOrCreate('.proposal', "<div class='proposal'>&#8227; Proposal<div class='proposal-body' tyle='display: none'></div></div>");
       proposal.find('.proposal-body').text(this.model.get('description'));
-      proposal.click(function(obj) {
-        return this.find('.proposal-body').slideToggle('fast');
+      proposal.unbind('click');
+      proposal.click(function(e) {
+        e.stopPropagation();
+        return jQuery(this).find('.proposal-body').slideToggle('fast');
       });
-      justification = this.findOrCreate('.justification', "<div class='justification'>Justification<div class='justification-body' style='display: none'></div></div>");
+      justification = this.findOrCreate('.justification', "<div class='justification'>&#8227; Justification<div class='justification-body' style='display: none'></div></div>");
       justification.find('.justification-body').text(this.model.get('justification'));
-      justification.click(function(obj) {
-        return this.find('.justification-body').slideToggle('fast');
+      justification.unbind('click');
+      justification.click(function(e) {
+        e.stopPropagation();
+        return jQuery(this).find('.justification-body').slideToggle('fast');
       });
       meta = this.findOrCreate('.meta', "<div class='meta'><span class='author'></span></div>");
       meta.find('.author').text(this.model.get('author')).addClass("author-" + (this.model.get('author')));
+      numberOfVotes = this.model.get('votes');
+      if (numberOfVotes != null) {
+        this.setIdeaCount(numberOfVotes);
+      }
       this.renderBuildons();
-      this.processContributionByType();
       return this;
     };
 
