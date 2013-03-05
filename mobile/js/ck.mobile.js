@@ -35,6 +35,13 @@ CK.Mobile = function() {
   app.contributionInputView = null;
   // app.currentState = {"type":"tablet"};
 
+  // adding view object to global object and instanciate with null
+  // this is necessary to ensure view is not created over and over again.
+  // having the global pointer at a view allows us to detach a model before we attach a newly created one
+  app.inputView = null;
+  app.tagListView = null;
+  app.taggingView = null;
+
 
   app.init = function() {
     Sail.verifyConfig(this.config, this.requiredConfig);
@@ -304,13 +311,6 @@ CK.Mobile = function() {
       data: { sort: JSON.stringify(sort) }
     });
 
-    // adding view object to global object and instanciate with null
-    // this is necessary to ensure view is not created over and over again.
-    // having the global pointer at a view allows us to detach a model before we attach a newly created one
-    app.inputView = null;
-    app.tagListView = null;
-    app.taggingView = null;
-
 
     // just for testing - do this properly when the view is completed (see also 440)
     jQuery('#like-btn-on').click(function() {
@@ -575,6 +575,7 @@ CK.Mobile = function() {
     jQuery('.brand').text('Common Knowledge - Notes');
     jQuery('#tag-list').addClass('hide');
     jQuery('#contribution-list').removeClass('hide');
+    jQuery('.row').removeClass('disabled');
 
     //app.contributionInputView.render();
     jQuery('#tag-submission-container .tag-btn').addClass('disabled');
