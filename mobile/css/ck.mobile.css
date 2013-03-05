@@ -9,7 +9,7 @@ body {
 						  but we actually need 70px for tablet rotation */
 	padding-left: 6px;
 	/*background-color: #F5F5F5;*/
-	background-color: #585B7F;
+	background-color: #ab2;
 }
 
 /*
@@ -24,13 +24,17 @@ li*/
 textarea {
 	-moz-user-select: text;
  	-webkit-user-select: text;
- 	user-select: text;	
+ 	user-select: text;
+
+ 	color: #333;
 }
 
 input {
 	-moz-user-select: text;
  	-webkit-user-select: text;
  	user-select: text;	
+
+ 	color: #333;
 }
 
 i {
@@ -62,8 +66,10 @@ i {
 .disabled {
 	pointer-events: none;
   	cursor: default;
-  	background-color: #BDBDC1;					/* we probably want something a little more stark than this */
+  	/*background-color: #BDBDC1;*/					/* we probably want something a little more stark than this */
   	/*TODO*/
+  	opacity: 0.7;
+  	border-style: dashed;
 }
 
 .btn-container {
@@ -96,6 +102,8 @@ i {
 	/*margin-left: 18px;*/
 	position: relative;
 	background-color: #FCFCFF;
+	border-radius: 7px;
+	box-shadow: rgba(0,0,0,0.2) 1px 4px 15px;
 }
 
 .container-header {
@@ -141,7 +149,8 @@ i {
 
 #contribution-input {
 	width: 611px;						/* sigh - still fighting bootstrap */
-	background-color: #AEB6FE;
+	background-color: #ddd;
+	border-radius: 7px;
 }
 
 .control-group {
@@ -169,7 +178,8 @@ i {
 
 .proposal-container {
 	padding: 5px 0px 5px 5px;
-	background-color: #AEB6FE;
+	background-color: #ddd;
+	border-radius: 7px;
 }
 
 #proposal-body-entry-container {
