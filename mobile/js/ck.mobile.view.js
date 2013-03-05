@@ -45,7 +45,8 @@
     **/
     render: function () {
       console.log("rendering ContributionListView!");
-      var view = this;
+      var view = this,
+        created_at;
 
       jQuery('#contribution-list li').remove();
 
@@ -62,7 +63,12 @@
           jQuery('#contribution-list .nav-list').append(note);
 
           note.find('.headline').text(contrib.get('headline'));
-          note.find('.date').text(' (' + contrib.get('created_at').toLocaleDateString() + ' ' + contrib.get('created_at').toLocaleTimeString() + ')');
+
+          // functions toLocaleDateString() and toLocaleTimeString() are only defined if created_at is a Date object
+          created_at = new Date(contrib.get('created_at'));  // created_at as Date object
+          if (typeof created_at !== 'undefined' && created_at !== null) {
+            note.find('.date').text(' (' + created_at.toLocaleDateString() + ' ' + created_at.toLocaleTimeString() + ')');
+          }
 
           note.find('.author').text(contrib.get('author'));               
           if (contrib.get('author') === Sail.app.userData.account.login) {
@@ -119,7 +125,8 @@
     **/
     render: function () {
       console.log("rendering ContributionDetailsView!");
-      var view = this;
+      var view = this,
+        created_at;
 
       jQuery('#contribution-details .field').text('');
 
@@ -129,7 +136,12 @@
         jQuery('#contribution-details .note-headline').text(view.model.get('headline'));
         jQuery('#contribution-details .note-body').text(view.model.get('content'));
         jQuery('#contribution-details .note-author').text('~'+view.model.get('author'));
-        jQuery('#contribution-details .note-created-at').text(' (' + view.model.get('created_at').toLocaleDateString() + ' ' + view.model.get('created_at').toLocaleTimeString() + ')');
+
+        // functions toLocaleDateString() and toLocaleTimeString() are only defined if created_at is a Date object
+        created_at = new Date(view.model.get('created_at'));  // created_at as Date object
+        if (typeof created_at !== 'undefined' && created_at !== null) {
+          jQuery('#contribution-details .note-created-at').text(' (' + created_at.toLocaleDateString() + ' ' + created_at.toLocaleTimeString() + ')');
+        }
 
         var buildOnEl = "<hr /><div>";
         _.each(view.model.get('build_ons'), function(b) {
