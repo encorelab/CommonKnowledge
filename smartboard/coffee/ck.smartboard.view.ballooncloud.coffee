@@ -309,36 +309,38 @@ class CK.Smartboard.View.BalloonCloud
     # adds a node (balloon) to the cloud if it doesn't already exists
     ensureNode: (n) =>
         isNodePublished = n.get('published')
-        
+        screenState = @wall.mode
+    
+        if n instanceof CK.Model.Contribution and (isNodePublished isnt true or screenState is 'propose' or screenState is 'interpret')
+            return
 
-        if n not instanceof CK.Model.Contribution or (n instanceof CK.Model.Contribution and isNodePublished is true)
-            # make sure node n doesn't already exist
-            unless _.any(@nodes, 
-                    (node) -> node.id is n.id)
-                @nodes.push n
+        # make sure node n doesn't already exist
+        unless _.any(@nodes, 
+                (node) -> node.id is n.id)
+            @nodes.push n
 
-                if n instanceof CK.Model.Tag
-                    tagAttributes = n.attributes
-                    tagClass = ''
+            if n instanceof CK.Model.Tag
+                tagAttributes = n.attributes
+                tagClass = ''
 
-                    if tagAttributes.name.toLowerCase() isnt 'n/a'
-                        tagClass = 'group' + (++@uniqueTagCount) + '-color'
+                if tagAttributes.name.toLowerCase() isnt 'n/a'
+                    tagClass = 'group' + (++@uniqueTagCount) + '-color'
+                
+                @tagList[n.id] = {'className' :  tagClass}
                     
-                    @tagList[n.id] = {'className' :  tagClass}
-                        
 
-            if n instanceof CK.Model.Contribution and n.has('tags')
-                for t in n.get('tags')
-                    tag = _.find @nodes, (n) -> n.id is t.id
+        if n instanceof CK.Model.Contribution and n.has('tags')
+            for t in n.get('tags')
+                tag = _.find @nodes, (n) -> n.id is t.id
 
-                    # TODO: create the tag if it doesn't exist?
-                    if tag?
-                        @ensureLink(n, tag)
+                # TODO: create the tag if it doesn't exist?
+                if tag?
+                    @ensureLink(n, tag)
 
-            else if n instanceof CK.Model.Tag
-                for b in @nodes
-                    if b.has('tags') and b.get('tags').some( (t) -> t.id is n.id )
-                        @ensureLink(b, n)
+        else if n instanceof CK.Model.Tag
+            for b in @nodes
+                if b.has('tags') and b.get('tags').some( (t) -> t.id is n.id )
+                    @ensureLink(b, n)
 
 
     # adds a link (connector) to the cloud if it doesn't already exists
@@ -353,7 +355,7 @@ class CK.Smartboard.View.BalloonCloud
             @links.push link
 
     inflateBalloons: (balloons) =>
-        state = @wall.mode
+        screenState = @wall.mode
         tagListing = @tagList
 
         balloons.each (d,i) ->
@@ -362,6 +364,7 @@ class CK.Smartboard.View.BalloonCloud
             unless d.view
                 $el = $('#'+d.id)
                 $el.unbind()
+                
                 if d.collectionName is "tags"
                     view = new CK.Smartboard.View.TagBalloon
                         model: d
@@ -373,54 +376,90 @@ class CK.Smartboard.View.BalloonCloud
 
                 else if d.collectionName is "contributions"
                     
-                    if (state isnt 'propose' and state isnt 'interpret')
-                        view = new CK.Smartboard.View.ContributionBalloon
-                            model: d
-                            el: $el[0]
-                    else 
-                        view = new CK.Smartboard.View.ContributionProposalBalloon
-                            model: d
-                            el: $el[0]
+                    view = new CK.Smartboard.View.ContributionBalloon
+                        model: d
+                        el: $el[0]
+                       
+                    console.log 'Contribution View Instantiated - state is ' + screenState
                     
-                    console.log 'state is ' + state
-                    if state is 'analysis'
+                    if screenState is 'analysis'
                         view.ballonContributionType = view.balloonContributionTypes.analysis
-                    else if state is 'propose'
-                        view.ballonContributionType = view.balloonContributionTypes.propose
-                    else if state is 'interpret'
+                    else 
+                        view.balloonContributionType = view.balloonContributionTypes.default
+
+                else if d.collectionName is "proposals"
+
+                    tagID = d.get('tag_group_id')
+
+                    view = new CK.Smartboard.View.ContributionProposalBalloon
+                            model: d
+                            el: $el[0]
+
+                    console.log 'Proposal View Instantiated - state is ' + screenState
+
+                    # if the proposal has a tag color associated to it then set the color
+                    if (tagID? and tagListing[tagID]? and tagListing[tagID].className)
+                        view.setColorClass(tagListing[tagID].className)
+
+                    if screenState is 'interpret'
                         view.ballonContributionType = view.balloonContributionTypes.interpret
+                    else
+                        view.ballonContributionType = view.balloonContributionTypes.propose
+
                 else
-                    console.error("Unrecognized Balloon type:", d)
+                    console.error("Unrecognized Balloon type:", d.collectionName)
 
                 d.view = view
 
-            view.render()
+            if view?
+                view.render()
 
-            if d.newlyAdded
-                jQuery('#'+d.id).addClass('new')
-                setTimeout ->
-                    jQuery('#'+d.id).removeClass('new')
-                , 2000
+                if d.newlyAdded
+                    jQuery('#'+d.id).addClass('new')
+                    setTimeout ->
+                        jQuery('#'+d.id).removeClass('new')
+                    , 2000
 
-            pos = view.$el.position()
-            d.x = view.leftToX(pos.left) unless d.x?
-            d.y = view.topToY(pos.top) unless d.y?
+                pos = view.$el.position()
+                d.x = view.leftToX(pos.left) unless d.x?
+                d.y = view.topToY(pos.top) unless d.y?
 
     reRenderForState: (state) =>
         console.log 'Rerender nodes for state: ' + state
+
         for b in @nodes
             view = b.view
             if b.collectionName is "contributions"
                 if (state is 'analysis')
                     view.ballonContributionType = view.balloonContributionTypes.analysis
                 else if (state is 'propose')
-                    view.ballonContributionType = view.balloonContributionTypes.propose
+                    #view.ballonContributionType = view.balloonContributionTypes.propose
+
+                    #remove previous backbone views and all the events that are tied to it
+                    view.remove()
+                    view = null
                 else if (state is 'interpret')
                     view.ballonContributionType = view.balloonContributionTypes.interpret
                 else 
                     view.ballonContributionType = view.balloonContributionTypes.default
-                    
-            view.render()
+
+            if view?
+                view.render()
+
+        # on state change to proposal remove all contributions from the board
+        # and remove the links associating contributions to tags
+        if state is 'propose'
+            # remove the node from d3's internal store
+            @nodes.filter (n) -> not (n instanceof CK.Model.Contribution)
+
+            # blow away all the links from d3
+            @links = []
+
+            # remove the connector elements
+            jQuery('div.connector').unbind().remove()
+
+            #re-render the cloud
+            @render()
 
 
 

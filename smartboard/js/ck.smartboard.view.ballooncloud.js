@@ -240,54 +240,56 @@
     };
 
     BalloonCloud.prototype.ensureNode = function(n) {
-      var b, isNodePublished, t, tag, tagAttributes, tagClass, _i, _j, _len, _len1, _ref, _ref1, _results, _results1;
+      var b, isNodePublished, screenState, t, tag, tagAttributes, tagClass, _i, _j, _len, _len1, _ref, _ref1, _results, _results1;
       isNodePublished = n.get('published');
-      if (!(n instanceof CK.Model.Contribution) || (n instanceof CK.Model.Contribution && isNodePublished === true)) {
-        if (!_.any(this.nodes, function(node) {
-          return node.id === n.id;
-        })) {
-          this.nodes.push(n);
-          if (n instanceof CK.Model.Tag) {
-            tagAttributes = n.attributes;
-            tagClass = '';
-            if (tagAttributes.name.toLowerCase() !== 'n/a') {
-              tagClass = 'group' + (++this.uniqueTagCount) + '-color';
-            }
-            this.tagList[n.id] = {
-              'className': tagClass
-            };
+      screenState = this.wall.mode;
+      if (n instanceof CK.Model.Contribution && (isNodePublished !== true || screenState === 'propose' || screenState === 'interpret')) {
+        return;
+      }
+      if (!_.any(this.nodes, function(node) {
+        return node.id === n.id;
+      })) {
+        this.nodes.push(n);
+        if (n instanceof CK.Model.Tag) {
+          tagAttributes = n.attributes;
+          tagClass = '';
+          if (tagAttributes.name.toLowerCase() !== 'n/a') {
+            tagClass = 'group' + (++this.uniqueTagCount) + '-color';
+          }
+          this.tagList[n.id] = {
+            'className': tagClass
+          };
+        }
+      }
+      if (n instanceof CK.Model.Contribution && n.has('tags')) {
+        _ref = n.get('tags');
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          t = _ref[_i];
+          tag = _.find(this.nodes, function(n) {
+            return n.id === t.id;
+          });
+          if (tag != null) {
+            _results.push(this.ensureLink(n, tag));
+          } else {
+            _results.push(void 0);
           }
         }
-        if (n instanceof CK.Model.Contribution && n.has('tags')) {
-          _ref = n.get('tags');
-          _results = [];
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            t = _ref[_i];
-            tag = _.find(this.nodes, function(n) {
-              return n.id === t.id;
-            });
-            if (tag != null) {
-              _results.push(this.ensureLink(n, tag));
-            } else {
-              _results.push(void 0);
-            }
+        return _results;
+      } else if (n instanceof CK.Model.Tag) {
+        _ref1 = this.nodes;
+        _results1 = [];
+        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+          b = _ref1[_j];
+          if (b.has('tags') && b.get('tags').some(function(t) {
+            return t.id === n.id;
+          })) {
+            _results1.push(this.ensureLink(b, n));
+          } else {
+            _results1.push(void 0);
           }
-          return _results;
-        } else if (n instanceof CK.Model.Tag) {
-          _ref1 = this.nodes;
-          _results1 = [];
-          for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-            b = _ref1[_j];
-            if (b.has('tags') && b.get('tags').some(function(t) {
-              return t.id === n.id;
-            })) {
-              _results1.push(this.ensureLink(b, n));
-            } else {
-              _results1.push(void 0);
-            }
-          }
-          return _results1;
         }
+        return _results1;
       }
     };
 
@@ -305,11 +307,11 @@
     };
 
     BalloonCloud.prototype.inflateBalloons = function(balloons) {
-      var state, tagListing;
-      state = this.wall.mode;
+      var screenState, tagListing;
+      screenState = this.wall.mode;
       tagListing = this.tagList;
       return balloons.each(function(d, i) {
-        var $el, pos, view;
+        var $el, pos, tagID, view;
         view = d.view;
         if (!d.view) {
           $el = $('#' + d.id);
@@ -323,52 +325,59 @@
               view.setColorClass(tagListing[d.id].className);
             }
           } else if (d.collectionName === "contributions") {
-            if (state !== 'propose' && state !== 'interpret') {
-              view = new CK.Smartboard.View.ContributionBalloon({
-                model: d,
-                el: $el[0]
-              });
-            } else {
-              view = new CK.Smartboard.View.ContributionProposalBalloon({
-                model: d,
-                el: $el[0]
-              });
-            }
-            console.log('state is ' + state);
-            if (state === 'analysis') {
+            view = new CK.Smartboard.View.ContributionBalloon({
+              model: d,
+              el: $el[0]
+            });
+            console.log('Contribution View Instantiated - state is ' + screenState);
+            if (screenState === 'analysis') {
               view.ballonContributionType = view.balloonContributionTypes.analysis;
-            } else if (state === 'propose') {
-              view.ballonContributionType = view.balloonContributionTypes.propose;
-            } else if (state === 'interpret') {
+            } else {
+              view.balloonContributionType = view.balloonContributionTypes["default"];
+            }
+          } else if (d.collectionName === "proposals") {
+            tagID = d.get('tag_group_id');
+            view = new CK.Smartboard.View.ContributionProposalBalloon({
+              model: d,
+              el: $el[0]
+            });
+            console.log('Proposal View Instantiated - state is ' + screenState);
+            if ((tagID != null) && (tagListing[tagID] != null) && tagListing[tagID].className) {
+              view.setColorClass(tagListing[tagID].className);
+            }
+            if (screenState === 'interpret') {
               view.ballonContributionType = view.balloonContributionTypes.interpret;
+            } else {
+              view.ballonContributionType = view.balloonContributionTypes.propose;
             }
           } else {
-            console.error("Unrecognized Balloon type:", d);
+            console.error("Unrecognized Balloon type:", d.collectionName);
           }
           d.view = view;
         }
-        view.render();
-        if (d.newlyAdded) {
-          jQuery('#' + d.id).addClass('new');
-          setTimeout(function() {
-            return jQuery('#' + d.id).removeClass('new');
-          }, 2000);
-        }
-        pos = view.$el.position();
-        if (d.x == null) {
-          d.x = view.leftToX(pos.left);
-        }
-        if (d.y == null) {
-          return d.y = view.topToY(pos.top);
+        if (view != null) {
+          view.render();
+          if (d.newlyAdded) {
+            jQuery('#' + d.id).addClass('new');
+            setTimeout(function() {
+              return jQuery('#' + d.id).removeClass('new');
+            }, 2000);
+          }
+          pos = view.$el.position();
+          if (d.x == null) {
+            d.x = view.leftToX(pos.left);
+          }
+          if (d.y == null) {
+            return d.y = view.topToY(pos.top);
+          }
         }
       });
     };
 
     BalloonCloud.prototype.reRenderForState = function(state) {
-      var b, view, _i, _len, _ref, _results;
+      var b, view, _i, _len, _ref;
       console.log('Rerender nodes for state: ' + state);
       _ref = this.nodes;
-      _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         b = _ref[_i];
         view = b.view;
@@ -376,16 +385,26 @@
           if (state === 'analysis') {
             view.ballonContributionType = view.balloonContributionTypes.analysis;
           } else if (state === 'propose') {
-            view.ballonContributionType = view.balloonContributionTypes.propose;
+            view.remove();
+            view = null;
           } else if (state === 'interpret') {
             view.ballonContributionType = view.balloonContributionTypes.interpret;
           } else {
             view.ballonContributionType = view.balloonContributionTypes["default"];
           }
         }
-        _results.push(view.render());
+        if (view != null) {
+          view.render();
+        }
       }
-      return _results;
+      if (state === 'propose') {
+        this.nodes.filter(function(n) {
+          return !(n instanceof CK.Model.Contribution);
+        });
+        this.links = [];
+        jQuery('div.connector').unbind().remove();
+        return this.render();
+      }
     };
 
     BalloonCloud.prototype.render = function(ev) {

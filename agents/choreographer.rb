@@ -85,6 +85,7 @@ class Choreographer < Sail::Agent
     end
 
     event :chosen_tag_group? do |stanza, data|
+      log "Received chosen_tag_group #{data.inspect}"
       @phase = get_phase()
       phase_name = @phase['state']
       log "#{@phase.inspect} and #{phase_name.inspect}"
@@ -170,6 +171,7 @@ class Choreographer < Sail::Agent
 
   def create_tagging_buckets(phase_name)
     log "Function create_tagging_buckets called with phase_name: #{phase_name}"
+    @buckets_created = true # might have to do it early to survive bombardment of messages
     @buckets = {}
     @tag_groups = {}
     contributions = []
@@ -301,7 +303,7 @@ class Choreographer < Sail::Agent
     #   @mongo.collection(:user_states).save(user_state)
     #   log "Saved contribution_to_tag #{user_state.inspect}"
     # end
-    store_user_state (user, 'analysis', 'contribution_to_tag'], {:contribution_id => contributionId})
+    store_user_state(user, 'analysis', 'contribution_to_tag', {:contribution_id => contributionId})
     # find a problem with assigned 'false'
     # user_to_contribution_id_assignments.map do |user, contributionId|
       log "Sending tag_assignment for user '#{user.inspect}' for contributionId '#{contributionId.inspect}'"
@@ -319,7 +321,7 @@ class Choreographer < Sail::Agent
     #   @mongo.collection(:user_states).save(user_state)
     #   log "Saved done_tagging #{user_state.inspect}"
     # end
-    store_user_state (user, 'analysis', 'done_tagging'], true)
+    store_user_state(user, 'analysis', 'done_tagging', true)
     log "Sending done_tagging for user '#{user.inspect}'"
     event!(:done_tagging, {:recipient => user})    
   end
@@ -346,7 +348,7 @@ class Choreographer < Sail::Agent
     end 
   end
 
-  def store_user_state (username, phase, store_where, store_what)
+  def store_user_state(username, phase, store_where, store_what)
     user_state = @mongo.collection(:user_states).find(:username => username).first
     if user_state then
       # log "user_state #{user_state.inspect}"

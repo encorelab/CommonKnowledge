@@ -70,8 +70,10 @@ class CK.Smartboard extends Sail.App
         # take this opportunity to save positions
         for b in _.union(@contributions.models, @tags.models)
             pos = @wall.$el.find('#'+b.id).position()
-            b.set({pos: {left: pos.left, top: pos.top}}, {silent: true})
-            b.save({}, {silent: true})
+            
+            if pos?
+                b.set({pos: {left: pos.left, top: pos.top}}, {silent: true})
+                b.save({}, {silent: true})
 
         
 
@@ -110,6 +112,14 @@ class CK.Smartboard extends Sail.App
         @wall.setMode(mode)
         @wall.cloud.reRenderForState(mode)
 
+    # used for unit testing proposals
+    createNewProposal: (headline, description, justification, voteNumber, tagID, tagName) =>
+        proposal = new CK.Model.Proposal()
+        proposal.wake @config.wakeful.url
+        proposal.set({'headline': headline, 'title': headline, 'description': description, 'published': true, 'author': 'ck1-ck2', 
+        'votes': voteNumber, 'tag_group_id': tagID, 'tag_group_name': tagName})
+        proposal.save()
+
     # set up all the Collections used by the board
     initModels: =>
         Wakeful.loadFayeClient(@config.wakeful.url).done =>
@@ -118,6 +128,8 @@ class CK.Smartboard extends Sail.App
 
             @proposals = new CK.Model.Proposals()
             @proposals.wake @config.wakeful.url
+
+            #console.log (@proposals)
 
             # FIXME: for the 'reset' event, we should wait until
             #        BOTH the tags and contributions are fetched
@@ -131,6 +143,18 @@ class CK.Smartboard extends Sail.App
                 @wall.cloud.render()
 
             @contributions.on 'reset', (collection) => 
+                collection.each @wall.cloud.ensureNode
+                @wall.cloud.render()
+
+
+            @proposals.on 'all', (ev, data) => 
+                console.log(@proposals.url, ev, data)
+
+            @proposals.on 'add', (proposal) =>
+                @wall.cloud.ensureNode proposal
+                @wall.cloud.render()
+
+            @proposals.on 'reset', (collection) => 
                 collection.each @wall.cloud.ensureNode
                 @wall.cloud.render()
 
@@ -163,6 +187,19 @@ class CK.Smartboard extends Sail.App
                         @switchToProposal()
                     else if s.get('state') is 'interpretation'
                         @switchToInterpretation()
+                    else
+                        @wall.setMode('brainstorm')
+
+            # test state change
+            # w = @switchToProposal
+            # test = (a) ->
+            #     w()
+        
+            # setTimeout(test, 5000)
+
+            #
+            #@createNewProposal('cookie headlines are great!', 'cookie descriptions are not as cool but whatever...', 
+            #'justification justification justification justification justification justification justification justification', 12, '51353a5a42901f09b1000000', 'Cookies')
 
             @trigger('ready')
 

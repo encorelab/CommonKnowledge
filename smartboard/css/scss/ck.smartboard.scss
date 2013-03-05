@@ -255,7 +255,8 @@ img.balloon-note {
     // }
 
     &.opened {
-        width: 200px;
+        min-width: 200px;
+        max-width: 220px;
         background-color: rgba($contribution-bubble-color, 1.0);
         //background: rgba($contribution-bubble-color, 1.0);
     }

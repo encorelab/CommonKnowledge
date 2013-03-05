@@ -10,6 +10,8 @@
     function Smartboard() {
       this.initModels = __bind(this.initModels, this);
 
+      this.createNewProposal = __bind(this.createNewProposal, this);
+
       this.switchToInterpretation = __bind(this.switchToInterpretation, this);
 
       this.switchToProposal = __bind(this.switchToProposal, this);
@@ -124,17 +126,21 @@
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         b = _ref[_i];
         pos = this.wall.$el.find('#' + b.id).position();
-        b.set({
-          pos: {
-            left: pos.left,
-            top: pos.top
-          }
-        }, {
-          silent: true
-        });
-        _results.push(b.save({}, {
-          silent: true
-        }));
+        if (pos != null) {
+          b.set({
+            pos: {
+              left: pos.left,
+              top: pos.top
+            }
+          }, {
+            silent: true
+          });
+          _results.push(b.save({}, {
+            silent: true
+          }));
+        } else {
+          _results.push(void 0);
+        }
       }
       return _results;
     };
@@ -187,6 +193,23 @@
       return this.wall.cloud.reRenderForState(mode);
     };
 
+    Smartboard.prototype.createNewProposal = function(headline, description, justification, voteNumber, tagID, tagName) {
+      var proposal;
+      proposal = new CK.Model.Proposal();
+      proposal.wake(this.config.wakeful.url);
+      proposal.set({
+        'headline': headline,
+        'title': headline,
+        'description': description,
+        'published': true,
+        'author': 'ck1-ck2',
+        'votes': voteNumber,
+        'tag_group_id': tagID,
+        'tag_group_name': tagName
+      });
+      return proposal.save();
+    };
+
     Smartboard.prototype.initModels = function() {
       var _this = this;
       return Wakeful.loadFayeClient(this.config.wakeful.url).done(function() {
@@ -202,6 +225,17 @@
           return _this.wall.cloud.render();
         });
         _this.contributions.on('reset', function(collection) {
+          collection.each(_this.wall.cloud.ensureNode);
+          return _this.wall.cloud.render();
+        });
+        _this.proposals.on('all', function(ev, data) {
+          return console.log(_this.proposals.url, ev, data);
+        });
+        _this.proposals.on('add', function(proposal) {
+          _this.wall.cloud.ensureNode(proposal);
+          return _this.wall.cloud.render();
+        });
+        _this.proposals.on('reset', function(collection) {
           collection.each(_this.wall.cloud.ensureNode);
           return _this.wall.cloud.render();
         });
@@ -230,6 +264,8 @@
               return _this.switchToProposal();
             } else if (s.get('state') === 'interpretation') {
               return _this.switchToInterpretation();
+            } else {
+              return _this.wall.setMode('brainstorm');
             }
           }
         });
