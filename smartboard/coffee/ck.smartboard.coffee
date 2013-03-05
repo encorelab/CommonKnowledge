@@ -191,9 +191,9 @@ class CK.Smartboard extends Sail.App
                         @wall.setMode('brainstorm')
 
             # test state change
-            # w = @switchToProposal
-            # test = (a) ->
-            #     w()
+            
+            # test = (a) =>
+            #     @switchToProposal()
         
             # setTimeout(test, 5000)
 
@@ -228,6 +228,7 @@ class CK.Smartboard extends Sail.App
             @wall.render()
 
             @contributions.fetch()
+            @proposals.fetch()
             @tags.fetch()
 
         sail:

@@ -292,6 +292,7 @@
         console.log("Ready...");
         this.wall.render();
         this.contributions.fetch();
+        this.proposals.fetch();
         return this.tags.fetch();
       },
       sail: {

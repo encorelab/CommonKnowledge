@@ -158,7 +158,7 @@ img.balloon-note {
         font-size: 13px; }
   .contribution.balloon.opened {
     min-width: 200px;
-    max-width: 220px;
+    max-width: 240px;
     background-color: white; }
   .contribution.balloon.opened .body {
     display: block; }
