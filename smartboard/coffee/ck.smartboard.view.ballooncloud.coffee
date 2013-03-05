@@ -327,10 +327,12 @@ class CK.Smartboard.View.BalloonCloud
                 tagAttributes = n.attributes
                 tagClass = ''
 
-                if tagAttributes.name.toLowerCase() isnt 'n/a'
-                    tagClass = 'group' + (++@uniqueTagCount) + '-color'
+                #if tagAttributes.name.toLowerCase() isnt 'n/a'
+                #    tagClass = 'group' + (++@uniqueTagCount) + '-color'
                 
-                @tagList[n.id] = {'className' :  tagClass}
+                if n.has('colourClass')
+                    @tagList[n.id] = {'className' :  n.get('colourClass')}
+
                     
 
         if n instanceof CK.Model.Contribution and n.has('tags')
