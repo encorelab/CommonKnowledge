@@ -372,7 +372,7 @@ class CK.Smartboard.View.BalloonCloud
                         view.setColorClass(tagListing[d.id].className)
                             
 
-                else if d.collectionName is "contributions"
+                else if d.collectionName is "contributions" and state isnt 'propose' and state isnt 'interpret'
                     
                     view = new CK.Smartboard.View.ContributionBalloon
                         model: d
@@ -387,11 +387,17 @@ class CK.Smartboard.View.BalloonCloud
 
                 else if d.collectionName is "proposals"
 
+                    tagID = d.get('tag_group_id')
+
                     view = new CK.Smartboard.View.ContributionProposalBalloon
                             model: d
                             el: $el[0]
 
                     console.log 'Proposal View Instantiated - state is ' + state
+
+                    # if the proposal has a tag color associated to it then set the color
+                    if (tagID? and tagListing[tagID]? and tagListing[tagID].className)
+                        view.setColorClass(tagListing[tagID].className)
 
                     if state is 'interpret'
                         view.ballonContributionType = view.balloonContributionTypes.interpret
@@ -403,21 +409,21 @@ class CK.Smartboard.View.BalloonCloud
 
                 d.view = view
 
-            view.render()
+            if view?
+                view.render()
 
-            if d.newlyAdded
-                jQuery('#'+d.id).addClass('new')
-                setTimeout ->
-                    jQuery('#'+d.id).removeClass('new')
-                , 2000
+                if d.newlyAdded
+                    jQuery('#'+d.id).addClass('new')
+                    setTimeout ->
+                        jQuery('#'+d.id).removeClass('new')
+                    , 2000
 
-            pos = view.$el.position()
-            d.x = view.leftToX(pos.left) unless d.x?
-            d.y = view.topToY(pos.top) unless d.y?
+                pos = view.$el.position()
+                d.x = view.leftToX(pos.left) unless d.x?
+                d.y = view.topToY(pos.top) unless d.y?
 
     reRenderForState: (state) =>
         console.log 'Rerender nodes for state: ' + state
-        i = 0;
 
         for b in @nodes
             view = b.view
@@ -434,13 +440,12 @@ class CK.Smartboard.View.BalloonCloud
                     view.ballonContributionType = view.balloonContributionTypes.interpret
                 else 
                     view.ballonContributionType = view.balloonContributionTypes.default
-        
-            i++
 
             if view?
                 view.render()
 
-       
+        # on state change to proposal remove all contributions from the board
+        # and remove the links associating contributions to tags
         if state is 'propose'
             # remove the node from d3's internal store
             @nodes.filter (n) -> not (n instanceof CK.Model.Contribution)

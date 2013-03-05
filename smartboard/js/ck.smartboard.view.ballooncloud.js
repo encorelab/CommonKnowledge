@@ -309,7 +309,7 @@
       state = this.wall.mode;
       tagListing = this.tagList;
       return balloons.each(function(d, i) {
-        var $el, pos, view;
+        var $el, pos, tagID, view;
         view = d.view;
         if (!d.view) {
           $el = $('#' + d.id);
@@ -322,7 +322,7 @@
             if ((tagListing[d.id] != null) && tagListing[d.id].className) {
               view.setColorClass(tagListing[d.id].className);
             }
-          } else if (d.collectionName === "contributions") {
+          } else if (d.collectionName === "contributions" && state !== 'propose' && state !== 'interpret') {
             view = new CK.Smartboard.View.ContributionBalloon({
               model: d,
               el: $el[0]
@@ -334,11 +334,15 @@
               view.balloonContributionType = view.balloonContributionTypes["default"];
             }
           } else if (d.collectionName === "proposals") {
+            tagID = d.get('tag_group_id');
             view = new CK.Smartboard.View.ContributionProposalBalloon({
               model: d,
               el: $el[0]
             });
             console.log('Proposal View Instantiated - state is ' + state);
+            if ((tagID != null) && (tagListing[tagID] != null) && tagListing[tagID].className) {
+              view.setColorClass(tagListing[tagID].className);
+            }
             if (state === 'interpret') {
               view.ballonContributionType = view.balloonContributionTypes.interpret;
             } else {
@@ -349,27 +353,28 @@
           }
           d.view = view;
         }
-        view.render();
-        if (d.newlyAdded) {
-          jQuery('#' + d.id).addClass('new');
-          setTimeout(function() {
-            return jQuery('#' + d.id).removeClass('new');
-          }, 2000);
-        }
-        pos = view.$el.position();
-        if (d.x == null) {
-          d.x = view.leftToX(pos.left);
-        }
-        if (d.y == null) {
-          return d.y = view.topToY(pos.top);
+        if (view != null) {
+          view.render();
+          if (d.newlyAdded) {
+            jQuery('#' + d.id).addClass('new');
+            setTimeout(function() {
+              return jQuery('#' + d.id).removeClass('new');
+            }, 2000);
+          }
+          pos = view.$el.position();
+          if (d.x == null) {
+            d.x = view.leftToX(pos.left);
+          }
+          if (d.y == null) {
+            return d.y = view.topToY(pos.top);
+          }
         }
       });
     };
 
     BalloonCloud.prototype.reRenderForState = function(state) {
-      var b, i, view, _i, _len, _ref;
+      var b, view, _i, _len, _ref;
       console.log('Rerender nodes for state: ' + state);
-      i = 0;
       _ref = this.nodes;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         b = _ref[_i];
@@ -386,7 +391,6 @@
             view.ballonContributionType = view.balloonContributionTypes["default"];
           }
         }
-        i++;
         if (view != null) {
           view.render();
         }
