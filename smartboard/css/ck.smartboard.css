@@ -107,6 +107,28 @@ img.balloon-note {
   -webkit-transition: height 0.5s ease 0;
   -moz-transition: height 0.5s ease 0;
   transition: height 0.5s ease 0; }
+  .contribution.balloon .proposal {
+    font-weight: bold;
+    margin-top: 10px;
+    font-bottom: 5px;
+    padding-left: 14px;
+    padding-right: 14px; }
+  .contribution.balloon .proposal-body {
+    font-weight: normal;
+    border-top: solid 1px;
+    border-color: #333333;
+    border-width: 60%; }
+  .contribution.balloon .justification {
+    font-weight: bold;
+    margin-top: 10px;
+    margin-bottom: 5px;
+    padding-left: 14px;
+    padding-right: 14px; }
+  .contribution.balloon .justification-body {
+    font-weight: normal;
+    border-top: solid 1px;
+    border-color: #333333;
+    border-width: 60%; }
   .contribution.balloon h3.headline {
     margin-top: 8px;
     font-size: 16px;

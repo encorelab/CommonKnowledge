@@ -378,6 +378,23 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
     processContributionByType: =>
         if (@ballonContributionType is @balloonContributionTypes.analysis)
             @toggleAnalysis()
+
+    resetView: =>
+        balloonObj = jQuery(@$el)
+        balloonID = balloonObj.attr('id')
+
+        if @ballonContributionType is @balloonContributionTypes.default
+            balloonObj.addClass(@colorClass)
+            return
+
+        console.log 'Reset Proposal Views'
+        
+        balloonObj.removeClass('opened').removeClass(@colorClass)
+
+        jQuery('#' + balloonID + ' .headline').hide()
+        jQuery('#' + balloonID + ' .body').hide()
+        jQuery('#' + balloonID + ' .meta').hide()
+        jQuery('#' + balloonID + ' img.balloon-note').fadeIn('fast')
        
     toggleAnalysis: =>
         console.log 'Toggle Analysis'
@@ -511,16 +528,16 @@ class CK.Smartboard.View.ContributionProposalBalloon extends CK.Smartboard.View.
     constructor: (options) ->
         super(options)
 
-        @balloonContributionTypes = {
+        @balloonContributionTypes = 
             default:  'default',
             analysis: 'analysis',
             propose: 'propose',
             interpret: 'interpret'
-        }
+        
 
         console.log @balloonContributionTypes
 
-        @ballonContributionType = @balloonContributionTypes.default
+        @ballonContributionType = @balloonContributionTypes.propose
         @colorClass = "whiteGradient"
 
     events:
@@ -528,6 +545,7 @@ class CK.Smartboard.View.ContributionProposalBalloon extends CK.Smartboard.View.
 
         'click': (ev) ->
             @$el.toggleClass('opened')
+            @$el.toggleClass('balloon-note').toggleClass(@colorClass)
             # if @$el.hasClass('opened')
             #     if Sail.app.wall.cloud? && Sail.app.wall.cloud.force?
             #         Sail.app.wall.cloud.force.stop()
@@ -544,35 +562,51 @@ class CK.Smartboard.View.ContributionProposalBalloon extends CK.Smartboard.View.
         else if (@ballonContributionType is @balloonContributionTypes.interpret)
             @toggleInterpret()
 
+    resetView: =>
+        console.log 'Reset Proposal Views'
+        balloonObj = jQuery(@$el)
+        balloonID = balloonObj.attr('id')
+        balloonObj.removeClass(@colorClass).removeClass('opened').addClass('balloon-note')
+
+        jQuery('#' + balloonID + ' .headline').hide()
+        jQuery('#' + balloonID + ' .proposal').hide()
+        jQuery('#' + balloonID + ' .proposal-body').hide()
+        jQuery('#' + balloonID + ' .justification').hide()
+        jQuery('#' + balloonID + ' .justification-body').hide() 
+        jQuery('#' + balloonID + ' .meta').hide()
+        jQuery('#' + balloonID + ' .idea-counter').hide()
+        jQuery('#' + balloonID + ' img.balloon-note').fadeIn('fast')
+
+
     toggleInterpret: => 
         console.log 'Toggle Interpret'
         balloonObj = jQuery(@$el)
+        #balloonObj
         balloonID = balloonObj.attr('id')
 
-        # we are transitioning from analysis to proposal so hide the notes and show all the data 
-        # in whatever state we are in (either opened or closed)
-        if (jQuery('#' + balloonID + ' .headline').is(':hidden'))
-            balloonObj.addClass(@colorClass)
-            jQuery('#' + balloonID + ' .balloon-note').hide()
-            jQuery('#' + balloonID + ' .headline').fadeIn('fast')
-            jQuery('#' + balloonID + ' .body').fadeIn('fast')
-            jQuery('#' + balloonID + ' .meta').fadeIn('fast') 
-            
-        #
-
         if @$el.hasClass('opened')
+            jQuery('#' + balloonID + ' img.balloon-note').hide()
+            jQuery('#' + balloonID + ' .headline').fadeIn('fast')
+            jQuery('#' + balloonID + ' .proposal').fadeIn('fast')
+            jQuery('#' + balloonID + ' .justification').fadeIn('fast') 
+            jQuery('#' + balloonID + ' .meta').fadeIn('fast') 
             jQuery('#' + balloonID + ' .idea-counter').fadeIn('fast')
         else
+            jQuery('#' + balloonID + ' .headline').hide()
+            jQuery('#' + balloonID + ' .proposal').hide()
+            jQuery('#' + balloonID + ' .proposal-body').hide()
+            jQuery('#' + balloonID + ' .justification').hide()
+            jQuery('#' + balloonID + ' .justification-body').hide() 
+            jQuery('#' + balloonID + ' .meta').hide()
             jQuery('#' + balloonID + ' .idea-counter').hide()
-
-
+            jQuery('#' + balloonID + ' img.balloon-note').fadeIn('fast')
 
     toggleProposal: => 
         console.log 'Toggle Proposal'
         balloonObj = jQuery(@$el)
         balloonID = balloonObj.attr('id')
-
-        balloonObj.toggleClass('balloon-note').toggleClass(@colorClass)
+    
+        #balloonObj.toggleClass('balloon-note').toggleClass(@colorClass)
         balloonID = balloonObj.attr('id')
        
         
@@ -585,7 +619,9 @@ class CK.Smartboard.View.ContributionProposalBalloon extends CK.Smartboard.View.
         else
             jQuery('#' + balloonID + ' .headline').hide()
             jQuery('#' + balloonID + ' .proposal').hide()
-            jQuery('#' + balloonID + ' .justification').hide() 
+            jQuery('#' + balloonID + ' .proposal-body').hide()
+            jQuery('#' + balloonID + ' .justification').hide()
+            jQuery('#' + balloonID + ' .justification-body').hide() 
             jQuery('#' + balloonID + ' .meta').hide()
             jQuery('#' + balloonID + ' img.balloon-note').fadeIn('fast')
 
@@ -612,34 +648,40 @@ class CK.Smartboard.View.ContributionProposalBalloon extends CK.Smartboard.View.
     render: =>
         super()
 
-        @$el.addClass('contribution').addClass(@colorClass)
+        @$el.addClass('contribution').toggleClass('balloon-note')# .addClass(@colorClass)
         console.log 'Rendering propose balloon.'
 
         #if (@ballonContributionType is @balloonContributionTypes.analysis)
         nodeHeader = @findOrCreate '.balloon-note', '<img style="display: none;" class="balloon-note" src="/smartboard/img/notes_large.png" alt="Note">'
 
         #else if (@ballonContributionType is @balloonContributionTypes.propose)
-        ideaCounter = @findOrCreate '.idea-counter', '<div class="idea-counter idea-counter-off"><span class="idea-count">&nbsp;</span></div>'
-        ideaCounter.hide()
+        ideaCounter = @findOrCreate '.idea-counter', '<div class="idea-counter idea-counter-off" style="display: none"><span class="idea-count">&nbsp;</span></div>'
 
         headline = @findOrCreate '.headline', 
             "<h3 class='headline'></h3>"
         headline.text @model.get('headline')
 
         proposal = @findOrCreate '.proposal', 
-            "<div class='proposal'>Proposal<div class='proposal-body' tyle='display: none'></div></div>"
+            "<div class='proposal'>&#8227; Proposal<div class='proposal-body' tyle='display: none'></div></div>"
 
         proposal.find('.proposal-body').text @model.get('description')
 
-        proposal.click( (obj) -> this.find('.proposal-body').slideToggle('fast'))
+        proposal.unbind 'click'
+        proposal.click (e) -> 
+                e.stopPropagation()
+                jQuery(this).find('.proposal-body').slideToggle('fast')
+                
 
 
         justification = @findOrCreate '.justification', 
-            "<div class='justification'>Justification<div class='justification-body' style='display: none'></div></div>"
+            "<div class='justification'>&#8227; Justification<div class='justification-body' style='display: none'></div></div>"
 
         justification.find('.justification-body').text @model.get('justification')
 
-        justification.click( (obj) -> this.find('.justification-body').slideToggle('fast'))
+        justification.unbind 'click'
+        justification.click (e) -> 
+            e.stopPropagation()
+            jQuery(this).find('.justification-body').slideToggle('fast')
         
             # console.warn "Contribution #{@model.id} has an unrecognized content type: ", @model.get('content_type'), " ... assuming 'text'."
 
@@ -649,10 +691,15 @@ class CK.Smartboard.View.ContributionProposalBalloon extends CK.Smartboard.View.
             .text(@model.get('author'))
             .addClass("author-#{@model.get('author')}")
 
+        numberOfVotes = @model.get('votes')
+
+        if numberOfVotes?
+            @setIdeaCount numberOfVotes
+
         # @renderTags()
 
         @renderBuildons()
-        @processContributionByType()
+        #@processContributionByType()
 
         return this # return this for chaining
 

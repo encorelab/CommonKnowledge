@@ -31,6 +31,7 @@
       this.links = [];
       this.tagList = {};
       this.uniqueTagCount = 0;
+      this.d3QuadTree = null;
       this.vis = d3.select("#" + this.wall.id);
     }
 
@@ -47,7 +48,7 @@
     };
 
     BalloonCloud.prototype.tick = function() {
-      var i, q, _i, _ref,
+      var i, _i, _ref,
         _this = this;
       this.balloons.style('left', function(d) {
         var balloonWidth;
@@ -72,9 +73,8 @@
           return d.fixed = true;
         }
       });
-      q = d3.geom.quadtree(this.nodes);
       for (i = _i = 0, _ref = this.nodes.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
-        q.visit(this.detectCollision(this.nodes[i]));
+        this.d3QuadTree.visit(this.detectCollision(this.nodes[i]));
       }
       return this.connectors.style("z-index", -1).style("left", function(d) {
         return d.source.x + "px";
@@ -234,16 +234,20 @@
         console.log("Instantiating force...");
         this.force = this.generateForceFunction();
       }
+      this.d3QuadTree = d3.geom.quadtree(this.nodes);
       console.log("Starting force...");
       this.force.start();
       return this.balloons.call(this.force.drag);
     };
 
     BalloonCloud.prototype.ensureNode = function(n) {
-      var b, isNodePublished, screenState, t, tag, tagAttributes, tagClass, _i, _j, _len, _len1, _ref, _ref1, _results, _results1;
+      var b, isNodePublished, screenState, t, tag, tagAttributes, tagClass, tagID, _i, _j, _len, _len1, _ref, _ref1, _results;
       isNodePublished = n.get('published');
       screenState = this.wall.mode;
       if (n instanceof CK.Model.Contribution && (isNodePublished !== true || screenState === 'propose' || screenState === 'interpret')) {
+        return;
+      }
+      if (n instanceof CK.Model.Proposal && (isNodePublished === false || (screenState !== 'propose' && screenState !== 'interpret'))) {
         return;
       }
       if (!_.any(this.nodes, function(node) {
@@ -263,33 +267,38 @@
       }
       if (n instanceof CK.Model.Contribution && n.has('tags')) {
         _ref = n.get('tags');
-        _results = [];
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           t = _ref[_i];
           tag = _.find(this.nodes, function(n) {
             return n.id === t.id;
           });
           if (tag != null) {
-            _results.push(this.ensureLink(n, tag));
-          } else {
-            _results.push(void 0);
+            this.ensureLink(n, tag);
           }
         }
-        return _results;
+      }
+      if (n instanceof CK.Model.Proposal && n.has('tag_group_id')) {
+        tagID = n.get('tag_group_id');
+        tag = _.find(this.nodes, function(n) {
+          return n.id === tagID;
+        });
+        if (tag != null) {
+          return this.ensureLink(n, tag);
+        }
       } else if (n instanceof CK.Model.Tag) {
         _ref1 = this.nodes;
-        _results1 = [];
+        _results = [];
         for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
           b = _ref1[_j];
           if (b.has('tags') && b.get('tags').some(function(t) {
             return t.id === n.id;
           })) {
-            _results1.push(this.ensureLink(b, n));
+            _results.push(this.ensureLink(b, n));
           } else {
-            _results1.push(void 0);
+            _results.push(void 0);
           }
         }
-        return _results1;
+        return _results;
       }
     };
 
@@ -358,6 +367,9 @@
         }
         if (view != null) {
           view.render();
+          if (d.collectionName === "contributions" || d.collectionName === "proposals") {
+            view.resetView();
+          }
           if (d.newlyAdded) {
             jQuery('#' + d.id).addClass('new');
             setTimeout(function() {
@@ -388,14 +400,21 @@
           } else if (state === 'propose') {
             view.remove();
             view = null;
-          } else if (state === 'interpret') {
-            view.ballonContributionType = view.balloonContributionTypes.interpret;
           } else {
             view.ballonContributionType = view.balloonContributionTypes["default"];
+          }
+        } else if (b.collectionName === 'proposals') {
+          if (state === 'interpret') {
+            view.ballonContributionType = view.balloonContributionTypes.interpret;
+          } else {
+            view.ballonContributionType = view.balloonContributionTypes.propose;
           }
         }
         if (view != null) {
           view.render();
+          if (b.collectionName === "contributions" || b.collectionName === "proposals") {
+            view.resetView();
+          }
         }
       }
       if (state === 'propose') {

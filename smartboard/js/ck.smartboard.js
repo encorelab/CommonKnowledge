@@ -201,6 +201,7 @@
         'headline': headline,
         'title': headline,
         'description': description,
+        'justification': justification,
         'published': true,
         'author': 'ck1-ck2',
         'votes': voteNumber,
@@ -289,11 +290,14 @@
         return console.log("Connected...");
       },
       ready: function(ev) {
+        var _this = this;
         console.log("Ready...");
         this.wall.render();
-        this.contributions.fetch();
-        this.proposals.fetch();
-        return this.tags.fetch();
+        return this.tags.fetch().done(function() {
+          return _this.contributions.fetch().done(function() {
+            return _this.proposals.fetch();
+          });
+        });
       },
       sail: {
         contribution: function(sev) {

@@ -645,25 +645,21 @@
       },
 
       'click #share-proposal-headline-btn': function() {
-        jQuery('#proposal-headline-entry').addClass('disabled');
-        jQuery('#share-proposal-headline-btn').addClass('disabled');
         this.model.set('headline_published', true);
-        Sail.app.checkProposalPublished();
-        // I don't quite work yet - start here
+        Sail.app.checkProposalPublishState();
+        this.model.save();
       },
 
       'click #share-proposal-body-btn': function() {
-        jQuery('#proposal-body-entry').addClass('disabled');
-        jQuery('#share-proposal-body-btn').addClass('disabled');
         this.model.set('proposal_published', true);
-        Sail.app.checkProposalPublished();
+        Sail.app.checkProposalPublishState();
+        this.model.save();
       },
 
       'click #share-justification-body-btn': function() {
-        jQuery('#justification-body-entry').addClass('disabled');
-        jQuery('#share-justification-body-btn').addClass('disabled');
         this.model.set('justification_published', true);
-        Sail.app.checkProposalPublished();
+        Sail.app.checkProposalPublishState();
+        this.model.save();
       }
     },
 
@@ -686,15 +682,30 @@
       }
 
       if (Sail.app.userData.account.login === view.model.get('initiator')) {
-        jQuery('#proposal-headline-entry').removeClass('disabled');
-        jQuery('#share-proposal-headline-btn').removeClass('disabled');
-        jQuery('#proposal-body-entry').removeClass('disabled');
-        jQuery('#share-proposal-body-btn').removeClass('disabled');
+        if (view.model.get('headline_published') === false) {
+          jQuery('#proposal-headline-entry').removeClass('disabled');
+          jQuery('#share-proposal-headline-btn').removeClass('disabled');
+        } else {
+          jQuery('#proposal-headline-entry').addClass('disabled');
+          jQuery('#share-proposal-headline-btn').addClass('disabled');
+        }
+        if (view.model.get('proposal_published') === false) {
+          jQuery('#proposal-body-entry').removeClass('disabled');
+          jQuery('#share-proposal-body-btn').removeClass('disabled');
+        } else {
+          jQuery('#proposal-body-entry').addClass('disabled');
+          jQuery('#share-proposal-body-btn').addClass('disabled');
+        }
         jQuery('#justification-body-entry').text(view.model.get('justification'));
 
       } else if (Sail.app.userData.account.login === view.model.get('receiver')) {
-        jQuery('#justification-body-entry').removeClass('disabled');
-        jQuery('#share-justification-body-btn').removeClass('disabled');
+        if (view.model.get('justification_published') === false) {
+          jQuery('#justification-body-entry').removeClass('disabled');
+          jQuery('#share-justification-body-btn').removeClass('disabled');
+        } else {
+          jQuery('#justification-body-entry').addClass('disabled');
+          jQuery('#share-justification-body-btn').addClass('disabled');
+        }
         jQuery('#proposal-headline-entry').text(view.model.get('headline'));
         jQuery('#proposal-body-entry').text(view.model.get('proposal'));
 
