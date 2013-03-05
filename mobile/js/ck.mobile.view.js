@@ -673,12 +673,12 @@
     render: function () {
       console.log('rendering ProposalInputView');
       var view = this;
-      // only do this rendering on the first pass (then set this flag to false)
-      if (!view.initialRender) {
+      // only do this rendering on the first pass (then the flag set to true)
+      if (!view.initialRenderComplete) {
         jQuery('#proposal-headline-entry').text(view.model.get('headline'));
         jQuery('#proposal-body-entry').text(view.model.get('proposal'));
         jQuery('#justification-body-entry').text(view.model.get('justification'));
-        view.initialRender = true;
+        view.initialRenderComplete = true;
       }
 
       if (Sail.app.userData.account.login === view.model.get('initiator')) {
@@ -712,6 +712,8 @@
       } else {
         console.log('skipping render... somehow not related to this user?!');
       }
+
+      jQuery('#group-login-container').text(view.model.get('author'));
 
     }
 

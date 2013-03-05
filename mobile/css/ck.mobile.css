@@ -89,6 +89,15 @@ i {
 	color: inherit;
 }
 
+/* TODO - do this right, ugg */
+#group-login-container {
+	position: absolute;
+	right: 120px;
+	top: 8px;
+	text-align: right;
+	font-size: 14px;
+}
+
 #auth-as {
 	margin-right: 10px;
 }
