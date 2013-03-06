@@ -712,7 +712,7 @@
       var view = this;
       var tagGroupName = "";
       // get this user tag group (TODO - convert to using the getUserState getter)
-      myUs = view.collection.find(function(us) { return us.get('username') === Sail.app.userData.account.login });
+      var myUs = view.collection.find(function(us) { return us.get('username') === Sail.app.userData.account.login; });
 
       if (myUs) {
         tagGroupName = myUs.get('analysis').tag_group;
