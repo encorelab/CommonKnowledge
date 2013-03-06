@@ -683,7 +683,7 @@
           console.log('skipping render... somehow not related to this user?!');
         }
 
-        jQuery('#group-label-container').text(view.model.get('author'));        
+        jQuery('#group-label-container').text('Current group: ['+view.model.get('author')+']');        
       }
 
     }
