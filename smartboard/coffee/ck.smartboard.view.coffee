@@ -254,13 +254,15 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
     pause: =>
         if (@cloud? and @cloud.force?)
             @cloud.force.stop()
-
-        jQuery('body').addClass('paused')
+        
         @$el.find('#toggle-pause')
-            .addClass('paused')
-            .text('Resume')
+                .addClass('paused')
+                .text('Resume')
 
-        @changeWatermark("Paused")
+        if @mode isnt 'evaluate'
+            jQuery('body').addClass('paused')
+            @changeWatermark("Paused")
+        
 
     unpause: =>
         @cloud.force.resume()
@@ -295,9 +297,15 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
         else if mode is 'interpret'
             jQuery('body')
                 .removeClass('mode-propose')
+                .removeClass('mode-evaluate')
                 .addClass('mode-interpret')
             @changeWatermark("interpret")
 
+        else if mode is 'evaluate'
+            jQuery('body')
+                .removeClass('mode-interpret')
+                .addClass('mode-evaluate')
+            @changeWatermark("evaluate")
         else
             jQuery('body')
                 .removeClass('mode-analysis')

@@ -330,9 +330,11 @@
       if ((this.cloud != null) && (this.cloud.force != null)) {
         this.cloud.force.stop();
       }
-      jQuery('body').addClass('paused');
       this.$el.find('#toggle-pause').addClass('paused').text('Resume');
-      return this.changeWatermark("Paused");
+      if (this.mode !== 'evaluate') {
+        jQuery('body').addClass('paused');
+        return this.changeWatermark("Paused");
+      }
     };
 
     Wall.prototype.unpause = function() {
@@ -360,8 +362,11 @@
         jQuery('body').removeClass('mode-analysis').addClass('mode-propose');
         this.changeWatermark("propose");
       } else if (mode === 'interpret') {
-        jQuery('body').removeClass('mode-propose').addClass('mode-interpret');
+        jQuery('body').removeClass('mode-propose').removeClass('mode-evaluate').addClass('mode-interpret');
         this.changeWatermark("interpret");
+      } else if (mode === 'evaluate') {
+        jQuery('body').removeClass('mode-interpret').addClass('mode-evaluate');
+        this.changeWatermark("evaluate");
       } else {
         jQuery('body').removeClass('mode-analysis').removeClass('mode-synthesis');
         this.changeWatermark("brainstorm");

@@ -12,6 +12,8 @@
 
       this.createNewProposal = __bind(this.createNewProposal, this);
 
+      this.switchToEvaluation = __bind(this.switchToEvaluation, this);
+
       this.switchToInterpretation = __bind(this.switchToInterpretation, this);
 
       this.switchToProposal = __bind(this.switchToProposal, this);
@@ -127,14 +129,13 @@
     };
 
     Smartboard.prototype.pause = function() {
-      var b, pos, sev, _i, _len, _ref, _results;
+      var b, pos, sev, _i, _len, _ref;
       sev = new Sail.Event('screen_lock');
       this.groupchat.sendEvent(sev);
       CK.getState('phase', function(s) {
         return CK.setState('phase', s.get('state'), true);
       });
       _ref = _.union(this.contributions.models, this.tags.models);
-      _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         b = _ref[_i];
         pos = this.wall.$el.find('#' + b.id).position();
@@ -147,23 +148,26 @@
           }, {
             silent: true
           });
-          _results.push(b.save({}, {
+          b.save({}, {
             silent: true
-          }));
-        } else {
-          _results.push(void 0);
+          });
         }
       }
-      return _results;
+      if (this.wall.mode === 'interpret') {
+        return this.switchToEvaluation();
+      }
     };
 
     Smartboard.prototype.unpause = function() {
       var sev;
       sev = new Sail.Event('screen_unlock');
       this.groupchat.sendEvent(sev);
-      return CK.getState('phase', function(s) {
+      CK.getState('phase', function(s) {
         return CK.setState('phase', s.get('state'), false);
       });
+      if (this.wall.mode === 'evaluate') {
+        return this.switchToInterpretation();
+      }
     };
 
     Smartboard.prototype.startAnalysis = function() {
@@ -203,6 +207,12 @@
       mode = 'interpret';
       this.wall.setMode(mode);
       return this.wall.cloud.reRenderForState(mode);
+    };
+
+    Smartboard.prototype.switchToEvaluation = function() {
+      var mode;
+      mode = 'evaluate';
+      return this.wall.setMode(mode);
     };
 
     Smartboard.prototype.createNewProposal = function(headline, description, justification, voteNumber, tagID, tagName) {
@@ -279,6 +289,8 @@
               return _this.switchToProposal();
             } else if (s.get('state') === 'interpretation') {
               return _this.switchToInterpretation();
+            } else if (s.get('state') === 'evaluation') {
+              return _this.switchToEvaluation();
             } else {
               return _this.wall.setMode('brainstorm');
             }

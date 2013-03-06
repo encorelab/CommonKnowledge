@@ -6,6 +6,7 @@ $wall-color: #ab2;
 $wall-color-analysis: #51ba34;
 $wall-color-propose: #34ba70;
 $wall-color-interpret: #34bab3;
+$wall-color-evaluate: #c0b7ca;
 
 $contribution-bubble-color: #fff;
 
@@ -89,6 +90,22 @@ body {
 
      &.mode-interpret {
         background-color: $wall-color-interpret;
+
+        #go-analyze {
+            opacity: 0.4;
+        }
+
+        #go-propose {
+            opacity: 0.4;
+        }
+
+        #go-interpret {
+            opacity: 0.4;
+        }
+    }
+
+    &.mode-evaluate {
+        background-color: $wall-color-evaluate;
 
         #go-analyze {
             opacity: 0.4;

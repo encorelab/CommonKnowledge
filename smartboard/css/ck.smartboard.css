@@ -37,6 +37,14 @@ body {
       opacity: 0.4; }
     body.mode-interpret #go-interpret {
       opacity: 0.4; }
+  body.mode-evaluate {
+    background-color: #c0b7ca; }
+    body.mode-evaluate #go-analyze {
+      opacity: 0.4; }
+    body.mode-evaluate #go-propose {
+      opacity: 0.4; }
+    body.mode-evaluate #go-interpret {
+      opacity: 0.4; }
   body.paused {
     background-color: #aaa; }
 

@@ -84,6 +84,9 @@ class CK.Smartboard extends Sail.App
                 b.set({pos: {left: pos.left, top: pos.top}}, {silent: true})
                 b.save({}, {silent: true})
 
+        if (@wall.mode is 'interpret')
+                @switchToEvaluation()
+
         
 
     unpause: =>
@@ -93,6 +96,9 @@ class CK.Smartboard extends Sail.App
             CK.setState('phase', s.get('state'), false)
             #CK.setState('phase', 'brainstorm', false)
         )
+
+        if @wall.mode is 'evaluate'
+            @switchToInterpretation()
         
     startAnalysis: =>
         sev = new Sail.Event 'start_analysis'
@@ -120,6 +126,10 @@ class CK.Smartboard extends Sail.App
         mode = 'interpret'
         @wall.setMode(mode)
         @wall.cloud.reRenderForState(mode)
+
+    switchToEvaluation: =>
+        mode = 'evaluate'
+        @wall.setMode(mode)
 
     # used for unit testing proposals
     createNewProposal: (headline, description, justification, voteNumber, tagID, tagName) =>
@@ -198,6 +208,8 @@ class CK.Smartboard extends Sail.App
                         @switchToProposal()
                     else if s.get('state') is 'interpretation'
                         @switchToInterpretation()
+                    else if s.get('state') is 'evaluation'
+                        @switchToEvaluation()
                     else
                         @wall.setMode('brainstorm')
 
@@ -206,8 +218,8 @@ class CK.Smartboard extends Sail.App
             #setTimeout (=> @switchToInterpretation()), 5000
 
             #
-            #@createNewProposal('cookie headlines are great!', 'cookie descriptions are not as cool but whatever...', 
-            #'justification justification justification justification justification justification justification justification', 12, '51353a5a42901f09b1000000', 'Cookies')
+            #@createNewProposal('tag 3 headlines are great!', 'cookie descriptions are not as cool but whatever...', 
+            #'justification justification justification justification justification justification justification justification', 3, '51366fd242901f5cf4000002', 'Cookies')
 
             @trigger('ready')
 
