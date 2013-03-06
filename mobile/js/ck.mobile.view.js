@@ -217,6 +217,8 @@
             success: function () {
               console.log('Model saved');
               Sail.app.sendContribution('newNote', view.model);             // TODO do we still need this?
+
+              jQuery('#contribution-input').hide('slide', {direction: 'up'});
               jQuery().toastmessage('showSuccessToast', "Contribution submitted");
 
               // I think we need to lock the fields again and force the student to use the new note button

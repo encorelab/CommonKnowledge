@@ -330,9 +330,11 @@
       if ((this.cloud != null) && (this.cloud.force != null)) {
         this.cloud.force.stop();
       }
-      jQuery('body').addClass('paused');
       this.$el.find('#toggle-pause').addClass('paused').text('Resume');
-      return this.changeWatermark("Paused");
+      if (this.mode !== 'evaluate') {
+        jQuery('body').addClass('paused');
+        return this.changeWatermark("Paused");
+      }
     };
 
     Wall.prototype.unpause = function() {
@@ -360,8 +362,11 @@
         jQuery('body').removeClass('mode-analysis').addClass('mode-propose');
         this.changeWatermark("propose");
       } else if (mode === 'interpret') {
-        jQuery('body').removeClass('mode-propose').addClass('mode-interpret');
+        jQuery('body').removeClass('mode-propose').removeClass('mode-evaluate').addClass('mode-interpret');
         this.changeWatermark("interpret");
+      } else if (mode === 'evaluate') {
+        jQuery('body').removeClass('mode-interpret').addClass('mode-evaluate');
+        this.changeWatermark("evaluate");
       } else {
         jQuery('body').removeClass('mode-analysis').removeClass('mode-synthesis');
         this.changeWatermark("brainstorm");
@@ -786,7 +791,7 @@
 
     ContributionProposalBalloon.prototype.renderBuildons = function() {
       var $b, b, buildons, changed, container, counter, tagClass, tagGroupID, _i, _len, _results;
-      if (!this.model.has('build_ons')) {
+      if (!(this.model.has('build_ons') && this.ballonContributionType === this.balloonContributionTypes.interpret)) {
         return;
       }
       buildons = this.model.get('build_ons');
@@ -802,14 +807,14 @@
       for (_i = 0, _len = buildons.length; _i < _len; _i++) {
         b = buildons[_i];
         counter.append("•");
-        $b = jQuery("                <div class='buildon'>                    <div class='tag-group'></div>                    <div class='author'></div>                    <div class='content'></div>                </div>            ");
+        $b = jQuery("                <div class='buildon'>                    <div class='author'></div>                    <div class='content'></div>                </div>            ");
         $b.find('.author').text(b.author);
         $b.find('.content').text(b.content);
-        if (b.has('tag_group_id')) {
-          tagGroupID = b.get('tag_group_id');
-          tagClass = this.tagList[tagGroupID];
+        tagGroupID = b.tag_group_id;
+        if ((tagGroupID != null) && (this.tagList[tagGroupID] != null)) {
+          tagClass = this.tagList[tagGroupID].className;
           if (tagClass != null) {
-            $b.find('.tag-group').addClass(tagClass);
+            $b.addClass(tagClass + '-buildon');
           }
         }
         _results.push(container.append($b));

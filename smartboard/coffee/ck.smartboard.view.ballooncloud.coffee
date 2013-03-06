@@ -58,6 +58,8 @@ class CK.Smartboard.View.BalloonCloud
 
     # calculate the length in pixels of a link connector
     linkDistance: (link, i) =>
+        return unless link.source.view.$el? and link.target.view.$el?
+
         (  link.source.view.$el.outerWidth()/2 +
             link.target.view.$el.outerWidth()/2 ) + 10
 
@@ -418,7 +420,7 @@ class CK.Smartboard.View.BalloonCloud
                         view.setColorClass tagListing[tagID].className
 
                     view.setTagColorList tagListing
-                    
+
                     if screenState is 'interpret'
                         view.ballonContributionType = view.balloonContributionTypes.interpret
                     else

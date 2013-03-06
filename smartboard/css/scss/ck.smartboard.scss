@@ -6,6 +6,7 @@ $wall-color: #ab2;
 $wall-color-analysis: #51ba34;
 $wall-color-propose: #34ba70;
 $wall-color-interpret: #34bab3;
+$wall-color-evaluate: #c0b7ca;
 
 $contribution-bubble-color: #fff;
 
@@ -103,6 +104,22 @@ body {
         }
     }
 
+    &.mode-evaluate {
+        background-color: $wall-color-evaluate;
+
+        #go-analyze {
+            opacity: 0.4;
+        }
+
+        #go-propose {
+            opacity: 0.4;
+        }
+
+        #go-interpret {
+            opacity: 0.4;
+        }
+    }
+
     &.paused {
         background-color: #aaa;
     }
@@ -184,7 +201,6 @@ img.balloon-note {
         font-weight: normal;
         border-top: solid 1px;
         border-color: #333333;
-        border-width: 60%;
     }
 
     .justification {
@@ -199,7 +215,6 @@ img.balloon-note {
         font-weight: normal;
         border-top: solid 1px;
         border-color: #333333;
-        border-width: 60%;
     }
 
     max-height: 95%;
@@ -254,7 +269,9 @@ img.balloon-note {
 
     .buildons {
         display: none;
-        margin-top: 0;
+        border-top: solid 1px;
+        border-color: #000000;
+        margin-top: 15px;
         font-size: 14px;
         padding-top: 0;
         padding-bottom: 6px;
@@ -262,6 +279,7 @@ img.balloon-note {
         padding-right: 14px;
 
         .buildon {
+            margin-top: 5px;
             padding-left: 5px;
             margin-bottom: 5px;
             border-left: 4px solid rgba($widget-accent-color, 0.5);
@@ -344,6 +362,22 @@ img.balloon-note {
     width: 20px;
     height: 95%;
     float: left;
+}
+
+.group1-color-buildon {
+     border-left: 4px inset rgba($tag-bubble-color-group1-to, 0.9) !important;
+}
+
+.group2-color-buildon {
+     border-left: 4px inset rgba($tag-bubble-color-group2-to, 0.9) !important;
+}
+
+.group3-color-buildon {
+     border-left: 4px inset rgba($tag-bubble-color-group3-to, 0.9) !important;
+}
+
+.group4-color-buildon {
+     border-left: 4px inset rgba($tag-bubble-color-group4-to, 0.9) !important;
 }
 
 .group1-color {
