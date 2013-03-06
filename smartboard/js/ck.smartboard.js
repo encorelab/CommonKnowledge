@@ -215,7 +215,7 @@
       return this.wall.setMode(mode);
     };
 
-    Smartboard.prototype.createNewProposal = function(headline, description, justification, voteNumber, tagID, tagName) {
+    Smartboard.prototype.createNewProposal = function(headline, description, justification, voteNumber, tagID, tagName, buildOnArray) {
       var proposal;
       proposal = new CK.Model.Proposal();
       proposal.wake(this.config.wakeful.url);
@@ -228,7 +228,8 @@
         'author': 'ck1-ck2',
         'votes': voteNumber,
         'tag_group_id': tagID,
-        'tag_group_name': tagName
+        'tag_group_name': tagName,
+        'build_ons': buildOnArray
       });
       return proposal.save();
     };
