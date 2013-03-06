@@ -190,8 +190,11 @@
       },
 
       'keyup :input': function (ev) {
-        var view = this;
-        Sail.app.autoSave(view, ev);
+        var view = this,
+          input_what = ev.target.name,
+          user_input = jQuery('#'+ev.target.id).val();
+
+        Sail.app.autoSave(view, input_what, user_input, false);
       },
 
       'click #share-note-btn': 'share'
@@ -610,23 +613,47 @@
       // },
 
       'keyup :input': function (ev) {
-        var view = this;
-        Sail.app.autoSave(view, ev);
+        var view = this,
+          input_what = ev.target.name,
+          user_input = jQuery('#'+ev.target.id).val();
+        // If we hit a key clear intervals so that during typing intervals don't kick in
+        window.clearTimeout(Sail.app.autoSaveTimer);
+
+        // save after 10 keystrokes
+        Sail.app.autoSave(view, input_what, user_input, false);
+
+        // setting up a timer so that if we stop typing we save stuff after 5 seconds
+        Sail.app.autoSaveTimer = setTimeout( function(){
+          console.log('Autosave data for: '+input_what);
+          Sail.app.autoSave(view, input_what, user_input, true);
+        }, 5000);
       },
 
       'click #share-proposal-headline-btn': function() {
+        // if Done is hit I clear my timers
+        // TODO I could be specific which timers to clear
+        window.clearTimeout(Sail.app.autoSaveTimer);
+
         this.model.set('headline_published', true);
         this.model.set('headline', jQuery('#proposal-headline-entry').val());
         Sail.app.checkProposalPublishState();
       },
 
       'click #share-proposal-body-btn': function() {
+        // if Done is hit I clear my timers
+        // TODO I could be specific which timers to clear
+        window.clearTimeout(Sail.app.autoSaveTimer);
+
         this.model.set('proposal_published', true);
         this.model.set('proposal', jQuery('#proposal-body-entry').val());
         Sail.app.checkProposalPublishState();
       },
 
       'click #share-justification-body-btn': function() {
+        // if Done is hit I clear my timers
+        // TODO I could be specific which timers to clear
+        window.clearTimeout(Sail.app.autoSaveTimer);
+
         this.model.set('justification_published', true);
         this.model.set('justification', jQuery('#justification-body-entry').val());
         Sail.app.checkProposalPublishState();

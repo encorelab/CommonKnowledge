@@ -45,6 +45,7 @@ CK.Mobile = function() {
   app.tagListView = null;
   app.taggingView = null;
   app.proposalInputView = null;
+  app.autoSaveTimer = window.setTimeout(function() { console.log("timer activated"); } ,10);
 
 
   app.init = function() {
@@ -356,18 +357,16 @@ CK.Mobile = function() {
     });
   };
 
-  app.autoSave = function(view, ev) {
+  app.autoSave = function(view, input_what, user_input, instant_save) {
     //var view = this;
     Sail.app.keyCount++;
     console.log("saving stuff as we go at", Sail.app.keyCount);
 
-    if (Sail.app.keyCount > 10) {
-
-      view.model.set(ev.target.name, jQuery('#'+ev.target.id).val());
-      // view.model.save({silent: true});
+    if (instant_save || Sail.app.keyCount > 9) {
+      view.model.set(input_what, user_input);
+      view.model.save({silent: true});
       Sail.app.keyCount = 0;
     }
-
   };  
 
   app.addNote = function(kind) {
@@ -625,7 +624,7 @@ CK.Mobile = function() {
     if (app.contributionList === null) {
       app.contributionList = new CK.Model.Contributions();
     }
-    
+
     //app.contributionList.wake(app.config.wakeful.url);
     app.contributionList.on('change', function(model) { console.log(model.changedAttributes()); });    
     app.proposalListView = new CK.Mobile.View.ProposalListView({
