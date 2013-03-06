@@ -473,6 +473,7 @@
   // WARNING: do not look directly at this code - it will make your eyes bleed
   var proposalDetails;
   var proposalOpenFlag = false;  
+  // The blood prevents me from seeing why the vars are declared here ...
 
   /**
     ProposalView

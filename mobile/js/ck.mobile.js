@@ -361,7 +361,7 @@ CK.Mobile = function() {
     Sail.app.keyCount++;
     console.log("saving stuff as we go at", Sail.app.keyCount);
 
-    if (Sail.app.keyCount > 2) {
+    if (Sail.app.keyCount > 10) {
 
       view.model.set(ev.target.name, jQuery('#'+ev.target.id).val());
       view.model.save({silent: true});
@@ -607,21 +607,25 @@ CK.Mobile = function() {
 
   app.doneTagging = function() {
     app.hideAll();
-    jQuery('#index-screen').removeClass('hide');
-    jQuery('.brand').text('Common Knowledge - Notes');
-    jQuery('#tag-list').addClass('hide');
-    jQuery('#contribution-list').removeClass('hide');
-    jQuery('.row').removeClass('disabled');
-    jQuery('#tag-submission-container .tag-btn').addClass('disabled');
+    app.showWaitScreen();
+    // jQuery('#index-screen').removeClass('hide');
+    // jQuery('.brand').text('Common Knowledge - Notes');
+    // jQuery('#tag-list').addClass('hide');
+    // jQuery('#contribution-list').removeClass('hide');
+    // jQuery('.row').removeClass('disabled');
+    // jQuery('#tag-submission-container .tag-btn').addClass('disabled');
   };
 
   app.startProposal = function() {
+    app.hideWaitScreen();
     // for list view
     CK.setUserState(app.userData.account.login, "proposal", {});     // do we need this?
     console.log('creating ProposalListView');
 
-    // TODO remove me (already created)
-    app.contributionList = new CK.Model.Contributions();
+    if (app.contributionList === null) {
+      app.contributionList = new CK.Model.Contributions();
+    }
+    
     //app.contributionList.wake(app.config.wakeful.url);
     app.contributionList.on('change', function(model) { console.log(model.changedAttributes()); });    
     app.proposalListView = new CK.Mobile.View.ProposalListView({
