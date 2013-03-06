@@ -377,15 +377,16 @@
             console.error("Unrecognized Balloon type:", d.collectionName);
           }
           d.view = view;
+          if (d.collectionName === "contributions" || d.collectionName === "proposals") {
+            view.render();
+            view.resetView();
+          }
         }
         if (!(view != null)) {
           console.error('Could not create or set view for ' + d.collectionName + '!');
           return;
         }
         view.render();
-        if (d.collectionName === "contributions" || d.collectionName === "proposals") {
-          view.resetView();
-        }
         if (d.newlyAdded) {
           jQuery('#' + d.id).addClass('new');
           setTimeout(function() {
