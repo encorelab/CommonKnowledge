@@ -712,21 +712,28 @@
       var view = this;
       var tagGroupName = "";
       // get this user tag group (TODO - convert to using the getUserState getter)
-      _.each(view.models, function(s) {
-        if (s.attributes.username === Sail.app.userData.account.login) {
-          // grrrooossssss. Too bad I don't have a getter...
-          tagGroupName = s.attributes.analysis.tag_group;
-        }
-      });
+      myUs = view.collection.find(function(us) { return us.get('username') === Sail.app.userData.account.login });
+
+      if (myUs) {
+        tagGroupName = myUs.get('analysis').tag_group;
+      } else {
+        console.error("No user_state found for ", Sail.app.userData.account.login);
+      }
+
       // get the other members in this users tag group, and then create the button elements for them
       // ugg - why are we storing tag_group in analysis subsection of user_states?!
-      _.each(view.models, function(s) {
-        var user = s.attributes;
+      view.collection.each(function(us) {
         // TODO - check on id instead? Shouldn't matter
-        if (user.analysis.tag_group === tagGroupName && user.username !== Sail.app.userData.account.login) {
-          var userButton = jQuery('button#'+user.analysis.tag_group_id);
+        if (!us.has('analysis') || !us.get('analysis').tag_group) {
+          console.error("User_state for user '", us.get('username'), "' is missing analysis.tag_group");
+          return;
+        }
+
+        // display all users in the same tag_group (other than self)
+        if (us.get('analysis').tag_group === tagGroupName && us.get('username') !== Sail.app.userData.account.login) {
+          var userButton = jQuery('button#'+us.get('analysis').tag_group_id);
           if (userButton.length === 0) {
-            userButton = jQuery('<button id=user-btn-'+user.username+' type="button" value='+user.username+' class="btn user-btn btn-success" data-toggle="button">'+user.username+'</button>');
+            userButton = jQuery('<button id=user-btn-'+us.get('username')+' type="button" value='+us.get('username')+' class="btn user-btn btn-success" data-toggle="button">'+us.get('username')+'</button>');
             jQuery('#grouping-btn-container').append(userButton);
           }
         }

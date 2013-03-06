@@ -651,24 +651,24 @@ CK.Mobile = function() {
     proposals.fetch();
 
     // for grouping view
-    var states = new CK.Model.UserStates();
+    var userStates = new CK.Model.UserStates();
 
-    states.on('change', function(model) { console.log(model.changedAttributes()); });
+    userStates.on('change', function(model) { console.log(model.changedAttributes()); });
 
     var groupingView = new CK.Mobile.View.GroupingView({
       el: jQuery('#grouping-screen'),
-      collection: states
+      collection: userStates
     });
-    states.on('reset add', groupingView.render);
+    userStates.on('reset add', groupingView.render, groupingView);
 
     function fetchSuccess (m) {
-      console.log('fetched user states. User states are:', states);
+      console.log('fetched user userStates:', userStates);
     }
     function fetchError (err) {
-      console.warn('error fetching user states');
+      console.warn('error fetching userStates');
     }
 
-    states.fetch({success: fetchSuccess, error: fetchError});
+    userStates.fetch({success: fetchSuccess, error: fetchError});
   };
 
   app.newProposal = function(initiator, receiver, tagGroupName, tagGroupId) {
