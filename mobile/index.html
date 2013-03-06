@@ -92,7 +92,7 @@
                         Build On
                     </a>
                 </div>
-                <div id="like-btn-container" class="btn-container hide">
+<!--                 <div id="like-btn-container" class="btn-container hide">
                     Would you like to work on this?
                     <a id="like-btn-on" class="hide">
                         <img src="img/lightbulb_small_on.png" />
@@ -100,7 +100,7 @@
                     <a id="like-btn-off">
                         <img src="img/lightbulb_small_off.png" />
                     </a>                    
-                </div>
+                </div> -->
             </div>   
 
             <div id="contribution-input" class="span8 view-container" style="display: none">
@@ -258,6 +258,56 @@
                 </a>
             </div>
         </div>
+
+
+        <div id="interpret-screen" class="row hide"> <!-- ** -->
+            <div id="proposal-list" class="span4 view-container bs-docs-sidebar"> <!-- ** -->
+                <ul class="nav nav-list bs-docs-sidenav affix-top scrollable">
+                    <!-- filled by ProposalListView -->
+                </ul>
+            </div>
+
+            <div id="proposal-details" class="span4 view-container">
+                <div class="selected-proposal scrollable">
+                    <div class="proposal-headline field container-header" name="headline">
+
+                    </div>
+                    <div class="proposal-body field" name="content">
+
+                    </div>
+                    <div class="proposal-metadata">
+                        <span class="proposal-author field" name="author"> </span><span class="proposal-created-at field" name="created_at"></span>
+                    </div>
+                    <br />
+                    <div class="proposal-tags field" name="tags">
+                    </div> <!-- ** -->
+                    <div class="proposal-build-ons field" name="build_ons">
+                    </div>
+                </div>
+                <div id="like-btn-container" class="btn-container">
+                    Would you like to work on this?
+                    <a id="like-btn-on" class="hide">
+                        <img src="img/lightbulb_small_on.png" />
+                    </a>
+                    <a id="like-btn-off">
+                        <img src="img/lightbulb_small_off.png" />
+                    </a>                    
+                </div>
+            </div>   
+
+            <div id="interpretation-input" class="span8 view-container">
+                <div class="container-header">
+                    Interpret this!
+                </div>
+                    <textarea class="field" id="interpretation-entry" name="build_on" placeholder="Why should we proceed with this proposal? What further suggestions might you add to this proposal?"></textarea>
+
+                <div class="btn-container btn-group action-btn-group">
+                    <a id="share-interpretation-btn" class="btn btn-success">
+                        Share
+                    </a>
+                </div>
+            </div>
+        </div>        
 
     </body>
 
