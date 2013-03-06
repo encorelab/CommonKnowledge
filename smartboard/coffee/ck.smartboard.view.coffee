@@ -127,6 +127,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
     constructor: (options) ->
         super(options)
         @cloud = new CK.Smartboard.View.BalloonCloud(this)
+        @tagCounter = 0
 
     submitNewTag: =>
         newTag = @$el.find('#new-tag').val()
@@ -525,6 +526,9 @@ class CK.Smartboard.View.ContributionProposalBalloon extends CK.Smartboard.View.
     setColorClass: (colorClass) =>
         @colorClass = colorClass
 
+    setTagColorList: (colorList) =>
+        @tagList = colorList
+
     constructor: (options) ->
         super(options)
 
@@ -539,6 +543,7 @@ class CK.Smartboard.View.ContributionProposalBalloon extends CK.Smartboard.View.
 
         @ballonContributionType = @balloonContributionTypes.propose
         @colorClass = "whiteGradient"
+        @tagList = {}
 
     events:
         'mousedown': (ev) -> @moveToTop()
@@ -752,14 +757,25 @@ class CK.Smartboard.View.ContributionProposalBalloon extends CK.Smartboard.View.
         for b in buildons
             counter.append("•")
 
+
             $b = jQuery("
                 <div class='buildon'>
+                    <div class='tag-group'></div>
                     <div class='author'></div>
                     <div class='content'></div>
                 </div>
             ")
             $b.find('.author').text(b.author)
             $b.find('.content').text(b.content)
+
+
+            if b.has('tag_group_id') 
+                tagGroupID = b.get('tag_group_id')
+                tagClass = @tagList[tagGroupID]
+                
+                if tagClass?
+                    $b.find('.tag-group').addClass(tagClass)
+
             container.append $b
 
         # if changed

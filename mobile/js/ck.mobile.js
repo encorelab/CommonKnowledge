@@ -129,9 +129,10 @@ CK.Mobile = function() {
             });
           } else if (phase === "proposal") {
             console.log('phase is proposal');
-            app.startProposal();
-            // TODO expend this to deal with proposal object that are being worked on
-            
+            app.startProposal();            
+          } else if {
+            console.log('phase is interpretation');
+            app.startInterpretation();
           } else {
             console.log('could not find state for type phase');
           }
@@ -264,7 +265,6 @@ CK.Mobile = function() {
             app.contributionToTag(sev.payload.contribution_id);
           });
         }
-
       },
 
       done_tagging: function(sev) {
@@ -281,8 +281,6 @@ CK.Mobile = function() {
             app.doneTagging();
           });
         }
-
-        
       },
 
       start_proposal: function(sev) {
@@ -292,9 +290,9 @@ CK.Mobile = function() {
       },
 
       start_interpretation: function(sev) {
-        console.log('start_proposal heard');
-        // CK.setState("phase", "interpretation");
-        // app.startInterpretation();
+        console.log('start_interpretation heard');
+        CK.setState("phase", "interpretation");
+        app.startInterpretation();
       }
 
     }
@@ -436,17 +434,6 @@ CK.Mobile = function() {
 
     // have to call this manually because there are no change events later
     detailsView.render();
-  };
-
-  app.Models = function() {
-    // clear all the old garbage out of the model, rebind
-    // app.currentContribution = new CK.Model.Contribution();
-    // app.currentContribution.wake(app.config.wakeful.url);
-    // app.contributionInputView.model = app.currentContribution;
-    // app.contributionInputView.undelegateEvents();
-    // app.contributionInputView.delegateEvents();
-
-    // app.currentBuildOn = {};
   };
 
   app.showWaitScreen = function() {
@@ -621,17 +608,8 @@ CK.Mobile = function() {
     jQuery('#tag-list').addClass('hide');
     jQuery('#contribution-list').removeClass('hide');
     jQuery('.row').removeClass('disabled');
-
-    //app.contributionInputView.render();
     jQuery('#tag-submission-container .tag-btn').addClass('disabled');
-
-    //app.contributionDetails = new CK.Model.Contribution();
-    //app.contributionDetailsView.model = app.contributionDetails;
-    //app.contributionDetailsView.undelegateEvents();
-    //app.contributionDetailsView.delegateEvents();    
-    //app.contributionDetailsView.render();
   };
-
 
   app.startProposal = function() {
     // for list view
@@ -748,10 +726,14 @@ CK.Mobile = function() {
 
     var initiator = app.userData.account.login;
     var receiver = jQuery('.user-btn').attr('checked', true).val();
-    
+
     app.newProposal(initiator, receiver, tagGroupName, tagGroupId);
 
     // what is the different between a group and a proposal, really? Each prop has one group, each group has one prop. What about ungrouping?
+  };
+
+  app.startInterpretation = function() {
+
   };
 
   // TODO - fix me to work properly with views etc (see also initViews section)

@@ -417,6 +417,8 @@ class CK.Smartboard.View.BalloonCloud
                         console.log 'Proposal tag color is ' + tagListing[tagID].className
                         view.setColorClass tagListing[tagID].className
 
+                    view.setTagColorList tagListing
+                    
                     if screenState is 'interpret'
                         view.ballonContributionType = view.balloonContributionTypes.interpret
                     else

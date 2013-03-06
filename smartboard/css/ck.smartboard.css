@@ -220,6 +220,11 @@ img.balloon-note {
   height: 1em;
   width: 3em; }
 
+.tag-group {
+  width: 20px;
+  height: 95%;
+  float: left; }
+
 .group1-color {
   background-color: rgba(123, 105, 240, 0.9);
   background: -moz-linear-gradient(top, rgba(184, 175, 247, 0) 0%, #7b69f0 100%);

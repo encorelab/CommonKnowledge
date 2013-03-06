@@ -199,6 +199,7 @@
       this.submitNewTag = __bind(this.submitNewTag, this);
       Wall.__super__.constructor.call(this, options);
       this.cloud = new CK.Smartboard.View.BalloonCloud(this);
+      this.tagCounter = 0;
     }
 
     Wall.prototype.submitNewTag = function() {
@@ -600,6 +601,10 @@
       return this.colorClass = colorClass;
     };
 
+    ContributionProposalBalloon.prototype.setTagColorList = function(colorList) {
+      return this.tagList = colorList;
+    };
+
     function ContributionProposalBalloon(options) {
       this.renderBuildons = __bind(this.renderBuildons, this);
 
@@ -617,6 +622,8 @@
 
       this.processContributionByType = __bind(this.processContributionByType, this);
 
+      this.setTagColorList = __bind(this.setTagColorList, this);
+
       this.setColorClass = __bind(this.setColorClass, this);
 
       this.id = __bind(this.id, this);
@@ -630,6 +637,7 @@
       console.log(this.balloonContributionTypes);
       this.ballonContributionType = this.balloonContributionTypes.propose;
       this.colorClass = "whiteGradient";
+      this.tagList = {};
     }
 
     ContributionProposalBalloon.prototype.events = {
@@ -777,7 +785,7 @@
     };
 
     ContributionProposalBalloon.prototype.renderBuildons = function() {
-      var $b, b, buildons, changed, container, counter, _i, _len, _results;
+      var $b, b, buildons, changed, container, counter, tagClass, tagGroupID, _i, _len, _results;
       if (!this.model.has('build_ons')) {
         return;
       }
@@ -794,9 +802,16 @@
       for (_i = 0, _len = buildons.length; _i < _len; _i++) {
         b = buildons[_i];
         counter.append("•");
-        $b = jQuery("                <div class='buildon'>                    <div class='author'></div>                    <div class='content'></div>                </div>            ");
+        $b = jQuery("                <div class='buildon'>                    <div class='tag-group'></div>                    <div class='author'></div>                    <div class='content'></div>                </div>            ");
         $b.find('.author').text(b.author);
         $b.find('.content').text(b.content);
+        if (b.has('tag_group_id')) {
+          tagGroupID = b.get('tag_group_id');
+          tagClass = this.tagList[tagGroupID];
+          if (tagClass != null) {
+            $b.find('.tag-group').addClass(tagClass);
+          }
+        }
         _results.push(container.append($b));
       }
       return _results;
