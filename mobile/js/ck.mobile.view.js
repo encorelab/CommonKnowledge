@@ -193,8 +193,17 @@
         var view = this,
           input_what = ev.target.name,
           user_input = jQuery('#'+ev.target.id).val();
+        // If we hit a key clear intervals so that during typing intervals don't kick in
+        window.clearTimeout(Sail.app.autoSaveTimer);
 
+        // save after 10 keystrokes
         Sail.app.autoSave(view, input_what, user_input, false);
+
+        // setting up a timer so that if we stop typing we save stuff after 5 seconds
+        Sail.app.autoSaveTimer = setTimeout( function(){
+          console.log('Autosave data for: '+input_what);
+          Sail.app.autoSave(view, input_what, user_input, true);
+        }, 5000);
       },
 
       'click #share-note-btn': 'share'
@@ -312,14 +321,7 @@
         } else {
           console.log('unknown note type');
         }
-      } 
-      // jQuery('#note-body-entry').removeClass('disabled'); CAN THIS BE DELETED?
-      // jQuery('#note-headline-entry').removeClass('disabled');
-      
-
-      // // TODO: make another view for buildon so I don't have to do all this nonsense
-      // jQuery('#note-body-entry').val('');
-      // jQuery('#note-headline-entry').val('');
+      }
 
       if (contrib.kind === 'buildOn') {
         jQuery('#note-body-entry').val(Sail.app.currentBuildOn.content);
@@ -327,41 +329,6 @@
         jQuery('#note-body-entry').val(contrib.get('content'));
         jQuery('#note-headline-entry').val(contrib.get('headline'));
       }
-      // else {
-      //   console.log('trying to render, but unknown note type');
-      // }
-
-      //CK.getState('phase', function(s) {                      // TODO - fix me when model is done
-        //if (s && s.get('state') === 'done_tagging') {
-          //jQuery('#contribution-details-build-on-btn').addClass('hide');
-          // TODO - do this right: make sure model is actually syncing with view instead of manually doing this
-          // jQuery('#tag-submission-container .tag-btn').removeClass('active');
-
-          // I THINK THIS CAN ALL GO TOO
-          // Sail.app.tagList.each(function(tag) {
-          //   var tagButton = jQuery('button#note-tag-'+tag.id);
-          //   // length avoids duplicating (probably a better way to do this in backbone?)
-          //   //if (tagButton.length === 0 && tag.get('name') != "N/A") {
-          //   if (tagButton.length === 0) {
-          //     tagButton = jQuery('<button id=note-tag-'+tag.id+' type="button" class="btn tag-btn"></button>');
-          //     tagButton = jQuery(tagButton);
-          //     jQuery('#tag-submission-container').append(tagButton);
-          //   }
-
-          //   tagButton.text(tag.get('name'));
-
-          //   // add tagger and store the tag object in the button for later
-          //   tag.set('tagger',Sail.app.userData.account.login);
-          //   tagButton.data('tag',tag);
-
-          //   // turn button on if previously tagged with this tag
-          //   if (Sail.app.currentContribution.hasTag(tag)) {
-          //     tagButton.addClass('active');
-          //   }
-          // });
-        //}
-      //});
-
 
     } // end of render
   });
