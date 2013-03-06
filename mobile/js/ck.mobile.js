@@ -364,7 +364,7 @@ CK.Mobile = function() {
 
     if (instant_save || Sail.app.keyCount > 9) {
       view.model.set(input_what, user_input);
-      view.model.save({silent: true});
+      view.model.save(null, {silent: true});
       Sail.app.keyCount = 0;
     }
   };  
@@ -740,15 +740,11 @@ CK.Mobile = function() {
     }
   };
 
-  app.createGroup = function(tagGroupName, tagGroupId) {
+  app.createGroup = function(receiver, tagGroupName, tagGroupId) {
     console.log('creating group...');
 
     var initiator = app.userData.account.login;
-    var receiver = jQuery('.user-btn').attr('checked', true).val();
-
     app.newProposal(initiator, receiver, tagGroupName, tagGroupId);
-
-    // what is the difference between a group and a proposal, really? Each prop has one group, each group has one prop. What about ungrouping?
   };
 
   app.startInterpretation = function() {
