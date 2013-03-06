@@ -130,7 +130,7 @@ CK.Mobile = function() {
           } else if (phase === "proposal") {
             console.log('phase is proposal');
             app.startProposal();            
-          } else if {
+          } else if (phase === "interpretation") {
             console.log('phase is interpretation');
             app.startInterpretation();
           } else {
