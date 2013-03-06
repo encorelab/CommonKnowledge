@@ -58,7 +58,7 @@ class CK.Smartboard.View.BalloonCloud
 
     # calculate the length in pixels of a link connector
     linkDistance: (link, i) =>
-        return unless link.source.view.$el? and link.target.view.$el?
+        return 0 unless link.source.view? and link.target.view?
 
         (  link.source.view.$el.outerWidth()/2 +
             link.target.view.$el.outerWidth()/2 ) + 10

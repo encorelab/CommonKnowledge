@@ -40,8 +40,8 @@
     };
 
     BalloonCloud.prototype.linkDistance = function(link, i) {
-      if (!((link.source.view.$el != null) && (link.target.view.$el != null))) {
-        return;
+      if (!((link.source.view != null) && (link.target.view != null))) {
+        return 0;
       }
       return (link.source.view.$el.outerWidth() / 2 + link.target.view.$el.outerWidth() / 2) + 10;
     };
