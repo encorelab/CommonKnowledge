@@ -34,8 +34,8 @@
 
     'new-note': function () {
       console.log("UI changes for new note");
-      jQuery('#note-body-entry').removeClass('disabled');
-      jQuery('#note-headline-entry').removeClass('disabled');
+      // jQuery('#note-body-entry').removeClass('disabled');
+      // jQuery('#note-headline-entry').removeClass('disabled');
       // jQuery('#contribution-list .btn-container').addClass('disabled'); // disable the New Note button
       Sail.app.addNote('new');
     },
@@ -50,7 +50,7 @@
 
       jQuery('#contribution-list li').remove();
 
-      _.each(view.models, function(contrib) {
+      _.each(view.collection.models, function(contrib) {
         if (contrib.get('published') === true) {
           console.log('headline: ' + contrib.get('headline'));
 
@@ -225,9 +225,10 @@
               // jQuery('#contribution-list .btn-container').removeClass('disabled'); // enable the New Note button
 
               // clear the old contribution plus ui fields
-              view.model.clear();   // I think this is actually enough now, can do away with clearModels
+              view.model.clear({silent: true});   // I think this is actually enough now, can do away with clearModels
+              view.stopListening(view.model);
               //Sail.app.clearModels();
-              //view.$el.find(".field").val(null);
+              view.$el.find(".field").val(null);
               //view.model.set('justAdded', false);
               //Sail.app.contributionInputView.render();
               
@@ -240,30 +241,6 @@
           jQuery().toastmessage('showErrorToast', "Please enter both a note and a headline");
         }        
       }
-      // tagged contribution - this can only be an else as long as no New Notes on tagging phase
-      // else if (Sail.app.taggedContribution) {
-      //   if (Sail.app.taggedContribution.get('tags').length > 0) {
-      //     console.log("Submitting tagged contribution...");
-      //     Sail.app.taggedContribution.save(null, {
-      //       complete: function () {
-      //         console.log('Submitted!');
-      //       },
-      //       success: function () {
-      //         console.log('Model saved');
-      //         Sail.app.sendContribution('taggedNote');
-
-      //         Sail.app.taggedContribution.clear();
-      //         Sail.app.tagListView.render();
-      //         Sail.app.contributionDetailsView.render();
-
-      //         jQuery().toastmessage('showSuccessToast', "Tagged note submitted");
-      //       },
-      //       failure: function(model, response) {
-      //         console.log('Error submitting: ' + response);
-      //       }
-      //     });
-      //   }
-      // }
 
       // build-on note - can we roll this in to the above now?
       // TODO will need a big overhaul to deal with lack of globals now  
@@ -314,6 +291,11 @@
       var view = this;
       console.log("rendering ContributionInputView...");
       var contrib = view.model;
+
+      if (typeof contrib !== 'undefined' && contrib !== null) {
+        jQuery('#note-body-entry').removeClass('disabled');
+        jQuery('#note-headline-entry').removeClass('disabled');
+      }
 
       if (contrib.get('justAdded')) {
         if (contrib.get('kind') === 'new') {

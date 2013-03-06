@@ -1,4 +1,4 @@
-/*jshint browser: true, devel: true, strict: false, unused:false */
+/*jshint browser: true, devel: true, debug: true, strict: false, unused:false, undef:true */
 /*globals jQuery, _, Sail, CK, Rollcall, Wakeful */
 
 window.CK = window.CK || {};
@@ -33,6 +33,9 @@ CK.Mobile = function() {
   app.synthesisFlag = false;
   app.keyCount = 0;
   app.contributionInputView = null;
+  app.contributionList = null;
+  app.contributionListView = null;
+
   // app.currentState = {"type":"tablet"};
 
   // adding view object to global object and instanciate with null
@@ -92,11 +95,23 @@ CK.Mobile = function() {
         var phase = s.get('state');
         // once phase is retrieved get the user_state
         CK.getUserState(Sail.app.userData.account.login, function(user_state){
-          if (phase === "analysis") {
+          if (phase === 'brainstorm') {
+            // check first if we started to work on a contribution and got booted out during work
+            // contribution in our name with published false
+            var unfinishedContrib = _.find(app.contributionList.models, function(contrib) {
+              return contrib.get('author') === Sail.app.userData.account.login && contrib.get('published') === false;
+            });
+
+            if (unfinishedContrib) {
+              console.log('Unfinished Contribution found');
+              app.restoreUnfinishedNote(unfinishedContrib);
+            }
+          } else if (phase === "analysis") {
             console.log('phase is analysis');
             app.startAnalysis(function (){
+              // get the data from user_states stored under the phase key
               var data_for_state = user_state.get(phase);
-
+              
               console.log('Check if contribution left to do or done with tagging');
               // CK.getUserState(Sail.app.userData.account.login, "contribution_to_tag", function(user_state){
               if (data_for_state && data_for_state.contribution_to_tag) {
@@ -183,10 +198,11 @@ CK.Mobile = function() {
         window.location.reload();
       });
 
-
-      app.restoreState();
+      
       // moved the view init here so that backbone is configured with URLs
       app.initViews();
+
+      app.restoreState();
     },
 
     'unauthenticated': function(ev) {
@@ -307,15 +323,25 @@ CK.Mobile = function() {
 
   app.initViews = function() {
     console.log('creating ListView');
-    // FIX MY NAMESPACING
-    app.contributionList = new CK.Model.Contributions();
-    //app.contributionList.wake(app.config.wakeful.url);
-    app.contributionList.on('change', function(model) { console.log(model.changedAttributes()); });    
-    app.contributionListView = new CK.Mobile.View.ContributionListView({
-      el: jQuery('#contribution-list'),
-      collection: app.contributionList
-    });
-    app.contributionList.on('reset add', app.contributionListView.render);
+    
+    if (app.contributionList === null) {
+      // instantiate new contributions collection
+      app.contributionList = new CK.Model.Contributions();
+      // make collection wakefull (receiving changes form other actors via pub/sub)
+      app.contributionList.wake(Sail.app.config.wakeful.url);
+    }
+
+    app.contributionList.on('change', function(model) { console.log(model.changedAttributes()); });
+
+    // check if view already exists
+   if (app.contributionListView === null) {
+      app.contributionListView = new CK.Mobile.View.ContributionListView({
+        el: jQuery('#contribution-list'),
+        collection: app.contributionList
+      });
+    }
+
+    app.contributionList.on('reset add', app.contributionListView.render, app.contributionListView);
     var sort = ['created_at', 'DESC'];
     // var selector = {"author": "matt"};
     app.contributionList.fetch({
@@ -350,6 +376,8 @@ CK.Mobile = function() {
     console.log('Creating an inputView');
 
     var contrib = new CK.Model.Contribution();
+    // ensure that models inside the collection are wakeful
+    contrib.wake(Sail.app.config.wakeful.url);
 
     if (app.inputView === null) {
       app.inputView = new CK.Mobile.View.ContributionInputView({
@@ -376,6 +404,21 @@ CK.Mobile = function() {
     contrib.save();
 
     app.contributionList.add(contrib);
+  };
+
+  app.restoreUnfinishedNote = function (contrib) {
+    if (app.inputView === null) {
+      app.inputView = new CK.Mobile.View.ContributionInputView({
+        el: jQuery('#contribution-input'),
+        model: contrib
+      });
+    } else {
+      if (typeof app.inputView.model !== 'undefined' && app.inputView.model !== null) {
+        app.inputView.stopListening(app.inputView.model);
+      }
+      app.inputView.model = contrib;
+    }
+    app.inputView.render();
   };
 
   app.showDetails = function(contrib) {
@@ -456,12 +499,6 @@ CK.Mobile = function() {
         app.tagListView.collection = tagList;
       }
 
-      //app.taggedContribution.wake(app.config.wakeful.url);
-
-      // app.tagListView = new CK.Mobile.View.TagListView({
-      //   el: jQuery('#tag-list'),
-      //   collection: tagList
-      // });
       tagList.on('reset add', app.tagListView.render, app.tagListView);       // probably unnecessary, maybe even a bad idea?
 
       var sort = ['created_at', 'ASC'];
@@ -635,7 +672,7 @@ CK.Mobile = function() {
 
     states.on('change', function(model) { console.log(model.changedAttributes()); });
 
-    groupingView = new CK.Mobile.View.GroupingView({
+    var groupingView = new CK.Mobile.View.GroupingView({
       el: jQuery('#grouping-screen'),
       collection: states
     });
