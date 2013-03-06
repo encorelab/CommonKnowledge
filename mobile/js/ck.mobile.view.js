@@ -601,6 +601,14 @@
   **/
   self.ProposalInputView = Backbone.View.extend({
     events: {
+      // 'change .field': function (ev) {
+      //   var view = this;
+      //   var f;
+      //   f = jQuery(ev.target);
+      //   console.log("Setting "+f.attr("name")+" to "+f.val());
+      //   view.model.set(f.attr('name'), f.val());
+      // },
+
       'keyup :input': function (ev) {
         var view = this;
         Sail.app.autoSave(view, ev);
@@ -608,16 +616,19 @@
 
       'click #share-proposal-headline-btn': function() {
         this.model.set('headline_published', true);
+        this.model.set('headline', jQuery('#proposal-headline-entry').val());
         Sail.app.checkProposalPublishState();
       },
 
       'click #share-proposal-body-btn': function() {
         this.model.set('proposal_published', true);
+        this.model.set('proposal', jQuery('#proposal-body-entry').val());
         Sail.app.checkProposalPublishState();
       },
 
       'click #share-justification-body-btn': function() {
         this.model.set('justification_published', true);
+        this.model.set('justification', jQuery('#justification-body-entry').val());
         Sail.app.checkProposalPublishState();
       }
     },

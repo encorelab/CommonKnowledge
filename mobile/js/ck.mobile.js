@@ -364,7 +364,7 @@ CK.Mobile = function() {
     if (Sail.app.keyCount > 10) {
 
       view.model.set(ev.target.name, jQuery('#'+ev.target.id).val());
-      view.model.save({silent: true});
+      // view.model.save({silent: true});
       Sail.app.keyCount = 0;
     }
 
