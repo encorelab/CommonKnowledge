@@ -389,6 +389,8 @@ CK.Mobile = function() {
       app.inputView.model = contrib;
     }
 
+    app.inputView.$el.show('slide', {direction: 'up'});
+
     contrib.set('justAdded', true);
     contrib.set('author', app.userData.account.login);
     contrib.set('published', false);
