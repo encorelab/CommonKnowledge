@@ -364,7 +364,7 @@ CK.Mobile = function() {
 
     if (instant_save || Sail.app.keyCount > 9) {
       view.model.set(input_what, user_input);
-      view.model.save({silent: true});
+      view.model.save(null, {silent: true});
       Sail.app.keyCount = 0;
     }
   };  
