@@ -521,6 +521,7 @@
     'create-group': function () {
       jQuery('.row').addClass('disabled');
       jQuery('#grouping-screen').removeClass('hide');
+      Sail.app.groupingView.render();
     },
 
     'close-note': function () {
@@ -627,7 +628,6 @@
 
         this.model.set('headline_published', true);
         Sail.app.checkProposalPublishState();
-        this.model.save();
       },
 
       'click #share-proposal-body-btn': function() {
@@ -637,7 +637,6 @@
 
         this.model.set('proposal_published', true);
         Sail.app.checkProposalPublishState();
-        this.model.save();
       },
 
       'click #share-justification-body-btn': function() {
@@ -647,7 +646,6 @@
 
         this.model.set('justification_published', true);
         Sail.app.checkProposalPublishState();
-        this.model.save();
       }
     },
 
@@ -717,6 +715,7 @@
       'click #close-group-btn': function () {
         jQuery('.row').removeClass('disabled');
         jQuery('#grouping-screen').addClass('hide');
+        jQuery('.active').removeClass('active');
       }
     },
 
@@ -725,11 +724,17 @@
     },
 
     'create-group': function () {
-      jQuery('.row').removeClass('disabled');
-      jQuery('#grouping-screen').addClass('hide');
-      CK.getUserState(Sail.app.userData.account.login, function(us) {
-        Sail.app.createGroup(us.get('analysis').tag_group, us.get('analysis').tag_group_id);
-      });
+      // this is pretty sketch - TODO confirm I work
+      if ( jQuery('#grouping-screen .active').val() ) {
+        jQuery('.row').removeClass('disabled');
+        jQuery('#grouping-screen').addClass('hide');
+        jQuery('.active').removeClass('active');
+        CK.getUserState(Sail.app.userData.account.login, function(us) {
+          Sail.app.createGroup(us.get('analysis').tag_group, us.get('analysis').tag_group_id);
+        });        
+      } else {
+        jQuery().toastmessage('showErrorToast', "Choose one other student to group with");
+      }
       
     },
 
@@ -739,7 +744,7 @@
     render: function () {
       var view = this;
       var tagGroupName = "";
-      // get this user tag group (TODO - convert to using the getUserState getter)
+      // get this user tag group
       var myUs = view.collection.find(function(us) { return us.get('username') === Sail.app.userData.account.login; });
 
       if (myUs) {
@@ -759,9 +764,9 @@
 
         // display all users in the same tag_group (other than self)
         if (us.get('analysis').tag_group === tagGroupName && us.get('username') !== Sail.app.userData.account.login) {
-          var userButton = jQuery('button#'+us.get('analysis').tag_group_id);
+          var userButton = jQuery('button#'+us.get('username'));
           if (userButton.length === 0) {
-            userButton = jQuery('<button id=user-btn-'+us.get('username')+' type="button" value='+us.get('username')+' class="btn user-btn btn-success" data-toggle="button">'+us.get('username')+'</button>');
+            userButton = jQuery('<button id='+us.get('username')+' type="button" value='+us.get('username')+' name="user_btn" class="btn user-btn btn-success" data-toggle="radio">'+us.get('username')+'</button>');
             jQuery('#grouping-btn-container').append(userButton);
           }
         }

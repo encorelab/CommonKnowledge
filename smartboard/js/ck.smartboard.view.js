@@ -566,6 +566,9 @@
         return;
       }
       buildons = this.model.get('build_ons');
+      if (!buildons.length) {
+        return;
+      }
       container = this.findOrCreate('.buildons', "<div class='buildons'></div>");
       changed = false;
       if (buildons.length !== container.find('div.buildon').length) {

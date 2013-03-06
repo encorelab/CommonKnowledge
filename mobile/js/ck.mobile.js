@@ -658,11 +658,11 @@ CK.Mobile = function() {
 
     userStates.on('change', function(model) { console.log(model.changedAttributes()); });
 
-    var groupingView = new CK.Mobile.View.GroupingView({
+    app.groupingView = new CK.Mobile.View.GroupingView({
       el: jQuery('#grouping-screen'),
       collection: userStates
     });
-    userStates.on('reset add', groupingView.render, groupingView);
+    userStates.on('reset add', app.groupingView.render, app.groupingView);
 
     function fetchSuccess (m) {
       console.log('fetched user userStates:', userStates);
@@ -689,8 +689,8 @@ CK.Mobile = function() {
     proposal.set('author', groupName);
     proposal.set('initiator', initiator);
     proposal.set('receiver', receiver);
-    proposal.set('tag_group_id', tagGroupName);
-    proposal.set('tag_group_name', tagGroupId);
+    proposal.set('tag_group_id', tagGroupId);
+    proposal.set('tag_group_name', tagGroupName);
 
     proposal.on('reset add', app.proposalInputView.render, app.proposalInputView);
 
@@ -719,13 +719,10 @@ CK.Mobile = function() {
       app.proposalInputView.model.set('published', true);
       app.proposalInputView.model.save();
       
-      jQuery('#proposal-headline-entry').addClass('disabled');
-      jQuery('#share-proposal-headline-btn').addClass('disabled');
-      jQuery('#proposal-body-entry').addClass('disabled');
-      jQuery('#share-proposal-body-btn').addClass('disabled');
-      jQuery('#justification-body-entry').addClass('disabled');
-      jQuery('#share-justification-body-btn').addClass('disabled');
+      app.proposalInputView.$el.find(".field").val(null);
       app.proposalInputView.model.clear();
+    } else {
+      app.proposalInputView.model.save();
     }
   };
 
