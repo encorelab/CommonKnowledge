@@ -92,9 +92,10 @@ i {
 #group-label-container {
 	position: absolute;
 	right: 120px;
-	top: 8px;
+	top: 7px;
 	text-align: right;
 	font-size: 14px;
+	color: #F0ED69;
 }
 
 #auth-as {
@@ -317,6 +318,10 @@ i {
 
 #grouping-btn-container .user-btn {
 	margin-top: 10px;
+}
+
+#grouping-btn-container .user-btn.active {
+	background: grey;
 }
 
 #create-group-btn {

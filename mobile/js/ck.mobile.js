@@ -706,11 +706,19 @@ CK.Mobile = function() {
   };
 
   app.bindProposal = function(prop) {
-    if (prop.get('initiator') === Sail.app.userData.account.login || prop.get('receiver') === Sail.app.userData.account.login) {
+    if (!prop.get('published') && (prop.get('initiator') === Sail.app.userData.account.login || prop.get('receiver') === Sail.app.userData.account.login)) {
       // Something added
-      if (typeof app.proposalInputView.model !== 'undefined' && app.proposalInputView.model !== null) {
-        app.proposalInputView.stopListening(app.proposalInputView.model);
-      }
+
+      app.proposalInputView.initialRenderComplete = false;
+      app.proposalInputView.stopListening(app.proposalInputView.model);
+      
+      prop.on('change:published', function() {
+        if (prop.get('published') === true) {
+          prop.off();
+          jQuery('#group-btn').removeClass('disabled');
+          jQuery('#group-label-container').text("");
+        }
+      });
 
       prop.wake(Sail.app.config.wakeful.url);
       prop.on('change', app.proposalInputView.render, app.proposalInputView);
@@ -726,9 +734,7 @@ CK.Mobile = function() {
       console.log('setting proposal published state to true...');
       app.proposalInputView.model.set('published', true);
       app.proposalInputView.model.save();
-      
-      app.proposalInputView.$el.find(".field").val(null);
-      app.proposalInputView.model.clear();
+      jQuery().toastmessage('showSuccessToast', "Proposal submitted");
     } else {
       app.proposalInputView.model.save();
     }
@@ -742,7 +748,7 @@ CK.Mobile = function() {
 
     app.newProposal(initiator, receiver, tagGroupName, tagGroupId);
 
-    // what is the different between a group and a proposal, really? Each prop has one group, each group has one prop. What about ungrouping?
+    // what is the difference between a group and a proposal, really? Each prop has one group, each group has one prop. What about ungrouping?
   };
 
   app.startInterpretation = function() {
