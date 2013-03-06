@@ -163,6 +163,8 @@ class CK.Smartboard extends Sail.App
 
             @contributions.on 'change', (contrib) =>
                 if @wall.cloud.ensureNode contrib
+                    console.log 'Calling Wall Render with contribution....'
+                    console.log contrib
                     @wall.cloud.render()
 
             @contributions.on 'reset', (collection) => 
@@ -258,8 +260,8 @@ class CK.Smartboard extends Sail.App
 
         sail:
             contribution: (sev) ->
-                @contributions.fetch().done =>
-                    @contributions.get(sev.payload).newlyAdded = true
+                @contributions.fetch()#.done =>
+                #     @contributions.get(sev.payload).newlyAdded = true
 
             build_on: (sev) ->
                 @contributions.fetch().done ->
@@ -275,7 +277,7 @@ class CK.Smartboard extends Sail.App
 
             contribution_tagged: (sev) ->
                 #@contributions.get(sev.payload._id).fetch()
-                @contributions.fetch()
+                #@contributions.fetch()
                     
 
             screen_lock: (sev) ->
