@@ -251,6 +251,8 @@
         });
         _this.contributions.on('change', function(contrib) {
           if (_this.wall.cloud.ensureNode(contrib)) {
+            console.log('Calling Wall Render with contribution....');
+            console.log(contrib);
             return _this.wall.cloud.render();
           }
         });
@@ -336,19 +338,14 @@
       },
       sail: {
         contribution: function(sev) {
-          var _this = this;
-          return this.contributions.fetch().done(function() {
-            return _this.contributions.get(sev.payload).newlyAdded = true;
-          });
+          return this.contributions.fetch();
         },
         build_on: function(sev) {
           return this.contributions.fetch().done(function() {
             return jQuery('#' + sev.payload._id).effect('highlight', 2000);
           });
         },
-        contribution_tagged: function(sev) {
-          return this.contributions.fetch();
-        },
+        contribution_tagged: function(sev) {},
         screen_lock: function(sev) {
           return this.wall.pause();
         },

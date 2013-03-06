@@ -385,8 +385,8 @@ class CK.Smartboard.View.BalloonCloud
             @links.push link
             shouldRender = true
 
-        console.log '----- links ----'
-        console.log @links
+        #console.log '----- links ----'
+        #console.log @links
         return shouldRender
 
     inflateBalloons: (balloons) =>
@@ -552,10 +552,13 @@ class CK.Smartboard.View.BalloonCloud
                 .attr('id', (d,i) -> d.id)
                 .attr('class', "balloon")
         # fill in the <div.balloon>s html
-            .call(@inflateBalloons)
+            .call(@completeRender)
         
+    completeRender: (ev) =>
         @balloons = @vis.selectAll('div.balloon')
-
+        @inflateBalloons(@balloons)
+        
+        #console.log @balloons
         # .exit()
         # .call(@renderNode)
         # .call(@force.drag)
@@ -603,4 +606,4 @@ class CK.Smartboard.View.BalloonCloud
         #     .append("div")
         #         .attr("class", "locator")
 
-        #force.on('drag.force', -> force2.resume(); console.log('drag!'))
+        #force.on('drag.force', -> force2.resume(); console.log('drag!'))   
