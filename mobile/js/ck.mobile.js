@@ -579,6 +579,7 @@ CK.Mobile = function() {
     if (tagged) {
       CK.getUserState(Sail.app.userData.account.login, function (user_state) {
         var taggedContribution = new CK.Model.Contribution({_id: contributionId});
+        taggedContribution.wake(Sail.app.config.wakeful.url);
 
         function fetchSuccess (contrib) {
           console.log('fetched contribution');
@@ -587,9 +588,16 @@ CK.Mobile = function() {
           var contrib_tags = taggedContribution.get('tags');
           contrib_tags.push(new_tag);
           taggedContribution.set('tags', contrib_tags);
-          taggedContribution.save();
 
-          Sail.app.groupchat.sendEvent(sev);
+
+          function saveSuccess (m) {
+            console.log('contribution saved successfully in tagContribution');
+            Sail.app.groupchat.sendEvent(sev);
+          }
+          function saveError (err) {
+            console.warn('error saving contribution in tagContribution');
+          }
+          taggedContribution.save(null, {success: saveSuccess, error: saveError});
         }
 
         function fetchError (err) {
