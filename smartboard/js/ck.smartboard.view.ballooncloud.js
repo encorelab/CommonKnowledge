@@ -244,9 +244,10 @@
     };
 
     BalloonCloud.prototype.ensureNode = function(n) {
-      var b, isNodePublished, screenState, t, tag, tagAttributes, tagClass, tagID, _i, _j, _len, _len1, _ref, _ref1, _results;
+      var b, isNodePublished, screenState, shouldRender, shouldRerender, t, tag, tagAttributes, tagClass, tagID, _i, _j, _len, _len1, _ref, _ref1;
       isNodePublished = n.get('published');
       screenState = this.wall.mode;
+      shouldRender = false;
       if (n instanceof CK.Model.Contribution && (isNodePublished !== true || screenState === 'propose' || screenState === 'interpret')) {
         return;
       }
@@ -257,6 +258,7 @@
         return node.id === n.id;
       })) {
         this.nodes.push(n);
+        shouldRender = true;
         if (n instanceof CK.Model.Tag) {
           tagAttributes = n.attributes;
           tagClass = '';
@@ -275,7 +277,8 @@
             return n.id === t.id;
           });
           if (tag != null) {
-            this.ensureLink(n, tag);
+            shouldRerender = this.ensureLink(n, tag);
+            shouldRender = shouldRender || shouldRerender;
           }
         }
       }
@@ -285,27 +288,27 @@
           return n.id === tagID;
         });
         if (tag != null) {
-          return this.ensureLink(n, tag);
+          shouldRerender = this.ensureLink(n, tag);
+          shouldRender = shouldRender || shouldRerender;
         }
       } else if (n instanceof CK.Model.Tag) {
         _ref1 = this.nodes;
-        _results = [];
         for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
           b = _ref1[_j];
           if (b.has('tags') && b.get('tags').some(function(t) {
             return t.id === n.id;
           })) {
-            _results.push(this.ensureLink(b, n));
-          } else {
-            _results.push(void 0);
+            shouldRerender = this.ensureLink(n, tag);
+            shouldRender = shouldRender || shouldRerender;
           }
         }
-        return _results;
       }
+      return shouldRender;
     };
 
     BalloonCloud.prototype.ensureLink = function(fromContribution, toTag) {
-      var link;
+      var link, shouldRender;
+      shouldRender = false;
       link = {
         source: fromContribution,
         target: toTag
@@ -314,9 +317,11 @@
         return l.source.id === fromContribution.id && l.target.id === toTag.id;
       })) {
         this.links.push(link);
+        shouldRender = true;
       }
       console.log('----- links ----');
-      return console.log(this.links);
+      console.log(this.links);
+      return shouldRender;
     };
 
     BalloonCloud.prototype.inflateBalloons = function(balloons) {

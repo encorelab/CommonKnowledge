@@ -248,6 +248,11 @@
           _this.wall.cloud.ensureNode(contrib);
           return _this.wall.cloud.render();
         });
+        _this.contributions.on('change', function(contrib) {
+          if (_this.wall.cloud.ensureNode(contrib)) {
+            return _this.wall.cloud.render();
+          }
+        });
         _this.contributions.on('reset', function(collection) {
           collection.each(_this.wall.cloud.ensureNode);
           return _this.wall.cloud.render();
@@ -258,6 +263,11 @@
         _this.proposals.on('add', function(proposal) {
           _this.wall.cloud.ensureNode(proposal);
           return _this.wall.cloud.render();
+        });
+        _this.proposals.on('change', function(proposal) {
+          if (_this.wall.cloud.ensureNode(proposal)) {
+            return _this.wall.cloud.render();
+          }
         });
         _this.proposals.on('reset', function(collection) {
           collection.each(_this.wall.cloud.ensureNode);

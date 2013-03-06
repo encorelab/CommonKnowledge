@@ -759,7 +759,7 @@
       headline = this.findOrCreate('.headline', "<h3 class='headline'></h3>");
       headline.text(this.model.get('headline'));
       proposal = this.findOrCreate('.proposal', "<div class='proposal'>&#8227; Proposal<div class='proposal-body' tyle='display: none'></div></div>");
-      proposal.find('.proposal-body').text(this.model.get('description'));
+      proposal.find('.proposal-body').text(this.model.get('proposal'));
       proposal.unbind('click');
       proposal.click(function(e) {
         e.stopPropagation();
