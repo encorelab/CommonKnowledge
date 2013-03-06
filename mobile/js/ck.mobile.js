@@ -740,15 +740,11 @@ CK.Mobile = function() {
     }
   };
 
-  app.createGroup = function(tagGroupName, tagGroupId) {
+  app.createGroup = function(receiver, tagGroupName, tagGroupId) {
     console.log('creating group...');
 
     var initiator = app.userData.account.login;
-    var receiver = jQuery('.user-btn').attr('checked', true).val();
-
     app.newProposal(initiator, receiver, tagGroupName, tagGroupId);
-
-    // what is the difference between a group and a proposal, really? Each prop has one group, each group has one prop. What about ungrouping?
   };
 
   app.startInterpretation = function() {

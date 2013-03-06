@@ -711,12 +711,15 @@
 
     'create-group': function () {
       // this is pretty sketch - TODO confirm I work
-      if ( jQuery('#grouping-screen .active').val() ) {
+      var receiver = jQuery('#grouping-screen .active').val();
+      if (receiver) {
+        // UI stuff 
         jQuery('.row').removeClass('disabled');
         jQuery('#grouping-screen').addClass('hide');
         jQuery('.active').removeClass('active');
+        // create the group
         CK.getUserState(Sail.app.userData.account.login, function(us) {
-          Sail.app.createGroup(us.get('analysis').tag_group, us.get('analysis').tag_group_id);
+          Sail.app.createGroup(receiver, us.get('analysis').tag_group, us.get('analysis').tag_group_id);
         });        
       } else {
         jQuery().toastmessage('showErrorToast', "Choose one other student to group with");
