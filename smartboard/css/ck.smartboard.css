@@ -124,8 +124,7 @@ img.balloon-note {
   .contribution.balloon .proposal-body {
     font-weight: normal;
     border-top: solid 1px;
-    border-color: #333333;
-    border-width: 60%; }
+    border-color: #333333; }
   .contribution.balloon .justification {
     font-weight: bold;
     margin-top: 10px;
@@ -135,8 +134,7 @@ img.balloon-note {
   .contribution.balloon .justification-body {
     font-weight: normal;
     border-top: solid 1px;
-    border-color: #333333;
-    border-width: 60%; }
+    border-color: #333333; }
   .contribution.balloon h3.headline {
     margin-top: 8px;
     font-size: 16px;
@@ -171,13 +169,16 @@ img.balloon-note {
     padding-right: 14px; }
   .contribution.balloon .buildons {
     display: none;
-    margin-top: 0;
+    border-top: solid 1px;
+    border-color: #000000;
+    margin-top: 15px;
     font-size: 14px;
     padding-top: 0;
     padding-bottom: 6px;
     padding-left: 14px;
     padding-right: 14px; }
     .contribution.balloon .buildons .buildon {
+      margin-top: 5px;
       padding-left: 5px;
       margin-bottom: 5px;
       border-left: 4px solid rgba(200, 39, 26, 0.5); }
@@ -232,6 +233,18 @@ img.balloon-note {
   width: 20px;
   height: 95%;
   float: left; }
+
+.group1-color-buildon {
+  border-left: 4px inset rgba(123, 105, 240, 0.9) !important; }
+
+.group2-color-buildon {
+  border-left: 4px inset rgba(250, 148, 5, 0.9) !important; }
+
+.group3-color-buildon {
+  border-left: 4px inset rgba(112, 237, 17, 0.9) !important; }
+
+.group4-color-buildon {
+  border-left: 4px inset rgba(237, 17, 193, 0.9) !important; }
 
 .group1-color {
   background-color: rgba(123, 105, 240, 0.9);

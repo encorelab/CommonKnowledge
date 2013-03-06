@@ -745,7 +745,7 @@ class CK.Smartboard.View.ContributionProposalBalloon extends CK.Smartboard.View.
         return @ # return this for chaining
 
     renderBuildons: =>
-        return unless @model.has('build_ons')
+        return unless @model.has('build_ons') and @ballonContributionType is @balloonContributionTypes.interpret
 
         buildons = @model.get('build_ons')
 
@@ -768,7 +768,6 @@ class CK.Smartboard.View.ContributionProposalBalloon extends CK.Smartboard.View.
 
             $b = jQuery("
                 <div class='buildon'>
-                    <div class='tag-group'></div>
                     <div class='author'></div>
                     <div class='content'></div>
                 </div>
@@ -776,13 +775,14 @@ class CK.Smartboard.View.ContributionProposalBalloon extends CK.Smartboard.View.
             $b.find('.author').text(b.author)
             $b.find('.content').text(b.content)
 
+            tagGroupID = b.tag_group_id
 
-            if b.has('tag_group_id') 
-                tagGroupID = b.get('tag_group_id')
-                tagClass = @tagList[tagGroupID]
+            if tagGroupID? and @tagList[tagGroupID]?
+                
+                tagClass = @tagList[tagGroupID].className
                 
                 if tagClass?
-                    $b.find('.tag-group').addClass(tagClass)
+                    $b.addClass(tagClass + '-buildon')
 
             container.append $b
 

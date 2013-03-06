@@ -599,30 +599,6 @@
   **/
   self.ProposalInputView = Backbone.View.extend({
     events: {
-      // 'change .field': function (ev) {
-      //   var view = this;
-      //   var f;
-        // if (view.model.get('kind') === 'new') {
-        //   f = jQuery(ev.target);
-        //   console.log("Setting "+f.attr("name")+" to "+f.val());
-        //   view.model.set(f.attr('name'), f.val());          
-        // } else if (view.model.get('kind') === 'buildOn') {
-        //   // TODO: accessing currentBuildOn is wrong and object is {} -- empty
-        //   console.log('setting build-on values');
-        //   Sail.app.currentBuildOn.content = jQuery('#note-body-entry').val();
-        //   Sail.app.currentBuildOn.author = Sail.app.userData.account.login;
-        //   var d = new Date();
-        //   Sail.app.currentBuildOn.created_at = d;
-        //   console.log(d);
-        // } else if (view.model.get('kind') === 'synthesis') {
-        //   f = jQuery(ev.target);
-        //   console.log("Setting "+f.attr("name")+" to "+f.val());
-        //   this.model.set(f.attr('name'), f.val());          
-        // } else {
-        //   console.log('unknown note type');
-        // }
-      // },
-
       'keyup :input': function (ev) {
         var view = this;
         Sail.app.autoSave(view, ev);
@@ -697,7 +673,7 @@
         console.log('skipping render... somehow not related to this user?!');
       }
 
-      jQuery('#group-login-container').text(view.model.get('author'));
+      jQuery('#group-label-container').text(view.model.get('author'));
 
     }
 

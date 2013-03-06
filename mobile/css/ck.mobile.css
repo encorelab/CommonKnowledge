@@ -89,8 +89,7 @@ i {
 	color: inherit;
 }
 
-/* TODO - do this right, ugg */
-#group-login-container {
+#group-label-container {
 	position: absolute;
 	right: 120px;
 	top: 8px;
