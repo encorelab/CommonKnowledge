@@ -180,9 +180,6 @@ class CK.Smartboard extends Sail.App
             @tags = new CK.Model.Tags()
             @tags.wake @config.wakeful.url
 
-            @contributions.on 'all', (ev, data) => 
-                console.log(@contributions.url, ev, data)
-
             @tags.on 'add', (tag) =>
                 @wall.cloud.ensureNode tag
 

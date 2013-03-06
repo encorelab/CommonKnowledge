@@ -265,9 +265,6 @@
         });
         _this.tags = new CK.Model.Tags();
         _this.tags.wake(_this.config.wakeful.url);
-        _this.contributions.on('all', function(ev, data) {
-          return console.log(_this.contributions.url, ev, data);
-        });
         _this.tags.on('add', function(tag) {
           _this.wall.cloud.ensureNode(tag);
           tag.newlyAdded = true;
