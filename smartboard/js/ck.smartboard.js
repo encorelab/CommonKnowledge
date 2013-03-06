@@ -129,13 +129,14 @@
     };
 
     Smartboard.prototype.pause = function() {
-      var b, pos, sev, _i, _len, _ref;
+      var b, pos, sev, _i, _len, _ref, _results;
       sev = new Sail.Event('screen_lock');
       this.groupchat.sendEvent(sev);
       CK.getState('phase', function(s) {
         return CK.setState('phase', s.get('state'), true);
       });
       _ref = _.union(this.contributions.models, this.tags.models);
+      _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         b = _ref[_i];
         pos = this.wall.$el.find('#' + b.id).position();
@@ -148,14 +149,14 @@
           }, {
             silent: true
           });
-          b.save({}, {
+          _results.push(b.save({}, {
             silent: true
-          });
+          }));
+        } else {
+          _results.push(void 0);
         }
       }
-      if (this.wall.mode === 'interpret') {
-        return this.switchToEvaluation();
-      }
+      return _results;
     };
 
     Smartboard.prototype.unpause = function() {
@@ -248,6 +249,11 @@
           _this.wall.cloud.ensureNode(contrib);
           return _this.wall.cloud.render();
         });
+        _this.contributions.on('change', function(contrib) {
+          if (_this.wall.cloud.ensureNode(contrib)) {
+            return _this.wall.cloud.render();
+          }
+        });
         _this.contributions.on('reset', function(collection) {
           collection.each(_this.wall.cloud.ensureNode);
           return _this.wall.cloud.render();
@@ -258,6 +264,11 @@
         _this.proposals.on('add', function(proposal) {
           _this.wall.cloud.ensureNode(proposal);
           return _this.wall.cloud.render();
+        });
+        _this.proposals.on('change', function(proposal) {
+          if (_this.wall.cloud.ensureNode(proposal)) {
+            return _this.wall.cloud.render();
+          }
         });
         _this.proposals.on('reset', function(collection) {
           collection.each(_this.wall.cloud.ensureNode);

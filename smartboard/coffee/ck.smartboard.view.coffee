@@ -679,7 +679,7 @@ class CK.Smartboard.View.ContributionProposalBalloon extends CK.Smartboard.View.
         proposal = @findOrCreate '.proposal', 
             "<div class='proposal'>&#8227; Proposal<div class='proposal-body' tyle='display: none'></div></div>"
 
-        proposal.find('.proposal-body').text @model.get('description')
+        proposal.find('.proposal-body').text @model.get('proposal')
 
         proposal.unbind 'click'
         proposal.click (e) -> 

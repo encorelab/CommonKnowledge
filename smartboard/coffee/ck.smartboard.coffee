@@ -84,8 +84,8 @@ class CK.Smartboard extends Sail.App
                 b.set({pos: {left: pos.left, top: pos.top}}, {silent: true})
                 b.save({}, {silent: true})
 
-        if (@wall.mode is 'interpret')
-                @switchToEvaluation()
+        # if (@wall.mode is 'interpret')
+        #         @switchToEvaluation()
 
         
 
@@ -161,6 +161,10 @@ class CK.Smartboard extends Sail.App
                 @wall.cloud.ensureNode contrib
                 @wall.cloud.render()
 
+            @contributions.on 'change', (contrib) =>
+                if @wall.cloud.ensureNode contrib
+                    @wall.cloud.render()
+
             @contributions.on 'reset', (collection) => 
                 collection.each @wall.cloud.ensureNode
                 @wall.cloud.render()
@@ -172,6 +176,10 @@ class CK.Smartboard extends Sail.App
             @proposals.on 'add', (proposal) =>
                 @wall.cloud.ensureNode proposal
                 @wall.cloud.render()
+
+            @proposals.on 'change', (proposal) =>
+                if @wall.cloud.ensureNode proposal
+                    @wall.cloud.render()
 
             @proposals.on 'reset', (collection) => 
                 collection.each @wall.cloud.ensureNode

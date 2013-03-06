@@ -315,6 +315,7 @@ class CK.Smartboard.View.BalloonCloud
     ensureNode: (n) =>
         isNodePublished = n.get('published')
         screenState = @wall.mode
+        shouldRender = false
     
         if n instanceof CK.Model.Contribution and (isNodePublished isnt true or screenState is 'propose' or screenState is 'interpret')
             return
@@ -326,6 +327,7 @@ class CK.Smartboard.View.BalloonCloud
         unless _.any(@nodes, 
                 (node) -> node.id is n.id)
             @nodes.push n
+            shouldRender = true
 
             if n instanceof CK.Model.Tag
                 tagAttributes = n.attributes
@@ -345,7 +347,8 @@ class CK.Smartboard.View.BalloonCloud
 
                 # TODO: create the tag if it doesn't exist?
                 if tag?
-                    @ensureLink(n, tag)
+                    shouldRerender = @ensureLink(n, tag)
+                    shouldRender = shouldRender || shouldRerender
 
         if n instanceof CK.Model.Proposal and n.has('tag_group_id')
             tagID = n.get('tag_group_id')
@@ -353,16 +356,25 @@ class CK.Smartboard.View.BalloonCloud
 
             # TODO: create the tag if it doesn't exist?
             if tag?
-                @ensureLink(n, tag)
+                shouldRerender = @ensureLink(n, tag)
+                shouldRender = shouldRender || shouldRerender
 
         else if n instanceof CK.Model.Tag
             for b in @nodes
                 if b.has('tags') and b.get('tags').some( (t) -> t.id is n.id )
-                    @ensureLink(b, n)
+                    shouldRerender = @ensureLink(n, tag)
+                    shouldRender = shouldRender || shouldRerender
+        
+        if shouldRender
+            console.log 'View Change Detected: Should Rerender Board!'
+
+        return shouldRender
 
 
     # adds a link (connector) to the cloud if it doesn't already exists
     ensureLink: (fromContribution, toTag) =>
+        shouldRender = false
+
         link =
             source: fromContribution
             target: toTag
@@ -371,9 +383,11 @@ class CK.Smartboard.View.BalloonCloud
         unless _.any(@links, 
                 (l) -> l.source.id is fromContribution.id and l.target.id is toTag.id)
             @links.push link
+            shouldRender = true
 
         console.log '----- links ----'
         console.log @links
+        return shouldRender
 
     inflateBalloons: (balloons) =>
         screenState = @wall.mode
