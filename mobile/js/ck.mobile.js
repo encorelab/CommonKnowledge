@@ -364,7 +364,7 @@ CK.Mobile = function() {
     if (Sail.app.keyCount > 2) {
 
       view.model.set(ev.target.name, jQuery('#'+ev.target.id).val());
-      view.model.save();
+      view.model.save({silent: true});
       Sail.app.keyCount = 0;
     }
 
@@ -616,6 +616,7 @@ CK.Mobile = function() {
     CK.setUserState(app.userData.account.login, "proposal", {});     // do we need this?
     console.log('creating ProposalListView');
 
+    // TODO remove me (already created)
     app.contributionList = new CK.Model.Contributions();
     //app.contributionList.wake(app.config.wakeful.url);
     app.contributionList.on('change', function(model) { console.log(model.changedAttributes()); });    
@@ -623,7 +624,7 @@ CK.Mobile = function() {
       el: jQuery('#proposal-contribution-list'),
       collection: app.contributionList
     });
-    app.contributionList.on('reset add', app.proposalListView.render);
+    app.contributionList.on('reset add', app.proposalListView.render, app.proposalListView);
     var sort = ['created_at', 'DESC'];
     app.contributionList.fetch({
       data: { sort: JSON.stringify(sort) }
