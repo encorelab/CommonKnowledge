@@ -193,8 +193,17 @@
         var view = this,
           input_what = ev.target.name,
           user_input = jQuery('#'+ev.target.id).val();
+        // If we hit a key clear intervals so that during typing intervals don't kick in
+        window.clearTimeout(Sail.app.autoSaveTimer);
 
+        // save after 10 keystrokes
         Sail.app.autoSave(view, input_what, user_input, false);
+
+        // setting up a timer so that if we stop typing we save stuff after 5 seconds
+        Sail.app.autoSaveTimer = setTimeout( function(){
+          console.log('Autosave data for: '+input_what);
+          Sail.app.autoSave(view, input_what, user_input, true);
+        }, 5000);
       },
 
       'click #share-note-btn': 'share'
@@ -312,14 +321,7 @@
         } else {
           console.log('unknown note type');
         }
-      } 
-      // jQuery('#note-body-entry').removeClass('disabled'); CAN THIS BE DELETED?
-      // jQuery('#note-headline-entry').removeClass('disabled');
-      
-
-      // // TODO: make another view for buildon so I don't have to do all this nonsense
-      // jQuery('#note-body-entry').val('');
-      // jQuery('#note-headline-entry').val('');
+      }
 
       if (contrib.kind === 'buildOn') {
         jQuery('#note-body-entry').val(Sail.app.currentBuildOn.content);
@@ -327,41 +329,6 @@
         jQuery('#note-body-entry').val(contrib.get('content'));
         jQuery('#note-headline-entry').val(contrib.get('headline'));
       }
-      // else {
-      //   console.log('trying to render, but unknown note type');
-      // }
-
-      //CK.getState('phase', function(s) {                      // TODO - fix me when model is done
-        //if (s && s.get('state') === 'done_tagging') {
-          //jQuery('#contribution-details-build-on-btn').addClass('hide');
-          // TODO - do this right: make sure model is actually syncing with view instead of manually doing this
-          // jQuery('#tag-submission-container .tag-btn').removeClass('active');
-
-          // I THINK THIS CAN ALL GO TOO
-          // Sail.app.tagList.each(function(tag) {
-          //   var tagButton = jQuery('button#note-tag-'+tag.id);
-          //   // length avoids duplicating (probably a better way to do this in backbone?)
-          //   //if (tagButton.length === 0 && tag.get('name') != "N/A") {
-          //   if (tagButton.length === 0) {
-          //     tagButton = jQuery('<button id=note-tag-'+tag.id+' type="button" class="btn tag-btn"></button>');
-          //     tagButton = jQuery(tagButton);
-          //     jQuery('#tag-submission-container').append(tagButton);
-          //   }
-
-          //   tagButton.text(tag.get('name'));
-
-          //   // add tagger and store the tag object in the button for later
-          //   tag.set('tagger',Sail.app.userData.account.login);
-          //   tagButton.data('tag',tag);
-
-          //   // turn button on if previously tagged with this tag
-          //   if (Sail.app.currentContribution.hasTag(tag)) {
-          //     tagButton.addClass('active');
-          //   }
-          // });
-        //}
-      //});
-
 
     } // end of render
   });
@@ -521,6 +488,7 @@
     'create-group': function () {
       jQuery('.row').addClass('disabled');
       jQuery('#grouping-screen').removeClass('hide');
+      jQuery('#group-btn').addClass('disabled');
       Sail.app.groupingView.render();
     },
 
@@ -668,49 +636,55 @@
       Triggers full update of all dynamic elements in the list view
     **/
     render: function () {
-      console.log('rendering ProposalInputView');
-      var view = this;
-      // only do this rendering on the first pass (then the flag set to true)
-      if (!view.initialRenderComplete) {
-        jQuery('#proposal-headline-entry').text(view.model.get('headline'));
-        jQuery('#proposal-body-entry').text(view.model.get('proposal'));
-        jQuery('#justification-body-entry').text(view.model.get('justification'));
-        view.initialRenderComplete = true;
+      var view = this;      
+
+      if (view.model.get('published') !== true) {
+        console.log('rendering ProposalInputView');
+        // prevent them from joining a new group randomly
+        jQuery('#group-btn').addClass('disabled');
+
+        // only do this rendering on the first pass (then the flag set to true)
+        if (!view.initialRenderComplete) {
+          jQuery('#proposal-headline-entry').val(view.model.get('headline'));
+          jQuery('#proposal-body-entry').val(view.model.get('proposal'));
+          jQuery('#justification-body-entry').val(view.model.get('justification'));
+          view.initialRenderComplete = true;
+        }
+
+        if (Sail.app.userData.account.login === view.model.get('initiator')) {
+          if (view.model.get('headline_published') === false) {
+            jQuery('#proposal-headline-entry').removeClass('disabled');
+            jQuery('#share-proposal-headline-btn').removeClass('disabled');
+          } else {
+            jQuery('#proposal-headline-entry').addClass('disabled');
+            jQuery('#share-proposal-headline-btn').addClass('disabled');
+          }
+          if (view.model.get('proposal_published') === false) {
+            jQuery('#proposal-body-entry').removeClass('disabled');
+            jQuery('#share-proposal-body-btn').removeClass('disabled');
+          } else {
+            jQuery('#proposal-body-entry').addClass('disabled');
+            jQuery('#share-proposal-body-btn').addClass('disabled');
+          }
+          jQuery('#justification-body-entry').val(view.model.get('justification'));
+
+        } else if (Sail.app.userData.account.login === view.model.get('receiver')) {
+          if (view.model.get('justification_published') === false) {
+            jQuery('#justification-body-entry').removeClass('disabled');
+            jQuery('#share-justification-body-btn').removeClass('disabled');
+          } else {
+            jQuery('#justification-body-entry').addClass('disabled');
+            jQuery('#share-justification-body-btn').addClass('disabled');
+          }
+          jQuery('#proposal-headline-entry').val(view.model.get('headline'));
+          jQuery('#proposal-body-entry').val(view.model.get('proposal'));
+
+        } else {
+          console.log('skipping render... somehow not related to this user?!');
+        }
+
+        jQuery('#group-label-container').text('Current group: ['+view.model.get('author')+']');        
       }
-
-      if (Sail.app.userData.account.login === view.model.get('initiator')) {
-        if (view.model.get('headline_published') === false) {
-          jQuery('#proposal-headline-entry').removeClass('disabled');
-          jQuery('#share-proposal-headline-btn').removeClass('disabled');
-        } else {
-          jQuery('#proposal-headline-entry').addClass('disabled');
-          jQuery('#share-proposal-headline-btn').addClass('disabled');
-        }
-        if (view.model.get('proposal_published') === false) {
-          jQuery('#proposal-body-entry').removeClass('disabled');
-          jQuery('#share-proposal-body-btn').removeClass('disabled');
-        } else {
-          jQuery('#proposal-body-entry').addClass('disabled');
-          jQuery('#share-proposal-body-btn').addClass('disabled');
-        }
-        jQuery('#justification-body-entry').text(view.model.get('justification'));
-
-      } else if (Sail.app.userData.account.login === view.model.get('receiver')) {
-        if (view.model.get('justification_published') === false) {
-          jQuery('#justification-body-entry').removeClass('disabled');
-          jQuery('#share-justification-body-btn').removeClass('disabled');
-        } else {
-          jQuery('#justification-body-entry').addClass('disabled');
-          jQuery('#share-justification-body-btn').addClass('disabled');
-        }
-        jQuery('#proposal-headline-entry').text(view.model.get('headline'));
-        jQuery('#proposal-body-entry').text(view.model.get('proposal'));
-
-      } else {
-        console.log('skipping render... somehow not related to this user?!');
-      }
-
-      jQuery('#group-label-container').text(view.model.get('author'));
 
     }
 
@@ -725,8 +699,9 @@
 
       'click #close-group-btn': function () {
         jQuery('.row').removeClass('disabled');
-        jQuery('#grouping-screen').addClass('hide');
         jQuery('.active').removeClass('active');
+        jQuery('#grouping-screen').addClass('hide');
+        jQuery('#group-btn').removeClass('disabled');
       }
     },
 
