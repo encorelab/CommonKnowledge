@@ -561,7 +561,7 @@
 
         jQuery('#proposal-contribution-list li').remove();
 
-        _.each(view.models, function(contrib) {
+        _.each(view.collection.models, function(contrib) {
           if (contrib.get('published') === true) {
             console.log('headline: ' + contrib.get('headline'));
 
