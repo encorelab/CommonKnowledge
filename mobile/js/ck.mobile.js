@@ -418,6 +418,8 @@ CK.Mobile = function() {
       }
       app.inputView.model = contrib;
     }
+    app.inputView.$el.show('slide', {direction: 'up'});
+
     app.inputView.render();
   };
 
