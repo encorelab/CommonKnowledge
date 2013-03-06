@@ -84,8 +84,8 @@ class CK.Smartboard extends Sail.App
                 b.set({pos: {left: pos.left, top: pos.top}}, {silent: true})
                 b.save({}, {silent: true})
 
-        if (@wall.mode is 'interpret')
-                @switchToEvaluation()
+        # if (@wall.mode is 'interpret')
+        #         @switchToEvaluation()
 
         
 
