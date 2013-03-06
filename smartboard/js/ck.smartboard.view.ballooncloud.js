@@ -313,8 +313,10 @@
       if (!_.any(this.links, function(l) {
         return l.source.id === fromContribution.id && l.target.id === toTag.id;
       })) {
-        return this.links.push(link);
+        this.links.push(link);
       }
+      console.log('----- links ----');
+      return console.log(this.links);
     };
 
     BalloonCloud.prototype.inflateBalloons = function(balloons) {

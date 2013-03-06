@@ -45,6 +45,7 @@ CK.Mobile = function() {
   app.tagListView = null;
   app.taggingView = null;
   app.proposalInputView = null;
+  app.autoSaveTimer = window.setTimeout(function() { console.log("timer activated"); } ,10);
 
 
   app.init = function() {
@@ -356,18 +357,16 @@ CK.Mobile = function() {
     });
   };
 
-  app.autoSave = function(view, ev) {
+  app.autoSave = function(view, input_what, user_input, instant_save) {
     //var view = this;
     Sail.app.keyCount++;
     console.log("saving stuff as we go at", Sail.app.keyCount);
 
-    if (Sail.app.keyCount > 10) {
-
-      view.model.set(ev.target.name, jQuery('#'+ev.target.id).val());
+    if (instant_save || Sail.app.keyCount > 9) {
+      view.model.set(input_what, user_input);
       view.model.save({silent: true});
       Sail.app.keyCount = 0;
     }
-
   };  
 
   app.addNote = function(kind) {
@@ -625,7 +624,7 @@ CK.Mobile = function() {
     if (app.contributionList === null) {
       app.contributionList = new CK.Model.Contributions();
     }
-    
+
     //app.contributionList.wake(app.config.wakeful.url);
     app.contributionList.on('change', function(model) { console.log(model.changedAttributes()); });    
     app.proposalListView = new CK.Mobile.View.ProposalListView({
@@ -659,11 +658,11 @@ CK.Mobile = function() {
 
     userStates.on('change', function(model) { console.log(model.changedAttributes()); });
 
-    var groupingView = new CK.Mobile.View.GroupingView({
+    app.groupingView = new CK.Mobile.View.GroupingView({
       el: jQuery('#grouping-screen'),
       collection: userStates
     });
-    userStates.on('reset add', groupingView.render, groupingView);
+    userStates.on('reset add', app.groupingView.render, app.groupingView);
 
     function fetchSuccess (m) {
       console.log('fetched user userStates:', userStates);
@@ -690,8 +689,8 @@ CK.Mobile = function() {
     proposal.set('author', groupName);
     proposal.set('initiator', initiator);
     proposal.set('receiver', receiver);
-    proposal.set('tag_group_id', tagGroupName);
-    proposal.set('tag_group_name', tagGroupId);
+    proposal.set('tag_group_id', tagGroupId);
+    proposal.set('tag_group_name', tagGroupName);
 
     proposal.on('reset add', app.proposalInputView.render, app.proposalInputView);
 
@@ -720,13 +719,10 @@ CK.Mobile = function() {
       app.proposalInputView.model.set('published', true);
       app.proposalInputView.model.save();
       
-      jQuery('#proposal-headline-entry').addClass('disabled');
-      jQuery('#share-proposal-headline-btn').addClass('disabled');
-      jQuery('#proposal-body-entry').addClass('disabled');
-      jQuery('#share-proposal-body-btn').addClass('disabled');
-      jQuery('#justification-body-entry').addClass('disabled');
-      jQuery('#share-justification-body-btn').addClass('disabled');
+      app.proposalInputView.$el.find(".field").val(null);
       app.proposalInputView.model.clear();
+    } else {
+      app.proposalInputView.model.save();
     }
   };
 

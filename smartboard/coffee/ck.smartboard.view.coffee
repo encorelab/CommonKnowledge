@@ -495,6 +495,8 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
 
         buildons = @model.get('build_ons')
 
+        return unless buildons.length
+
         container = @findOrCreate '.buildons',
             "<div class='buildons'></div>"
 

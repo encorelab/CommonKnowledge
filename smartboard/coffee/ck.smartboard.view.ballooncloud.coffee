@@ -372,6 +372,9 @@ class CK.Smartboard.View.BalloonCloud
                 (l) -> l.source.id is fromContribution.id and l.target.id is toTag.id)
             @links.push link
 
+        console.log '----- links ----'
+        console.log @links
+
     inflateBalloons: (balloons) =>
         screenState = @wall.mode
         tagListing = @tagList

@@ -190,8 +190,11 @@
       },
 
       'keyup :input': function (ev) {
-        var view = this;
-        Sail.app.autoSave(view, ev);
+        var view = this,
+          input_what = ev.target.name,
+          user_input = jQuery('#'+ev.target.id).val();
+
+        Sail.app.autoSave(view, input_what, user_input, false);
       },
 
       'click #share-note-btn': 'share'
@@ -518,6 +521,7 @@
     'create-group': function () {
       jQuery('.row').addClass('disabled');
       jQuery('#grouping-screen').removeClass('hide');
+      Sail.app.groupingView.render();
     },
 
     'close-note': function () {
@@ -601,26 +605,47 @@
   self.ProposalInputView = Backbone.View.extend({
     events: {
       'keyup :input': function (ev) {
-        var view = this;
-        Sail.app.autoSave(view, ev);
+        var view = this,
+          input_what = ev.target.name,
+          user_input = jQuery('#'+ev.target.id).val();
+        // If we hit a key clear intervals so that during typing intervals don't kick in
+        window.clearTimeout(Sail.app.autoSaveTimer);
+
+        // save after 10 keystrokes
+        Sail.app.autoSave(view, input_what, user_input, false);
+
+        // setting up a timer so that if we stop typing we save stuff after 5 seconds
+        Sail.app.autoSaveTimer = setTimeout( function(){
+          console.log('Autosave data for: '+input_what);
+          Sail.app.autoSave(view, input_what, user_input, true);
+        }, 5000);
       },
 
       'click #share-proposal-headline-btn': function() {
+        // if Done is hit I clear my timers
+        // TODO I could be specific which timers to clear
+        window.clearTimeout(Sail.app.autoSaveTimer);
+
         this.model.set('headline_published', true);
         Sail.app.checkProposalPublishState();
-        this.model.save();
       },
 
       'click #share-proposal-body-btn': function() {
+        // if Done is hit I clear my timers
+        // TODO I could be specific which timers to clear
+        window.clearTimeout(Sail.app.autoSaveTimer);
+
         this.model.set('proposal_published', true);
         Sail.app.checkProposalPublishState();
-        this.model.save();
       },
 
       'click #share-justification-body-btn': function() {
+        // if Done is hit I clear my timers
+        // TODO I could be specific which timers to clear
+        window.clearTimeout(Sail.app.autoSaveTimer);
+
         this.model.set('justification_published', true);
         Sail.app.checkProposalPublishState();
-        this.model.save();
       }
     },
 
@@ -690,6 +715,7 @@
       'click #close-group-btn': function () {
         jQuery('.row').removeClass('disabled');
         jQuery('#grouping-screen').addClass('hide');
+        jQuery('.active').removeClass('active');
       }
     },
 
@@ -698,11 +724,17 @@
     },
 
     'create-group': function () {
-      jQuery('.row').removeClass('disabled');
-      jQuery('#grouping-screen').addClass('hide');
-      CK.getUserState(Sail.app.userData.account.login, function(us) {
-        Sail.app.createGroup(us.get('analysis').tag_group, us.get('analysis').tag_group_id);
-      });
+      // this is pretty sketch - TODO confirm I work
+      if ( jQuery('#grouping-screen .active').val() ) {
+        jQuery('.row').removeClass('disabled');
+        jQuery('#grouping-screen').addClass('hide');
+        jQuery('.active').removeClass('active');
+        CK.getUserState(Sail.app.userData.account.login, function(us) {
+          Sail.app.createGroup(us.get('analysis').tag_group, us.get('analysis').tag_group_id);
+        });        
+      } else {
+        jQuery().toastmessage('showErrorToast', "Choose one other student to group with");
+      }
       
     },
 
@@ -712,7 +744,7 @@
     render: function () {
       var view = this;
       var tagGroupName = "";
-      // get this user tag group (TODO - convert to using the getUserState getter)
+      // get this user tag group
       var myUs = view.collection.find(function(us) { return us.get('username') === Sail.app.userData.account.login; });
 
       if (myUs) {
@@ -732,9 +764,9 @@
 
         // display all users in the same tag_group (other than self)
         if (us.get('analysis').tag_group === tagGroupName && us.get('username') !== Sail.app.userData.account.login) {
-          var userButton = jQuery('button#'+us.get('analysis').tag_group_id);
+          var userButton = jQuery('button#'+us.get('username'));
           if (userButton.length === 0) {
-            userButton = jQuery('<button id=user-btn-'+us.get('username')+' type="button" value='+us.get('username')+' class="btn user-btn btn-success" data-toggle="button">'+us.get('username')+'</button>');
+            userButton = jQuery('<button id='+us.get('username')+' type="button" value='+us.get('username')+' name="user_btn" class="btn user-btn btn-success" data-toggle="radio">'+us.get('username')+'</button>');
             jQuery('#grouping-btn-container').append(userButton);
           }
         }
