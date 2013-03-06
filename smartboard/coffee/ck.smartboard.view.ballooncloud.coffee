@@ -364,6 +364,9 @@ class CK.Smartboard.View.BalloonCloud
                 if b.has('tags') and b.get('tags').some( (t) -> t.id is n.id )
                     shouldRerender = @ensureLink(n, tag)
                     shouldRender = shouldRender || shouldRerender
+        
+        if shouldRender
+            console.log 'View Change Detected: Should Rerender Board!'
 
         return shouldRender
 

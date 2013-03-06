@@ -303,6 +303,9 @@
           }
         }
       }
+      if (shouldRender) {
+        console.log('View Change Detected: Should Rerender Board!');
+      }
       return shouldRender;
     };
 
