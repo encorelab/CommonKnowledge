@@ -707,6 +707,8 @@ CK.Mobile = function() {
       prop.on('change:published', function() {
         if (prop.get('published') === true) {
           prop.off();
+          jQuery('#group-btn').removeClass('disabled');
+          jQuery('#group-label-container').text("");
         }
       });
 
@@ -725,7 +727,6 @@ CK.Mobile = function() {
       app.proposalInputView.model.set('published', true);
       app.proposalInputView.model.save();
       jQuery().toastmessage('showSuccessToast', "Proposal submitted");
-      jQuery('#group-btn').removeClass('disabled');
     } else {
       app.proposalInputView.model.save();
     }

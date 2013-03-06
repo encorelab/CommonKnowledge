@@ -640,6 +640,8 @@
 
       if (view.model.get('published') !== true) {
         console.log('rendering ProposalInputView');
+        // prevent them from joining a new group randomly
+        jQuery('#group-btn').addClass('disabled');
 
         // only do this rendering on the first pass (then the flag set to true)
         if (!view.initialRenderComplete) {
@@ -697,8 +699,9 @@
 
       'click #close-group-btn': function () {
         jQuery('.row').removeClass('disabled');
-        jQuery('#grouping-screen').addClass('hide');
         jQuery('.active').removeClass('active');
+        jQuery('#grouping-screen').addClass('hide');
+        jQuery('#group-btn').removeClass('disabled');
       }
     },
 
