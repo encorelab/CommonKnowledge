@@ -433,21 +433,24 @@ class CK.Smartboard.View.BalloonCloud
 
                 d.view = view
 
-            if view?
-                view.render()
+            if ! view? 
+                 console.error 'Could not create or set view for ' + d.collectionName + '!'
+                 return
+            
+            view.render()
 
-                if d.collectionName is "contributions" or d.collectionName is "proposals" 
-                    view.resetView() 
+            if d.collectionName is "contributions" or d.collectionName is "proposals" 
+                view.resetView() 
 
-                if d.newlyAdded
-                    jQuery('#'+d.id).addClass('new')
-                    setTimeout ->
-                        jQuery('#'+d.id).removeClass('new')
-                    , 2000
+            if d.newlyAdded
+                jQuery('#'+d.id).addClass('new')
+                setTimeout ->
+                    jQuery('#'+d.id).removeClass('new')
+                , 2000
 
-                pos = view.$el.position()
-                d.x = view.leftToX(pos.left) unless d.x?
-                d.y = view.topToY(pos.top) unless d.y?
+            pos = view.$el.position()
+            d.x = view.leftToX(pos.left) unless d.x?
+            d.y = view.topToY(pos.top) unless d.y?
 
     reRenderForState: (state) =>
         console.log 'Rerender nodes for state: ' + state

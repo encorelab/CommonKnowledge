@@ -368,24 +368,26 @@
           }
           d.view = view;
         }
-        if (view != null) {
-          view.render();
-          if (d.collectionName === "contributions" || d.collectionName === "proposals") {
-            view.resetView();
-          }
-          if (d.newlyAdded) {
-            jQuery('#' + d.id).addClass('new');
-            setTimeout(function() {
-              return jQuery('#' + d.id).removeClass('new');
-            }, 2000);
-          }
-          pos = view.$el.position();
-          if (d.x == null) {
-            d.x = view.leftToX(pos.left);
-          }
-          if (d.y == null) {
-            return d.y = view.topToY(pos.top);
-          }
+        if (!(view != null)) {
+          console.error('Could not create or set view for ' + d.collectionName + '!');
+          return;
+        }
+        view.render();
+        if (d.collectionName === "contributions" || d.collectionName === "proposals") {
+          view.resetView();
+        }
+        if (d.newlyAdded) {
+          jQuery('#' + d.id).addClass('new');
+          setTimeout(function() {
+            return jQuery('#' + d.id).removeClass('new');
+          }, 2000);
+        }
+        pos = view.$el.position();
+        if (d.x == null) {
+          d.x = view.leftToX(pos.left);
+        }
+        if (d.y == null) {
+          return d.y = view.topToY(pos.top);
         }
       });
     };
