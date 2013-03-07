@@ -45,6 +45,11 @@ CK.Mobile = function() {
   app.tagListView = null;
   app.taggingView = null;
   app.proposalInputView = null;
+
+  // these are both used in Interpretation phase
+  app.proposalList = null;
+  app.interpretationListView = null;
+
   app.autoSaveTimer = window.setTimeout(function() { console.log("timer activated"); } ,10);
 
 
@@ -345,15 +350,6 @@ CK.Mobile = function() {
     // var selector = {"author": "matt"};
     app.contributionList.fetch({
       data: { sort: JSON.stringify(sort) }
-    });
-
-
-    // just for testing - do this properly when the view is completed (see also 440)
-    jQuery('#like-btn-on').click(function() {
-      app.toggleVote();
-    });
-    jQuery('#like-btn-off').click(function() {
-      app.toggleVote();
     });
   };
 
@@ -715,6 +711,7 @@ CK.Mobile = function() {
       prop.on('change:published', function() {
         if (prop.get('published') === true) {
           prop.off();
+          jQuery().toastmessage('showSuccessToast', "Proposal submitted");
           jQuery('#group-btn').removeClass('disabled');
           jQuery('#group-label-container').text("");
         }
@@ -734,7 +731,6 @@ CK.Mobile = function() {
       console.log('setting proposal published state to true...');
       app.proposalInputView.model.set('published', true);
       app.proposalInputView.model.save();
-      jQuery().toastmessage('showSuccessToast', "Proposal submitted");
     } else {
       app.proposalInputView.model.save();
     }
@@ -747,21 +743,44 @@ CK.Mobile = function() {
     app.newProposal(initiator, receiver, tagGroupName, tagGroupId);
   };
 
-  app.startInterpretation = function() {
+  // app.startInterpretation = function() {
+  //   console.log('creating InterpretationListView');
+    
+  //   if (app.proposalList === null) {
+  //     // instantiate new contributions collection
+  //     app.proposalList = new CK.Model.Proposals();
+  //     // make collection wakefull (receiving changes form other actors via pub/sub)
+  //     app.proposalList.wake(Sail.app.config.wakeful.url);
+  //   }
 
-  };
+  //   app.proposalList.on('change', function(model) { console.log(model.changedAttributes()); });
 
-  // TODO - fix me to work properly with views etc (see also initViews section)
-  app.toggleVote = function() {
-    // set the vote (or whatever) field in the object
-    if (jQuery('#like-btn-on').hasClass('hide')) {
-      jQuery('#like-btn-on').removeClass('hide');
-      jQuery('#like-btn-off').addClass('hide');
-    } else {
-      jQuery('#like-btn-on').addClass('hide');
-      jQuery('#like-btn-off').removeClass('hide');
-    }
-  };  
+  //   // check if view already exists
+  //  if (app.interpretationListView === null) {
+  //     app.interpretationListView = new CK.Mobile.View.InterpretationListView({
+  //       el: jQuery('#contribution-list'),
+  //       collection: app.proposalList
+  //     });
+  //   }
+
+  //   app.proposalList.on('reset add', app.interpretationListView.render, app.interpretationListView);
+  //   var sort = ['created_at', 'DESC'];
+  //   // var selector = {"author": "matt"};
+  //   app.proposalList.fetch({
+  //     data: { sort: JSON.stringify(sort) }
+  //   });
+  // };
+
+  // app.toggleVote = function() {
+  //   // set the vote (or whatever) field in the object
+  //   if (jQuery('#like-btn-on').hasClass('hide')) {
+  //     jQuery('#like-btn-on').removeClass('hide');
+  //     jQuery('#like-btn-off').addClass('hide');
+  //   } else {
+  //     jQuery('#like-btn-on').addClass('hide');
+  //     jQuery('#like-btn-off').removeClass('hide');
+  //   }
+  // };  
 
 };
 

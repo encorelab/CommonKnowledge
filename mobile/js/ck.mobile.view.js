@@ -769,6 +769,102 @@
   });
 
 
+  // /**
+  //   ListView
+  // **/
+  // self.InterpretationListView = Backbone.View.extend({
+  //   events: {
+  //     'click .list-item': function (ev) {
+  //       jQuery('#proposal-list .proposal').removeClass('selected');
+
+  //       // The problem here was that ev.target referes to a differently deep nested element 
+  //       var $target = jQuery(ev.target);
+  //       if (!$target.is('.list-item')) {
+  //          $target = $target.parents('.list-item').first();
+  //       }
+
+  //       // Removing background colors, then adding the correct one
+  //       $target.children().first().addClass('selected');
+  //       var proposalId = $target.attr('id');
+
+  //       // Sail.app.showProposalDetails(Sail.app.proposalList.get(proposalId));        
+  //     },
+
+  //     'click #like-btn-on': function() {
+
+  //     },
+
+  //     'click #like-btn-off': function() {
+
+  //     }
+  //   },
+
+
+
+
+  //   // jQuery('#like-btn-on').click(function() {
+  //   //   app.toggleVote();
+  //   // });
+  //   // jQuery('#like-btn-off').click(function() {
+  //   //   app.toggleVote();
+  //   // });
+  //   // },
+
+  //   initialize: function () {
+  //     console.log("Initializing InterpretationListView...");
+  //   },
+
+  //   /**
+  //     Triggers full update of all dynamic elements in the list view
+  //   **/
+  //   render: function () {
+  //     console.log("rendering InterpretationListView!");
+  //     var view = this,
+  //       created_at;
+
+  //     jQuery('#proposal-list li').remove();
+
+  //     _.each(view.collection.models, function(prop) {
+  //       if (prop.get('published') === true) {
+  //         console.log('headline: ' + prop.get('headline'));
+
+  //         //var note = jQuery('li#'+prop.id);
+  //         var note = "<li id=" + prop.id + " class='list-item'><a class='note'><span class='headline'></span>";
+  //         note += "<br /><i class='icon-chevron-right'></i>";
+  //         note += "<span class='author'></span><span class='date'></span></a></li>";
+  //         note = jQuery(note);
+
+  //         jQuery('#proposal-list .nav-list').append(note);
+
+  //         note.find('.headline').text(prop.get('headline'));
+
+  //         // functions toLocaleDateString() and toLocaleTimeString() are only defined if created_at is a Date object
+  //         created_at = new Date(prop.get('created_at'));  // created_at as Date object
+  //         if (typeof created_at !== 'undefined' && created_at !== null) {
+  //           note.find('.date').text(' (' + created_at.toLocaleDateString() + ' ' + created_at.toLocaleTimeString() + ')');
+  //         }
+
+  //         note.find('.author').text(prop.get('author'));               
+  //         if (prop.get('author') === Sail.app.userData.account.login) {
+  //           note.children().first().addClass('own-color');
+  //         }
+  //         // TODO check if this is working, then add for tags as well, then port to where it's actually relevant
+  //         // _.each(prop.get('build_ons'), function(b) {
+  //         //    if (prop.get('author') === Sail.app.userData.account.login) {
+  //         //     note.children().first().addClass('own-color');
+  //         //   }
+  //         // });         
+  //       } else {
+  //         console.log(prop.id, 'is unpublished');
+  //       }
+
+  //     });
+          
+  //   }
+
+  // });
+
+
 
   CK.Mobile.View = self;
 })(window.CK);
