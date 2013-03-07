@@ -537,7 +537,9 @@
         jQuery('#proposal-contribution-list li').remove();
 
         _.each(view.collection.models, function(contrib) {
-          if (contrib.get('published') === true) {
+          var hasMyTagGroup = _.any(contrib.get('tags'), function(t) { return t.name === Sail.app.myTagGroup; });
+
+          if (contrib.get('published') === true && hasMyTagGroup) {
             console.log('headline: ' + contrib.get('headline'));
 
             var note = "<li id=" + contrib.id + " class='list-item'><a class='note'><span class='headline'></span>";
@@ -575,13 +577,6 @@
   **/
   self.ProposalInputView = Backbone.View.extend({
     events: {
-      // 'change .field': function (ev) {
-      //   var view = this;
-      //   var f;
-      //   f = jQuery(ev.target);
-      //   console.log("Setting "+f.attr("name")+" to "+f.val());
-      //   view.model.set(f.attr('name'), f.val());
-      // },
 
       'keyup :input': function (ev) {
         var view = this,
@@ -735,18 +730,17 @@
     **/
     render: function () {
       var view = this;
-      var tagGroupName = "";
 
       jQuery('#grouping-btn-container').empty();
 
-      // get this user tag group
-      var myUs = view.collection.find(function(us) { return us.get('username') === Sail.app.userData.account.login; });
+      // get this user tag group - TODO move this all to mobile.js
+      // var myUs = view.collection.find(function(us) { return us.get('username') === Sail.app.userData.account.login; });
 
-      if (myUs) {
-        tagGroupName = myUs.get('analysis').tag_group;
-      } else {
-        console.error("No user_state found for ", Sail.app.userData.account.login);
-      }
+      // if (myUs) {
+      //   Sail.app.tagGroupName = myUs.get('analysis').tag_group;
+      // } else {
+      //   console.error("No user_state found for ", Sail.app.userData.account.login);
+      // }
 
       // get the other members in this users tag group, and then create the button elements for them
       // ugg - why are we storing tag_group in analysis subsection of user_states?!
@@ -768,7 +762,7 @@
           console.log('user already in a group');
         } else {
           // display all users in the same tag_group (other than self) - code from before here
-          if (us.get('analysis').tag_group === tagGroupName && us.get('username') !== Sail.app.userData.account.login) {
+          if (us.get('analysis').tag_group === Sail.app.myTagGroup && us.get('username') !== Sail.app.userData.account.login) {
             var userButton = jQuery('button#'+us.get('username'));
             if (userButton.length === 0) {
               userButton = jQuery('<button id='+us.get('username')+' type="button" value='+us.get('username')+' name="user_btn" class="btn user-btn btn-success" data-toggle="radio">'+us.get('username')+'</button>');

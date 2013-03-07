@@ -35,6 +35,7 @@ CK.Mobile = function() {
   app.contributionInputView = null;
   app.contributionList = null;
   app.contributionListView = null;
+  app.myTagGroup = null;
 
   // app.currentState = {"type":"tablet"};
 
@@ -135,7 +136,27 @@ CK.Mobile = function() {
             });
           } else if (phase === "proposal") {
             console.log('phase is proposal');
-            app.startProposal();            
+
+            var userStates = new CK.Model.UserStates();
+
+            var fetchSuccess = function(m) {
+              console.log('fetched user userStates:', userStates);
+
+              var myUs = userStates.find(function(us) { return us.get('username') === Sail.app.userData.account.login; });
+
+              if (myUs) {
+                app.myTagGroup = myUs.get('analysis').tag_group;
+              } else {
+                console.error("No user_state found for ", Sail.app.userData.account.login);
+              }
+              app.startProposal();
+            };
+            var fetchError = function(err) {
+              console.warn('error fetching userStates');
+            };
+            userStates.fetch({success: fetchSuccess, error: fetchError});
+
+                       
           } else if (phase === "interpretation") {
             console.log('phase is interpretation');
             app.startInterpretation();
@@ -499,7 +520,7 @@ CK.Mobile = function() {
 
   /* 
     Sends out and event with the tag group the user has chosen and stores the tag_group
-    in the states object associated with the student
+    in the states object associated with the student and now also in the myTagGroup var
   */
   app.choseTagGroup = function(tag_name, tag_id) {
     if (typeof tag_name !== 'undefined' && tag_name !== null && tag_name !== '') {
@@ -512,6 +533,9 @@ CK.Mobile = function() {
       CK.getUserState(Sail.app.userData.account.login, function (user_state){
         var analysis_obj = user_state.get('analysis');
         analysis_obj.tag_group = tag_name;
+        
+        app.myTagGroup = tag_name;
+
         analysis_obj.tag_group_id = tag_id;
         user_state.set('analysis', analysis_obj);
         user_state.save(null,
@@ -709,6 +733,7 @@ CK.Mobile = function() {
       app.proposalInputView.initialRenderComplete = false;
       app.proposalInputView.stopListening(app.proposalInputView.model);
       
+      // this is really important - will be the model for how we listen to wakeful events, I think
       prop.on('change:published', function() {
         if (prop.get('published') === true) {
           prop.off();
