@@ -133,12 +133,12 @@
         wordCloudObject = jQuery('#show-word-cloud');
         if (this.showCloud) {
           wordCloudObject.addClass('disabled');
-          wordCloudObject.text('Drawing cloud... Please wait...');
+          wordCloudObject.text('Drawing Cloud... Please wait...');
           this.showWordCloud();
           return this.showCloud = false;
         } else {
           this.hideWordCloud();
-          wordCloudObject.text('Show word Cloud');
+          wordCloudObject.text('Show Word Cloud');
           return this.showCloud = true;
         }
       },
@@ -322,7 +322,7 @@
         return d.size;
       }).on("end", draw).start();
       wordCloudObject = jQuery('#show-word-cloud');
-      wordCloudObject.text('Hide word Cloud');
+      wordCloudObject.text('Hide Word Cloud');
       return wordCloudObject.removeClass('disabled');
     };
 
