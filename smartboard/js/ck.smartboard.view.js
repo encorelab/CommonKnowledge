@@ -654,7 +654,12 @@
       },
       'click': function(ev) {
         this.$el.toggleClass('opened');
-        this.$el.toggleClass('balloon-note').toggleClass(this.colorClass);
+        this.$el.toggleClass(this.colorClass);
+        if (this.$el.hasClass('opened')) {
+          this.$el.removeClass('balloon-note');
+        } else {
+          this.$el.addClass('balloon-note');
+        }
         return this.processContributionByType();
       }
     };
