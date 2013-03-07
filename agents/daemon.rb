@@ -7,7 +7,9 @@ require 'sail/daemon'
 AGENT_PASSWORD = "9186ebc4790dfba833826e13c42c885f6f847274" # s3agent!
 
 #RUNS = ['ab', 'cd', 'a','b','c','d'].collect{|alph| "neo-#{alph}"}
-RUNS = ['beta1'].collect{|alph| "ck-#{alph}"}
+#RUNS = ['beta1'].collect{|alph| "ck-#{alph}"}
+#RUNS = ['beta1-ben'].collect{|alph| "ck-#{alph}"}
+RUNS = ['beta1-julia'].collect{|alph| "ck-#{alph}"}
 #RUNS = ['alpha2'].collect{|alph| "ck-#{alph}"}
 
 @daemon = Sail::Daemon.spawn(
