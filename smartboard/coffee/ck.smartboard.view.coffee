@@ -560,8 +560,12 @@ class CK.Smartboard.View.ContributionProposalBalloon extends CK.Smartboard.View.
 
         'click': (ev) ->
             @$el.toggleClass('opened')
-            @$el.toggleClass('balloon-note').toggleClass(@colorClass)
-            # if @$el.hasClass('opened')
+            @$el.toggleClass(@colorClass)
+            
+            if @$el.hasClass('opened')
+                @$el.removeClass('balloon-note')
+            else 
+                @$el.addClass('balloon-note')
             #     if Sail.app.wall.cloud? && Sail.app.wall.cloud.force?
             #         Sail.app.wall.cloud.force.stop()
             
