@@ -736,6 +736,9 @@
     render: function () {
       var view = this;
       var tagGroupName = "";
+
+      jQuery('#grouping-btn-container').empty();
+
       // get this user tag group
       var myUs = view.collection.find(function(us) { return us.get('username') === Sail.app.userData.account.login; });
 
@@ -754,14 +757,27 @@
           return;
         }
 
-        // display all users in the same tag_group (other than self)
-        if (us.get('analysis').tag_group === tagGroupName && us.get('username') !== Sail.app.userData.account.login) {
-          var userButton = jQuery('button#'+us.get('username'));
-          if (userButton.length === 0) {
-            userButton = jQuery('<button id='+us.get('username')+' type="button" value='+us.get('username')+' name="user_btn" class="btn user-btn btn-success" data-toggle="radio">'+us.get('username')+'</button>');
-            jQuery('#grouping-btn-container').append(userButton);
-          }
+        var username = us.get('username');
+        var prop = Sail.app.proposalsList.find(function(p) {
+          var val = ((p.get('initiator') === username || p.get('receiver') === username) && p.get('published') === false);
+          return val;
+        });
+        
+        // check if the user is already in another group
+        if (prop) {
+          console.log('user already in a group');
+        } else {
+          // display all users in the same tag_group (other than self) - code from before here
+          if (us.get('analysis').tag_group === tagGroupName && us.get('username') !== Sail.app.userData.account.login) {
+            var userButton = jQuery('button#'+us.get('username'));
+            if (userButton.length === 0) {
+              userButton = jQuery('<button id='+us.get('username')+' type="button" value='+us.get('username')+' name="user_btn" class="btn user-btn btn-success" data-toggle="radio">'+us.get('username')+'</button>');
+              jQuery('#grouping-btn-container').append(userButton);
+            }
+          }            
         }
+
+
       }); 
 
     }

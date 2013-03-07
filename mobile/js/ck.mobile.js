@@ -619,6 +619,7 @@ CK.Mobile = function() {
     // jQuery('#tag-submission-container .tag-btn').addClass('disabled');
   };
 
+  var proposalsList = null;       // getting late the night before
   app.startProposal = function() {
     app.hideWaitScreen();
     // for list view
@@ -649,13 +650,13 @@ CK.Mobile = function() {
     }
 
     // for proposal collection
-    var proposals = new CK.Model.Proposals();
-    proposals.wake(Sail.app.config.wakeful.url);
-    proposals.on('add', app.bindProposal);
-    proposals.on('reset', function(props) {
+    app.proposalsList = new CK.Model.Proposals();
+    app.proposalsList.wake(Sail.app.config.wakeful.url);
+    app.proposalsList.on('add', app.bindProposal);
+    app.proposalsList.on('reset', function(props) {
       props.each(app.bindProposal);
     });
-    proposals.fetch();
+    app.proposalsList.fetch();
 
     // for grouping view
     var userStates = new CK.Model.UserStates();
