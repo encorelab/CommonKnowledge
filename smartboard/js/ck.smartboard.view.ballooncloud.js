@@ -4,8 +4,6 @@
   CK.Smartboard.View.BalloonCloud = (function() {
 
     function BalloonCloud(wallView) {
-      this.completeRender = __bind(this.completeRender, this);
-
       this.render = __bind(this.render, this);
 
       this.reRenderForState = __bind(this.reRenderForState, this);
@@ -454,14 +452,11 @@
                   n.y = pos.top + $n.outerHeight()/2 unless n.y?
       */
 
-      return this.vis.selectAll('div.balloon').data(this.nodes).enter().append('div').attr('id', function(d, i) {
+      this.vis.selectAll('div.balloon').data(this.nodes).enter().append('div').attr('id', function(d, i) {
         return d.id;
-      }).attr('class', "balloon").call(this.completeRender);
-    };
-
-    BalloonCloud.prototype.completeRender = function(ev) {
+      }).attr('class', "balloon");
       this.balloons = this.vis.selectAll('div.balloon');
-      this.inflateBalloons(this.balloons);
+      this.vis.selectAll('div.balloon').call(this.inflateBalloons);
       this.vis.selectAll('div.connector').data(this.links).enter().append('div').attr('id', function(d, i) {
         return "" + d.source.id + "-" + d.target.id;
       }).attr('class', 'connector');

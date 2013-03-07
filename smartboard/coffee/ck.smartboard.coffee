@@ -161,14 +161,9 @@ class CK.Smartboard extends Sail.App
                 @wall.cloud.ensureNode contrib
                 @wall.cloud.render()
 
-            @contributions.on 'change', (contrib) =>
-                if @wall.cloud.ensureNode contrib
-                    console.log 'Calling Wall Render with contribution....'
-                    console.log contrib
-                    @wall.cloud.render()
 
-            @contributions.on 'reset', (collection) => 
-                collection.each @wall.cloud.ensureNode
+            @contributions.on 'reset', => 
+                @contributions.each @wall.cloud.ensureNode
                 @wall.cloud.render()
 
 
@@ -183,8 +178,8 @@ class CK.Smartboard extends Sail.App
                 if @wall.cloud.ensureNode proposal
                     @wall.cloud.render()
 
-            @proposals.on 'reset', (collection) => 
-                collection.each @wall.cloud.ensureNode
+            @proposals.on 'reset', => 
+                @proposals.each @wall.cloud.ensureNode
                 @wall.cloud.render()
 
             @tags = new CK.Model.Tags()
@@ -260,11 +255,14 @@ class CK.Smartboard extends Sail.App
 
         sail:
             contribution: (sev) ->
-                @contributions.fetch()#.done =>
+                @contributions.add(sev.payload)
+                #@contributions.fetch()#.done =>
                 #     @contributions.get(sev.payload).newlyAdded = true
 
             build_on: (sev) ->
-                @contributions.fetch().done ->
+                contrib = @contributions.get(sev.payload._id)
+
+                contrib.set(sev.payload).done ->
                     # TODO: move to view, plus do more (pop?)
                     jQuery('#'+sev.payload._id).effect('highlight', 2000)
 
@@ -276,8 +274,15 @@ class CK.Smartboard extends Sail.App
             #         , 2000
 
             contribution_tagged: (sev) ->
-                #@contributions.get(sev.payload._id).fetch()
-                #@contributions.fetch()
+                # @contributions.get(sev.payload._id).fetch()
+                contrib = @contributions.get(sev.payload._id)
+
+                contrib.set(sev.payload)
+
+                if @wall.cloud.ensureNode contrib
+                    console.log 'Calling Wall Render with contribution....'
+                    console.log contrib
+                    @wall.cloud.render()
                     
 
             screen_lock: (sev) ->

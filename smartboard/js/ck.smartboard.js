@@ -249,15 +249,8 @@
           _this.wall.cloud.ensureNode(contrib);
           return _this.wall.cloud.render();
         });
-        _this.contributions.on('change', function(contrib) {
-          if (_this.wall.cloud.ensureNode(contrib)) {
-            console.log('Calling Wall Render with contribution....');
-            console.log(contrib);
-            return _this.wall.cloud.render();
-          }
-        });
-        _this.contributions.on('reset', function(collection) {
-          collection.each(_this.wall.cloud.ensureNode);
+        _this.contributions.on('reset', function() {
+          _this.contributions.each(_this.wall.cloud.ensureNode);
           return _this.wall.cloud.render();
         });
         _this.proposals.on('all', function(ev, data) {
@@ -272,8 +265,8 @@
             return _this.wall.cloud.render();
           }
         });
-        _this.proposals.on('reset', function(collection) {
-          collection.each(_this.wall.cloud.ensureNode);
+        _this.proposals.on('reset', function() {
+          _this.proposals.each(_this.wall.cloud.ensureNode);
           return _this.wall.cloud.render();
         });
         _this.tags = new CK.Model.Tags();
@@ -338,14 +331,25 @@
       },
       sail: {
         contribution: function(sev) {
-          return this.contributions.fetch();
+          return this.contributions.add(sev.payload);
         },
         build_on: function(sev) {
-          return this.contributions.fetch().done(function() {
+          var contrib;
+          contrib = this.contributions.get(sev.payload._id);
+          return contrib.set(sev.payload).done(function() {
             return jQuery('#' + sev.payload._id).effect('highlight', 2000);
           });
         },
-        contribution_tagged: function(sev) {},
+        contribution_tagged: function(sev) {
+          var contrib;
+          contrib = this.contributions.get(sev.payload._id);
+          contrib.set(sev.payload);
+          if (this.wall.cloud.ensureNode(contrib)) {
+            console.log('Calling Wall Render with contribution....');
+            console.log(contrib);
+            return this.wall.cloud.render();
+          }
+        },
         screen_lock: function(sev) {
           return this.wall.pause();
         },

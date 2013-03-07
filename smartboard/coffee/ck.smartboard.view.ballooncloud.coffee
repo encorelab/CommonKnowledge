@@ -555,11 +555,13 @@ class CK.Smartboard.View.BalloonCloud
                 .attr('id', (d,i) -> d.id)
                 .attr('class', "balloon")
         # fill in the <div.balloon>s html
-            .call(@completeRender)
+        #    .call(@inflateBalloons)
         
-    completeRender: (ev) =>
         @balloons = @vis.selectAll('div.balloon')
-        @inflateBalloons(@balloons)
+
+        @vis.selectAll('div.balloon')
+            .call(@inflateBalloons)
+        
         
         #console.log @balloons
         # .exit()
