@@ -88,12 +88,12 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             
             if (@showCloud)
                 wordCloudObject.addClass('disabled')
-                wordCloudObject.text('Drawing cloud... Please wait...')
+                wordCloudObject.text('Drawing Cloud... Please wait...')
                 @showWordCloud()           
                 @showCloud = false
             else
                 @hideWordCloud()
-                wordCloudObject.text('Show word Cloud')
+                wordCloudObject.text('Show Word Cloud')
                 @showCloud = true
 
         #'click #close-word-cloud': (ev) -> @hideWordCloud()
@@ -248,7 +248,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
 
         # enable the clicking of the button once the word cloud is rendered
         wordCloudObject = jQuery('#show-word-cloud')
-        wordCloudObject.text('Hide word Cloud')
+        wordCloudObject.text('Hide Word Cloud')
         wordCloudObject.removeClass('disabled') 
 
     pause: =>
