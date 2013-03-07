@@ -215,6 +215,9 @@
 
     share: function () {
       var view = this;
+      // avoid weird entries showing up in the model
+      window.clearTimeout(Sail.app.autoSaveTimer);
+      
       // new note
       if (view.model.get('kind') === 'new' || view.model.get('kind') === 'synthesis') {     // don't think this is needed any more
         if (view.model.has('content') && view.model.has('headline')) {
