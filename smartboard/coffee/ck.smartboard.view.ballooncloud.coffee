@@ -318,10 +318,10 @@ class CK.Smartboard.View.BalloonCloud
         shouldRender = false
     
         if n instanceof CK.Model.Contribution and (isNodePublished isnt true or screenState is 'propose' or screenState is 'interpret')
-            return
+            return shouldRender
 
         if n instanceof CK.Model.Proposal and (isNodePublished is false or (screenState isnt 'propose' and screenState isnt 'interpret'))
-            return
+            return shouldRender
 
         # make sure node n doesn't already exist
         unless _.any(@nodes, 
@@ -358,6 +358,11 @@ class CK.Smartboard.View.BalloonCloud
             if tag?
                 shouldRerender = @ensureLink(n, tag)
                 shouldRender = shouldRender || shouldRerender
+
+            # if we are talking about a published proposal which may have new votes
+            # or build-ons just render them lazily
+            if isNodePublished is true
+                shouldRender = true
 
         else if n instanceof CK.Model.Tag
             for b in @nodes

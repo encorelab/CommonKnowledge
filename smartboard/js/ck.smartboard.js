@@ -232,7 +232,7 @@
         'tag_group_name': tagName,
         'build_ons': buildOnArray
       });
-      return proposal.save();
+      return proposal.save({});
     };
 
     Smartboard.prototype.initModels = function() {

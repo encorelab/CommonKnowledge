@@ -249,10 +249,10 @@
       screenState = this.wall.mode;
       shouldRender = false;
       if (n instanceof CK.Model.Contribution && (isNodePublished !== true || screenState === 'propose' || screenState === 'interpret')) {
-        return;
+        return shouldRender;
       }
       if (n instanceof CK.Model.Proposal && (isNodePublished === false || (screenState !== 'propose' && screenState !== 'interpret'))) {
-        return;
+        return shouldRender;
       }
       if (!_.any(this.nodes, function(node) {
         return node.id === n.id;
@@ -290,6 +290,9 @@
         if (tag != null) {
           shouldRerender = this.ensureLink(n, tag);
           shouldRender = shouldRender || shouldRerender;
+        }
+        if (isNodePublished === true) {
+          shouldRender = true;
         }
       } else if (n instanceof CK.Model.Tag) {
         _ref1 = this.nodes;

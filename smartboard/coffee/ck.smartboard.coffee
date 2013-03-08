@@ -137,7 +137,7 @@ class CK.Smartboard extends Sail.App
         proposal.wake @config.wakeful.url
         proposal.set({'headline': headline, 'title': headline, 'description': description, 'justification': justification, 'published': true, 'author': 'ck1-ck2', 
         'votes': voteNumber, 'tag_group_id': tagID, 'tag_group_name': tagName, 'build_ons': buildOnArray})
-        proposal.save()
+        proposal.save {}
 
     # set up all the Collections used by the board
     initModels: =>
@@ -175,7 +175,9 @@ class CK.Smartboard extends Sail.App
                 @wall.cloud.render()
 
             @proposals.on 'change', (proposal) =>
+
                 if @wall.cloud.ensureNode proposal
+                    #do the render!
                     @wall.cloud.render()
 
             @proposals.on 'reset', => 
@@ -220,11 +222,12 @@ class CK.Smartboard extends Sail.App
             #setTimeout (=> @switchToInterpretation()), 5000
 
             #
-            # @createNewProposal 'tag 3 headlines are great!', 'cookie descriptions are not as cool but whatever...', 
-            # 'justification justification justification justification justification justification justification justification', 3, 
-            # '51366fd242901f5cf4000002', 'Cookies', 
-            # [{"content": "Blah comment on", "author": "ck2", "created_at": "Mon Oct 29 2012 13:42:00 GMT-0400 (EDT)", "tag_group_id": '51366fd242901f5cf4000002'}, { "content": "Blah comment on and on and on", "author": "ck2", "created_at": "Mon Oct 29 2012 13:40:00 GMT-0400 (EDT)", "tag_group_id": '51366dd942901f51c6000000'}]
+            # a = => @createNewProposal 'tag 3 headlines are great!', 'cookie descriptions are not as cool but whatever...', 
+            #  'justification justification justification justification justification justification justification justification', 3, 
+            #  '5137fbab65fd712a3a000002', 'Cookies', 
+            #  [{"content": "Blah comment on!!", "author": "ck2", "created_at": "Mon Oct 29 2012 13:42:00 GMT-0400 (EDT)", "tag_group_id": '51366fd242901f5cf4000002'}, { "content": "Blah comment on and on and on", "author": "ck2", "created_at": "Mon Oct 29 2012 13:40:00 GMT-0400 (EDT)", "tag_group_id": '51366dd942901f51c6000000'}]
 
+            # setTimeout a, 5000
             @trigger('ready')
 
     events:
