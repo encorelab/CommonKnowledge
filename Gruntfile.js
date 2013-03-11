@@ -15,6 +15,26 @@ module.exports = function(grunt) {
     jshint: {
       all: ['Gruntfile.js', 'mobile/js/ck.mobile.view.js', 'mobile/js/ck.mobile.js']
     },
+    coffeelint: {
+      tests: {
+        files: {
+          src: ['shared/**/*.coffee', 'smartboard/**/*.coffee']
+        },
+        options: {
+          'no_trailing_whitespace': {
+            'level': 'error'
+          },
+          'max_line_length': {
+            'value': 140,
+            'level': 'error'
+          },
+          'indentation': {
+            'value': 4,
+            'level': 'error'
+          }
+        }
+      }
+    },
     coffee: {
       compile: {
         files: {
@@ -39,11 +59,12 @@ module.exports = function(grunt) {
   // grunt.loadNpmTasks('grunt-contrib-uglify');
   // grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib');
+  grunt.loadNpmTasks('grunt-coffeelint');
   // grunt.loadNpmTasks('grunt-coffee');
 
   // Default task(s).
   // grunt.registerTask('default', ['uglify']);
-  grunt.registerTask('default', ['jshint', 'coffee', 'sass']);
+  grunt.registerTask('default', ['jshint', 'coffeelint', 'coffee', 'sass']);
   
 
 };

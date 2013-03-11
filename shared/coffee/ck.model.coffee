@@ -3,11 +3,13 @@ class CK.Model
         deferredConfigure = $.Deferred()
 
         unless url?
-            throw "Cannot configure model because no DrowsyDromedary URL was given!"
+            urlError = new Error "Cannot configure model because no DrowsyDromedary URL was given!"
+            throw urlError
         unless db?
-            throw "Cannot configure model because no database name was given!"
+            dbError = new Error "Cannot configure model because no database name was given!"
+            throw dbError
 
-        @baseURL = url 
+        @baseURL = url
         @dbURL= "#{url}/#{db}"
 
         @server = new Drowsy.Server(url)
@@ -48,25 +50,11 @@ class CK.Model
         
             for col in requiredCollections
                 unless col in existingCollections
-                    console.log "Creating collection '#{col}' under #{CK.Model.dbURL}";
+                    console.log "Creating collection '#{col}' under #{CK.Model.dbURL}"
                     dfs.push(@db.createCollection col)
 
         $.when.apply($, dfs).done -> df.resolve()
         return df
-
-        # jQuery.ajax CK.Model.dbURL,
-        #     type: 'get',
-        #     dataType: 'json',
-        #     success: (existingCollections) =>
-        #         for col in requiredCollections
-        #             unless col in existingCollections
-        #                 console.log "Creating collection '#{col}' under #{CK.Model.dbURL}";
-        #                 jQuery.post CK.Model.dbURL,
-        #                     collection: col
-        #     error: (err) =>
-        #         console.error "Couldn't fetch list of collections from #{CK.Model.dbURL} because: ", JSON.parse(err.responseText)
-        #         throw err.responseText
-
 
     @defineModelClasses: ->
         class @Contribution extends @db.Document('contributions')
@@ -89,12 +77,14 @@ class CK.Model
             
             addTag: (tag, tagger) =>
                 unless tag instanceof CK.Model.Tag
+                    invalidTagError = new Error "Invalid tag (doesn't exist)"
                     console.error("Cannot addTag ", tag ," because it is not a CK.Model.Tag instance!")
-                    throw "Invalid tag (doesn't exist)"
+                    throw invalidTagError
 
                 unless tag.id
+                    noTagIdError = new Error "Invalid tag (no id)"
                     console.error("Cannot addTag ", tag ," to contribution ", @ ," because it doesn't have an id!")
-                    throw "Invalid tag (no id)"
+                    throw noTagIdError
 
                 existingTagRelationships = @get('tags') || []
 
@@ -102,7 +92,7 @@ class CK.Model
                     console.warn("Cannot addTag ", tag ," to contribution ", @ , " because it already has this tag.")
                     return @
 
-                tagRel = 
+                tagRel =
                     id: tag.id
                     name: tag.get('name')
                     tagger: tagger
@@ -148,12 +138,14 @@ class CK.Model
             
             addTag: (tag) =>
                 unless tag instanceof CK.Model.Tag
+                    invalidTagError = new Error "Invalid tag (doesn't exist)"
                     console.error("Cannot addTag ", tag ," because it is not a CK.Model.Tag instance!")
-                    throw "Invalid tag (doesn't exist)"
+                    throw invalidTagError
 
                 unless tag.id
+                    noTagIdError = new Error "Invalid tag (no id)"
                     console.error("Cannot addTag ", tag ," to contribution ", @ ," because it doesn't have an id!")
-                    throw "Invalid tag (no id)"
+                    throw noTagIdError
 
                 existingTagID = @get('tag_group_id') || null
 

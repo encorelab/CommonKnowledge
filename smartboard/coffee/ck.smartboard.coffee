@@ -3,7 +3,7 @@ class CK.Smartboard extends Sail.App
     name: 'CK.Smartboard'
 
     requiredConfig: {
-        xmpp: 
+        xmpp:
             domain: 'string'
             port: 'number'
             url: 'string'
@@ -28,10 +28,16 @@ class CK.Smartboard extends Sail.App
         userFilter = (user) -> user.kind is 'Instructor'
 
         Sail.modules
-            .load('Rollcall.Authenticator', {mode: 'picker', askForRun: true, curnit: @curnit, userFilter: userFilter})
-            .load('Strophe.AutoConnector')
-            .load('AuthStatusWidget', {indicatorContainer: 'body', clickNameToLogout: true})
-            .thenRun =>
+            .load('Rollcall.Authenticator',
+                mode: 'picker',
+                askForRun: true,
+                curnit: @curnit,
+                userFilter: userFilter
+            ).load('Strophe.AutoConnector')
+            .load('AuthStatusWidget',
+                indicatorContainer: 'body',
+                clickNameToLogout: true
+            ).thenRun =>
                 Sail.autobindEvents(@)
                 @trigger('initialized')
 
@@ -39,7 +45,7 @@ class CK.Smartboard extends Sail.App
 
         @wall = new CK.Smartboard.View.Wall {el: jQuery('#wall')}
 
-        @tagCount = 0;
+        @tagCount = 0
         #@states = new CK.Model.States()
         #@states.on 'change', (collection) ->
         #    console.log  'States Collection Changed!'
@@ -135,7 +141,9 @@ class CK.Smartboard extends Sail.App
     createNewProposal: (headline, description, justification, voteNumber, tagID, tagName, buildOnArray) =>
         proposal = new CK.Model.Proposal()
         proposal.wake @config.wakeful.url
-        proposal.set({'headline': headline, 'title': headline, 'description': description, 'justification': justification, 'published': true, 'author': 'ck1-ck2', 
+        proposal.set({'headline': headline, 'title': headline, 'description': description,
+        'justification': justification,
+        'published': true, 'author': 'ck1-ck2',
         'votes': voteNumber, 'tag_group_id': tagID, 'tag_group_name': tagName, 'build_ons': buildOnArray})
         proposal.save {}
 
@@ -154,7 +162,7 @@ class CK.Smartboard extends Sail.App
             #        BOTH the tags and contributions are fetched
             #        before calling cloud.render()
 
-            @contributions.on 'all', (ev, data) => 
+            @contributions.on 'all', (ev, data) =>
                 console.log(@contributions.url, ev, data)
 
             @contributions.on 'add', (contrib) =>
@@ -162,12 +170,12 @@ class CK.Smartboard extends Sail.App
                 @wall.cloud.render()
 
 
-            @contributions.on 'reset', => 
+            @contributions.on 'reset', =>
                 @contributions.each @wall.cloud.ensureNode
                 @wall.cloud.render()
 
 
-            @proposals.on 'all', (ev, data) => 
+            @proposals.on 'all', (ev, data) =>
                 console.log(@proposals.url, ev, data)
 
             @proposals.on 'add', (proposal) =>
@@ -180,7 +188,7 @@ class CK.Smartboard extends Sail.App
                     #do the render!
                     @wall.cloud.render()
 
-            @proposals.on 'reset', => 
+            @proposals.on 'reset', =>
                 @proposals.each @wall.cloud.ensureNode
                 @wall.cloud.render()
 
@@ -217,17 +225,6 @@ class CK.Smartboard extends Sail.App
                     else
                         @wall.setMode('brainstorm')
 
-            # test state change
-        
-            #setTimeout (=> @switchToInterpretation()), 5000
-
-            #
-            # a = => @createNewProposal 'tag 3 headlines are great!', 'cookie descriptions are not as cool but whatever...', 
-            #  'justification justification justification justification justification justification justification justification', 3, 
-            #  '5137fbab65fd712a3a000002', 'Cookies', 
-            #  [{"content": "Blah comment on!!", "author": "ck2", "created_at": "Mon Oct 29 2012 13:42:00 GMT-0400 (EDT)", "tag_group_id": '51366fd242901f5cf4000002'}, { "content": "Blah comment on and on and on", "author": "ck2", "created_at": "Mon Oct 29 2012 13:40:00 GMT-0400 (EDT)", "tag_group_id": '51366dd942901f51c6000000'}]
-
-            # setTimeout a, 5000
             @trigger('ready')
 
     events:

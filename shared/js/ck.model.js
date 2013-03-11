@@ -9,14 +9,16 @@
     function Model() {}
 
     Model.init = function(url, db) {
-      var deferredConfigure,
+      var dbError, deferredConfigure, urlError,
         _this = this;
       deferredConfigure = $.Deferred();
       if (url == null) {
-        throw "Cannot configure model because no DrowsyDromedary URL was given!";
+        urlError = new Error("Cannot configure model because no DrowsyDromedary URL was given!");
+        throw urlError;
       }
       if (db == null) {
-        throw "Cannot configure model because no database name was given!";
+        dbError = new Error("Cannot configure model because no database name was given!");
+        throw dbError;
       }
       this.baseURL = url;
       this.dbURL = "" + url + "/" + db;
@@ -101,15 +103,17 @@
         };
 
         Contribution.prototype.addTag = function(tag, tagger) {
-          var existingTagRelationships, tagRel,
+          var existingTagRelationships, invalidTagError, noTagIdError, tagRel,
             _this = this;
           if (!(tag instanceof CK.Model.Tag)) {
+            invalidTagError = new Error("Invalid tag (doesn't exist)");
             console.error("Cannot addTag ", tag, " because it is not a CK.Model.Tag instance!");
-            throw "Invalid tag (doesn't exist)";
+            throw invalidTagError;
           }
           if (!tag.id) {
+            noTagIdError = new Error("Invalid tag (no id)");
             console.error("Cannot addTag ", tag, " to contribution ", this, " because it doesn't have an id!");
-            throw "Invalid tag (no id)";
+            throw noTagIdError;
           }
           existingTagRelationships = this.get('tags') || [];
           if (_.any(existingTagRelationships, function(tr) {
@@ -187,14 +191,16 @@
         };
 
         Proposal.prototype.addTag = function(tag) {
-          var existingTagID;
+          var existingTagID, invalidTagError, noTagIdError;
           if (!(tag instanceof CK.Model.Tag)) {
+            invalidTagError = new Error("Invalid tag (doesn't exist)");
             console.error("Cannot addTag ", tag, " because it is not a CK.Model.Tag instance!");
-            throw "Invalid tag (doesn't exist)";
+            throw invalidTagError;
           }
           if (!tag.id) {
+            noTagIdError = new Error("Invalid tag (no id)");
             console.error("Cannot addTag ", tag, " to contribution ", this, " because it doesn't have an id!");
-            throw "Invalid tag (no id)";
+            throw noTagIdError;
           }
           existingTagID = this.get('tag_group_id') || null;
           if (existingTagID === tag.id) {

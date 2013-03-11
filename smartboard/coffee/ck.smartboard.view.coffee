@@ -8,7 +8,7 @@ class CK.Smartboard.View
 
 
 class CK.Smartboard.View.Base extends Backbone.View
-    findOrCreate: (selector, html) => 
+    findOrCreate: (selector, html) =>
         CK.Smartboard.View.findOrCreate @$el, selector, html
 
     constructor: (options) ->
@@ -77,7 +77,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             addTagContainer = @$el.find('#add-tag-container')
             addTagContainer.toggleClass('opened')
             if addTagContainer.hasClass('opened')
-                setTimeout(=> 
+                setTimeout(=>
                     @$el.find('#new-tag').focus()
                 , 1000)
 
@@ -89,7 +89,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             if (@showCloud)
                 wordCloudObject.addClass('disabled')
                 wordCloudObject.text('Drawing Cloud... Please wait...')
-                @showWordCloud()           
+                @showWordCloud()
                 @showCloud = false
             else
                 @hideWordCloud()
@@ -190,7 +190,21 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
 
 
     filterWords: (wordsToFilter) ->
-        stopWords = /^(i|me|my|myself|we|us|our|ours|ourselves|you|your|yours|yourself|yourselves|he|him|his|himself|she|her|hers|herself|it|its|itself|they|them|their|theirs|themselves|what|which|who|whom|whose|this|that|these|those|am|is|are|was|were|be|been|being|have|has|had|having|do|does|did|doing|will|would|should|can|could|ought|i'm|you're|he's|she's|it's|we're|they're|i've|you've|we've|they've|i'd|you'd|he'd|she'd|we'd|they'd|i'll|you'll|he'll|she'll|we'll|they'll|isn't|aren't|wasn't|weren't|hasn't|haven't|hadn't|doesn't|don't|didn't|won't|wouldn't|shan't|shouldn't|can't|cannot|couldn't|mustn't|let's|that's|who's|what's|here's|there's|when's|where's|why's|how's|a|an|the|and|but|if|or|because|as|until|while|of|at|by|for|with|about|against|between|into|through|during|before|after|above|below|to|from|up|upon|down|in|out|on|off|over|under|again|further|then|once|here|there|when|where|why|how|all|any|both|each|few|more|most|other|some|such|no|nor|not|only|own|same|so|than|too|very|say|says|said|shall|sd|sdf|fuck|shit|poo|pooped|boop|boops|asshole|undefined)$/i
+        stopWords = /// ^ (
+            i|me|my|myself|we|us|our|ours|ourselves|you|your|yours|yourself|yourselves|he|him|his
+            |himself|she|her|hers|herself|it|its|itself|they|them|their|theirs|themselves
+            |what|which|who|whom|whose|this|that|these|those|am|is|are|was|were|be|been|being
+            |have|has|had|having|do|does|did|doing|will|would|should|can|could|ought
+            |i'm|you're|he's|she's|it's|we're|they're|i've|you've|we've|they've|i'd|you'd|he'd|she'd|we'd
+            |they'd|i'll|you'll|he'll|she'll|we'll|they'll|isn't|aren't|wasn't|weren't|hasn't|haven't
+            |hadn't|doesn't|don't|didn't|won't|wouldn't|shan't|shouldn't|can't|cannot|couldn't|mustn't
+            |let's|that's|who's|what's|here's|there's|when's|where's|why's|how's|a|an|the|and|but|if|or
+            |because|as|until|while|of|at|by|for|with|about|against|between|into|through|during|before
+            |after|above|below|to|from|up|upon|down|in|out|on|off|over|under|again|further|then|once|here
+            |there|when|where|why|how|all|any|both|each|few|more|most|other|some|such|no|nor|not|only|own
+            |same|so|than|too|very|say|says|said|shall
+            |sd|sdf|fuck|Fuck|shit|poo|pooped|boop|boops|asshole|undefined)$
+        ///
         # punctuation = /[!"&()*+,-\.\/:;<=>?\[\\\]^`\{|\}~]+/g
         # wordSeparators = /[\s\u3031-\u3035\u309b\u309c\u30a0\u30fc\uff70]+/g
         discard = /^(@|https?:)/
@@ -207,7 +221,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
         jQuery('#word-cloud svg').remove()
 
     generateWordCloud: (wordHash) ->
-        fadeDiv = jQuery('#fade');
+        fadeDiv = jQuery('#fade')
         width = fadeDiv.width() #650
         height = fadeDiv.height() #400
         wordCloud = jQuery('#word-cloud')
@@ -227,14 +241,11 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             .data(words)
             .enter()
             .append("text")
-            .style("font-size", (d) ->
-                d.size + "px"
+            .style("font-size", (d) -> d.size + "px"
             ).style("font-family", "Ubuntu")
-            .style("fill", (d, i) ->
-                fill i
+            .style("fill", (d, i) -> fill i
             ).attr("text-anchor", "middle")
-            .attr("transform", (d) ->
-                "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")"
+            .attr("transform", (d) -> "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")"
             ).text (d) ->
                 d.text
 
@@ -249,7 +260,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
         # enable the clicking of the button once the word cloud is rendered
         wordCloudObject = jQuery('#show-word-cloud')
         wordCloudObject.text('Hide Word Cloud')
-        wordCloudObject.removeClass('disabled') 
+        wordCloudObject.removeClass('disabled')
 
     pause: =>
         if (@cloud? and @cloud.force?)
@@ -275,8 +286,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
 
     changeWatermark: (text) =>
         jQuery('#watermark').fadeOut 800, ->
-                jQuery(@).text(text)
-                    .fadeIn 800
+            jQuery(@).text(text).fadeIn 800
 
     setMode: (mode) =>
         mode = "brainstorm" unless mode
@@ -336,7 +346,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
 
 class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
     moveToTop: =>
-        maxZ = _.max jQuery('.balloon').map -> 
+        maxZ = _.max jQuery('.balloon').map ->
             parseInt(jQuery(this).zIndex()) + 1
         @$el.zIndex maxZ
 
@@ -417,7 +427,7 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
             jQuery('#' + balloonID + ' img.balloon-note').hide()
             jQuery('#' + balloonID + ' .headline').fadeIn('fast')
             jQuery('#' + balloonID + ' .body').fadeIn('fast')
-            jQuery('#' + balloonID + ' .meta').fadeIn('fast') 
+            jQuery('#' + balloonID + ' .meta').fadeIn('fast')
         else
             jQuery('#' + balloonID + ' .headline').hide()
             jQuery('#' + balloonID + ' .body').hide()
@@ -434,20 +444,20 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
             @$el.addClass('synthesis')
 
         #if (@ballonContributionType is @balloonContributionTypes.analysis)
-        nodeHeader = @findOrCreate '.balloon-note', '<img style="display: none;" class="balloon-note" src="/smartboard/img/notes_large.png" alt="Note">'
+        nodeHeader = @findOrCreate '.balloon-note',
+            '<img style="display: none;" class="balloon-note" src="/smartboard/img/notes_large.png" alt="Note">'
         
-        headline = @findOrCreate '.headline', 
+        headline = @findOrCreate '.headline',
             "<h3 class='headline'></h3>"
         headline.text @model.get('headline')
 
-        body = @findOrCreate '.body', 
+        body = @findOrCreate '.body',
             "<div class='body'></div>"
 
         if @model.get('content_type') is 'text'
             body.text @model.get('content')
         else
             body.text @model.get('content')
-            # console.warn "Contribution #{@model.id} has an unrecognized content type: ", @model.get('content_type'), " ... assuming 'text'."
 
         meta = @findOrCreate '.meta',
             "<div class='meta'><span class='author'></span></div>"
@@ -465,23 +475,7 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
     # FIXME: tags are automatically rendered as they are added (via the tag collection event bindings)
     # ... so this method is mostly vestigial... need to get rid of this
     renderTags: =>
-        # tagsContainer = @findOrCreate '.tags',
-        #     "<div class='tags'></div>"
-
         return unless @model.has('tags')
-
-        # validTagClasses = []
-        # for tagText in @model.get('tags')
-        #     # hacky way to convert the tag into something that can be used as a CSS clas
-        #     md5tag = MD5.hexdigest(tagText)
-        #     tagClass = "tag-#{md5tag}"
-        #     validTagClasses.push tagClass 
-        #     tagSpan = CK.Smartboard.View.findOrCreate tagsContainer, ".#{tagClass}",
-        #         "<span class='tag #{tagClass}></span>"
-        #     tagSpan.text tagText
-
-        # # now remove tags that are no longer present in the model
-        # tagsContainer.find('.tag').not(validTagClasses.join(",")).remove()
 
         tagIds = (tag.id for tag in @model.get('tags'))
 
@@ -542,7 +536,7 @@ class CK.Smartboard.View.ContributionProposalBalloon extends CK.Smartboard.View.
     constructor: (options) ->
         super(options)
 
-        @balloonContributionTypes = 
+        @balloonContributionTypes =
             default:  'default',
             analysis: 'analysis',
             propose: 'propose',
@@ -564,7 +558,7 @@ class CK.Smartboard.View.ContributionProposalBalloon extends CK.Smartboard.View.
             
             if @$el.hasClass('opened')
                 @$el.removeClass('balloon-note')
-            else 
+            else
                 @$el.addClass('balloon-note')
             #     if Sail.app.wall.cloud? && Sail.app.wall.cloud.force?
             #         Sail.app.wall.cloud.force.stop()
@@ -591,13 +585,13 @@ class CK.Smartboard.View.ContributionProposalBalloon extends CK.Smartboard.View.
         jQuery('#' + balloonID + ' .proposal').hide()
         jQuery('#' + balloonID + ' .proposal-body').hide()
         jQuery('#' + balloonID + ' .justification').hide()
-        jQuery('#' + balloonID + ' .justification-body').hide() 
+        jQuery('#' + balloonID + ' .justification-body').hide()
         jQuery('#' + balloonID + ' .meta').hide()
         jQuery('#' + balloonID + ' .idea-counter').hide()
         jQuery('#' + balloonID + ' img.balloon-note').fadeIn('fast')
 
 
-    toggleInterpret: => 
+    toggleInterpret: =>
         console.log 'Toggle Interpret'
         balloonObj = jQuery(@$el)
         #balloonObj
@@ -607,20 +601,20 @@ class CK.Smartboard.View.ContributionProposalBalloon extends CK.Smartboard.View.
             jQuery('#' + balloonID + ' img.balloon-note').hide()
             jQuery('#' + balloonID + ' .headline').fadeIn('fast')
             jQuery('#' + balloonID + ' .proposal').fadeIn('fast')
-            jQuery('#' + balloonID + ' .justification').fadeIn('fast') 
-            jQuery('#' + balloonID + ' .meta').fadeIn('fast') 
+            jQuery('#' + balloonID + ' .justification').fadeIn('fast')
+            jQuery('#' + balloonID + ' .meta').fadeIn('fast')
             jQuery('#' + balloonID + ' .idea-counter').fadeIn('fast')
         else
             jQuery('#' + balloonID + ' .headline').hide()
             jQuery('#' + balloonID + ' .proposal').hide()
             jQuery('#' + balloonID + ' .proposal-body').hide()
             jQuery('#' + balloonID + ' .justification').hide()
-            jQuery('#' + balloonID + ' .justification-body').hide() 
+            jQuery('#' + balloonID + ' .justification-body').hide()
             jQuery('#' + balloonID + ' .meta').hide()
             jQuery('#' + balloonID + ' .idea-counter').hide()
             jQuery('#' + balloonID + ' img.balloon-note').fadeIn('fast')
 
-    toggleProposal: => 
+    toggleProposal: =>
         console.log 'Toggle Proposal'
         balloonObj = jQuery(@$el)
         balloonID = balloonObj.attr('id')
@@ -633,19 +627,19 @@ class CK.Smartboard.View.ContributionProposalBalloon extends CK.Smartboard.View.
             jQuery('#' + balloonID + ' img.balloon-note').hide()
             jQuery('#' + balloonID + ' .headline').fadeIn('fast')
             jQuery('#' + balloonID + ' .proposal').fadeIn('fast')
-            jQuery('#' + balloonID + ' .justification').fadeIn('fast') 
-            jQuery('#' + balloonID + ' .meta').fadeIn('fast') 
+            jQuery('#' + balloonID + ' .justification').fadeIn('fast')
+            jQuery('#' + balloonID + ' .meta').fadeIn('fast')
         else
             jQuery('#' + balloonID + ' .headline').hide()
             jQuery('#' + balloonID + ' .proposal').hide()
             jQuery('#' + balloonID + ' .proposal-body').hide()
             jQuery('#' + balloonID + ' .justification').hide()
-            jQuery('#' + balloonID + ' .justification-body').hide() 
+            jQuery('#' + balloonID + ' .justification-body').hide()
             jQuery('#' + balloonID + ' .meta').hide()
             jQuery('#' + balloonID + ' img.balloon-note').fadeIn('fast')
 
 
-    setIdeaCount: (count) => 
+    setIdeaCount: (count) =>
         balloonObj = jQuery(@$el)
         balloonID = balloonObj.attr('id')
         ideaCounterObj = jQuery('#' + balloonID + ' div.idea-counter span.idea-count')
@@ -659,7 +653,7 @@ class CK.Smartboard.View.ContributionProposalBalloon extends CK.Smartboard.View.
         else if countNumber < 10
             ideaCounterContainer.removeClass('idea-counter-off').addClass('idea-counter-on')
             ideaCounterObj.html('&nbsp;' + countNumber)
-        else 
+        else
             ideaCounterContainer.removeClass('idea-counter-off').addClass('idea-counter-on')
             ideaCounterObj.html(countNumber)
 
@@ -671,38 +665,38 @@ class CK.Smartboard.View.ContributionProposalBalloon extends CK.Smartboard.View.
         console.log 'Rendering propose balloon.'
 
         #if (@ballonContributionType is @balloonContributionTypes.analysis)
-        nodeHeader = @findOrCreate '.balloon-note', '<img style="display: none;" class="balloon-note" src="/smartboard/img/notes_large.png" alt="Note">'
+        nodeHeader = @findOrCreate '.balloon-note',
+            '<img style="display: none;" class="balloon-note" src="/smartboard/img/notes_large.png" alt="Note">'
 
         #else if (@ballonContributionType is @balloonContributionTypes.propose)
-        ideaCounter = @findOrCreate '.idea-counter', '<div class="idea-counter idea-counter-off" style="display: none"><span class="idea-count">&nbsp;</span></div>'
+        ideaCounter = @findOrCreate '.idea-counter',
+            '<div class="idea-counter idea-counter-off" style="display: none"><span class="idea-count">&nbsp;</span></div>'
 
-        headline = @findOrCreate '.headline', 
+        headline = @findOrCreate '.headline',
             "<h3 class='headline'></h3>"
         headline.text @model.get('headline')
 
-        proposal = @findOrCreate '.proposal', 
+        proposal = @findOrCreate '.proposal',
             "<div class='proposal'>&#8227; Proposal<div class='proposal-body' tyle='display: none'></div></div>"
 
         proposal.find('.proposal-body').text @model.get('proposal')
 
         proposal.unbind 'click'
-        proposal.click (e) -> 
-                e.stopPropagation()
-                jQuery(this).find('.proposal-body').slideToggle('fast')
+        proposal.click (e) ->
+            e.stopPropagation()
+            jQuery(this).find('.proposal-body').slideToggle('fast')
                 
 
 
-        justification = @findOrCreate '.justification', 
+        justification = @findOrCreate '.justification',
             "<div class='justification'>&#8227; Justification<div class='justification-body' style='display: none'></div></div>"
 
         justification.find('.justification-body').text @model.get('justification')
 
         justification.unbind 'click'
-        justification.click (e) -> 
+        justification.click (e) ->
             e.stopPropagation()
             jQuery(this).find('.justification-body').slideToggle('fast')
-        
-            # console.warn "Contribution #{@model.id} has an unrecognized content type: ", @model.get('content_type'), " ... assuming 'text'."
 
         meta = @findOrCreate '.meta',
             "<div class='meta'><span class='author'></span></div>"
@@ -735,7 +729,7 @@ class CK.Smartboard.View.ContributionProposalBalloon extends CK.Smartboard.View.
         #     # hacky way to convert the tag into something that can be used as a CSS clas
         #     md5tag = MD5.hexdigest(tagText)
         #     tagClass = "tag-#{md5tag}"
-        #     validTagClasses.push tagClass 
+        #     validTagClasses.push tagClass
         #     tagSpan = CK.Smartboard.View.findOrCreate tagsContainer, ".#{tagClass}",
         #         "<span class='tag #{tagClass}></span>"
         #     tagSpan.text tagText
@@ -746,7 +740,6 @@ class CK.Smartboard.View.ContributionProposalBalloon extends CK.Smartboard.View.
         tagId = @model.get('tag_group_id')
 
         @$el.attr('data-tags', tagId)
-
 
         return @ # return this for chaining
 
@@ -802,7 +795,7 @@ class CK.Smartboard.View.TagBalloon extends CK.Smartboard.View.Balloon
     className: 'tag balloon'
     id: => @domID()
     
-    setColorClass: (className) => 
+    setColorClass: (className) =>
         @$el.addClass(className)
 
     events:
@@ -847,12 +840,12 @@ class CK.Smartboard.View.TagBalloon extends CK.Smartboard.View.Balloon
             # else
             #     console.log("Couldn't save pinned tag's position -- couldn't find a tag with id: ", tid)
 
-    render: => 
+    render: =>
         super()
 
         @$el.addClass('tag')
 
-        name = @findOrCreate '.name', 
+        name = @findOrCreate '.name',
             "<h3 class='name'></h3>"
         name.text @model.get('name')
 

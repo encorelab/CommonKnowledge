@@ -73,40 +73,44 @@ class CK.Smartboard.View.BalloonCloud
     tick: =>
 
         @balloons
-            .style 'left', (d) =>
-                balloonWidth = d.view.$el.outerWidth()
-                if d.x + balloonWidth/2 > @wallWidth
-                    d.x = @wallWidth - balloonWidth/2
-                else if d.x - balloonWidth/2 < 0
-                    d.x = 0 + balloonWidth/2
+            .style('left',
+                (d) =>
+                    balloonWidth = d.view.$el.outerWidth()
+                    if d.x + balloonWidth/2 > @wallWidth
+                        d.x = @wallWidth - balloonWidth/2
+                    else if d.x - balloonWidth/2 < 0
+                        d.x = 0 + balloonWidth/2
+                    
+                    (d.x - balloonWidth/2) + 'px'
+            ).style('top',
+                (d) =>
+                    balloonHeight = d.view.$el.outerHeight()
+                    if d.y + balloonHeight/2 > @wallHeight
+                        d.y = @wallHeight - balloonHeight/2
+                    else if d.y - balloonHeight/2 < 0
+                        d.y = 0 + balloonHeight/2
+            
                 
-                (d.x - balloonWidth/2) + 'px'
-            .style 'top', (d) =>
-                balloonHeight = d.view.$el.outerHeight()
-                if d.y + balloonHeight/2 > @wallHeight
-                    d.y = @wallHeight - balloonHeight/2
-                else if d.y - balloonHeight/2 < 0
-                    d.y = 0 + balloonHeight/2
-                
-                (d.y - balloonHeight/2) + 'px'
-            .each (d) =>
-                if d.view.$el.hasClass('pinned')
-                    d.fixed = true
+                    (d.y - balloonHeight/2) + 'px'
+            ).each (d) => d.fixed = true  if d.view.$el.hasClass('pinned')
 
         for i in [0...@nodes.length]
             @d3QuadTree.visit(@detectCollision(@nodes[i]))
 
         @connectors
             .style("z-index", -1)
-            .style("left", (d) => 
-                d.source.x + "px")
-            .style("top", (d) => 
-                d.source.y + "px")
-            .style("width", (d) =>
-                dx = d.target.x - d.source.x
-                dy = d.target.y - d.source.y
-                Math.sqrt(dx * dx + dy * dy) + "px")
-            .style("-webkit-transform", @connectorTransform)
+            .style("left",
+                (d) =>
+                    d.source.x + "px"
+            ).style("top",
+                (d) =>
+                    d.source.y + "px"
+            ).style("width",
+                (d) =>
+                    dx = d.target.x - d.source.x
+                    dy = d.target.y - d.source.y
+                    Math.sqrt(dx * dx + dy * dy) + "px"
+            ).style("-webkit-transform", @connectorTransform)
             .style("-moz-transform", @connectorTransform)
             .style("transform", @connectorTransform)
 
@@ -207,7 +211,7 @@ class CK.Smartboard.View.BalloonCloud
     # collision detection - takes a single balloon, checks if its colliding with anything else,
     # and takes appopriate action (moves things out of the way, if necessary)
     detectCollision: (b) =>
-        # based on collision detection example 
+        # based on collision detection example
         #   from https://gist.github.com/3116713
 
         return unless b.x? and b.y?
@@ -287,14 +291,14 @@ class CK.Smartboard.View.BalloonCloud
                         xNudge = (xOverlap/2)
                         if b.x < quad.point.x
                             b.x -= xNudge
-                            quad.point.x += xNudge 
+                            quad.point.x += xNudge
                         else
-                            b.x += xNudge 
-                            quad.point.x -= xNudge 
+                            b.x += xNudge
+                            quad.point.x -= xNudge
 
-            return x1 > nx2 || 
-                x2 < nx1 || 
-                y1 > ny2 || 
+            return x1 > nx2 ||
+                x2 < nx1 ||
+                y1 > ny2 ||
                 y2 < ny1
 
     startForce: =>
@@ -324,7 +328,7 @@ class CK.Smartboard.View.BalloonCloud
             return shouldRender
 
         # make sure node n doesn't already exist
-        unless _.any(@nodes, 
+        unless _.any(@nodes,
                 (node) -> node.id is n.id)
             @nodes.push n
             shouldRender = true
@@ -385,7 +389,7 @@ class CK.Smartboard.View.BalloonCloud
             target: toTag
 
         # make sure link doesn't already exist
-        unless _.any(@links, 
+        unless _.any(@links,
                 (l) -> l.source.id is fromContribution.id and l.target.id is toTag.id)
             @links.push link
             shouldRender = true
@@ -424,7 +428,7 @@ class CK.Smartboard.View.BalloonCloud
                     
                     if screenState is 'analysis'
                         view.ballonContributionType = view.balloonContributionTypes.analysis
-                    else 
+                    else
                         view.balloonContributionType = view.balloonContributionTypes.default
 
                 else if d.collectionName is "proposals"
@@ -455,14 +459,14 @@ class CK.Smartboard.View.BalloonCloud
 
                 d.view = view
                 
-                if d.collectionName is "contributions" or d.collectionName is "proposals" 
+                if d.collectionName is "contributions" or d.collectionName is "proposals"
                     view.render()
                     view.resetView()
 
 
-            if ! view? 
-                 console.error 'Could not create or set view for ' + d.collectionName + '!'
-                 return
+            if ! view?
+                console.error 'Could not create or set view for ' + d.collectionName + '!'
+                return
             
             view.render()
                 
@@ -489,7 +493,7 @@ class CK.Smartboard.View.BalloonCloud
                     #remove previous backbone views and all the events that are tied to it
                     view.remove()
                     view = null
-                else 
+                else
                     view.ballonContributionType = view.balloonContributionTypes.default
 
             else if b.collectionName is 'proposals'
@@ -501,8 +505,8 @@ class CK.Smartboard.View.BalloonCloud
             if view?
                 view.render()
 
-                if b.collectionName is "contributions" or b.collectionName is "proposals" 
-                    view.resetView() 
+                if b.collectionName is "contributions" or b.collectionName is "proposals"
+                    view.resetView()
 
                 
 
@@ -588,32 +592,3 @@ class CK.Smartboard.View.BalloonCloud
         @connectors = @vis.selectAll('div.connector')
 
         @startForce()
-
-        # restart the force direction algorithm if
-        # we've previously explicitly started it
-        #@force.start()
-
-        # Sail.app.force2 = force2
-
-
-        
-        
-        # source = @vis.selectAll('.source')
-        #     .data(links)
-        #     .enter()
-        #     .append("div")
-        #         .attr("class", "source")
-
-        # target = @vis.selectAll('.target')
-        #     .data(links)
-        #     .enter()
-        #     .append("div")
-        #         .attr("class", "target")
-
-        # locator = @vis.selectAll('.locator')
-        #     .data(@nodes)
-        #     .enter()
-        #     .append("div")
-        #         .attr("class", "locator")
-
-        #force.on('drag.force', -> force2.resume(); console.log('drag!'))   
