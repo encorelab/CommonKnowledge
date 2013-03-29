@@ -8,7 +8,7 @@
     __extends(Smartboard, _super);
 
     function Smartboard() {
-      this.initModels = __bind(this.initModels, this);
+      this.setupModels = __bind(this.setupModels, this);
 
       this.createNewProposal = __bind(this.createNewProposal, this);
 
@@ -235,73 +235,54 @@
       return proposal.save({});
     };
 
-    Smartboard.prototype.initModels = function() {
-      var _this = this;
-      return Wakeful.loadFayeClient(this.config.wakeful.url).done(function() {
-        _this.contributions = new CK.Model.Contributions();
-        _this.contributions.wake(_this.config.wakeful.url);
-        _this.proposals = new CK.Model.Proposals();
-        _this.proposals.wake(_this.config.wakeful.url);
-        _this.contributions.on('all', function(ev, data) {
-          return console.log(_this.contributions.url, ev, data);
-        });
-        _this.contributions.on('add', function(contrib) {
-          _this.wall.cloud.ensureNode(contrib);
-          return _this.wall.cloud.render();
-        });
-        _this.contributions.on('reset', function() {
-          _this.contributions.each(_this.wall.cloud.ensureNode);
-          return _this.wall.cloud.render();
-        });
-        _this.proposals.on('all', function(ev, data) {
-          return console.log(_this.proposals.url, ev, data);
-        });
-        _this.proposals.on('add', function(proposal) {
-          _this.wall.cloud.ensureNode(proposal);
-          return _this.wall.cloud.render();
-        });
-        _this.proposals.on('change', function(proposal) {
-          if (_this.wall.cloud.ensureNode(proposal)) {
-            return _this.wall.cloud.render();
-          }
-        });
-        _this.proposals.on('reset', function() {
-          _this.proposals.each(_this.wall.cloud.ensureNode);
-          return _this.wall.cloud.render();
-        });
-        _this.tags = new CK.Model.Tags();
-        _this.tags.wake(_this.config.wakeful.url);
-        _this.tags.on('add', function(tag) {
-          _this.wall.cloud.ensureNode(tag);
-          tag.newlyAdded = true;
-          return _this.wall.cloud.render();
-        });
-        _this.tags.on('reset', function(collection) {
-          _this.tagCount = collection.length;
-          console.log("Number of Tags: " + _this.tagCount);
-          collection.each(_this.wall.cloud.ensureNode);
-          return _this.wall.cloud.render();
-        });
-        CK.getState('phase', function(s) {
-          if (s) {
-            if (s.get('screen_lock') === true) {
-              _this.wall.pause();
-            }
-            if (s.get('state') === 'analysis') {
-              return _this.switchToAnalysis();
-            } else if (s.get('state') === 'proposal') {
-              return _this.switchToProposal();
-            } else if (s.get('state') === 'interpretation') {
-              return _this.switchToInterpretation();
-            } else if (s.get('state') === 'evaluation') {
-              return _this.switchToEvaluation();
-            } else {
-              return _this.wall.setMode('brainstorm');
-            }
-          }
-        });
-        return _this.trigger('ready');
+    Smartboard.prototype.setupModels = function() {
+      var runState,
+        _this = this;
+      this.contributions = CK.Model.awake.contributions;
+      this.proposals = CK.Model.awake.proposals;
+      this.tags = CK.Model.awake.tags;
+      this.contributions.on('add', function(contrib) {
+        _this.wall.cloud.ensureNode(contrib);
+        return _this.wall.cloud.render();
       });
+      this.proposals.on('add', function(proposal) {
+        _this.wall.cloud.ensureNode(proposal);
+        return _this.wall.cloud.render();
+      });
+      this.proposals.on('change', function(proposal) {
+        if (_this.wall.cloud.ensureNode(proposal)) {
+          return _this.wall.cloud.render();
+        }
+      });
+      this.tags.on('add', function(tag) {
+        _this.wall.cloud.ensureNode(tag);
+        tag.newlyAdded = true;
+        return _this.wall.cloud.render();
+      });
+      this.tags.on('reset', function(collection) {
+        _this.tagCount = collection.length;
+        console.log("Number of Tags: " + _this.tagCount);
+        collection.each(_this.wall.cloud.ensureNode);
+        return _this.wall.cloud.render();
+      });
+      runState = CK.getState('run');
+      if (runState) {
+        if (runState.get('screen_lock') === true) {
+          this.wall.pause();
+        }
+        if (runState.get('mode') === 'analysis') {
+          this.switchToAnalysis();
+        } else if (runState.get('mode') === 'proposal') {
+          this.switchToProposal();
+        } else if (runState.get('mode') === 'interpretation') {
+          this.switchToInterpretation();
+        } else if (runState.get('mode') === 'evaluation') {
+          this.switchToEvaluation();
+        } else {
+          this.wall.setMode('brainstorm');
+        }
+      }
+      return this.trigger('ready');
     };
 
     Smartboard.prototype.events = {
@@ -310,8 +291,15 @@
         return console.log("Initialized...");
       },
       authenticated: function(ev) {
+        var _this = this;
         console.log("Authenticated...");
-        return CK.Model.init(this.config.drowsy.url, this.run.name).done(this.initModels);
+        return CK.Model.init(this.config.drowsy.url, this.run.name).done(function() {
+          return Wakeful.loadFayeClient(_this.config.wakeful.url).done(function() {
+            return CK.Model.initWakefulCollections(_this.config.wakeful.url).done(function() {
+              return _this.setupModels();
+            });
+          });
+        });
       },
       'ui.initialized': function(ev) {
         return console.log("UI initialized...");
@@ -320,14 +308,8 @@
         return console.log("Connected...");
       },
       ready: function(ev) {
-        var _this = this;
         console.log("Ready...");
-        this.wall.render();
-        return this.tags.fetch().done(function() {
-          return _this.contributions.fetch().done(function() {
-            return _this.proposals.fetch();
-          });
-        });
+        return this.wall.cloud.render();
       },
       sail: {
         contribution: function(sev) {

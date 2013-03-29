@@ -8,6 +8,8 @@
 
     function Model() {}
 
+    Model.requiredCollections = ['contributions', 'tags', 'states', 'proposals'];
+
     Model.init = function(url, db) {
       var deferredConfigure,
         _this = this;
@@ -22,15 +24,9 @@
       this.dbURL = "" + url + "/" + db;
       this.server = new Drowsy.Server(url);
       this.db = this.server.database(db);
-      this.createNecessaryCollections(['contributions', 'tags', 'states', 'user_states', 'proposals']).then(function() {
-        var tags;
+      this.createNecessaryCollections(this.requiredCollections).then(function() {
         _this.defineModelClasses();
-        tags = new CK.Model.Tags();
-        return tags.fetch({
-          success: function(tags) {
-            return deferredConfigure.resolve();
-          }
-        });
+        return deferredConfigure.resolve();
       });
       return deferredConfigure;
     };
@@ -62,6 +58,11 @@
     };
 
     Model.defineModelClasses = function() {
+      Drowsy.Document.prototype.defaults = function() {
+        return {
+          created_at: new Date()
+        };
+      };
       this.Contribution = (function(_super) {
 
         __extends(Contribution, _super);
@@ -74,17 +75,8 @@
           this.addTag = __bind(this.addTag, this);
 
           this.get = __bind(this.get, this);
-
-          this.initialize = __bind(this.initialize, this);
           return Contribution.__super__.constructor.apply(this, arguments);
         }
-
-        Contribution.prototype.initialize = function() {
-          Contribution.__super__.initialize.call(this);
-          if (!this.get('created_at')) {
-            return this.set('created_at', new Date());
-          }
-        };
 
         Contribution.prototype.get = function(attr) {
           var date, val;
@@ -160,17 +152,8 @@
           this.addTag = __bind(this.addTag, this);
 
           this.get = __bind(this.get, this);
-
-          this.initialize = __bind(this.initialize, this);
           return Proposal.__super__.constructor.apply(this, arguments);
         }
-
-        Proposal.prototype.initialize = function() {
-          Proposal.__super__.initialize.call(this);
-          if (!this.get('created_at')) {
-            return this.set('created_at', new Date());
-          }
-        };
 
         Proposal.prototype.get = function(attr) {
           var date, val;
@@ -290,7 +273,7 @@
         return State;
 
       })(this.db.Document('states'));
-      this.States = (function(_super) {
+      return this.States = (function(_super) {
 
         __extends(States, _super);
 
@@ -303,30 +286,26 @@
         return States;
 
       })(this.db.Collection('states'));
-      this.UserState = (function(_super) {
+    };
 
-        __extends(UserState, _super);
-
-        function UserState() {
-          return UserState.__super__.constructor.apply(this, arguments);
-        }
-
-        return UserState;
-
-      })(this.db.Document('user_states'));
-      return this.UserStates = (function(_super) {
-
-        __extends(UserStates, _super);
-
-        function UserStates() {
-          return UserStates.__super__.constructor.apply(this, arguments);
-        }
-
-        UserStates.prototype.model = CK.Model.UserState;
-
-        return UserStates;
-
-      })(this.db.Collection('user_states'));
+    Model.initWakefulCollections = function(wakefulUrl) {
+      var camelCase, coll, collName, deferreds, _i, _len, _ref;
+      deferreds = [];
+      camelCase = function(str) {
+        return str.replace(/([\-_][a-z]|^[a-z])/g, function($1) {
+          return $1.toUpperCase().replace(/[\-_]/, '');
+        });
+      };
+      this.awake = {};
+      _ref = this.requiredCollections;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        collName = _ref[_i];
+        coll = new this[camelCase(collName)]();
+        coll.wake(wakefulUrl);
+        this.awake[collName] = coll;
+        deferreds.push(coll.fetch());
+      }
+      return jQuery.when.apply(jQuery, deferreds);
     };
 
     return Model;
