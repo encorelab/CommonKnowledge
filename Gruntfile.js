@@ -23,7 +23,11 @@ module.exports = function(grunt) {
         files: {
           'shared/js/ck.model.js': 'shared/coffee/ck.model.coffee',
           'shared/js/ck.js': 'shared/coffee/ck.coffee',
-          'smartboard/js/ck.smartboard.view.js': 'smartboard/coffee/ck.smartboard.view.*.coffee'
+          'smartboard/js/ck.smartboard.view.js': [
+            'smartboard/coffee/ck.smartboard.view.coffee',
+            'smartboard/coffee/ck.smartboard.view.wall.coffee',
+            'smartboard/coffee/ck.smartboard.view.balloons.coffee'
+          ]
         }
       }
     },
