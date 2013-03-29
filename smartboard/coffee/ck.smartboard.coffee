@@ -216,7 +216,9 @@ class CK.Smartboard extends Sail.App
 
             @wall = new CK.Smartboard.View.Wall 
                 el: jQuery('#wall')
-                model: @runState
+                runState: @runState
+                tags: @tags
+                contributions: @contributions
 
             @wall.render()
 
