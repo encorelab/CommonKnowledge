@@ -114,6 +114,25 @@
 
     __extends(Wall, _super);
 
+    function Wall() {
+      this.changeWatermark = __bind(this.changeWatermark, this);
+
+      this.unpause = __bind(this.unpause, this);
+
+      this.pause = __bind(this.pause, this);
+
+      this.hideWordCloud = __bind(this.hideWordCloud, this);
+
+      this.gatherWordsForCloud = __bind(this.gatherWordsForCloud, this);
+
+      this.showWordCloud = __bind(this.showWordCloud, this);
+
+      this.submitNewTag = __bind(this.submitNewTag, this);
+
+      this.render = __bind(this.render, this);
+      return Wall.__super__.constructor.apply(this, arguments);
+    }
+
     Wall.prototype.tagName = 'div';
 
     Wall.prototype.id = 'wall';
@@ -156,8 +175,10 @@
       },
       'click #toggle-pause': function(ev) {
         var paused;
-        paused = this.runState.get('paused');
-        return this.runState.set('paused', !paused);
+        paused = this.model.get('paused');
+        return this.model.save({
+          paused: !paused
+        });
       },
       'click #go-analyze': function(ev) {
         if (!(this.mode != null) || this.mode === 'brainstorm') {
@@ -176,35 +197,13 @@
       }
     };
 
-    function Wall(options) {
-      this.changeWatermark = __bind(this.changeWatermark, this);
-
-      this.unpause = __bind(this.unpause, this);
-
-      this.pause = __bind(this.pause, this);
-
-      this.hideWordCloud = __bind(this.hideWordCloud, this);
-
-      this.gatherWordsForCloud = __bind(this.gatherWordsForCloud, this);
-
-      this.showWordCloud = __bind(this.showWordCloud, this);
-
-      this.submitNewTag = __bind(this.submitNewTag, this);
-
-      this.render = __bind(this.render, this);
-      this.runState = options.runState;
-      this.tags = options.tags;
-      this.contributions = options.contributions;
-      Wall.__super__.constructor.call(this, options);
-    }
-
     Wall.prototype.initialize = function() {
-      return this.runState.on('change', this.render);
+      return this.model.on('change', this.render);
     };
 
     Wall.prototype.render = function() {
       var mode, paused;
-      mode = this.runState.get('mode');
+      mode = this.model.get('mode');
       if (mode !== this.$el.data('mode')) {
         switch (mode) {
           case 'analysis':
@@ -229,7 +228,7 @@
         }
         this.$el.data('mode', mode);
       }
-      paused = this.runState.get('paused');
+      paused = this.model.get('paused');
       if (paused !== this.$el.data('paused')) {
         if (paused) {
           this.pause();

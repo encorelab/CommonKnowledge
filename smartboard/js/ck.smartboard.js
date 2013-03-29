@@ -295,9 +295,7 @@
         console.log("Ready...");
         this.wall = new CK.Smartboard.View.Wall({
           el: jQuery('#wall'),
-          runState: this.runState,
-          tags: this.tags,
-          contributions: this.contributions
+          model: this.runState
         });
         return this.wall.render();
       },

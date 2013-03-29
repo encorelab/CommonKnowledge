@@ -33,8 +33,8 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
         'keydown #new-tag': (ev) -> @submitNewTag() if ev.keyCode is 13
 
         'click #toggle-pause': (ev) ->
-            paused = @runState.get('paused')
-            @runState.set('paused', !paused)
+            paused = @model.get('paused')
+            @model.save(paused: !paused)
 
         'click #go-analyze': (ev) ->
             if !@mode? || @mode is 'brainstorm'
@@ -48,18 +48,11 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             if @mode is 'propose'
                 Sail.app.startInterpretation()
 
-    constructor: (options) ->
-        @runState = options.runState
-        @tags = options.tags
-        @contributions = options.contributions
-
-        super(options)
-
     initialize: ->
-        @runState.on 'change', @render
+        @model.on 'change', @render
 
     render: =>
-        mode = @runState.get('mode')
+        mode = @model.get('mode')
         if mode isnt @$el.data('mode')
             switch mode
                 when 'analysis'
@@ -91,7 +84,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
 
             @$el.data('mode', mode)
 
-        paused = @runState.get('paused')
+        paused = @model.get('paused')
         if paused isnt @$el.data('paused')
             if paused then @pause() else @unpause()
             @$el.data('paused', paused)
