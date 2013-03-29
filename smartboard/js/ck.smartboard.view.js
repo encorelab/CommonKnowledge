@@ -103,6 +103,13 @@
 
   })(Backbone.View);
 
+}).call(this);
+
+(function() {
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
   CK.Smartboard.View.Wall = (function(_super) {
 
     __extends(Wall, _super);
@@ -176,14 +183,6 @@
     };
 
     function Wall(options) {
-      this.render = __bind(this.render, this);
-
-      this.bubbleTag = __bind(this.bubbleTag, this);
-
-      this.bubbleContrib = __bind(this.bubbleContrib, this);
-
-      this.setMode = __bind(this.setMode, this);
-
       this.changeWatermark = __bind(this.changeWatermark, this);
 
       this.unpause = __bind(this.unpause, this);
@@ -197,10 +196,46 @@
       this.showWordCloud = __bind(this.showWordCloud, this);
 
       this.submitNewTag = __bind(this.submitNewTag, this);
+
+      this.render = __bind(this.render, this);
+      this.runState = options.runState;
+      this.tags = options.tags;
+      this.contributions = options.contributions;
       Wall.__super__.constructor.call(this, options);
-      this.cloud = new CK.Smartboard.View.BalloonCloud(this);
-      this.tagCounter = 0;
     }
+
+    Wall.prototype.initialize = function() {
+      return this.runState.on('change', this.render);
+    };
+
+    Wall.prototype.render = function() {
+      var mode;
+      mode = this.runState.get('mode');
+      if (mode !== this.$el.data('mode')) {
+        switch (mode) {
+          case 'analysis':
+            jQuery('body').removeClass('mode-synthesis').addClass('mode-analysis');
+            this.changeWatermark("analysis");
+            break;
+          case 'propose':
+            jQuery('body').removeClass('mode-analysis').addClass('mode-propose');
+            this.changeWatermark("propose");
+            break;
+          case 'interpret':
+            jQuery('body').removeClass('mode-propose').removeClass('mode-evaluate').addClass('mode-interpret');
+            this.changeWatermark("interpret");
+            break;
+          case 'evaluate':
+            jQuery('body').removeClass('mode-interpret').addClass('mode-evaluate');
+            this.changeWatermark("evaluate");
+            break;
+          default:
+            jQuery('body').removeClass('mode-analysis').removeClass('mode-synthesis');
+            this.changeWatermark("brainstorm");
+        }
+        return this.$el.data('mode', mode);
+      }
+    };
 
     Wall.prototype.submitNewTag = function() {
       var newTag;
@@ -327,9 +362,6 @@
     };
 
     Wall.prototype.pause = function() {
-      if ((this.cloud != null) && (this.cloud.force != null)) {
-        this.cloud.force.stop();
-      }
       this.$el.find('#toggle-pause').addClass('paused').text('Resume');
       if (this.mode !== 'evaluate') {
         jQuery('body').addClass('paused');
@@ -338,7 +370,6 @@
     };
 
     Wall.prototype.unpause = function() {
-      this.cloud.force.resume();
       jQuery('body').removeClass('paused');
       this.$el.find('#toggle-pause').removeClass('paused').text('Pause');
       return this.changeWatermark(this.mode || "brainstorm");
@@ -350,47 +381,16 @@
       });
     };
 
-    Wall.prototype.setMode = function(mode) {
-      if (!mode) {
-        mode = "brainstorm";
-      }
-      this.mode = mode;
-      if (mode === 'analysis') {
-        jQuery('body').removeClass('mode-synthesis').addClass('mode-analysis');
-        this.changeWatermark("analysis");
-      } else if (mode === 'propose') {
-        jQuery('body').removeClass('mode-analysis').addClass('mode-propose');
-        this.changeWatermark("propose");
-      } else if (mode === 'interpret') {
-        jQuery('body').removeClass('mode-propose').removeClass('mode-evaluate').addClass('mode-interpret');
-        this.changeWatermark("interpret");
-      } else if (mode === 'evaluate') {
-        jQuery('body').removeClass('mode-interpret').addClass('mode-evaluate');
-        this.changeWatermark("evaluate");
-      } else {
-        jQuery('body').removeClass('mode-analysis').removeClass('mode-synthesis');
-        this.changeWatermark("brainstorm");
-      }
-      return console.log('Wall Mode is now: ' + mode);
-    };
-
-    Wall.prototype.bubbleContrib = function(contrib) {};
-
-    Wall.prototype.bubbleTag = function(tag) {
-      var bubble;
-      bubble = new CK.Smartboard.View.TagBalloon({
-        model: tag
-      });
-      tag.on('change', bubble.render);
-      bubble.render();
-      return this.cloud.addTag(bubble.$el);
-    };
-
-    Wall.prototype.render = function() {};
-
     return Wall;
 
   })(CK.Smartboard.View.Base);
+
+}).call(this);
+
+(function() {
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   CK.Smartboard.View.Balloon = (function(_super) {
 

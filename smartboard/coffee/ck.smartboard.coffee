@@ -37,8 +37,6 @@ class CK.Smartboard extends Sail.App
 
         @rollcall = new Rollcall.Client(@config.rollcall.url)
 
-        @wall = new CK.Smartboard.View.Wall {el: jQuery('#wall')}
-
         @tagCount = 0;
         #@states = new CK.Model.States()
         #@states.on 'change', (collection) ->
@@ -134,7 +132,7 @@ class CK.Smartboard extends Sail.App
         proposal.save {}
 
     # set up all the Collections used by the board
-    setupModels: =>
+    setupModel: =>
         @contributions = CK.Model.awake.contributions
         @proposals = CK.Model.awake.proposals
         @tags = CK.Model.awake.tags
@@ -171,22 +169,12 @@ class CK.Smartboard extends Sail.App
             collection.each @wall.cloud.ensureNode
             @wall.cloud.render()
 
-        runState = CK.getState 'run'
-        if runState
-            # restore pause state if there is one set
-            if runState.get('screen_lock') is true
-                @wall.pause()
+        @runState = CK.getState 'run'
 
-            if runState.get('mode') is 'analysis'
-                @switchToAnalysis()
-            else if runState.get('mode') is 'proposal'
-                @switchToProposal()
-            else if runState.get('mode') is 'interpretation'
-                @switchToInterpretation()
-            else if runState.get('mode') is 'evaluation'
-                @switchToEvaluation()
-            else
-                @wall.setMode('brainstorm')
+        unless @runState?
+            @runState = CK.setState 'run', {}
+
+        @runState.wake @config.wakeful.url
 
         # test state change
     
@@ -199,7 +187,7 @@ class CK.Smartboard extends Sail.App
         #  [{"content": "Blah comment on!!", "author": "ck2", "created_at": "Mon Oct 29 2012 13:42:00 GMT-0400 (EDT)", "tag_group_id": '51366fd242901f5cf4000002'}, { "content": "Blah comment on and on and on", "author": "ck2", "created_at": "Mon Oct 29 2012 13:40:00 GMT-0400 (EDT)", "tag_group_id": '51366dd942901f51c6000000'}]
 
         # setTimeout a, 5000
-        @trigger('ready')
+        @trigger 'ready'
 
     events:
         initialized: (ev) ->
@@ -212,7 +200,7 @@ class CK.Smartboard extends Sail.App
             CK.Model.init(@config.drowsy.url, @run.name).done =>
                 Wakeful.loadFayeClient(@config.wakeful.url).done =>
                     CK.Model.initWakefulCollections(@config.wakeful.url).done =>
-                        @setupModels()
+                        @setupModel()
 
 
         'ui.initialized': (ev) ->
@@ -225,8 +213,14 @@ class CK.Smartboard extends Sail.App
             # triggered when CK.Model has been configured (via CK.Model.init)
             # TODO: maybe also wait until we're connected?
             console.log "Ready..."
-            
-            @wall.cloud.render()
+
+            @wall = new CK.Smartboard.View.Wall 
+                el: jQuery('#wall')
+                runState: @runState
+                tags: @tags
+                contributions: @contributions
+
+            @wall.render()
 
         sail:
             contribution: (sev) ->

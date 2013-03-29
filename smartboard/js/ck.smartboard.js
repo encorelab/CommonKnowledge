@@ -8,7 +8,7 @@
     __extends(Smartboard, _super);
 
     function Smartboard() {
-      this.setupModels = __bind(this.setupModels, this);
+      this.setupModel = __bind(this.setupModel, this);
 
       this.createNewProposal = __bind(this.createNewProposal, this);
 
@@ -89,9 +89,6 @@
         return _this.trigger('initialized');
       });
       this.rollcall = new Rollcall.Client(this.config.rollcall.url);
-      this.wall = new CK.Smartboard.View.Wall({
-        el: jQuery('#wall')
-      });
       return this.tagCount = 0;
     };
 
@@ -235,9 +232,8 @@
       return proposal.save({});
     };
 
-    Smartboard.prototype.setupModels = function() {
-      var runState,
-        _this = this;
+    Smartboard.prototype.setupModel = function() {
+      var _this = this;
       this.contributions = CK.Model.awake.contributions;
       this.proposals = CK.Model.awake.proposals;
       this.tags = CK.Model.awake.tags;
@@ -265,23 +261,11 @@
         collection.each(_this.wall.cloud.ensureNode);
         return _this.wall.cloud.render();
       });
-      runState = CK.getState('run');
-      if (runState) {
-        if (runState.get('screen_lock') === true) {
-          this.wall.pause();
-        }
-        if (runState.get('mode') === 'analysis') {
-          this.switchToAnalysis();
-        } else if (runState.get('mode') === 'proposal') {
-          this.switchToProposal();
-        } else if (runState.get('mode') === 'interpretation') {
-          this.switchToInterpretation();
-        } else if (runState.get('mode') === 'evaluation') {
-          this.switchToEvaluation();
-        } else {
-          this.wall.setMode('brainstorm');
-        }
+      this.runState = CK.getState('run');
+      if (this.runState == null) {
+        this.runState = CK.setState('run', {});
       }
+      this.runState.wake(this.config.wakeful.url);
       return this.trigger('ready');
     };
 
@@ -296,7 +280,7 @@
         return CK.Model.init(this.config.drowsy.url, this.run.name).done(function() {
           return Wakeful.loadFayeClient(_this.config.wakeful.url).done(function() {
             return CK.Model.initWakefulCollections(_this.config.wakeful.url).done(function() {
-              return _this.setupModels();
+              return _this.setupModel();
             });
           });
         });
@@ -309,7 +293,13 @@
       },
       ready: function(ev) {
         console.log("Ready...");
-        return this.wall.cloud.render();
+        this.wall = new CK.Smartboard.View.Wall({
+          el: jQuery('#wall'),
+          runState: this.runState,
+          tags: this.tags,
+          contributions: this.contributions
+        });
+        return this.wall.render();
       },
       sail: {
         contribution: function(sev) {
