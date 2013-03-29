@@ -114,25 +114,6 @@
 
     __extends(Wall, _super);
 
-    function Wall() {
-      this.changeWatermark = __bind(this.changeWatermark, this);
-
-      this.unpause = __bind(this.unpause, this);
-
-      this.pause = __bind(this.pause, this);
-
-      this.hideWordCloud = __bind(this.hideWordCloud, this);
-
-      this.gatherWordsForCloud = __bind(this.gatherWordsForCloud, this);
-
-      this.showWordCloud = __bind(this.showWordCloud, this);
-
-      this.submitNewTag = __bind(this.submitNewTag, this);
-
-      this.render = __bind(this.render, this);
-      return Wall.__super__.constructor.apply(this, arguments);
-    }
-
     Wall.prototype.tagName = 'div';
 
     Wall.prototype.id = 'wall';
@@ -175,8 +156,8 @@
       },
       'click #toggle-pause': function(ev) {
         var paused;
-        paused = this.model.get('paused');
-        return this.model.save({
+        paused = this.runState.get('paused');
+        return this.runState.save({
           paused: !paused
         });
       },
@@ -197,13 +178,63 @@
       }
     };
 
+    function Wall(options) {
+      this.changeWatermark = __bind(this.changeWatermark, this);
+
+      this.unpause = __bind(this.unpause, this);
+
+      this.pause = __bind(this.pause, this);
+
+      this.hideWordCloud = __bind(this.hideWordCloud, this);
+
+      this.gatherWordsForCloud = __bind(this.gatherWordsForCloud, this);
+
+      this.showWordCloud = __bind(this.showWordCloud, this);
+
+      this.submitNewTag = __bind(this.submitNewTag, this);
+
+      this.render = __bind(this.render, this);
+
+      this.addBalloon = __bind(this.addBalloon, this);
+      this.runState = options.runState;
+      this.tags = options.tags;
+      this.contributions = options.contributions;
+      Wall.__super__.constructor.call(this, options);
+    }
+
     Wall.prototype.initialize = function() {
-      return this.model.on('change', this.render);
+      var _this = this;
+      this.runState.on('change', this.render);
+      this.tagBalloons = {};
+      this.tags.on('add', function(t) {
+        return _this.addBalloon(t, CK.Smartboard.View.TagBalloon, _this.tagBalloons);
+      });
+      this.tags.each(function(t) {
+        return _this.addBalloon(t, CK.Smartboard.View.TagBalloon, _this.tagBalloons);
+      });
+      this.contributionBalloons = {};
+      this.contributions.on('add', function(c) {
+        return _this.addBalloon(c, CK.Smartboard.View.ContributionBalloon, _this.contributionBalloons);
+      });
+      return this.contributions.each(function(c) {
+        return _this.addBalloon(c, CK.Smartboard.View.ContributionBalloon, _this.contributionBalloons);
+      });
+    };
+
+    Wall.prototype.addBalloon = function(doc, view, balloonList) {
+      var b;
+      b = new view({
+        model: doc
+      });
+      doc.on('change', b.render);
+      b.render();
+      this.$el.append(b.$el);
+      return balloonList[doc.id] = b;
     };
 
     Wall.prototype.render = function() {
       var mode, paused;
-      mode = this.model.get('mode');
+      mode = this.runState.get('mode');
       if (mode !== this.$el.data('mode')) {
         switch (mode) {
           case 'analysis':
@@ -228,7 +259,7 @@
         }
         this.$el.data('mode', mode);
       }
-      paused = this.model.get('paused');
+      paused = this.runState.get('paused');
       if (paused !== this.$el.data('paused')) {
         if (paused) {
           this.pause();

@@ -48,17 +48,32 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             if @mode is 'propose'
                 Sail.app.startInterpretation()
 
-    construction: (options) ->
+    constructor: (options) ->
+        @runState = options.runState
+        @tags = options.tags
+        @contributions = options.contributions
         super(options)
-
-        @runState: options.runState
-        @tags: options.tags
-        @contributions: options.contributions
 
     initialize: ->
         @runState.on 'change', @render
 
+        @tagBalloons = {}
+        @tags.on 'add', (t) =>
+            @addBalloon t, CK.Smartboard.View.TagBalloon, @tagBalloons
+        @tags.each (t) => @addBalloon t, CK.Smartboard.View.TagBalloon, @tagBalloons
 
+        @contributionBalloons = {}
+        @contributions.on 'add', (c) =>
+            @addBalloon c, CK.Smartboard.View.ContributionBalloon, @contributionBalloons
+        @contributions.each (c) => @addBalloon c, CK.Smartboard.View.ContributionBalloon, @contributionBalloons
+
+    addBalloon: (doc, view, balloonList) =>
+        b = new view
+            model: doc
+        doc.on 'change', b.render
+        b.render()
+        @$el.append b.$el
+        balloonList[doc.id] = b
 
     render: =>
         mode = @runState.get('mode')
