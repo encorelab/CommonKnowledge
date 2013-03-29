@@ -155,15 +155,9 @@
         }
       },
       'click #toggle-pause': function(ev) {
-        var $p;
-        $p = jQuery(ev.target);
-        if ($p.hasClass('paused')) {
-          Sail.app.unpause();
-          return $p.removeClass('paused').text('Pause');
-        } else {
-          $p.addClass('paused').text('Resume');
-          return Sail.app.pause();
-        }
+        var paused;
+        paused = this.runState.get('paused');
+        return this.runState.set('paused', !paused);
       },
       'click #go-analyze': function(ev) {
         if (!(this.mode != null) || this.mode === 'brainstorm') {
@@ -209,7 +203,7 @@
     };
 
     Wall.prototype.render = function() {
-      var mode;
+      var mode, paused;
       mode = this.runState.get('mode');
       if (mode !== this.$el.data('mode')) {
         switch (mode) {
@@ -233,7 +227,16 @@
             jQuery('body').removeClass('mode-analysis').removeClass('mode-synthesis');
             this.changeWatermark("brainstorm");
         }
-        return this.$el.data('mode', mode);
+        this.$el.data('mode', mode);
+      }
+      paused = this.runState.get('paused');
+      if (paused !== this.$el.data('paused')) {
+        if (paused) {
+          this.pause();
+        } else {
+          this.unpause();
+        }
+        return this.$el.data('paused', paused);
       }
     };
 

@@ -33,15 +33,8 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
         'keydown #new-tag': (ev) -> @submitNewTag() if ev.keyCode is 13
 
         'click #toggle-pause': (ev) ->
-            $p = jQuery(ev.target)
-            if $p.hasClass('paused')
-                Sail.app.unpause()
-                $p.removeClass('paused').text('Pause')
-            else
-                $p.addClass('paused').text('Resume')
-                Sail.app.pause()
-            # note that we don't call the view's pause/unpause methods here;
-            # those are triggered by sail events in CK.Smartboard
+            paused = @runState.get('paused')
+            @runState.set('paused', !paused)
 
         'click #go-analyze': (ev) ->
             if !@mode? || @mode is 'brainstorm'
@@ -98,6 +91,10 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
 
             @$el.data('mode', mode)
 
+        paused = @runState.get('paused')
+        if paused isnt @$el.data('paused')
+            if paused then @pause() else @unpause()
+            @$el.data('paused', paused)
 
     submitNewTag: =>
         newTag = @$el.find('#new-tag').val()
