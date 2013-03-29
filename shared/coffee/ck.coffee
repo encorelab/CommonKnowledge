@@ -13,7 +13,7 @@ CK.setState = (forEntity, values) ->
     
     unless state?
         state = new CK.Model.State()
-        state.set 'entity', values
+        state.set 'entity', forEntity
         CK.Model.awake.states.add state
 
     state.set values
