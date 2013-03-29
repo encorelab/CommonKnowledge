@@ -26,7 +26,8 @@
     }
     state.set(values);
     state.set('modified_at', new Date());
-    return state.save();
+    state.save();
+    return state;
   };
 
 }).call(this);
