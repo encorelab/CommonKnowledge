@@ -132,8 +132,8 @@
       var b, pos, sev, _i, _len, _ref, _results;
       sev = new Sail.Event('screen_lock');
       this.groupchat.sendEvent(sev);
-      CK.getState('phase', function(s) {
-        return CK.setState('phase', s.get('state'), true);
+      CK.setState('run', {
+        paused: true
       });
       _ref = _.union(this.contributions.models, this.tags.models);
       _results = [];
@@ -163,8 +163,8 @@
       var sev;
       sev = new Sail.Event('screen_unlock');
       this.groupchat.sendEvent(sev);
-      CK.getState('phase', function(s) {
-        return CK.setState('phase', s.get('state'), false);
+      CK.setState('run', {
+        paused: false
       });
       if (this.wall.mode === 'evaluate') {
         return this.switchToInterpretation();

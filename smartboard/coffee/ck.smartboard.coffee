@@ -71,10 +71,7 @@ class CK.Smartboard extends Sail.App
         sev = new Sail.Event 'screen_lock'
         @groupchat.sendEvent sev
         
-        CK.getState('phase', (s) ->
-            CK.setState('phase', s.get('state'), true)
-        )
-        
+        CK.setState('run', {paused: true})
 
         # take this opportunity to save positions
         for b in _.union(@contributions.models, @tags.models)
@@ -92,10 +89,7 @@ class CK.Smartboard extends Sail.App
     unpause: =>
         sev = new Sail.Event 'screen_unlock'
         @groupchat.sendEvent sev
-        CK.getState('phase', (s) ->
-            CK.setState('phase', s.get('state'), false)
-            #CK.setState('phase', 'brainstorm', false)
-        )
+        CK.setState('run', {paused: false})
 
         if @wall.mode is 'evaluate'
             @switchToInterpretation()

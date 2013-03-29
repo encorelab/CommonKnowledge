@@ -427,10 +427,9 @@
       console.log("rendering TaggingView!");
       Sail.app.hideWaitScreen();
 
-      CK.getUserState(Sail.app.userData.account.login, function(user_state) {
-        var tag_group = user_state.get('analysis').tag_group;
-        jQuery('#selected-tag-container .chosen-tag').text(tag_group);
-      });
+      var user_state = CK.getState(Sail.app.userData.account.login);
+      var tag_group = user_state.get('analysis').tag_group;
+      jQuery('#selected-tag-container .chosen-tag').text(tag_group);
 
       var headline = view.model.get('headline');
       var content = view.model.get('content');
