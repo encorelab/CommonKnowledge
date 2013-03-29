@@ -17,6 +17,7 @@
     "backbone.drowsy": "0.0.10"
   },
   "devDependencies": {
+    "coffee-script": "1.6.2",
     "grunt": "~0.4.0",
     "grunt-contrib": "~0.4.0"
   },
