@@ -13,7 +13,8 @@
   },
   "dependencies": {
     "http-proxy": "*",
-    "node-static": "*"
+    "node-static": "*",
+    "backbone.drowsy": "0.0.10"
   },
   "devDependencies": {
     "grunt": "~0.4.0",
