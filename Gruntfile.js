@@ -23,6 +23,7 @@ module.exports = function(grunt) {
         files: {
           'shared/js/ck.model.js': 'shared/coffee/ck.model.coffee',
           'shared/js/ck.js': 'shared/coffee/ck.coffee',
+          'smartboard/js/ck.smartboard.js': 'smartboard/coffee/ck.smartboard.coffee',
           'smartboard/js/ck.smartboard.view.js': [
             'smartboard/coffee/ck.smartboard.view.coffee',
             'smartboard/coffee/ck.smartboard.view.wall.coffee',
