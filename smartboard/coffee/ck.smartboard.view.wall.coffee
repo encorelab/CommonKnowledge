@@ -57,15 +57,36 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
     initialize: ->
         @runState.on 'change', @render
 
-        @tagBalloons = {}
-        @tags.on 'add', (t) =>
-            @addBalloon t, CK.Smartboard.View.TagBalloon, @tagBalloons
-        @tags.each (t) => @addBalloon t, CK.Smartboard.View.TagBalloon, @tagBalloons
+        @balloonViews = {}
 
-        @contributionBalloons = {}
+        @tags.on 'add', (t) =>
+            @addBalloon t, CK.Smartboard.View.TagBalloon, @balloonViews
+        @tags.each (t) => @addBalloon t, CK.Smartboard.View.TagBalloon, @balloonViews
+
         @contributions.on 'add', (c) =>
-            @addBalloon c, CK.Smartboard.View.ContributionBalloon, @contributionBalloons
-        @contributions.each (c) => @addBalloon c, CK.Smartboard.View.ContributionBalloon, @contributionBalloons
+            @addBalloon c, CK.Smartboard.View.ContributionBalloon, @balloonViews
+        @contributions.each (c) => @addBalloon c, CK.Smartboard.View.ContributionBalloon, @balloonViews
+
+        @balloonQuadtree = d3.geom.quadtree _.collect(_.values(@balloonViews), (bv) -> bv.el)
+
+        requestAnimationFrame = window.requestAnimationFrame || 
+                                window.mozRequestAnimationFrame ||
+                                window.webkitRequestAnimationFrame
+
+        window.animationStart = Date.now()
+
+        collide = (nextTimestamp) =>
+            unless @colliding
+                @colliding = true
+                console.log("Colliding", nextTimestamp)
+                for id,bv of @balloonViews
+                    @balloonQuadtree.visit @detectCollisions(bv.$el)
+                @colliding = false
+                console.log("Done colliding", nextTimestamp)
+                requestAnimationFrame collide
+
+        requestAnimationFrame collide
+            
 
     addBalloon: (doc, view, balloonList) =>
         b = new view
@@ -73,6 +94,14 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
         doc.on 'change', b.render
         b.render()
         @$el.append b.$el
+
+        @balloonQuadtree = d3.geom.quadtree _.collect(_.values(@balloonViews), (bv) -> bv.el)
+
+        # b.$el.on 'drag', (ev, ui) =>
+        #     console.log ev, ui
+        #     for id,bv of @balloonViews
+        #         @balloonQuadtree.visit @detectCollisions(bv.$el)
+
         balloonList[doc.id] = b
 
     render: =>
@@ -257,4 +286,91 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
         jQuery('#watermark').fadeOut 800, ->
                 jQuery(this).text(text)
                     .fadeIn 800
+
+    detectCollisions: ($b) =>
+        b = $b[0]
+
+        # based on collision detection example 
+        #   from https://gist.github.com/3116713
+        bWidth = $b.outerWidth()
+        bHeight = $b.outerHeight()
+
+        nx1 = b.x - bWidth/2
+        nx2 = b.x + bWidth/2
+        ny1 = b.y - bHeight/2
+        ny2 = b.y + bHeight/2
+
+        bIsTag = $b.hasClass('tag')
+
+        return (quad, x1, y1, x2, y2) =>
+            return unless quad.point? and quad.point.x? and quad.point.y?
+
+            if quad.point && quad.point isnt b # don't try to collide with self
+
+                qWidth = quad.point.width
+                qHeight = quad.point.height
+
+                w = bWidth/2 + qWidth/2
+                h = bHeight/2 + qHeight/2
+
+                xDist = Math.abs(b.x - quad.point.x)
+                yDist = Math.abs(b.y - quad.point.y)
+
+                if xDist < w && yDist < h
+
+                    # bRepulsion = 2
+                    # qRepulsion = 2
+                    # if bIsTag
+                    #     bRepulsion = 3
+                    #     if b.contribs && not (quad.point.id in b.contribs)
+                    #         bRepulsion = 7
+                    # if qIsTag
+                    #     qRepulsion = 3
+                    #     if quad.point.contribs && not (b.id in quad.point.contribs)
+                    #         qRepulsion = 7
+
+                    # if qIsTag && bIsTag
+                    #     qRepulsion = 6
+                    #     bRepulsion = 6
+
+                    # bRepulsion *= 2
+                    # qRepulsion *= 2
+
+
+                    # if bIsTag
+                    #     force.alpha(0.01)
+
+                    yOverlap = h - yDist
+                    xOverlap = w - xDist
+
+                    if xDist/w < yDist/h
+
+                        # yNudge = (yOverlap/yDist) * yOverlap/h * force.alpha()
+                        # b.y = b.y + yNudge*qRepulsion
+                        # quad.point.y = quad.point.y - yNudge*bRepulsion
+                        
+                        yNudge = (yOverlap/2)
+                        if b.y < quad.point.y
+                            b.y -= yNudge
+                            quad.point.y += yNudge
+                        else
+                            b.y += yNudge
+                            quad.point.y -= yNudge
+                    else
+                        # xNudge = (xOverlap/xDist) * xOverlap/w * force.alpha()
+                        # b.x = b.x + xNudge*qRepulsion
+                        # quad.point.x = quad.point.x - xNudge*bRepulsion
+                        
+                        xNudge = (xOverlap/2)
+                        if b.x < quad.point.x
+                            b.x -= xNudge
+                            quad.point.x += xNudge 
+                        else
+                            b.x += xNudge 
+                            quad.point.x -= xNudge 
+
+            return x1 > nx2 || 
+                x2 < nx1 || 
+                y1 > ny2 || 
+                y2 < ny1
     

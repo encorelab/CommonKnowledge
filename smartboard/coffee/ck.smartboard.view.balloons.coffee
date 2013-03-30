@@ -1,15 +1,244 @@
 class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
-    moveToTop: =>
-        maxZ = _.max jQuery('.balloon').map -> 
-            parseInt(jQuery(this).zIndex()) + 1
-        @$el.zIndex maxZ
+    initialize: ->
+        
+        # We set these up to make things easier for d3-related stuff
+        # ... d3 wants .x and .y properties, so we just translate those to css 'left' and 'top'
+        # see https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object/defineProperty
+        Object.defineProperty @el, 'x',
+            get: => @$el.position().left
+            set: (x) => @$el.css('left', x + 'px')
+        Object.defineProperty @el, 'y',
+            get: => @$el.position().top
+            set: (y) => @$el.css('top', y + 'px')
+
+        Object.defineProperty @el, 'width',
+            get: => @$el.outerWidth()
+            set: (w) => @$el.css('width', w + 'px')
+        Object.defineProperty @el, 'height',
+            get: => @$el.outerHeight()
+            set: (h) => @$el.css('height', h + 'px')
+
+
+    # moveToTop: =>
+    #     maxZ = _.max jQuery('.balloon').map -> 
+    #         parseInt(jQuery(this).zIndex()) + 1
+    #     @$el.zIndex maxZ
 
     render: =>
-        if @x?
-            @$el.css 'left', @xToLeft(@x)
-        if @y?
-            @$el.css 'top', @yToTop(@y)
+        # if @x?
+        #     @$el.css 'left', @xToLeft(@x)
+        # if @y?
+        #     @$el.css 'top', @yToTop(@y)
 
+        @$el
+            .draggable
+                distance: 5
+                containment: '#wall'
+                stack: '.balloon'
+                #obstacle: ".balloon:not(##{@$el.attr('id')})" # se jquery-ui-draggable-collision.js
+                stop: (ev, ui) =>
+                    @model.save('pos': ui.position)
+            .css 'position', 'absolute' # draggable makes position relative, but we need absolute
+
+        # @$el.on 'collision', (ev, ui) => 
+        #     console.log(ev, ui)
+        #     @checkCollisions()
+
+
+
+    checkCollisions: =>
+        bView = this
+        b = @$el
+
+        bWidth = b.outerWidth()
+        bHeight = b.outerHeight()
+
+        bPos = b.position()
+
+        jQuery('.balloon').each ->
+            o = jQuery(this)
+
+            oWidth = o.outerWidth()
+            oHeight = o.outerHeight()
+            
+            oPos = o.position()
+
+            w = bWidth/2 + oWidth/2
+            h = bHeight/2 + oHeight/2
+
+            xDist = Math.abs(bPos.left - oPos.left)
+            yDist = Math.abs(bPos.top - oPos.top)
+
+            if xDist < w && yDist < h
+                bView.collideWith(o)
+
+    collideWith: (obstacle) =>
+        o = obstacle
+        b = @$el
+
+        bWidth = b.outerWidth()
+        bHeight = b.outerHeight()
+
+        oWidth = o.outerWidth()
+        oHeight = o.outerHeight()
+
+        bPos = b.position()
+        oPos = o.position()
+
+        w = bWidth/2 + oWidth/2
+        h = bHeight/2 + oHeight/2
+
+        xDist = Math.abs(bPos.left - oPos.left)
+        yDist = Math.abs(bPos.top - oPos.top)
+
+        if xDist < w && yDist < h
+            #qIsTag = o.hasClass('tag')
+
+            # bRepulsion = 2
+            # qRepulsion = 2
+            # if bIsTag
+            #     bRepulsion = 3
+            #     if b.contribs && not (oPos.id in b.contribs)
+            #         bRepulsion = 7
+            # if qIsTag
+            #     qRepulsion = 3
+            #     if oPos.contribs && not (b.id in oPos.contribs)
+            #         qRepulsion = 7
+
+            # if qIsTag && bIsTag
+            #     qRepulsion = 6
+            #     bRepulsion = 6
+
+            # bRepulsion *= 2
+            # qRepulsion *= 2
+
+
+            # if bIsTag
+            #     force.alpha(0.01)
+
+            yOverlap = h - yDist
+            xOverlap = w - xDist
+
+            if xDist/w < yDist/h
+
+                # yNudge = (yOverlap/yDist) * yOverlap/h * force.alpha()
+                # bPos.top = bPos.top + yNudge*qRepulsion
+                # oPos.top = oPos.top - yNudge*bRepulsion
+                
+                yNudge = (yOverlap/2)
+                if bPos.top < oPos.top
+                    bPos.top -= yNudge
+                    oPos.top += yNudge
+                else
+                    bPos.top += yNudge
+                    oPos.top -= yNudge
+            else
+                # xNudge = (xOverlap/xDist) * xOverlap/w * force.alpha()
+                # bPos.left = bPos.left + xNudge*qRepulsion
+                # oPos.left = oPos.left - xNudge*bRepulsion
+                
+                xNudge = (xOverlap/2)
+                if bPos.left < oPos.left
+                    bPos.left -= xNudge
+                    oPos.left += xNudge 
+                else
+                    bPos.left += xNudge 
+                    oPos.left -= xNudge 
+
+            b.css(bPos)
+            o.css(oPos)
+
+
+    detectCollisions: (b) =>
+        # based on collision detection example 
+        #   from https://gist.github.com/3116713
+
+        return unless b.x? and b.y?
+
+        $b = b.view.$el
+        bWidth = $b.outerWidth()
+        bHeight = $b.outerHeight()
+
+        nx1 = b.x - bWidth/2
+        nx2 = b.x + bWidth/2
+        ny1 = b.y - bHeight/2
+        ny2 = b.y + bHeight/2
+
+        bIsTag = $b.hasClass('tag')
+
+        return (quad, x1, y1, x2, y2) =>
+            return unless quad.point? and quad.point.x? and quad.point.y?
+
+            if quad.point && quad.point isnt b # don't try to collide with self
+
+                qWidth = quad.point.view.$el.outerWidth()
+                qHeight = quad.point.view.$el.outerHeight()
+
+                w = bWidth/2 + qWidth/2
+                h = bHeight/2 + qHeight/2
+
+                xDist = Math.abs(b.x - quad.point.x)
+                yDist = Math.abs(b.y - quad.point.y)
+
+                if xDist < w && yDist < h
+                    $q = quad.point.view.$el
+                    qIsTag = $q.hasClass('tag')
+
+                    # bRepulsion = 2
+                    # qRepulsion = 2
+                    # if bIsTag
+                    #     bRepulsion = 3
+                    #     if b.contribs && not (quad.point.id in b.contribs)
+                    #         bRepulsion = 7
+                    # if qIsTag
+                    #     qRepulsion = 3
+                    #     if quad.point.contribs && not (b.id in quad.point.contribs)
+                    #         qRepulsion = 7
+
+                    # if qIsTag && bIsTag
+                    #     qRepulsion = 6
+                    #     bRepulsion = 6
+
+                    # bRepulsion *= 2
+                    # qRepulsion *= 2
+
+
+                    # if bIsTag
+                    #     force.alpha(0.01)
+
+                    yOverlap = h - yDist
+                    xOverlap = w - xDist
+
+                    if xDist/w < yDist/h
+
+                        # yNudge = (yOverlap/yDist) * yOverlap/h * force.alpha()
+                        # b.y = b.y + yNudge*qRepulsion
+                        # quad.point.y = quad.point.y - yNudge*bRepulsion
+                        
+                        yNudge = (yOverlap/2)
+                        if b.y < quad.point.y
+                            b.y -= yNudge
+                            quad.point.y += yNudge
+                        else
+                            b.y += yNudge
+                            quad.point.y -= yNudge
+                    else
+                        # xNudge = (xOverlap/xDist) * xOverlap/w * force.alpha()
+                        # b.x = b.x + xNudge*qRepulsion
+                        # quad.point.x = quad.point.x - xNudge*bRepulsion
+                        
+                        xNudge = (xOverlap/2)
+                        if b.x < quad.point.x
+                            b.x -= xNudge
+                            quad.point.x += xNudge 
+                        else
+                            b.x += xNudge 
+                            quad.point.x -= xNudge 
+
+            return x1 > nx2 || 
+                x2 < nx1 || 
+                y1 > ny2 || 
+                y2 < ny1
 
 class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
     tagName: 'article'
@@ -34,7 +263,7 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
         @colorClass = "whiteGradient"
 
     events:
-        'mousedown': (ev) -> @moveToTop()
+        # 'mousedown': (ev) -> @moveToTop()
 
         'click': (ev) ->
             @$el.toggleClass('opened')
@@ -189,6 +418,8 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
 
         # if changed
         #     @$el.effect('highlight', 2000)
+
+
 
 
 class CK.Smartboard.View.ContributionProposalBalloon extends CK.Smartboard.View.Balloon
@@ -470,7 +701,7 @@ class CK.Smartboard.View.TagBalloon extends CK.Smartboard.View.Balloon
         @$el.addClass(className)
 
     events:
-        'mousedown': (ev) -> @moveToTop()
+        # 'mousedown': (ev) -> @moveToTop()
 
         # can't do on mouseup because d3's drag prevents bubbling of that event
         'mouseout': (ev) ->
