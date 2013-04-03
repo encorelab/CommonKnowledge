@@ -37,7 +37,7 @@
       // jQuery('#note-body-entry').removeClass('disabled');
       // jQuery('#note-headline-entry').removeClass('disabled');
       // jQuery('#contribution-list .btn-container').addClass('disabled'); // disable the New Note button
-      Sail.app.addNote('new');
+      Sail.app.createNewContribution('brainstorm');
     },
 
     /**
@@ -117,7 +117,7 @@
 
     'build-on': function () {
       console.log("Creating a build-on note");
-      Sail.app.addNote('buildOn');
+      Sail.app.createNewContribution('buildOn');
     },
 
     /**
@@ -166,12 +166,13 @@
   self.ContributionInputView = Backbone.View.extend({
     events: {
       'change .field': function (ev) {
+        // TODO - this probably all wants to go now (it's handled by autosave)
         var view = this;
         var f;
-        if (view.model.get('kind') === 'new') {
+        if (view.model.get('kind') === 'brainstorm') {
           f = jQuery(ev.target);
           console.log("Setting "+f.attr("name")+" to "+f.val());
-          view.model.set(f.attr('name'), f.val());          
+          view.model.set(f.attr('name'), f.val());
         } else if (view.model.get('kind') === 'buildOn') {
           // TODO: accessing currentBuildOn is wrong and object is {} -- empty
           console.log('setting build-on values');
@@ -180,29 +181,63 @@
           var d = new Date();
           Sail.app.currentBuildOn.created_at = d;
           console.log(d);
-        } else if (view.model.get('kind') === 'synthesis') {
-          f = jQuery(ev.target);
-          console.log("Setting "+f.attr("name")+" to "+f.val());
-          this.model.set(f.attr('name'), f.val());          
         } else {
           console.log('unknown note type');
         }
       },
 
+      'click #tag-submission-container .tag-btn': function (ev) {
+        var view = this;
+        var tag = jQuery(ev.target).data('tag');
+        var jqButtonSelector = "button:contains("+tag.get('name')+")";          // the jQuery selector for the button that was clicked
+
+        // case: unselect a tag
+        if (view.model.hasTag(tag)) {
+          jQuery(jqButtonSelector).removeClass('active'); 
+          view.model.removeTag(tag);
+        // case: select a tag
+        } else {
+          jQuery(jqButtonSelector).addClass('active');
+          view.model.addTag(tag);
+        }
+
+        // TODO: do we need to deal with N/A?
+        // else {
+        //   // case: N/A tag selected
+        //   // add "N/A"ness - but do we want to actually be explicit here?
+        //   if (tag.get('name') === "N/A") {
+        //     view.model.set('tags',[]);
+        //     jQuery('.tag-btn').removeClass('active');
+        //   // remove "N/A"
+        //   } else {
+        //     var naTag = Sail.app.tagList.find(function(t) { return t.get('name') === "N/A"; } );
+        //     view.model.removeTag(naTag);
+        //     jQuery("button:contains('N/A')").removeClass('active');
+        //   }
+        // }
+
+        // enable/disable the Share button
+        if (view.model.get('tags').length > 0) {
+          jQuery('#share-note-btn').removeClass('disabled');
+        } else {
+          jQuery('#share-note-btn').addClass('disabled');
+        }
+      },      
+
       'keyup :input': function (ev) {
         var view = this,
-          input_what = ev.target.name,
-          user_input = jQuery('#'+ev.target.id).val();
+          inputKey = ev.target.name,
+          userValue = jQuery('#'+ev.target.id).val();
         // If we hit a key clear intervals so that during typing intervals don't kick in
         window.clearTimeout(Sail.app.autoSaveTimer);
 
         // save after 10 keystrokes
-        Sail.app.autoSave(view, input_what, user_input, false);
+        Sail.app.autoSave(view, inputKey, userValue, false);
 
         // setting up a timer so that if we stop typing we save stuff after 5 seconds
         Sail.app.autoSaveTimer = setTimeout( function(){
-          console.log('Autosave data for: '+input_what);
-          Sail.app.autoSave(view, input_what, user_input, true);
+          console.log('Autosave data for: '+inputKey);
+          Sail.app.autoSave(view, inputKey, userValue, true);
         }, 5000);
       },
 
@@ -211,6 +246,12 @@
 
     initialize: function () {
       console.log("Initializing ContributionInputView...");
+      // disable the share button if there are tags in the tags collection
+      if (Sail.app.tagList.models.length) {
+        jQuery('#share-note-btn').addClass('disabled');
+      } else {
+        jQuery('#share-note-btn').removeClass('disabled');
+      }
     },
 
     share: function () {
@@ -218,8 +259,7 @@
       // avoid weird entries showing up in the model
       window.clearTimeout(Sail.app.autoSaveTimer);
       
-      // new note
-      if (view.model.get('kind') === 'new' || view.model.get('kind') === 'synthesis') {     // don't think this is needed any more
+      if (view.model.get('kind') === 'brainstorm') {
         if (view.model.has('content') && view.model.has('headline')) {
 
           view.model.set('published', true);
@@ -227,11 +267,10 @@
           
           view.model.save(null, {
             complete: function () {
-              console.log('New note submitted!');
+              console.log("Brainstorm note submitted!");
             },
             success: function () {
-              console.log('Model saved');
-              Sail.app.sendContribution('newNote', view.model);             // TODO do we still need this?
+              console.log("Contribution saved");
 
               jQuery('#contribution-input').hide('slide', {direction: 'up'});
               jQuery().toastmessage('showSuccessToast', "Contribution submitted");
@@ -239,16 +278,12 @@
               // I think we need to lock the fields again and force the student to use the new note button
               jQuery('#note-body-entry').addClass('disabled');
               jQuery('#note-headline-entry').addClass('disabled');
-              // jQuery('#contribution-list .btn-container').removeClass('disabled'); // enable the New Note button
+              jQuery('.tag-btn').removeClass('active');       // TODO: check, do we also need to unselect/refresh the button or something here?
 
               // clear the old contribution plus ui fields
-              view.model.clear({silent: true});   // I think this is actually enough now, can do away with clearModels
+              view.model.clear(null, {silent: true});
               view.stopListening(view.model);
-              //Sail.app.clearModels();
               view.$el.find(".field").val(null);
-              //view.model.set('justAdded', false);
-              //Sail.app.contributionInputView.render();
-              
             },
             failure: function(model, response) {
               console.log('Error submitting: ' + response);
@@ -259,46 +294,6 @@
         }        
       }
 
-      // build-on note - can we roll this in to the above now?
-      // TODO will need a big overhaul to deal with lack of globals now  
-      if (view.model.kind === 'buildOn') {
-        var tempBuildOnArray = [];
-        // this if shouldn't be necessary (the first condition should always be met), but just in case...
-        if (Sail.app.contributionDetails.get('build_ons')) {
-          tempBuildOnArray = Sail.app.contributionDetails.get('build_ons');
-          tempBuildOnArray.push(Sail.app.currentBuildOn);
-          Sail.app.contributionDetails.set('build_ons', tempBuildOnArray);          
-        } else {
-          tempBuildOnArray = [];
-          tempBuildOnArray.push(Sail.app.currentBuildOn);
-          Sail.app.contributionDetails.set('build_ons', tempBuildOnArray);
-        }
-
-        // FIXME: why isn't this already awake??
-        //Sail.app.contributionDetails.wake(Sail.app.config.wakeful.url);
-        Sail.app.contributionDetails.save(null, {
-          complete: function () {
-            console.log('Build on submitted!');
-          },
-          success: function () {
-            console.log('Model saved');
-            Sail.app.sendContribution('buildOn');
-
-            // clear the old contribution plus ui fields
-            //view.model.clear();
-            Sail.app.clearModels();
-            Sail.app.contributionInputView.$el.find(".field").val(null);
-            view.model.set('justAdded', false);
-            Sail.app.contributionInputView.render();
-            Sail.app.contributionDetailsView.render();
-
-            jQuery().toastmessage('showSuccessToast', "Contribution submitted");
-          },
-          failure: function(model, response) {
-            console.log('Error submitting: ' + response);       // do we want this as an alert instead?
-          }
-        });
-      }
     },
 
     /**
@@ -315,23 +310,31 @@
       }
 
       if (contrib.get('justAdded')) {
-        if (contrib.get('kind') === 'new') {
+        if (contrib.get('kind') === 'brainstorm') {
           jQuery('#note-body-label').text('New Note');
         } else if (contrib.kind === 'buildOn') {
           jQuery('#note-body-label').text('Build On Note');
-        } else if (contrib.kind === 'synthesis') {
-          jQuery('#note-body-label').text('Synthesis Note');
         } else {
           console.log('unknown note type');
         }
       }
 
-      if (contrib.kind === 'buildOn') {
-        jQuery('#note-body-entry').val(Sail.app.currentBuildOn.content);
-      } else {
-        jQuery('#note-body-entry').val(contrib.get('content'));
-        jQuery('#note-headline-entry').val(contrib.get('headline'));
-      }
+      // add the tags
+      Sail.app.tagList.each(function(tag) {
+        // TODO: what are we doing with the N/A tag
+        if (tag.get('name') !== "N/A") {
+          var tagButton = jQuery('button#'+tag.id);
+          // length avoids duplicating (probably a better way to do this in backbone?)
+          //if (tagButton.length === 0 && tag.get('name') != "N/A") {
+          if (tagButton.length === 0) {
+            tagButton = jQuery('<button id='+tag.id+' type="button" class="btn tag-btn"></button>');
+            //tagButton = jQuery(tagButton);
+            jQuery('#tag-submission-container').append(tagButton);
+          }
+          tagButton.text(tag.get('name'));
+          tagButton.data('tag',tag);
+        }
+      });
 
     } // end of render
   });
@@ -340,105 +343,52 @@
   /**
     TagListView
   **/
-  self.TagListView = Backbone.View.extend({
-    events: {
-      'click #tag-list-btn-container .tag-btn': function (ev) {
-        var chosenTagId = ev.currentTarget.id;
-        var chosenTag = jQuery('#'+chosenTagId).text();
-        var ok = confirm("Do you want to choose <"+ chosenTag + "> as your specialization?");
-        if (ok) {
-          Sail.app.choseTagGroup(chosenTag, chosenTagId);
-        }
-      }
-    },
+  // self.TagListView = Backbone.View.extend({
+  //   events: {
+  //     // 'click #tag-list-btn-container .tag-btn': function (ev) {
+  //     //   var chosenTagId = ev.currentTarget.id;
+  //     //   var chosenTag = jQuery('#'+chosenTagId).text();
+  //     //   var ok = confirm("Do you want to choose <"+ chosenTag + "> as your specialization?");
+  //     //   if (ok) {
+  //     //     Sail.app.choseTagGroup(chosenTag, chosenTagId);
+  //     //   }
+  //     // }
+  //   },
 
-    initialize: function () {
-      console.log("Initializing TagListView...");
+  //   initialize: function () {
+  //     console.log("Initializing TagListView...");
+  //   },
 
-      jQuery('.brand').text('Common Knowledge - Analysis');
-      jQuery('#index-screen').addClass('hide');
-      jQuery('#choose-tag-screen').removeClass('hide');
-    },
+  //   /**
+  //     Triggers full update of all dynamic elements in the list view
+  //   **/
+  //   render: function () {
+  //     var view = this;
+  //     console.log("rendering TagListView!");
 
-    /**
-      Triggers full update of all dynamic elements in the list view
-    **/
-    render: function () {
-      var view = this;
-      console.log("rendering TagListView!");
+  //     // clear all buttons
+  //     // jQuery('.tag-btn').removeClass('active');
 
-      // clear all buttons
-      // jQuery('.tag-btn').removeClass('active');
+  //     view.collection.each(function(tag) {
+  //       // don't show the N/A tag
+  //       if (tag.get('name') !== "N/A") {
+  //         var tagButton = jQuery('button#'+tag.id);
+  //         // length avoids duplicating (probably a better way to do this in backbone?)
+  //         //if (tagButton.length === 0 && tag.get('name') != "N/A") {
+  //         if (tagButton.length === 0) {
+  //           tagButton = jQuery('<button id='+tag.id+' type="button" class="btn tag-btn"></button>');
+  //           //tagButton = jQuery(tagButton);
+  //           jQuery('#tag-submission-container').append(tagButton);
+  //         }
 
-      view.collection.each(function(tag) {
-        // don't show the N/A tag
-        if (tag.get('name') !== "N/A") {
-          var tagButton = jQuery('button#'+tag.id);
-          // length avoids duplicating (probably a better way to do this in backbone?)
-          //if (tagButton.length === 0 && tag.get('name') != "N/A") {
-          if (tagButton.length === 0) {
-            tagButton = jQuery('<button id='+tag.id+' type="button" class="btn tag-btn"></button>');
-            //tagButton = jQuery(tagButton);
-            jQuery('#tag-list .tag-btn-group').append(tagButton);
-          }
+  //         tagButton.text(tag.get('name'));
+  //       }
+  //     });
+  //   }
 
-          tagButton.text(tag.get('name'));
-        }
-      });
-    }
+  // });
 
-  });
 
-  /**
-    TaggingView
-    This is where the students are presented with contributions out of the bucket (by agent)
-    and they have to decide if the contribution should be tagged with the tag of their tag_group
-    or not.
-  **/
-  self.TaggingView = Backbone.View.extend({
-    events: {
-      'click #yes-btn': function () {
-        var view = this;
-        Sail.app.tagContribution(view.model.id, true);
-        Sail.app.showWaitScreen();
-      },
-      'click #no-btn': function () {
-        var view = this;
-        Sail.app.tagContribution(view.model.id, false);
-        Sail.app.showWaitScreen();
-      }
-    },
-
-    initialize: function () {
-      console.log("Initializing TaggingView...");
-
-      jQuery('.brand').text('Common Knowledge - Analysis');
-      jQuery('#index-screen').addClass('hide');
-      jQuery('#choose-tag-screen').addClass('hide');
-      jQuery('#tagging-screen').removeClass('hide');
-      Sail.app.hideWaitScreen();
-    },
-
-    /**
-      Triggers full update of all dynamic elements in the list view
-    **/
-    render: function () {
-      var view = this;
-      console.log("rendering TaggingView!");
-      Sail.app.hideWaitScreen();
-
-      var user_state = CK.getState(Sail.app.userData.account.login);
-      var tag_group = user_state.get('analysis').tag_group;
-      jQuery('#selected-tag-container .chosen-tag').text(tag_group);
-
-      var headline = view.model.get('headline');
-      var content = view.model.get('content');
-
-      jQuery('#note-to-tag-container .container-header').text(headline);
-      jQuery('#note-to-tag-body').text(content);
-    }
-
-  });
 
 
 
@@ -579,18 +529,18 @@
 
       'keyup :input': function (ev) {
         var view = this,
-          input_what = ev.target.name,
-          user_input = jQuery('#'+ev.target.id).val();
-        // If we hit a key clear intervals so that during typing intervals don't kick in
+          inputKey = ev.target.name,
+          userValue = jQuery('#'+ev.target.id).val();
+        // If we hit a key clear intervals so that during typing intervals don't kick in - TODO: this can go right? But only if we're not rendering this field constantly (fix that too)
         window.clearTimeout(Sail.app.autoSaveTimer);
 
         // save after 10 keystrokes
-        Sail.app.autoSave(view, input_what, user_input, false);
+        Sail.app.autoSave(view, inputKey, userValue, false);
 
         // setting up a timer so that if we stop typing we save stuff after 5 seconds
         Sail.app.autoSaveTimer = setTimeout( function(){
-          console.log('Autosave data for: '+input_what);
-          Sail.app.autoSave(view, input_what, user_input, true);
+          console.log('Autosave data for: '+inputKey);
+          Sail.app.autoSave(view, inputKey, userValue, true);
         }, 5000);
       },
 
