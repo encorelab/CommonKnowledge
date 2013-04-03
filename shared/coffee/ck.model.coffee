@@ -10,9 +10,9 @@ class CK.Model
         deferredConfigure = $.Deferred()
 
         unless url?
-            throw "Cannot configure model because no DrowsyDromedary URL was given!"
+            throw new Error "Cannot configure model because no DrowsyDromedary URL was given!"
         unless db?
-            throw "Cannot configure model because no database name was given!"
+            throw new Error "Cannot configure model because no database name was given!"
 
         @baseURL = url 
         @dbURL= "#{url}/#{db}"

@@ -8,7 +8,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             addTagContainer = @$el.find('#add-tag-container')
             addTagContainer.toggleClass('opened')
             if addTagContainer.hasClass('opened')
-                setTimeout(=> 
+                setTimeout(=>
                     @$el.find('#new-tag').focus()
                 , 1000)
 
@@ -20,7 +20,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             if (@showCloud)
                 wordCloudObject.addClass('disabled')
                 wordCloudObject.text('Drawing Cloud... Please wait...')
-                @showWordCloud()           
+                @showWordCloud()
                 @showCloud = false
             else
                 @hideWordCloud()
@@ -134,7 +134,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                     
                     xNudge = xOverlap #(xOverlap/2)
                     if b.x < o.x
-                        o.x += xNudge 
+                        o.x += xNudge
                     else
                         o.x -= xNudge
 
@@ -259,7 +259,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
         jQuery('#word-cloud svg').remove()
 
     generateWordCloud: (wordHash) ->
-        fadeDiv = jQuery('#fade');
+        fadeDiv = jQuery('#fade')
         width = fadeDiv.width() #650
         height = fadeDiv.height() #400
         wordCloud = jQuery('#word-cloud')
@@ -301,7 +301,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
         # enable the clicking of the button once the word cloud is rendered
         wordCloudObject = jQuery('#show-word-cloud')
         wordCloudObject.text('Hide Word Cloud')
-        wordCloudObject.removeClass('disabled') 
+        wordCloudObject.removeClass('disabled')
 
     pause: =>
         @$el.find('#toggle-pause')
@@ -323,112 +323,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
 
     changeWatermark: (text) =>
         jQuery('#watermark').fadeOut 800, ->
-                jQuery(this).text(text)
-                    .fadeIn 800
+            jQuery(this).text(text)
+                .fadeIn 800
 
-    benchmarkCollisions: =>
-        @startBenchmark ?= performance.now()
-        @benchmarkIterationCount ?= 0
-
-        bs = []
-        jQuery('.contribution').each ->
-            bs.push Sail.app.wall.balloonViews[jQuery(this).attr('id')]
-
-        dones = []        
-        for b in bs
-            dones.push b.checkCollisions()
-
-        jQuery.when.apply(jQuery, dones).done =>
-            @benchmarkIterationCount++
-            if @benchmarkIterationCount > 5
-                console.log("DONE IN ", performance.now() - @startBenchmark, "µs")
-            else
-                @benchmarkCollisions()
-
-    detectCollisions: ($b) =>
-        b = $b[0]
-
-        # based on collision detection example 
-        #   from https://gist.github.com/3116713
-        bWidth = $b.outerWidth()
-        bHeight = $b.outerHeight()
-
-        nx1 = b.x - bWidth/2
-        nx2 = b.x + bWidth/2
-        ny1 = b.y - bHeight/2
-        ny2 = b.y + bHeight/2
-
-        bIsTag = $b.hasClass('tag')
-
-        return (quad, x1, y1, x2, y2) =>
-            return unless quad.point? and quad.point.x? and quad.point.y?
-
-            if quad.point && quad.point isnt b # don't try to collide with self
-
-                qWidth = quad.point.width
-                qHeight = quad.point.height
-
-                w = bWidth/2 + qWidth/2
-                h = bHeight/2 + qHeight/2
-
-                xDist = Math.abs(b.x - quad.point.x)
-                yDist = Math.abs(b.y - quad.point.y)
-
-                if xDist < w && yDist < h
-
-                    # bRepulsion = 2
-                    # qRepulsion = 2
-                    # if bIsTag
-                    #     bRepulsion = 3
-                    #     if b.contribs && not (quad.point.id in b.contribs)
-                    #         bRepulsion = 7
-                    # if qIsTag
-                    #     qRepulsion = 3
-                    #     if quad.point.contribs && not (b.id in quad.point.contribs)
-                    #         qRepulsion = 7
-
-                    # if qIsTag && bIsTag
-                    #     qRepulsion = 6
-                    #     bRepulsion = 6
-
-                    # bRepulsion *= 2
-                    # qRepulsion *= 2
-
-
-                    # if bIsTag
-                    #     force.alpha(0.01)
-
-                    yOverlap = h - yDist
-                    xOverlap = w - xDist
-
-                    if xDist/w < yDist/h
-
-                        # yNudge = (yOverlap/yDist) * yOverlap/h * force.alpha()
-                        # b.y = b.y + yNudge*qRepulsion
-                        # quad.point.y = quad.point.y - yNudge*bRepulsion
-                        
-                        yNudge = (yOverlap/2)
-                        if b.y < quad.point.y
-                            b.y -= yNudge
-                            quad.point.y += yNudge
-                        else
-                            b.y += yNudge
-                            quad.point.y -= yNudge
-                    else
-                        # xNudge = (xOverlap/xDist) * xOverlap/w * force.alpha()
-                        # b.x = b.x + xNudge*qRepulsion
-                        # quad.point.x = quad.point.x - xNudge*bRepulsion
-                        
-                        xNudge = (xOverlap/2)
-                        if b.x < quad.point.x
-                            b.x -= xNudge
-                            quad.point.x += xNudge 
-                        else
-                            b.x += xNudge 
-                            quad.point.x -= xNudge 
-
-            return x1 > nx2 || 
-                x2 < nx1 || 
-                y1 > ny2 || 
-                y2 < ny1
     

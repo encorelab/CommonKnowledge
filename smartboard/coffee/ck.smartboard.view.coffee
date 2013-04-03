@@ -8,7 +8,7 @@ class CK.Smartboard.View
 
 
 class CK.Smartboard.View.Base extends Backbone.View
-    findOrCreate: (selector, html) => 
+    findOrCreate: (selector, html) =>
         CK.Smartboard.View.findOrCreate @$el, selector, html
 
     constructor: (options) ->
