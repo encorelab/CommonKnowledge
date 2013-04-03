@@ -48,7 +48,7 @@ class CK.Model
         
             for col in requiredCollections
                 unless col in existingCollections
-                    console.log "Creating collection '#{col}' under #{CK.Model.dbURL}";
+                    console.log "Creating collection '#{col}' under #{CK.Model.dbURL}"
                     dfs.push(@db.createCollection col)
 
         $.when.apply($, dfs).done -> df.resolve()
