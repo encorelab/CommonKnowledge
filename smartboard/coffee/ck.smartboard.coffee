@@ -39,7 +39,7 @@ class CK.Smartboard extends Sail.App
 
         @wall = new CK.Smartboard.View.Wall {el: jQuery('#wall')}
 
-        @tagCount = 0;
+        @tagCount = 0
         #@states = new CK.Model.States()
         #@states.on 'change', (collection) ->
         #    console.log  'States Collection Changed!'
