@@ -89,6 +89,9 @@
         return _this.trigger('initialized');
       });
       this.rollcall = new Rollcall.Client(this.config.rollcall.url);
+      this.wall = new CK.Smartboard.View.Wall({
+        el: jQuery('#wall')
+      });
       return this.tagCount = 0;
     };
 
