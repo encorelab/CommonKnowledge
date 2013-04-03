@@ -179,10 +179,6 @@
     };
 
     function Wall(options) {
-      this.detectCollisions = __bind(this.detectCollisions, this);
-
-      this.benchmarkCollisions = __bind(this.benchmarkCollisions, this);
-
       this.changeWatermark = __bind(this.changeWatermark, this);
 
       this.unpause = __bind(this.unpause, this);
@@ -471,85 +467,6 @@
       return jQuery('#watermark').fadeOut(800, function() {
         return jQuery(this).text(text).fadeIn(800);
       });
-    };
-
-    Wall.prototype.benchmarkCollisions = function() {
-      var b, bs, dones, _i, _len, _ref, _ref1,
-        _this = this;
-      if ((_ref = this.startBenchmark) == null) {
-        this.startBenchmark = performance.now();
-      }
-      if ((_ref1 = this.benchmarkIterationCount) == null) {
-        this.benchmarkIterationCount = 0;
-      }
-      bs = [];
-      jQuery('.contribution').each(function() {
-        return bs.push(Sail.app.wall.balloonViews[jQuery(this).attr('id')]);
-      });
-      dones = [];
-      for (_i = 0, _len = bs.length; _i < _len; _i++) {
-        b = bs[_i];
-        dones.push(b.checkCollisions());
-      }
-      return jQuery.when.apply(jQuery, dones).done(function() {
-        _this.benchmarkIterationCount++;
-        if (_this.benchmarkIterationCount > 5) {
-          return console.log("DONE IN ", performance.now() - _this.startBenchmark, "µs");
-        } else {
-          return _this.benchmarkCollisions();
-        }
-      });
-    };
-
-    Wall.prototype.detectCollisions = function($b) {
-      var b, bHeight, bIsTag, bWidth, nx1, nx2, ny1, ny2,
-        _this = this;
-      b = $b[0];
-      bWidth = $b.outerWidth();
-      bHeight = $b.outerHeight();
-      nx1 = b.x - bWidth / 2;
-      nx2 = b.x + bWidth / 2;
-      ny1 = b.y - bHeight / 2;
-      ny2 = b.y + bHeight / 2;
-      bIsTag = $b.hasClass('tag');
-      return function(quad, x1, y1, x2, y2) {
-        var h, qHeight, qWidth, w, xDist, xNudge, xOverlap, yDist, yNudge, yOverlap;
-        if (!((quad.point != null) && (quad.point.x != null) && (quad.point.y != null))) {
-          return;
-        }
-        if (quad.point && quad.point !== b) {
-          qWidth = quad.point.width;
-          qHeight = quad.point.height;
-          w = bWidth / 2 + qWidth / 2;
-          h = bHeight / 2 + qHeight / 2;
-          xDist = Math.abs(b.x - quad.point.x);
-          yDist = Math.abs(b.y - quad.point.y);
-          if (xDist < w && yDist < h) {
-            yOverlap = h - yDist;
-            xOverlap = w - xDist;
-            if (xDist / w < yDist / h) {
-              yNudge = yOverlap / 2;
-              if (b.y < quad.point.y) {
-                b.y -= yNudge;
-                quad.point.y += yNudge;
-              } else {
-                b.y += yNudge;
-                quad.point.y -= yNudge;
-              }
-            } else {
-              xNudge = xOverlap / 2;
-              if (b.x < quad.point.x) {
-                b.x -= xNudge;
-                quad.point.x += xNudge;
-              } else {
-                b.x += xNudge;
-                quad.point.x -= xNudge;
-              }
-            }
-          }
-        }
-        return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
-      };
     };
 
     return Wall;
