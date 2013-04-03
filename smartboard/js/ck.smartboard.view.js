@@ -505,8 +505,6 @@
     __extends(Balloon, _super);
 
     function Balloon() {
-      this.makeDraggable = __bind(this.makeDraggable, this);
-
       this.render = __bind(this.render, this);
       return Balloon.__super__.constructor.apply(this, arguments);
     }
@@ -527,15 +525,16 @@
     Balloon.prototype.makeDraggable = function() {
       var _this = this;
       this.$el.draggable({
-        distance: 5,
+        distance: 25,
         containment: '#wall',
         stack: '.balloon',
         obstacle: ".balloon:not(#" + (this.$el.attr('id')) + ")"
       }).css('position', 'absolute');
       this.$el.on('drag', function(ev, ui) {
         return Sail.app.wall.collideBalloon(_this);
-      }).on('stop', function(ev, ui) {
+      }).on('dragstop', function(ev, ui) {
         var pos, tag, tid;
+        _this.$el.addClass('just-dragged');
         _this.model.save({
           'pos': ui.position
         });
@@ -621,8 +620,12 @@
 
     ContributionBalloon.prototype.events = {
       'click': function(ev) {
-        this.$el.toggleClass('opened');
-        return this.processContributionByType();
+        if (this.$el.hasClass('just-dragged')) {
+          return this.$el.removeClass('just-dragged');
+        } else {
+          this.$el.toggleClass('opened');
+          return this.processContributionByType();
+        }
       }
     };
 
@@ -743,6 +746,7 @@
   })(CK.Smartboard.View.Balloon);
 
   CK.Smartboard.View.ContributionProposalBalloon = (function(_super) {
+    var _this = this;
 
     __extends(ContributionProposalBalloon, _super);
 
@@ -799,14 +803,18 @@
 
     ContributionProposalBalloon.prototype.events = {
       'click': function(ev) {
-        this.$el.toggleClass('opened');
-        this.$el.toggleClass(this.colorClass);
-        if (this.$el.hasClass('opened')) {
-          this.$el.removeClass('balloon-note');
+        if (ContributionProposalBalloon.$el.hasClass('just-dragged')) {
+          return ContributionProposalBalloon.$el.removeClass('just-dragged');
         } else {
-          this.$el.addClass('balloon-note');
+          ContributionProposalBalloon.$el.toggleClass('opened');
+          ContributionProposalBalloon.$el.toggleClass(ContributionProposalBalloon.colorClass);
+          if (ContributionProposalBalloon.$el.hasClass('opened')) {
+            ContributionProposalBalloon.$el.removeClass('balloon-note');
+          } else {
+            ContributionProposalBalloon.$el.addClass('balloon-note');
+          }
+          return ContributionProposalBalloon.processContributionByType();
         }
-        return this.processContributionByType();
       }
     };
 
@@ -978,9 +986,10 @@
 
     return ContributionProposalBalloon;
 
-  })(CK.Smartboard.View.Balloon);
+  }).call(this, CK.Smartboard.View.Balloon);
 
   CK.Smartboard.View.TagBalloon = (function(_super) {
+    var _this = this;
 
     __extends(TagBalloon, _super);
 
@@ -1007,18 +1016,10 @@
 
     TagBalloon.prototype.events = {
       'click': function(ev) {
-        this.model.set('pinned', !this.model.get('pinned'), {
-          silent: true
-        });
-        if (this.model.get('pinned')) {
-          this.$el.addClass('pinned');
+        if (TagBalloon.$el.hasClass('just-dragged')) {
+          return TagBalloon.$el.removeClass('just-dragged');
         } else {
-          this.$el.removeClass('pinned');
-        }
-        if (this.$el.get('pinned')) {
-          return this.$el[0].fixed = true;
-        } else {
-          this.$el[0].fixed = false;
+          return console.log('clicked tag..');
         }
       }
     };
@@ -1040,6 +1041,6 @@
 
     return TagBalloon;
 
-  })(CK.Smartboard.View.Balloon);
+  }).call(this, CK.Smartboard.View.Balloon);
 
 }).call(this);

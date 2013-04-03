@@ -13,10 +13,10 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
         @makeDraggable() if not @draggable
 
 
-    makeDraggable: =>
+    makeDraggable: ->
         @$el
             .draggable
-                distance: 5
+                distance: 25 # how far it needs to be moved before it's considered a drag
                 containment: '#wall'
                 stack: '.balloon'
                 obstacle: ".balloon:not(##{@$el.attr('id')})" # don't collide with self
@@ -25,7 +25,9 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
         @$el
             .on 'drag', (ev, ui) =>
                 Sail.app.wall.collideBalloon(this)
-            .on 'stop', (ev, ui) =>
+            .on 'dragstop', (ev, ui) =>
+                @$el.addClass 'just-dragged' # prevent 'click' handlers from doing their thing
+
                 @model.save('pos': ui.position)
                 console.log("Saving pinned tag's position")
                 pos = @$el.position()
@@ -75,12 +77,12 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
         # 'mousedown': (ev) -> @moveToTop()
 
         'click': (ev) ->
-            @$el.toggleClass('opened')
-            # if @$el.hasClass('opened')
-            #     if Sail.app.wall.cloud? && Sail.app.wall.cloud.force?
-            #         Sail.app.wall.cloud.force.stop()
-            
-            @processContributionByType()
+            if @$el.hasClass('just-dragged')
+                @$el.removeClass('just-dragged')
+            else
+                @$el.toggleClass('opened')
+                
+                @processContributionByType()
 
     # initialize: =>
     #     # make this View accessible from the element
@@ -262,18 +264,19 @@ class CK.Smartboard.View.ContributionProposalBalloon extends CK.Smartboard.View.
     events:
         #'mousedown': (ev) -> @moveToTop()
 
-        'click': (ev) ->
-            @$el.toggleClass('opened')
-            @$el.toggleClass(@colorClass)
-            
-            if @$el.hasClass('opened')
-                @$el.removeClass('balloon-note')
+        'click': (ev) =>
+            if @$el.hasClass('just-dragged')
+                @$el.removeClass('just-dragged')
             else
-                @$el.addClass('balloon-note')
-            #     if Sail.app.wall.cloud? && Sail.app.wall.cloud.force?
-            #         Sail.app.wall.cloud.force.stop()
-            
-            @processContributionByType()
+                @$el.toggleClass('opened')
+                @$el.toggleClass(@colorClass)
+                
+                if @$el.hasClass('opened')
+                    @$el.removeClass('balloon-note')
+                else
+                    @$el.addClass('balloon-note')
+                
+                @processContributionByType()
 
     # initialize: =>
     #     # make this View accessible from the element
@@ -512,31 +515,12 @@ class CK.Smartboard.View.TagBalloon extends CK.Smartboard.View.Balloon
     events:
         # 'mousedown': (ev) -> @moveToTop()
 
-        'click': (ev) ->
-            @model.set('pinned', !@model.get('pinned'), {silent:true})
-
-            if @model.get('pinned')
-                @$el.addClass('pinned')
+        'click': (ev) =>
+            if @$el.hasClass('just-dragged')
+                @$el.removeClass('just-dragged')
             else
-                @$el.removeClass('pinned')
-
-            # FIXME: seems to always be evaluating to false
-
-            if @$el.get('pinned')
-                # NOTE: this gets set again based on the 'pinned' class in cloud.tick()
-                @$el[0].fixed = true
-            else
-                @$el[0].fixed = false
-                return
-
-            # console.log("Saving pinned tag's position")
-
-            # tid = @$el.attr('id')
-            # tag = Sail.app.tags.get(tid)
-            # if tag
-            #     tag.save({}, {silent: true})
-            # else
-            #     console.log("Couldn't save pinned tag's position -- couldn't find a tag with id: ", tid)
+                console.log('clicked tag..')
+                # do click handler stuff here...
 
     render: =>
         super()
