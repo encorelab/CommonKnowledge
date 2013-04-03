@@ -3,7 +3,8 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
     id: 'wall'
     showCloud: true
 
-    maxCollisionRecursion: 5 # determines how deep collision detection will be checked (from balloons hitting other balloons hitting other balloons...)
+    # determines how deep collision detection will be checked (from balloons hitting other balloons hitting other balloons...)
+    maxCollisionRecursion: 2 
 
     events:
         'click #add-tag-opener': (ev) ->
@@ -104,11 +105,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             @_boundsHeight = @$el.innerHeight()
 
             for id,o of @balloonViews
-                o.width = o.$el.outerWidth()
-                o.height = o.$el.outerHeight()
-                pos = o.$el.position()
-                o.x = pos.left
-                o.y = pos.top
+                o.cachePositionAndBounds()
 
         for id,o of @balloonViews
             continue if o is b # don't collide with self
@@ -151,6 +148,9 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                     o.x -= o.x + o.width - @_boundsWidth
                 else if o.x < 0
                     o.x = 0
+
+                if recursionLevel <= @maxCollisionRecursion
+                    @collideBalloon(o, recursionLevel + 1)
 
         if recursionLevel is 0
             for id,o of @balloonViews

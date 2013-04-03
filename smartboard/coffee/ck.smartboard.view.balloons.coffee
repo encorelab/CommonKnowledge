@@ -48,6 +48,15 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
 
         @draggable = true
 
+    # Sets .x, .y, .width, and .height on this object, based on data from the DOM.
+    # The DOM lookup is expensive, so we try not to do it unless necessary — especially in collision detection.
+    # Call this whenever the view's dimensions or position changes!
+    cachePositionAndBounds: ->
+        this.width = this.$el.outerWidth()
+        this.height = this.$el.outerHeight()
+        pos = this.$el.position()
+        this.x = pos.left
+        this.y = pos.top
 
 class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
     tagName: 'article'

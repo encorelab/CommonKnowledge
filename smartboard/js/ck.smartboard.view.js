@@ -120,7 +120,7 @@
 
     Wall.prototype.showCloud = true;
 
-    Wall.prototype.maxCollisionRecursion = 5;
+    Wall.prototype.maxCollisionRecursion = 2;
 
     Wall.prototype.events = {
       'click #add-tag-opener': function(ev) {
@@ -236,7 +236,7 @@
     };
 
     Wall.prototype.collideBalloon = function(balloon, recursionLevel) {
-      var b, h, id, o, pos, w, xDist, xNudge, xOverlap, yDist, yNudge, yOverlap, _ref, _ref1, _ref2, _results;
+      var b, h, id, o, w, xDist, xNudge, xOverlap, yDist, yNudge, yOverlap, _ref, _ref1, _ref2, _results;
       if (recursionLevel == null) {
         recursionLevel = 0;
       }
@@ -247,11 +247,7 @@
         _ref = this.balloonViews;
         for (id in _ref) {
           o = _ref[id];
-          o.width = o.$el.outerWidth();
-          o.height = o.$el.outerHeight();
-          pos = o.$el.position();
-          o.x = pos.left;
-          o.y = pos.top;
+          o.cachePositionAndBounds();
         }
       }
       _ref1 = this.balloonViews;
@@ -291,6 +287,9 @@
             o.x -= o.x + o.width - this._boundsWidth;
           } else if (o.x < 0) {
             o.x = 0;
+          }
+          if (recursionLevel <= this.maxCollisionRecursion) {
+            this.collideBalloon(o, recursionLevel + 1);
           }
         }
       }
@@ -557,6 +556,15 @@
         }
       });
       return this.draggable = true;
+    };
+
+    Balloon.prototype.cachePositionAndBounds = function() {
+      var pos;
+      this.width = this.$el.outerWidth();
+      this.height = this.$el.outerHeight();
+      pos = this.$el.position();
+      this.x = pos.left;
+      return this.y = pos.top;
     };
 
     return Balloon;
