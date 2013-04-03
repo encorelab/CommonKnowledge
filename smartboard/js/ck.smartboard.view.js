@@ -181,6 +181,8 @@
     function Wall(options) {
       this.detectCollisions = __bind(this.detectCollisions, this);
 
+      this.benchmarkCollisions = __bind(this.benchmarkCollisions, this);
+
       this.changeWatermark = __bind(this.changeWatermark, this);
 
       this.unpause = __bind(this.unpause, this);
@@ -205,8 +207,7 @@
     }
 
     Wall.prototype.initialize = function() {
-      var updateAllPositions, updating,
-        _this = this;
+      var _this = this;
       this.runState.on('change', this.render);
       this.balloonViews = {};
       this.tags.on('add', function(t) {
@@ -218,26 +219,9 @@
       this.contributions.on('add', function(c) {
         return _this.addBalloon(c, CK.Smartboard.View.ContributionBalloon, _this.balloonViews);
       });
-      this.contributions.each(function(c) {
+      return this.contributions.each(function(c) {
         return _this.addBalloon(c, CK.Smartboard.View.ContributionBalloon, _this.balloonViews);
       });
-      updating = false;
-      updateAllPositions = function() {
-        var b, id, _ref;
-        if (!updating) {
-          updating = true;
-          _ref = _this.balloonViews;
-          for (id in _ref) {
-            b = _ref[id];
-            if (!b.$el.hasClass('.ui-draggable-dragging')) {
-              b.updatePosition();
-            }
-          }
-          updating = false;
-          return window.webkitRequestAnimationFrame(updateAllPositions);
-        }
-      };
-      return updateAllPositions();
     };
 
     Wall.prototype.addBalloon = function(doc, view, balloonList) {
@@ -433,6 +417,34 @@
       });
     };
 
+    Wall.prototype.benchmarkCollisions = function() {
+      var b, bs, dones, _i, _len, _ref, _ref1,
+        _this = this;
+      if ((_ref = this.startBenchmark) == null) {
+        this.startBenchmark = performance.now();
+      }
+      if ((_ref1 = this.benchmarkIterationCount) == null) {
+        this.benchmarkIterationCount = 0;
+      }
+      bs = [];
+      jQuery('.contribution').each(function() {
+        return bs.push(Sail.app.wall.balloonViews[jQuery(this).attr('id')]);
+      });
+      dones = [];
+      for (_i = 0, _len = bs.length; _i < _len; _i++) {
+        b = bs[_i];
+        dones.push(b.checkCollisions());
+      }
+      return jQuery.when.apply(jQuery, dones).done(function() {
+        _this.benchmarkIterationCount++;
+        if (_this.benchmarkIterationCount > 5) {
+          return console.log("DONE IN ", performance.now() - _this.startBenchmark, "µs");
+        } else {
+          return _this.benchmarkCollisions();
+        }
+      });
+    };
+
     Wall.prototype.detectCollisions = function($b) {
       var b, bHeight, bIsTag, bWidth, nx1, nx2, ny1, ny2,
         _this = this;
@@ -512,7 +524,41 @@
       return Balloon.__super__.constructor.apply(this, arguments);
     }
 
-    Balloon.prototype.initialize = function() {};
+    Balloon.prototype.initialize = function() {
+      var _this = this;
+      Object.defineProperty(this.el, 'x', {
+        get: function() {
+          return _this.$el.position().left;
+        },
+        set: function(x) {
+          return _this.$el.css('left', x + 'px');
+        }
+      });
+      Object.defineProperty(this.el, 'y', {
+        get: function() {
+          return _this.$el.position().top;
+        },
+        set: function(y) {
+          return _this.$el.css('top', y + 'px');
+        }
+      });
+      Object.defineProperty(this.el, 'width', {
+        get: function() {
+          return _this.$el.outerWidth();
+        },
+        set: function(w) {
+          return _this.$el.css('width', w + 'px');
+        }
+      });
+      return Object.defineProperty(this.el, 'height', {
+        get: function() {
+          return _this.$el.outerHeight();
+        },
+        set: function(h) {
+          return _this.$el.css('height', h + 'px');
+        }
+      });
+    };
 
     Balloon.prototype.render = function() {
       this.updatePosition();
@@ -574,36 +620,33 @@
     };
 
     Balloon.prototype.checkCollisions = function() {
-      var b, bPos, bView;
+      var b, bView, done, h, id, o, ov, w, xDist, yDist, _ref;
       this.checkingCollisions = true;
       bView = this;
       b = this.el;
-      b.width = this.$el.outerWidth();
-      b.height = this.$el.outerHeight();
-      bPos = this.$el.position();
-      b.x = bPos.left;
-      b.y = bPos.top;
-      jQuery('.balloon').each(function() {
-        var $o, h, o, oPos, w, xDist, yDist;
-        o = this;
+      done = jQuery.Deferred();
+      _ref = Sail.app.wall.balloonViews;
+      for (id in _ref) {
+        ov = _ref[id];
+        o = ov.el;
         if (o === b) {
           return;
         }
-        $o = jQuery(o);
-        oPos = $o.position();
-        o.width = $o.outerWidth();
-        o.height = $o.outerHeight();
-        o.x = oPos.left;
-        o.y = oPos.top;
         w = b.width / 2 + o.width / 2;
         h = b.height / 2 + o.height / 2;
         xDist = Math.abs(b.x - o.x);
         yDist = Math.abs(b.y - o.y);
+        this.doneColliding = true;
         if (xDist < w && yDist < h) {
-          return bView.collideWith(o);
+          this.doneColliding = false;
+          bView.collideWith(o);
         }
-      });
-      return this.checkingCollisions = false;
+        if (this.doneColliding) {
+          done.resolve();
+        }
+      }
+      this.checkingCollisions = false;
+      return done;
     };
 
     Balloon.prototype.collideWith = function(obstacle) {

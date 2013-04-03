@@ -1,5 +1,17 @@
 class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
     initialize: ->
+        Object.defineProperty @el, 'x',
+            get: => @$el.position().left
+            set: (x) => @$el.css('left', x + 'px')
+        Object.defineProperty @el, 'y',
+            get: => @$el.position().top
+            set: (y) => @$el.css('top', y + 'px')
+        Object.defineProperty @el, 'width',
+            get: => @$el.outerWidth()
+            set: (w) => @$el.css('width', w + 'px')
+        Object.defineProperty @el, 'height',
+            get: => @$el.outerHeight()
+            set: (h) => @$el.css('height', h + 'px')
 
     # moveToTop: =>
     #     maxZ = _.max jQuery('.balloon').map -> 
@@ -23,7 +35,7 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
                 distance: 5
                 containment: '#wall'
                 stack: '.balloon'
-                obstacle: ".balloon:not(##{@$el.attr('id')})" # se jquery-ui-draggable-collision.js
+                obstacle: ".balloon:not(##{@$el.attr('id')})" # don't collide with self
                 stop: (ev, ui) =>
                     @model.save('pos': ui.position)
 
@@ -51,36 +63,28 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
         bView = this
         b = @el
 
-        # TODO: only update width/height when it changes
-        b.width = @$el.outerWidth()
-        b.height = @$el.outerHeight()
-        bPos = @$el.position()
-        b.x = bPos.left
-        b.y = bPos.top
+        done = jQuery.Deferred()
 
-        jQuery('.balloon').each ->
-            o = this
+        #jQuery('.balloon').each ->
+        for id,ov of Sail.app.wall.balloonViews
+            o = ov.el
 
             return if o is b
-
-            $o = jQuery(o)
-            # TODO: only update width/height when it changes
-            oPos = $o.position()
-            o.width = $o.outerWidth()
-            o.height = $o.outerHeight()
-            o.x = oPos.left
-            o.y = oPos.top
 
             w = b.width/2 + o.width/2
             h = b.height/2 + o.height/2
 
             xDist = Math.abs(b.x - o.x)
             yDist = Math.abs(b.y - o.y)
-
+            @doneColliding = true
             if xDist < w && yDist < h
+                @doneColliding = false
                 bView.collideWith(o)
+            if @doneColliding
+                done.resolve()
 
         @checkingCollisions = false
+        return done
 
     collideWith: (obstacle) =>
         o = obstacle
@@ -94,25 +98,6 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
 
         if xDist < w && yDist < h
             #qIsTag = o.hasClass('tag')
-
-            # bRepulsion = 2
-            # qRepulsion = 2
-            # if bIsTag
-            #     bRepulsion = 3
-            #     if b.contribs && not (oPos.id in b.contribs)
-            #         bRepulsion = 7
-            # if qIsTag
-            #     qRepulsion = 3
-            #     if oPos.contribs && not (b.id in oPos.contribs)
-            #         qRepulsion = 7
-
-            # if qIsTag && bIsTag
-            #     qRepulsion = 6
-            #     bRepulsion = 6
-
-            # bRepulsion *= 2
-            # qRepulsion *= 2
-
 
             # if bIsTag
             #     force.alpha(0.01)

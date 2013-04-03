@@ -275,6 +275,25 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                 jQuery(this).text(text)
                     .fadeIn 800
 
+    benchmarkCollisions: =>
+        @startBenchmark ?= performance.now()
+        @benchmarkIterationCount ?= 0
+
+        bs = []
+        jQuery('.contribution').each ->
+            bs.push Sail.app.wall.balloonViews[jQuery(this).attr('id')]
+
+        dones = []        
+        for b in bs
+            dones.push b.checkCollisions()
+
+        jQuery.when.apply(jQuery, dones).done =>
+            @benchmarkIterationCount++
+            if @benchmarkIterationCount > 5
+                console.log("DONE IN ", performance.now() - @startBenchmark, "µs")
+            else
+                @benchmarkCollisions()
+
     detectCollisions: ($b) =>
         b = $b[0]
 
