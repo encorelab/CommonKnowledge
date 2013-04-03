@@ -36,6 +36,29 @@ module.exports = function(grunt) {
         src: ['./*.json' ]
       }
     },
+    coffeelint: {
+      tests: {
+        files: {
+          src: ['shared/**/*.coffee', 'smartboard/**/*.coffee']
+        },
+        options: {
+          'no_trailing_whitespace': {
+            'level': 'warn'
+          },
+          'max_line_length': {
+            'value': 140,
+            'level': 'ignore'
+          },
+          'indentation': {
+            'value': 4,
+            'level': 'warn'
+          },
+          'no_throwing_strings': {
+            'level': 'warn'
+          }
+        }
+      }
+    },
     coffee: {
       compile: {
         files: {
@@ -62,11 +85,11 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib');
   grunt.loadNpmTasks('grunt-contrib-csslint');
   grunt.loadNpmTasks('grunt-jsonlint');
-  // grunt.loadNpmTasks('grunt-coffee');
+  grunt.loadNpmTasks('grunt-coffeelint');
 
   // Default task(s).
   // grunt.registerTask('default', ['uglify']);
-  grunt.registerTask('default', ['jshint', 'csslint', 'jsonlint', 'coffee', 'sass']);
+  grunt.registerTask('default', ['jshint', 'csslint', 'jsonlint', 'coffeelint', 'coffee', 'sass']);
   
 
 };
