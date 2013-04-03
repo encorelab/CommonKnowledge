@@ -39,7 +39,7 @@ module.exports = function(grunt) {
     coffeelint: {
       tests: {
         files: {
-          src: ['shared/**/*.coffee', 'smartboard/**/*.coffee']
+          src: ['shared/coffee/*.coffee', 'smartboard/coffee/*.coffee']
         },
         options: {
           'no_trailing_whitespace': {
@@ -54,7 +54,7 @@ module.exports = function(grunt) {
             'level': 'warn'
           },
           'no_throwing_strings': {
-            'level': 'warn'
+            'level': 'ignore'
           }
         }
       }
@@ -96,6 +96,6 @@ module.exports = function(grunt) {
   // Default task(s).
   // grunt.registerTask('default', ['uglify']);
   grunt.registerTask('default', ['jshint', 'csslint', 'jsonlint', 'coffee', 'sass']);
-  
-
+  grunt.registerTask('lint', ['jshint', 'csslint', 'jsonlint', 'coffeelint']);
+  grunt.registerTask('compile', ['coffee', 'sass']);
 };

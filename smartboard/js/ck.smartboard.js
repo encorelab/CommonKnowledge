@@ -40,8 +40,6 @@
       return Smartboard.__super__.constructor.apply(this, arguments);
     }
 
-    Smartboard.prototype.curnit = 'CommonKnowledge';
-
     Smartboard.prototype.name = 'CK.Smartboard';
 
     Smartboard.prototype.requiredConfig = {
@@ -53,15 +51,13 @@
       rollcall: {
         url: 'string'
       },
-      assets: {
-        url: 'string'
-      },
       drowsy: {
         url: 'string'
       },
       wakeful: {
         url: 'string'
-      }
+      },
+      curnit: 'string'
     };
 
     Smartboard.prototype.init = function() {
@@ -69,9 +65,10 @@
         _this = this;
       Sail.verifyConfig(this.config, this.requiredConfig);
       console.log("Configuration is valid.");
+      this.curnit = this.config.curnit;
       this.run = this.run || JSON.parse(jQuery.cookie('run'));
       if (this.run) {
-        this.groupchatRoom = this.run.name + '@conference.' + this.xmppDomain;
+        this.groupchatRoom = this.run.name + '@conference.' + this.config.xmpp.domain;
       }
       userFilter = function(user) {
         return user.kind === 'Instructor';

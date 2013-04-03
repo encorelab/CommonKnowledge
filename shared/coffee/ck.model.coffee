@@ -14,7 +14,7 @@ class CK.Model
         unless db?
             throw new Error "Cannot configure model because no database name was given!"
 
-        @baseURL = url 
+        @baseURL = url
         @dbURL= "#{url}/#{db}"
 
         @server = new Drowsy.Server(url)
@@ -75,7 +75,7 @@ class CK.Model
                     console.warn("Cannot addTag ", tag ," to contribution ", @ , " because it already has this tag.")
                     return @
 
-                tagRel = 
+                tagRel =
                     id: tag.id
                     name: tag.get('name')
                     tagger: tagger

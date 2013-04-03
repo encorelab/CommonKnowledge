@@ -1,5 +1,4 @@
 class CK.Smartboard extends Sail.App
-    curnit: 'CommonKnowledge'
     name: 'CK.Smartboard'
 
     requiredConfig: {
@@ -9,21 +8,22 @@ class CK.Smartboard extends Sail.App
             url: 'string'
         rollcall:
             url: 'string'
-        assets:
-            url: 'string'
         drowsy:
             url: 'string'
         wakeful:
             url: 'string'
+        curnit: 'string'
     }
 
     init: =>
         Sail.verifyConfig @config, @requiredConfig
         console.log "Configuration is valid."
 
+        @curnit = @config.curnit
+
         @run = @run || JSON.parse jQuery.cookie('run')
         if @run
-            @groupchatRoom = @run.name + '@conference.' + @xmppDomain
+            @groupchatRoom = @run.name + '@conference.' + @config.xmpp.domain
 
         userFilter = (user) -> user.kind is 'Instructor'
 
