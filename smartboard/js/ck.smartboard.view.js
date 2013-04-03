@@ -568,10 +568,6 @@
     __extends(Balloon, _super);
 
     function Balloon() {
-      this.collideWith = __bind(this.collideWith, this);
-
-      this.checkCollisions = __bind(this.checkCollisions, this);
-
       this.makeDraggable = __bind(this.makeDraggable, this);
 
       this.render = __bind(this.render, this);
@@ -623,79 +619,6 @@
         }
       });
       return this.draggable = true;
-    };
-
-    Balloon.prototype.checkCollisions = function() {
-      var b, bPos, done, h, id, o, oPos, w, xDist, yDist, _ref, _ref1, _ref2, _ref3;
-      this.checkingCollisions = true;
-      b = this;
-      b.width = this.$el.outerWidth();
-      b.height = this.$el.outerHeight();
-      bPos = this.$el.position();
-      b.x = bPos.left;
-      b.y = bPos.top;
-      done = jQuery.Deferred();
-      _ref = Sail.app.wall.balloonViews;
-      for (id in _ref) {
-        o = _ref[id];
-        if (o === b) {
-          return;
-        }
-        if ((_ref1 = o.width) == null) {
-          o.width = o.$el.outerWidth();
-        }
-        if ((_ref2 = o.height) == null) {
-          o.height = o.$el.outerHeight();
-        }
-        oPos = o.$el.position();
-        o.x = oPos.left;
-        o.y = oPos.top;
-        w = b.width / 2 + o.width / 2;
-        h = b.height / 2 + o.height / 2;
-        xDist = Math.abs(b.x - o.x);
-        yDist = Math.abs(b.y - o.y);
-        if (xDist < w && yDist < h) {
-          b.collideWith(o);
-        }
-      }
-      _ref3 = Sail.app.wall.balloonViews;
-      for (id in _ref3) {
-        o = _ref3[id];
-        o.$el.css({
-          left: o.x + 'px',
-          top: o.y + 'px'
-        });
-      }
-      return this.checkingCollisions = false;
-    };
-
-    Balloon.prototype.collideWith = function(obstacle) {
-      var b, h, o, w, xDist, xNudge, xOverlap, yDist, yNudge, yOverlap;
-      o = obstacle;
-      b = this;
-      w = b.width / 2 + o.width / 2;
-      h = b.height / 2 + o.height / 2;
-      xDist = Math.abs(b.x - o.x);
-      yDist = Math.abs(b.y - o.y);
-      if (xDist < w && yDist < h) {
-        yOverlap = h - yDist;
-        xOverlap = w - xDist;
-        if (xDist / w < yDist / h) {
-          yNudge = yOverlap;
-          if (b.y < o.y) {
-            return o.y += yNudge;
-          } else {
-            return o.y -= yNudge;
-          }
-        } else {
-          xNudge = xOverlap;
-          if (b.x < o.x) {
-            return o.x += xNudge;
-          } else {
-            return o.x -= xNudge;
-          }
-        }
-      }
     };
 
     return Balloon;
