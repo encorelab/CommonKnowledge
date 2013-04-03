@@ -111,34 +111,9 @@
     };
 
     Smartboard.prototype.setupModel = function() {
-      var _this = this;
       this.contributions = CK.Model.awake.contributions;
       this.proposals = CK.Model.awake.proposals;
       this.tags = CK.Model.awake.tags;
-      this.contributions.on('add', function(contrib) {
-        _this.wall.cloud.ensureNode(contrib);
-        return _this.wall.cloud.render();
-      });
-      this.proposals.on('add', function(proposal) {
-        _this.wall.cloud.ensureNode(proposal);
-        return _this.wall.cloud.render();
-      });
-      this.proposals.on('change', function(proposal) {
-        if (_this.wall.cloud.ensureNode(proposal)) {
-          return _this.wall.cloud.render();
-        }
-      });
-      this.tags.on('add', function(tag) {
-        _this.wall.cloud.ensureNode(tag);
-        tag.newlyAdded = true;
-        return _this.wall.cloud.render();
-      });
-      this.tags.on('reset', function(collection) {
-        _this.tagCount = collection.length;
-        console.log("Number of Tags: " + _this.tagCount);
-        collection.each(_this.wall.cloud.ensureNode);
-        return _this.wall.cloud.render();
-      });
       this.runState = CK.getState('run');
       if (this.runState == null) {
         this.runState = CK.setState('run', {});
@@ -155,7 +130,6 @@
       authenticated: function(ev) {
         var _this = this;
         console.log("Authenticated...");
-        this.nickname = this.session.account.login;
         return CK.Model.init(this.config.drowsy.url, this.run.name).done(function() {
           return Wakeful.loadFayeClient(_this.config.wakeful.url).done(function() {
             return CK.Model.initWakefulCollections(_this.config.wakeful.url).done(function() {

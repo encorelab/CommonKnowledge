@@ -1,5 +1,9 @@
 class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
 
+    initialize: ->
+        @model.on 'change', =>
+            @render()
+
     # moveToTop: =>
     #     maxZ = _.max jQuery('.balloon').map ->
     #         parseInt(jQuery(this).zIndex()) + 1

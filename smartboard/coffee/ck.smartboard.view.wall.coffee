@@ -40,16 +40,13 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             @runState.save(paused: !paused)
 
         'click #go-analyze': (ev) ->
-            if !@mode? || @mode is 'brainstorm'
-                Sail.app.startAnalysis()
+            @runState.save(mode: 'analysis')
 
         'click #go-propose': (ev) ->
-            if @mode is 'analysis'
-                Sail.app.startProposal()
+            @runState.save(mode: 'propose')
 
         'click #go-interpret': (ev) ->
-            if @mode is 'propose'
-                Sail.app.startInterpretation()
+            @runState.save(mode: 'interpret')
 
     constructor: (options) ->
         @runState = options.runState

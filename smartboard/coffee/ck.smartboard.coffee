@@ -74,38 +74,6 @@ class CK.Smartboard extends Sail.App
         @proposals = CK.Model.awake.proposals
         @tags = CK.Model.awake.tags
 
-        @contributions.on 'add', (contrib) =>
-            @wall.cloud.ensureNode contrib
-            @wall.cloud.render()
-
-        # @contributions.on 'reset', =>
-        #     @contributions.each @wall.cloud.ensureNode
-        #     @wall.cloud.render()
-
-        @proposals.on 'add', (proposal) =>
-            @wall.cloud.ensureNode proposal
-            @wall.cloud.render()
-
-        @proposals.on 'change', (proposal) =>
-            if @wall.cloud.ensureNode proposal
-                #do the render!
-                @wall.cloud.render()
-
-        # @proposals.on 'reset', =>
-        #     @proposals.each @wall.cloud.ensureNode
-        #     @wall.cloud.render()
-
-        @tags.on 'add', (tag) =>
-            @wall.cloud.ensureNode tag
-            tag.newlyAdded = true
-            @wall.cloud.render()
-
-        @tags.on 'reset', (collection) =>
-            @tagCount = collection.length
-            console.log "Number of Tags: " + @tagCount
-            collection.each @wall.cloud.ensureNode
-            @wall.cloud.render()
-
         @runState = CK.getState 'run'
 
         unless @runState?

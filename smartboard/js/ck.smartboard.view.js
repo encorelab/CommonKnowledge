@@ -164,19 +164,19 @@
         });
       },
       'click #go-analyze': function(ev) {
-        if (!(this.mode != null) || this.mode === 'brainstorm') {
-          return Sail.app.startAnalysis();
-        }
+        return this.runState.save({
+          mode: 'analysis'
+        });
       },
       'click #go-propose': function(ev) {
-        if (this.mode === 'analysis') {
-          return Sail.app.startProposal();
-        }
+        return this.runState.save({
+          mode: 'propose'
+        });
       },
       'click #go-interpret': function(ev) {
-        if (this.mode === 'propose') {
-          return Sail.app.startInterpretation();
-        }
+        return this.runState.save({
+          mode: 'interpret'
+        });
       }
     };
 
@@ -510,6 +510,13 @@
       this.render = __bind(this.render, this);
       return Balloon.__super__.constructor.apply(this, arguments);
     }
+
+    Balloon.prototype.initialize = function() {
+      var _this = this;
+      return this.model.on('change', function() {
+        return _this.render();
+      });
+    };
 
     Balloon.prototype.render = function() {
       if (!this.draggable) {
