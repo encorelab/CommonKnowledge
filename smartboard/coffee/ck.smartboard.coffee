@@ -39,7 +39,7 @@ class CK.Smartboard extends Sail.App
 
         @wall = new CK.Smartboard.View.Wall {el: jQuery('#wall')}
 
-        @tagCount = 0;
+        @tagCount = 0
         #@states = new CK.Model.States()
         #@states.on 'change', (collection) ->
         #    console.log  'States Collection Changed!'
@@ -71,10 +71,7 @@ class CK.Smartboard extends Sail.App
         sev = new Sail.Event 'screen_lock'
         @groupchat.sendEvent sev
         
-        CK.getState('phase', (s) ->
-            CK.setState('phase', s.get('state'), true)
-        )
-        
+        CK.setState('run', {paused: true})
 
         # take this opportunity to save positions
         for b in _.union(@contributions.models, @tags.models)
@@ -92,10 +89,7 @@ class CK.Smartboard extends Sail.App
     unpause: =>
         sev = new Sail.Event 'screen_unlock'
         @groupchat.sendEvent sev
-        CK.getState('phase', (s) ->
-            CK.setState('phase', s.get('state'), false)
-            #CK.setState('phase', 'brainstorm', false)
-        )
+        CK.setState('run', {paused: false})
 
         if @wall.mode is 'evaluate'
             @switchToInterpretation()
@@ -140,95 +134,62 @@ class CK.Smartboard extends Sail.App
         proposal.save {}
 
     # set up all the Collections used by the board
-    initModels: =>
-        Wakeful.loadFayeClient(@config.wakeful.url).done =>
-            @contributions = new CK.Model.Contributions()
-            @contributions.wake @config.wakeful.url
+    setupModel: =>
+        @contributions = CK.Model.awake.contributions
+        @proposals = CK.Model.awake.proposals
+        @tags = CK.Model.awake.tags
 
-            @proposals = new CK.Model.Proposals()
-            @proposals.wake @config.wakeful.url
+        @contributions.on 'add', (contrib) =>
+            @wall.cloud.ensureNode contrib
+            @wall.cloud.render()
 
-            #console.log (@proposals)
+        # @contributions.on 'reset', => 
+        #     @contributions.each @wall.cloud.ensureNode
+        #     @wall.cloud.render()
 
-            # FIXME: for the 'reset' event, we should wait until
-            #        BOTH the tags and contributions are fetched
-            #        before calling cloud.render()
+        @proposals.on 'add', (proposal) =>
+            @wall.cloud.ensureNode proposal
+            @wall.cloud.render()
 
-            @contributions.on 'all', (ev, data) => 
-                console.log(@contributions.url, ev, data)
-
-            @contributions.on 'add', (contrib) =>
-                @wall.cloud.ensureNode contrib
+        @proposals.on 'change', (proposal) =>
+            if @wall.cloud.ensureNode proposal
+                #do the render!
                 @wall.cloud.render()
 
+        # @proposals.on 'reset', => 
+        #     @proposals.each @wall.cloud.ensureNode
+        #     @wall.cloud.render()
 
-            @contributions.on 'reset', => 
-                @contributions.each @wall.cloud.ensureNode
-                @wall.cloud.render()
+        @tags.on 'add', (tag) =>
+            @wall.cloud.ensureNode tag
+            tag.newlyAdded = true
+            @wall.cloud.render()
 
+        @tags.on 'reset', (collection) =>
+            @tagCount = collection.length
+            console.log "Number of Tags: " + @tagCount
+            collection.each @wall.cloud.ensureNode
+            @wall.cloud.render()
 
-            @proposals.on 'all', (ev, data) => 
-                console.log(@proposals.url, ev, data)
+        @runState = CK.getState 'run'
 
-            @proposals.on 'add', (proposal) =>
-                @wall.cloud.ensureNode proposal
-                @wall.cloud.render()
+        unless @runState?
+            @runState = CK.setState 'run', {}
 
-            @proposals.on 'change', (proposal) =>
+        @runState.wake @config.wakeful.url
 
-                if @wall.cloud.ensureNode proposal
-                    #do the render!
-                    @wall.cloud.render()
+        # test state change
+    
+        #setTimeout (=> @switchToInterpretation()), 5000
 
-            @proposals.on 'reset', => 
-                @proposals.each @wall.cloud.ensureNode
-                @wall.cloud.render()
+        #
+        # a = => @createNewProposal 'tag 3 headlines are great!', 'cookie descriptions are not as cool but whatever...', 
+        #  'justification justification justification justification justification justification justification justification', 3, 
+        #  '5137fbab65fd712a3a000002', 'Cookies', 
+        #  [{"content": "Blah comment on!!", "author": "ck2", "created_at": "Mon Oct 29 2012 13:42:00 GMT-0400 (EDT)", "tag_group_id": '51366fd242901f5cf4000002'}, { "content": "Blah comment on and on and on", "author": "ck2", "created_at": "Mon Oct 29 2012 13:40:00 GMT-0400 (EDT)", "tag_group_id": '51366dd942901f51c6000000'}]
 
-            @tags = new CK.Model.Tags()
-            @tags.wake @config.wakeful.url
-
-            @tags.on 'add', (tag) =>
-                @wall.cloud.ensureNode tag
-
-                tag.newlyAdded = true
-
-                @wall.cloud.render()
-
-            @tags.on 'reset', (collection) =>
-                @tagCount = collection.length
-                console.log "Number of Tags: " + @tagCount
-                collection.each @wall.cloud.ensureNode
-                @wall.cloud.render()
-
-            CK.getState 'phase', (s) =>
-                if s
-                    # restore pause state if there is one set
-                    if s.get('screen_lock') is true
-                        @wall.pause()
-
-                    if s.get('state') is 'analysis'
-                        @switchToAnalysis()
-                    else if s.get('state') is 'proposal'
-                        @switchToProposal()
-                    else if s.get('state') is 'interpretation'
-                        @switchToInterpretation()
-                    else if s.get('state') is 'evaluation'
-                        @switchToEvaluation()
-                    else
-                        @wall.setMode('brainstorm')
-
-            # test state change
-        
-            #setTimeout (=> @switchToInterpretation()), 5000
-
-            #
-            # a = => @createNewProposal 'tag 3 headlines are great!', 'cookie descriptions are not as cool but whatever...', 
-            #  'justification justification justification justification justification justification justification justification', 3, 
-            #  '5137fbab65fd712a3a000002', 'Cookies', 
-            #  [{"content": "Blah comment on!!", "author": "ck2", "created_at": "Mon Oct 29 2012 13:42:00 GMT-0400 (EDT)", "tag_group_id": '51366fd242901f5cf4000002'}, { "content": "Blah comment on and on and on", "author": "ck2", "created_at": "Mon Oct 29 2012 13:40:00 GMT-0400 (EDT)", "tag_group_id": '51366dd942901f51c6000000'}]
-
-            # setTimeout a, 5000
-            @trigger('ready')
+        # setTimeout a, 5000
+        @trigger 'ready'
 
     events:
         initialized: (ev) ->
@@ -238,7 +199,10 @@ class CK.Smartboard extends Sail.App
         authenticated: (ev) ->
             console.log "Authenticated..."
 
-            CK.Model.init(@config.drowsy.url, @run.name).done @initModels
+            CK.Model.init(@config.drowsy.url, @run.name).done =>
+                Wakeful.loadFayeClient(@config.wakeful.url).done =>
+                    CK.Model.initWakefulCollections(@config.wakeful.url).done =>
+                        @setupModel()
 
 
         'ui.initialized': (ev) ->
@@ -251,10 +215,14 @@ class CK.Smartboard extends Sail.App
             # triggered when CK.Model has been configured (via CK.Model.init)
             # TODO: maybe also wait until we're connected?
             console.log "Ready..."
-            
+
+            @wall = new CK.Smartboard.View.Wall 
+                el: jQuery('#wall')
+                runState: @runState
+                tags: @tags
+                contributions: @contributions
+
             @wall.render()
-            
-            @tags.fetch().done => @contributions.fetch().done => @proposals.fetch()
 
         sail:
             contribution: (sev) ->

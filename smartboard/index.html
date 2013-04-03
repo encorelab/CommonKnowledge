@@ -13,21 +13,13 @@
     <script type="text/javascript">
         Sail.JS_ROOT_PATH = "/shared/js/sail.js";
         Sail.load()
-            .then(Sail.JS_ROOT_PATH+'/rollcall.js',
-                'js/d3.v2.js')
-            .then('js/d3.layout.cloud.js')
+            .then(Sail.JS_ROOT_PATH+'/rollcall.js')
             .then('../shared/js/ck.js')
-            // .then('http://localhost:8002/backbone.drowsy.js')
-            // .then('http://localhost:8002/wakeful.js')
-            // .then(Sail.JS_ROOT_PATH+'/deps/backbone.drowsy.js')
-            .then('https://raw.github.com/zuk/Backbone.Drowsy/master/backbone.drowsy.js')
-            .then('https://raw.github.com/zuk/Backbone.Drowsy/master/wakeful.js')
-            // .then('../shared/js/libs/backbone.drowsy.js')
-            // .then('../shared/js/libs/wakeful.js')
+            .then('../node_modules/backbone.drowsy/backbone.drowsy.js')
+            .then('../node_modules/backbone.drowsy/wakeful.js')
             .then('../shared/js/ck.model.js')
             .then('/smartboard/js/ck.smartboard.js')
             .then('/smartboard/js/ck.smartboard.view.js')
-            .then('/smartboard/js/ck.smartboard.view.ballooncloud.js')
             .thenRun(function() { return Sail.init(new CK.Smartboard()); });  
     </script>
 
@@ -48,12 +40,12 @@
             <button id="add-tag-opener">Add Tag</button>
             <input type="text" id="new-tag" />
             <button id="submit-new-tag">✚</button>
-
-            <button id="show-word-cloud">Show Word Cloud</button>
         </div>
 
 
         <div id="action-buttons-container">
+            <button id="show-word-cloud">Show Word Cloud</button>
+
             <button id="toggle-pause">Pause</button>
 
             <button id="go-analyze">Analyze</button>

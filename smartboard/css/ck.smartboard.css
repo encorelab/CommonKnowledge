@@ -345,6 +345,11 @@ button {
   bottom: 10px;
   right: 10px; }
 
+#show-word-cloud {
+  position: absolute;
+  right: 0;
+  bottom: 44px; }
+
 #toggle-pause {
   margin-right: 60px;
   width: 140px; }
@@ -437,11 +442,6 @@ button {
     display: inline-block;
     width: 14em;
     margin-left: 106px; }
-  #add-tag-container #show-word-cloud {
-    position: fixed;
-    bottom: 10px;
-    left: 180px;
-    z-index: -1; }
 
 #word-cloud {
   display: none;

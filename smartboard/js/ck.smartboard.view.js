@@ -103,6 +103,13 @@
 
   })(Backbone.View);
 
+}).call(this);
+
+(function() {
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
   CK.Smartboard.View.Wall = (function(_super) {
 
     __extends(Wall, _super);
@@ -148,15 +155,11 @@
         }
       },
       'click #toggle-pause': function(ev) {
-        var $p;
-        $p = jQuery(ev.target);
-        if ($p.hasClass('paused')) {
-          Sail.app.unpause();
-          return $p.removeClass('paused').text('Pause');
-        } else {
-          $p.addClass('paused').text('Resume');
-          return Sail.app.pause();
-        }
+        var paused;
+        paused = this.runState.get('paused');
+        return this.runState.save({
+          paused: !paused
+        });
       },
       'click #go-analyze': function(ev) {
         if (!(this.mode != null) || this.mode === 'brainstorm') {
@@ -176,13 +179,9 @@
     };
 
     function Wall(options) {
-      this.render = __bind(this.render, this);
+      this.detectCollisions = __bind(this.detectCollisions, this);
 
-      this.bubbleTag = __bind(this.bubbleTag, this);
-
-      this.bubbleContrib = __bind(this.bubbleContrib, this);
-
-      this.setMode = __bind(this.setMode, this);
+      this.benchmarkCollisions = __bind(this.benchmarkCollisions, this);
 
       this.changeWatermark = __bind(this.changeWatermark, this);
 
@@ -197,10 +196,138 @@
       this.showWordCloud = __bind(this.showWordCloud, this);
 
       this.submitNewTag = __bind(this.submitNewTag, this);
+
+      this.render = __bind(this.render, this);
+
+      this.collideBalloon = __bind(this.collideBalloon, this);
+
+      this.addBalloon = __bind(this.addBalloon, this);
+      this.runState = options.runState;
+      this.tags = options.tags;
+      this.contributions = options.contributions;
       Wall.__super__.constructor.call(this, options);
-      this.cloud = new CK.Smartboard.View.BalloonCloud(this);
-      this.tagCounter = 0;
     }
+
+    Wall.prototype.initialize = function() {
+      var _this = this;
+      this.runState.on('change', this.render);
+      this.balloonViews = {};
+      this.tags.on('add', function(t) {
+        return _this.addBalloon(t, CK.Smartboard.View.TagBalloon, _this.balloonViews);
+      });
+      this.tags.each(function(t) {
+        return _this.addBalloon(t, CK.Smartboard.View.TagBalloon, _this.balloonViews);
+      });
+      this.contributions.on('add', function(c) {
+        return _this.addBalloon(c, CK.Smartboard.View.ContributionBalloon, _this.balloonViews);
+      });
+      return this.contributions.each(function(c) {
+        return _this.addBalloon(c, CK.Smartboard.View.ContributionBalloon, _this.balloonViews);
+      });
+    };
+
+    Wall.prototype.addBalloon = function(doc, view, balloonList) {
+      var b;
+      b = new view({
+        model: doc
+      });
+      doc.on('change', b.render);
+      b.render();
+      this.$el.append(b.$el);
+      return balloonList[doc.id] = b;
+    };
+
+    Wall.prototype.collideBalloon = function(balloon) {
+      var b, h, id, o, pos, w, xDist, xNudge, xOverlap, yDist, yNudge, yOverlap, _ref, _ref1, _ref2, _results;
+      b = balloon;
+      _ref = this.balloonViews;
+      for (id in _ref) {
+        o = _ref[id];
+        o.width = o.$el.outerWidth();
+        o.height = o.$el.outerHeight();
+        pos = o.$el.position();
+        o.x = pos.left;
+        o.y = pos.top;
+      }
+      _ref1 = this.balloonViews;
+      for (id in _ref1) {
+        o = _ref1[id];
+        if (o === b) {
+          continue;
+        }
+        w = b.width / 2 + o.width / 2;
+        h = b.height / 2 + o.height / 2;
+        xDist = Math.abs(b.x - o.x);
+        yDist = Math.abs(b.y - o.y);
+        if (xDist < w && yDist < h) {
+          yOverlap = h - yDist;
+          xOverlap = w - xDist;
+          if (xDist / w < yDist / h) {
+            yNudge = yOverlap;
+            if (b.y < o.y) {
+              o.y += yNudge;
+            } else {
+              o.y -= yNudge;
+            }
+          } else {
+            xNudge = xOverlap;
+            if (b.x < o.x) {
+              o.x += xNudge;
+            } else {
+              o.x -= xNudge;
+            }
+          }
+        }
+      }
+      _ref2 = this.balloonViews;
+      _results = [];
+      for (id in _ref2) {
+        o = _ref2[id];
+        _results.push(o.$el.css({
+          left: o.x + 'px',
+          top: o.y + 'px'
+        }));
+      }
+      return _results;
+    };
+
+    Wall.prototype.render = function() {
+      var mode, paused;
+      mode = this.runState.get('mode');
+      if (mode !== this.$el.data('mode')) {
+        switch (mode) {
+          case 'analysis':
+            jQuery('body').removeClass('mode-synthesis').addClass('mode-analysis');
+            this.changeWatermark("analysis");
+            break;
+          case 'propose':
+            jQuery('body').removeClass('mode-analysis').addClass('mode-propose');
+            this.changeWatermark("propose");
+            break;
+          case 'interpret':
+            jQuery('body').removeClass('mode-propose').removeClass('mode-evaluate').addClass('mode-interpret');
+            this.changeWatermark("interpret");
+            break;
+          case 'evaluate':
+            jQuery('body').removeClass('mode-interpret').addClass('mode-evaluate');
+            this.changeWatermark("evaluate");
+            break;
+          default:
+            jQuery('body').removeClass('mode-analysis').removeClass('mode-synthesis');
+            this.changeWatermark("brainstorm");
+        }
+        this.$el.data('mode', mode);
+      }
+      paused = this.runState.get('paused');
+      if (paused !== this.$el.data('paused')) {
+        if (paused) {
+          this.pause();
+        } else {
+          this.unpause();
+        }
+        return this.$el.data('paused', paused);
+      }
+    };
 
     Wall.prototype.submitNewTag = function() {
       var newTag;
@@ -327,9 +454,6 @@
     };
 
     Wall.prototype.pause = function() {
-      if ((this.cloud != null) && (this.cloud.force != null)) {
-        this.cloud.force.stop();
-      }
       this.$el.find('#toggle-pause').addClass('paused').text('Resume');
       if (this.mode !== 'evaluate') {
         jQuery('body').addClass('paused');
@@ -338,7 +462,6 @@
     };
 
     Wall.prototype.unpause = function() {
-      this.cloud.force.resume();
       jQuery('body').removeClass('paused');
       this.$el.find('#toggle-pause').removeClass('paused').text('Pause');
       return this.changeWatermark(this.mode || "brainstorm");
@@ -350,73 +473,228 @@
       });
     };
 
-    Wall.prototype.setMode = function(mode) {
-      if (!mode) {
-        mode = "brainstorm";
+    Wall.prototype.benchmarkCollisions = function() {
+      var b, bs, dones, _i, _len, _ref, _ref1,
+        _this = this;
+      if ((_ref = this.startBenchmark) == null) {
+        this.startBenchmark = performance.now();
       }
-      this.mode = mode;
-      if (mode === 'analysis') {
-        jQuery('body').removeClass('mode-synthesis').addClass('mode-analysis');
-        this.changeWatermark("analysis");
-      } else if (mode === 'propose') {
-        jQuery('body').removeClass('mode-analysis').addClass('mode-propose');
-        this.changeWatermark("propose");
-      } else if (mode === 'interpret') {
-        jQuery('body').removeClass('mode-propose').removeClass('mode-evaluate').addClass('mode-interpret');
-        this.changeWatermark("interpret");
-      } else if (mode === 'evaluate') {
-        jQuery('body').removeClass('mode-interpret').addClass('mode-evaluate');
-        this.changeWatermark("evaluate");
-      } else {
-        jQuery('body').removeClass('mode-analysis').removeClass('mode-synthesis');
-        this.changeWatermark("brainstorm");
+      if ((_ref1 = this.benchmarkIterationCount) == null) {
+        this.benchmarkIterationCount = 0;
       }
-      return console.log('Wall Mode is now: ' + mode);
-    };
-
-    Wall.prototype.bubbleContrib = function(contrib) {};
-
-    Wall.prototype.bubbleTag = function(tag) {
-      var bubble;
-      bubble = new CK.Smartboard.View.TagBalloon({
-        model: tag
+      bs = [];
+      jQuery('.contribution').each(function() {
+        return bs.push(Sail.app.wall.balloonViews[jQuery(this).attr('id')]);
       });
-      tag.on('change', bubble.render);
-      bubble.render();
-      return this.cloud.addTag(bubble.$el);
+      dones = [];
+      for (_i = 0, _len = bs.length; _i < _len; _i++) {
+        b = bs[_i];
+        dones.push(b.checkCollisions());
+      }
+      return jQuery.when.apply(jQuery, dones).done(function() {
+        _this.benchmarkIterationCount++;
+        if (_this.benchmarkIterationCount > 5) {
+          return console.log("DONE IN ", performance.now() - _this.startBenchmark, "µs");
+        } else {
+          return _this.benchmarkCollisions();
+        }
+      });
     };
 
-    Wall.prototype.render = function() {};
+    Wall.prototype.detectCollisions = function($b) {
+      var b, bHeight, bIsTag, bWidth, nx1, nx2, ny1, ny2,
+        _this = this;
+      b = $b[0];
+      bWidth = $b.outerWidth();
+      bHeight = $b.outerHeight();
+      nx1 = b.x - bWidth / 2;
+      nx2 = b.x + bWidth / 2;
+      ny1 = b.y - bHeight / 2;
+      ny2 = b.y + bHeight / 2;
+      bIsTag = $b.hasClass('tag');
+      return function(quad, x1, y1, x2, y2) {
+        var h, qHeight, qWidth, w, xDist, xNudge, xOverlap, yDist, yNudge, yOverlap;
+        if (!((quad.point != null) && (quad.point.x != null) && (quad.point.y != null))) {
+          return;
+        }
+        if (quad.point && quad.point !== b) {
+          qWidth = quad.point.width;
+          qHeight = quad.point.height;
+          w = bWidth / 2 + qWidth / 2;
+          h = bHeight / 2 + qHeight / 2;
+          xDist = Math.abs(b.x - quad.point.x);
+          yDist = Math.abs(b.y - quad.point.y);
+          if (xDist < w && yDist < h) {
+            yOverlap = h - yDist;
+            xOverlap = w - xDist;
+            if (xDist / w < yDist / h) {
+              yNudge = yOverlap / 2;
+              if (b.y < quad.point.y) {
+                b.y -= yNudge;
+                quad.point.y += yNudge;
+              } else {
+                b.y += yNudge;
+                quad.point.y -= yNudge;
+              }
+            } else {
+              xNudge = xOverlap / 2;
+              if (b.x < quad.point.x) {
+                b.x -= xNudge;
+                quad.point.x += xNudge;
+              } else {
+                b.x += xNudge;
+                quad.point.x -= xNudge;
+              }
+            }
+          }
+        }
+        return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
+      };
+    };
 
     return Wall;
 
   })(CK.Smartboard.View.Base);
+
+}).call(this);
+
+(function() {
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   CK.Smartboard.View.Balloon = (function(_super) {
 
     __extends(Balloon, _super);
 
     function Balloon() {
-      this.render = __bind(this.render, this);
+      this.collideWith = __bind(this.collideWith, this);
 
-      this.moveToTop = __bind(this.moveToTop, this);
+      this.checkCollisions = __bind(this.checkCollisions, this);
+
+      this.makeDraggable = __bind(this.makeDraggable, this);
+
+      this.render = __bind(this.render, this);
       return Balloon.__super__.constructor.apply(this, arguments);
     }
 
-    Balloon.prototype.moveToTop = function() {
-      var maxZ;
-      maxZ = _.max(jQuery('.balloon').map(function() {
-        return parseInt(jQuery(this).zIndex()) + 1;
-      }));
-      return this.$el.zIndex(maxZ);
-    };
+    Balloon.prototype.initialize = function() {};
 
     Balloon.prototype.render = function() {
-      if (this.x != null) {
-        this.$el.css('left', this.xToLeft(this.x));
+      if (!this.draggable) {
+        return this.makeDraggable();
       }
-      if (this.y != null) {
-        return this.$el.css('top', this.yToTop(this.y));
+    };
+
+    Balloon.prototype.makeDraggable = function() {
+      var _this = this;
+      this.$el.draggable({
+        distance: 5,
+        containment: '#wall',
+        stack: '.balloon',
+        obstacle: ".balloon:not(#" + (this.$el.attr('id')) + ")"
+      }).css('position', 'absolute');
+      this.$el.on('drag', function(ev, ui) {
+        return Sail.app.wall.collideBalloon(_this);
+      }).on('stop', function(ev, ui) {
+        var pos, tag, tid;
+        _this.model.save({
+          'pos': ui.position
+        });
+        console.log("Saving pinned tag's position");
+        pos = _this.$el.position();
+        tid = _this.$el.attr('id');
+        tag = Sail.app.tags.get(tid);
+        if (tag) {
+          tag.set({
+            pos: {
+              left: pos.left,
+              top: pos.top,
+              pinned: true
+            }
+          }, {
+            silent: true
+          });
+          return tag.save({}, {
+            silent: true
+          });
+        } else {
+          return console.log("Couldn't save pinned tag's position -- couldn't find a tag with id: ", tid);
+        }
+      });
+      return this.draggable = true;
+    };
+
+    Balloon.prototype.checkCollisions = function() {
+      var b, bPos, done, h, id, o, oPos, w, xDist, yDist, _ref, _ref1, _ref2, _ref3;
+      this.checkingCollisions = true;
+      b = this;
+      b.width = this.$el.outerWidth();
+      b.height = this.$el.outerHeight();
+      bPos = this.$el.position();
+      b.x = bPos.left;
+      b.y = bPos.top;
+      done = jQuery.Deferred();
+      _ref = Sail.app.wall.balloonViews;
+      for (id in _ref) {
+        o = _ref[id];
+        if (o === b) {
+          return;
+        }
+        if ((_ref1 = o.width) == null) {
+          o.width = o.$el.outerWidth();
+        }
+        if ((_ref2 = o.height) == null) {
+          o.height = o.$el.outerHeight();
+        }
+        oPos = o.$el.position();
+        o.x = oPos.left;
+        o.y = oPos.top;
+        w = b.width / 2 + o.width / 2;
+        h = b.height / 2 + o.height / 2;
+        xDist = Math.abs(b.x - o.x);
+        yDist = Math.abs(b.y - o.y);
+        if (xDist < w && yDist < h) {
+          b.collideWith(o);
+        }
+      }
+      _ref3 = Sail.app.wall.balloonViews;
+      for (id in _ref3) {
+        o = _ref3[id];
+        o.$el.css({
+          left: o.x + 'px',
+          top: o.y + 'px'
+        });
+      }
+      return this.checkingCollisions = false;
+    };
+
+    Balloon.prototype.collideWith = function(obstacle) {
+      var b, h, o, w, xDist, xNudge, xOverlap, yDist, yNudge, yOverlap;
+      o = obstacle;
+      b = this;
+      w = b.width / 2 + o.width / 2;
+      h = b.height / 2 + o.height / 2;
+      xDist = Math.abs(b.x - o.x);
+      yDist = Math.abs(b.y - o.y);
+      if (xDist < w && yDist < h) {
+        yOverlap = h - yDist;
+        xOverlap = w - xDist;
+        if (xDist / w < yDist / h) {
+          yNudge = yOverlap;
+          if (b.y < o.y) {
+            return o.y += yNudge;
+          } else {
+            return o.y -= yNudge;
+          }
+        } else {
+          xNudge = xOverlap;
+          if (b.x < o.x) {
+            return o.x += xNudge;
+          } else {
+            return o.x -= xNudge;
+          }
+        }
       }
     };
 
@@ -468,9 +746,6 @@
     }
 
     ContributionBalloon.prototype.events = {
-      'mousedown': function(ev) {
-        return this.moveToTop();
-      },
       'click': function(ev) {
         this.$el.toggleClass('opened');
         return this.processContributionByType();
@@ -649,9 +924,6 @@
     }
 
     ContributionProposalBalloon.prototype.events = {
-      'mousedown': function(ev) {
-        return this.moveToTop();
-      },
       'click': function(ev) {
         this.$el.toggleClass('opened');
         this.$el.toggleClass(this.colorClass);
@@ -860,34 +1132,6 @@
     };
 
     TagBalloon.prototype.events = {
-      'mousedown': function(ev) {
-        return this.moveToTop();
-      },
-      'mouseout': function(ev) {
-        var pos, tag, tid;
-        if (this.model.get('pinned')) {
-          console.log("Saving pinned tag's position");
-          pos = this.$el.position();
-          tid = this.$el.attr('id');
-          tag = Sail.app.tags.get(tid);
-          if (tag) {
-            tag.set({
-              pos: {
-                left: pos.left,
-                top: pos.top,
-                pinned: true
-              }
-            }, {
-              silent: true
-            });
-            return tag.save({}, {
-              silent: true
-            });
-          } else {
-            return console.log("Couldn't save pinned tag's position -- couldn't find a tag with id: ", tid);
-          }
-        }
-      },
       'click': function(ev) {
         this.model.set('pinned', !this.model.get('pinned'), {
           silent: true

@@ -8,7 +8,7 @@
     __extends(Smartboard, _super);
 
     function Smartboard() {
-      this.initModels = __bind(this.initModels, this);
+      this.setupModel = __bind(this.setupModel, this);
 
       this.createNewProposal = __bind(this.createNewProposal, this);
 
@@ -89,9 +89,6 @@
         return _this.trigger('initialized');
       });
       this.rollcall = new Rollcall.Client(this.config.rollcall.url);
-      this.wall = new CK.Smartboard.View.Wall({
-        el: jQuery('#wall')
-      });
       return this.tagCount = 0;
     };
 
@@ -132,8 +129,8 @@
       var b, pos, sev, _i, _len, _ref, _results;
       sev = new Sail.Event('screen_lock');
       this.groupchat.sendEvent(sev);
-      CK.getState('phase', function(s) {
-        return CK.setState('phase', s.get('state'), true);
+      CK.setState('run', {
+        paused: true
       });
       _ref = _.union(this.contributions.models, this.tags.models);
       _results = [];
@@ -163,8 +160,8 @@
       var sev;
       sev = new Sail.Event('screen_unlock');
       this.groupchat.sendEvent(sev);
-      CK.getState('phase', function(s) {
-        return CK.setState('phase', s.get('state'), false);
+      CK.setState('run', {
+        paused: false
       });
       if (this.wall.mode === 'evaluate') {
         return this.switchToInterpretation();
@@ -235,73 +232,41 @@
       return proposal.save({});
     };
 
-    Smartboard.prototype.initModels = function() {
+    Smartboard.prototype.setupModel = function() {
       var _this = this;
-      return Wakeful.loadFayeClient(this.config.wakeful.url).done(function() {
-        _this.contributions = new CK.Model.Contributions();
-        _this.contributions.wake(_this.config.wakeful.url);
-        _this.proposals = new CK.Model.Proposals();
-        _this.proposals.wake(_this.config.wakeful.url);
-        _this.contributions.on('all', function(ev, data) {
-          return console.log(_this.contributions.url, ev, data);
-        });
-        _this.contributions.on('add', function(contrib) {
-          _this.wall.cloud.ensureNode(contrib);
-          return _this.wall.cloud.render();
-        });
-        _this.contributions.on('reset', function() {
-          _this.contributions.each(_this.wall.cloud.ensureNode);
-          return _this.wall.cloud.render();
-        });
-        _this.proposals.on('all', function(ev, data) {
-          return console.log(_this.proposals.url, ev, data);
-        });
-        _this.proposals.on('add', function(proposal) {
-          _this.wall.cloud.ensureNode(proposal);
-          return _this.wall.cloud.render();
-        });
-        _this.proposals.on('change', function(proposal) {
-          if (_this.wall.cloud.ensureNode(proposal)) {
-            return _this.wall.cloud.render();
-          }
-        });
-        _this.proposals.on('reset', function() {
-          _this.proposals.each(_this.wall.cloud.ensureNode);
-          return _this.wall.cloud.render();
-        });
-        _this.tags = new CK.Model.Tags();
-        _this.tags.wake(_this.config.wakeful.url);
-        _this.tags.on('add', function(tag) {
-          _this.wall.cloud.ensureNode(tag);
-          tag.newlyAdded = true;
-          return _this.wall.cloud.render();
-        });
-        _this.tags.on('reset', function(collection) {
-          _this.tagCount = collection.length;
-          console.log("Number of Tags: " + _this.tagCount);
-          collection.each(_this.wall.cloud.ensureNode);
-          return _this.wall.cloud.render();
-        });
-        CK.getState('phase', function(s) {
-          if (s) {
-            if (s.get('screen_lock') === true) {
-              _this.wall.pause();
-            }
-            if (s.get('state') === 'analysis') {
-              return _this.switchToAnalysis();
-            } else if (s.get('state') === 'proposal') {
-              return _this.switchToProposal();
-            } else if (s.get('state') === 'interpretation') {
-              return _this.switchToInterpretation();
-            } else if (s.get('state') === 'evaluation') {
-              return _this.switchToEvaluation();
-            } else {
-              return _this.wall.setMode('brainstorm');
-            }
-          }
-        });
-        return _this.trigger('ready');
+      this.contributions = CK.Model.awake.contributions;
+      this.proposals = CK.Model.awake.proposals;
+      this.tags = CK.Model.awake.tags;
+      this.contributions.on('add', function(contrib) {
+        _this.wall.cloud.ensureNode(contrib);
+        return _this.wall.cloud.render();
       });
+      this.proposals.on('add', function(proposal) {
+        _this.wall.cloud.ensureNode(proposal);
+        return _this.wall.cloud.render();
+      });
+      this.proposals.on('change', function(proposal) {
+        if (_this.wall.cloud.ensureNode(proposal)) {
+          return _this.wall.cloud.render();
+        }
+      });
+      this.tags.on('add', function(tag) {
+        _this.wall.cloud.ensureNode(tag);
+        tag.newlyAdded = true;
+        return _this.wall.cloud.render();
+      });
+      this.tags.on('reset', function(collection) {
+        _this.tagCount = collection.length;
+        console.log("Number of Tags: " + _this.tagCount);
+        collection.each(_this.wall.cloud.ensureNode);
+        return _this.wall.cloud.render();
+      });
+      this.runState = CK.getState('run');
+      if (this.runState == null) {
+        this.runState = CK.setState('run', {});
+      }
+      this.runState.wake(this.config.wakeful.url);
+      return this.trigger('ready');
     };
 
     Smartboard.prototype.events = {
@@ -310,8 +275,15 @@
         return console.log("Initialized...");
       },
       authenticated: function(ev) {
+        var _this = this;
         console.log("Authenticated...");
-        return CK.Model.init(this.config.drowsy.url, this.run.name).done(this.initModels);
+        return CK.Model.init(this.config.drowsy.url, this.run.name).done(function() {
+          return Wakeful.loadFayeClient(_this.config.wakeful.url).done(function() {
+            return CK.Model.initWakefulCollections(_this.config.wakeful.url).done(function() {
+              return _this.setupModel();
+            });
+          });
+        });
       },
       'ui.initialized': function(ev) {
         return console.log("UI initialized...");
@@ -320,14 +292,14 @@
         return console.log("Connected...");
       },
       ready: function(ev) {
-        var _this = this;
         console.log("Ready...");
-        this.wall.render();
-        return this.tags.fetch().done(function() {
-          return _this.contributions.fetch().done(function() {
-            return _this.proposals.fetch();
-          });
+        this.wall = new CK.Smartboard.View.Wall({
+          el: jQuery('#wall'),
+          runState: this.runState,
+          tags: this.tags,
+          contributions: this.contributions
         });
+        return this.wall.render();
       },
       sail: {
         contribution: function(sev) {

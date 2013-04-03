@@ -22,7 +22,8 @@ CK.Mobile = function() {
     },
     wakeful: {
       url: 'string'
-    }
+    },
+    curnit:'string'
   };
 
   app.runState = null;     // START HERE, fix restoreState
@@ -67,7 +68,7 @@ CK.Mobile = function() {
     
     Sail.modules
       // Enable multi-picker login for CommonKnowledge curnit - asking for run (must be linked to curnit)
-      .load('Rollcall.Authenticator', {mode: 'picker', askForRun: true, curnit: 'CommonKnowledge'})
+      .load('Rollcall.Authenticator', {mode: 'picker', askForRun: true, curnit: app.config.curnit})
       .load('Strophe.AutoConnector')
       .load('AuthStatusWidget', {indicatorContainer: '#logout-container'})
       .thenRun(function () {
@@ -106,90 +107,81 @@ CK.Mobile = function() {
     app.hideWaitScreen();
  
     //var stateObj = {"type":"phase"};
-    CK.getState("phase", function(s) {
-      if (s && s.get('state')) {
-        var phase = s.get('state');
-        // once phase is retrieved get the user_state
-        CK.getUserState(Sail.app.userData.account.login, function(user_state){
-          if (phase === 'brainstorm') {
-            // check first if we started to work on a contribution and got booted out during work
-            // contribution in our name with published false
-            var unfinishedContrib = _.find(app.contributionList.models, function(contrib) {
-              return contrib.get('author') === Sail.app.userData.account.login && contrib.get('published') === false;
-            });
+    var s = CK.getState("run", "phase");
 
-            if (unfinishedContrib) {
-              console.log('Unfinished Contribution found');
-              app.restoreUnfinishedNote(unfinishedContrib);
-            }
-          } else if (phase === "analysis") {
-            console.log('phase is analysis');
-            app.startAnalysis(function (){
-              // get the data from user_states stored under the phase key
-              var data_for_state = user_state.get(phase);
-              
-              console.log('Check if contribution left to do or done with tagging');
-              // CK.getUserState(Sail.app.userData.account.login, "contribution_to_tag", function(user_state){
-              if (data_for_state && data_for_state.contribution_to_tag) {
-                // var data_from_state = user_state.get('data');
-                if (data_for_state.done_tagging === true) {
-                  // go to done tagging
-                  app.doneTagging();
-                } else if (data_for_state.contribution_to_tag.contribution_id !== "") {
-                  console.log('Need to work on contribution with id: '+data_for_state.contribution_to_tag.contribution_id);
-                  app.contributionToTag(data_for_state.contribution_to_tag.contribution_id);
-                }
-              } else {
-                console.log('I am on a boat');
-              }
-            });
-          } else if (phase === "proposal") {
-            console.log('phase is proposal');
+    if (s && s.get('state')) {
+      var phase = s.get('state');
+      // once phase is retrieved get the user_state
+      var user_state = CK.getState(Sail.app.userData.account.login);
 
-            var userStates = new CK.Model.UserStates();
-
-            var fetchSuccess = function(m) {
-              console.log('fetched user userStates:', userStates);
-
-              var myUs = userStates.find(function(us) { return us.get('username') === Sail.app.userData.account.login; });
-
-              if (myUs) {
-                app.myTagGroup = myUs.get('analysis').tag_group;
-              } else {
-                console.error("No user_state found for ", Sail.app.userData.account.login);
-              }
-              app.startProposal();
-            };
-            var fetchError = function(err) {
-              console.warn('error fetching userStates');
-            };
-            userStates.fetch({success: fetchSuccess, error: fetchError});
-
-                       
-          } else if (phase === "interpretation") {
-            console.log('phase is interpretation');
-            app.startInterpretation();
-          } else {
-            console.log('could not find state for type phase');
-          }
+      if (phase === 'brainstorm') {
+        // check first if we started to work on a contribution and got booted out during work
+        // contribution in our name with published false
+        var unfinishedContrib = _.find(app.contributionList.models, function(contrib) {
+          return contrib.get('author') === Sail.app.userData.account.login && contrib.get('published') === false;
         });
 
-
-  // TODO: This needs much more work
-        if (s && s.get('screen_lock') === true){
-          console.log('screen lock is active');
-          jQuery('#lock-screen').removeClass('hide');
-          jQuery('.row').addClass('disabled');
-        } else {
-          console.log('screen lock is NOT active');
-          jQuery('#lock-screen').addClass('hide');
-          jQuery('.row').removeClass('disabled');
+        if (unfinishedContrib) {
+          console.log('Unfinished Contribution found');
+          app.restoreUnfinishedNote(unfinishedContrib);
         }
+      } else if (phase === "analysis") {
+        console.log('phase is analysis');
+        app.startAnalysis(function (){
+          // get the data from user_states stored under the phase key
+          var data_for_state = user_state.get(phase);
+          
+          console.log('Check if contribution left to do or done with tagging');
+          // CK.getUserState(Sail.app.userData.account.login, "contribution_to_tag", function(user_state){
+          if (data_for_state && data_for_state.contribution_to_tag) {
+            // var data_from_state = user_state.get('data');
+            if (data_for_state.done_tagging === true) {
+              // go to done tagging
+              app.doneTagging();
+            } else if (data_for_state.contribution_to_tag.contribution_id !== "") {
+              console.log('Need to work on contribution with id: '+data_for_state.contribution_to_tag.contribution_id);
+              app.contributionToTag(data_for_state.contribution_to_tag.contribution_id);
+            }
+          } else {
+            console.log('I am on a boat');
+          }
+        });
+      } else if (phase === "proposal") {
+        console.log('phase is proposal');
+
+        var myState = CK.getState(Sail.app.userData.account.login);
+
+        if (myState) {
+          app.myTagGroup = myState.get('analysis').tag_group;
+        } else {
+          console.warn("No user_state found for ", Sail.app.userData.account.login);
+        }
+
+        app.startProposal();
+
+                   
+      } else if (phase === "interpretation") {
+        console.log('phase is interpretation');
+        app.startInterpretation();
       } else {
-        console.warn("Seems like the state object was invalid which means we are in trouble");
+        console.log('could not find state for type phase');
       }
 
-    });
+
+// TODO: This needs much more work
+      if (s && s.get('screen_lock') === true){
+        console.log('screen lock is active');
+        jQuery('#lock-screen').removeClass('hide');
+        jQuery('.row').addClass('disabled');
+      } else {
+        console.log('screen lock is NOT active');
+        jQuery('#lock-screen').addClass('hide');
+        jQuery('.row').removeClass('disabled');
+      }
+    } else {
+      console.warn("Seems like the state object was invalid which means we are in trouble");
+    }
+
  
   };
 
@@ -204,16 +196,21 @@ CK.Mobile = function() {
 
     authenticated: function(ev) {
       console.log('Authenticated...');
-      // now we call a class function (configure) and hand in the drowsy url and the run name so we don't need
-      // to do this config again for each model instantiation
-      CK.Model.init(app.config.drowsy.url, this.run.name)
-      .done(function () {
-        Wakeful.loadFayeClient(app.config.wakeful.url).done(function () {
-          app.trigger('ready');
-        });
-      });
 
       app.userData = Sail.app.session;
+
+      // now we call a class function (configure) and hand in the drowsy url and the run name so we don't need
+      // to do this config again for each model instantiation
+      CK.Model.init(app.config.drowsy.url, app.run.name)
+      .done(function() {
+        Wakeful.loadFayeClient(app.config.wakeful.url)
+        .done(function() {
+          CK.Model.initWakefulCollections(app.config.wakeful.url)
+          .done(function() {
+            app.trigger('ready');
+          });
+        });
+      });
 
       //jQuery('#logout-button').addClass('btn btn-warning').html('<a href="#">Logout</a>');
     },
@@ -288,16 +285,15 @@ CK.Mobile = function() {
         if (sev.payload.recipient === app.userData.account.login) {
           console.log('name: '+sev.payload.recipient);
           // This should happen in analysis (alternatively we could get the state from the db but maybe later)
-          CK.getUserState(app.userData.account.login, function (user_state){
-            // get the analysis value since we should be in analysis state
-            var data = user_state.get('analysis');
-            data.contribution_to_tag = {'contribution_id': sev.payload.contribution_id};
+          var user_state = CK.getState(app.userData.account.login);
+          // get the analysis value since we should be in analysis state
+          var data = user_state.get('analysis');
+          data.contribution_to_tag = {'contribution_id': sev.payload.contribution_id};
 
-            user_state.set('analysis', data);
-            user_state.save();
+          user_state.set('analysis', data);
+          user_state.save();
 
-            app.contributionToTag(sev.payload.contribution_id);
-          });
+          app.contributionToTag(sev.payload.contribution_id);
         }
       },
 
@@ -305,27 +301,26 @@ CK.Mobile = function() {
         console.log('done_tagging event heard');
         if (sev.payload.recipient === app.userData.account.login) {
           // store state for restoreState ;)
-          CK.getUserState(app.userData.account.login, function (user_state){
-            var data = user_state.get('analysis');
-            data.done_tagging = true;
+          var user_state = CK.getState(app.userData.account.login);
+          var data = user_state.get('analysis');
+          data.done_tagging = true;
 
-            user_state.set('analysis', data);
-            user_state.save();
+          user_state.set('analysis', data);
+          user_state.save();
 
-            app.doneTagging();
-          });
+          app.doneTagging();
         }
       },
 
       start_proposal: function(sev) {
         console.log('start_proposal heard');
-        CK.setState("phase", "proposal");
+        CK.setState("run", {phase: "proposal"});
         app.startProposal();
       },
 
       start_interpretation: function(sev) {
         console.log('start_interpretation heard');
-        CK.setState("phase", "interpretation");
+        CK.setState("run", {phase: "interpretation"});
         app.startInterpretation();
       }
 
@@ -492,16 +487,16 @@ CK.Mobile = function() {
 
   app.startAnalysis = function(callback) {
     // THIS ALL NEEDS TO BE REDONE
-    CK.getUserState(app.userData.account.login, function (user_state){
-      var analysis_obj = user_state.get('analysis');
-      if (!analysis_obj || analysis_obj === null || analysis_obj === "") {
-        analysis_obj = {};
-        user_state.set('analysis', analysis_obj);
-      }
-      user_state.save();
+    var user_state = CK.getState(app.userData.account.login);
+    var analysis_obj = user_state.get('analysis');
+    if (!analysis_obj || analysis_obj === null || analysis_obj === "") {
+      analysis_obj = {};
+      user_state.set('analysis', analysis_obj);
+    }
+    user_state.save();
 
-      var tagList = new CK.Model.Tags();
-      tagList.on('change', function(model) { console.log(model.changedAttributes()); });   
+    var tagList = new CK.Model.Tags();
+    tagList.on('change', function(model) { console.log(model.changedAttributes()); });   
 
       if (app.tagListView === null) {
         app.tagListView = new CK.Mobile.View.TagListView({
@@ -514,17 +509,18 @@ CK.Mobile = function() {
         }
         app.tagListView.collection = tagList;
       }
+      app.tagListView.collection = tagList;
+    }
 
-      tagList.on('reset add', app.tagListView.render, app.tagListView);       // probably unnecessary, maybe even a bad idea?
+    tagList.on('reset add', app.tagListView.render, app.tagListView);       // probably unnecessary, maybe even a bad idea?
 
-      var sort = ['created_at', 'ASC'];
-      tagList.fetch({
-        data: {
-          sort: JSON.stringify(sort)
-        }
-      });
-      callback();    
+    var sort = ['created_at', 'ASC'];
+    tagList.fetch({
+      data: {
+        sort: JSON.stringify(sort)
+      }
     });
+    callback();    
   };
 
   /* 
@@ -539,31 +535,31 @@ CK.Mobile = function() {
       //CK.setStateForUser("tablet", Sail.app.userData.account.login, "analysis", metadata);
       // WARNING: I don't use setStateForUser here because I only want to send the sail event
       // AFTER the state was written to the MongoDB to avoid problems in the agent
-      CK.getUserState(Sail.app.userData.account.login, function (user_state){
-        var analysis_obj = user_state.get('analysis');
-        analysis_obj.tag_group = tag_name;
-        
-        app.myTagGroup = tag_name;
+      var user_state = CK.getState(Sail.app.userData.account.login);
+      
+      var analysis_obj = user_state.get('analysis');
+      analysis_obj.tag_group = tag_name;
+      
+      app.myTagGroup = tag_name;
 
-        analysis_obj.tag_group_id = tag_id;
-        user_state.set('analysis', analysis_obj);
-        user_state.save(null,
-        {
-          complete: function () {
-            console.log('New user_state submitted!');
-          },
-          success: function () {
-            console.log('State saved');
-            // send out and sail event
-            var sev = new Sail.Event('chosen_tag_group', analysis_obj);
-            Sail.app.groupchat.sendEvent(sev);
-            // Show wait screen until agent answers with the contribution to be tagged
-            Sail.app.showWaitScreen();
-          },
-          failure: function(model, response) {
-            console.log('Error submitting user_state: ' + response);
-          }
-        });
+      analysis_obj.tag_group_id = tag_id;
+      user_state.set('analysis', analysis_obj);
+      user_state.save(null,
+      {
+        complete: function () {
+          console.log('New user_state submitted!');
+        },
+        success: function () {
+          console.log('State saved');
+          // send out and sail event
+          var sev = new Sail.Event('chosen_tag_group', analysis_obj);
+          Sail.app.groupchat.sendEvent(sev);
+          // Show wait screen until agent answers with the contribution to be tagged
+          Sail.app.showWaitScreen();
+        },
+        failure: function(model, response) {
+          console.log('Error submitting user_state: ' + response);
+        }
       });
     } else {
       console.warn('choseTagGroup called with empty tag_name');
@@ -605,36 +601,35 @@ CK.Mobile = function() {
     var sail_data = {'contribution_id':contributionId};
     var sev = new Sail.Event('contribution_tagged', sail_data);
 
+    function saveSuccess (m) {
+      console.log('contribution saved successfully in tagContribution');
+      Sail.app.groupchat.sendEvent(sev);
+    }
+    function saveError (err) {
+      console.warn('error saving contribution in tagContribution');
+    }
+
+    function fetchSuccess (contrib) {
+      console.log('fetched contribution');
+      var data = user_state.get('analysis');
+      var new_tag = {'id':data.tag_group_id,'name':data.tag_group,'tagger':app.userData.account.login,'tagged_at':Date()};
+      var contrib_tags = taggedContribution.get('tags');
+      contrib_tags.push(new_tag);
+      taggedContribution.set('tags', contrib_tags);
+
+      taggedContribution.save(null, {success: saveSuccess, error: saveError});
+    }
+
+    function fetchError (err) {
+      console.warn('error fetching contribution');
+    }
+
     if (tagged) {
-      CK.getUserState(Sail.app.userData.account.login, function (user_state) {
-        var taggedContribution = new CK.Model.Contribution({_id: contributionId});
-        taggedContribution.wake(Sail.app.config.wakeful.url);
+      var user_state = CK.getState(Sail.app.userData.account.login);
+      var taggedContribution = new CK.Model.Contribution({_id: contributionId});
+      taggedContribution.wake(Sail.app.config.wakeful.url);
 
-        function fetchSuccess (contrib) {
-          console.log('fetched contribution');
-          var data = user_state.get('analysis');
-          var new_tag = {'id':data.tag_group_id,'name':data.tag_group,'tagger':app.userData.account.login,'tagged_at':Date()};
-          var contrib_tags = taggedContribution.get('tags');
-          contrib_tags.push(new_tag);
-          taggedContribution.set('tags', contrib_tags);
-
-
-          function saveSuccess (m) {
-            console.log('contribution saved successfully in tagContribution');
-            Sail.app.groupchat.sendEvent(sev);
-          }
-          function saveError (err) {
-            console.warn('error saving contribution in tagContribution');
-          }
-          taggedContribution.save(null, {success: saveSuccess, error: saveError});
-        }
-
-        function fetchError (err) {
-          console.warn('error fetching contribution');
-        }
-
-        taggedContribution.fetch({success: fetchSuccess, error: fetchError});
-      });
+      taggedContribution.fetch({success: fetchSuccess, error: fetchError});
     } else {
       console.log('Contribution: '+contributionId+' not tagged');
       Sail.app.groupchat.sendEvent(sev);
@@ -655,7 +650,7 @@ CK.Mobile = function() {
   app.startProposal = function() {
     app.hideWaitScreen();
     // for list view
-    CK.setUserState(app.userData.account.login, "proposal", {});     // do we need this?
+    CK.setState(app.userData.account.login, {proposal: {}});     // do we need this?
     console.log('creating ProposalListView');
 
     if (app.contributionList === null) {
@@ -691,24 +686,24 @@ CK.Mobile = function() {
     app.proposalsList.fetch();
 
     // for grouping view
-    var userStates = new CK.Model.UserStates();
+    var states = CK.Model.awake.states;
 
-    userStates.on('change', function(model) { console.log(model.changedAttributes()); });
+    states.on('change', function(model) { console.log(model.changedAttributes()); });
 
     app.groupingView = new CK.Mobile.View.GroupingView({
       el: jQuery('#grouping-screen'),
-      collection: userStates
+      collection: states
     });
-    userStates.on('reset add', app.groupingView.render, app.groupingView);
+    states.on('reset add', app.groupingView.render, app.groupingView);
 
     function fetchSuccess (m) {
-      console.log('fetched user userStates:', userStates);
+      console.log('fetched user states:', states);
     }
     function fetchError (err) {
-      console.warn('error fetching userStates');
+      console.warn('error fetching states');
     }
 
-    userStates.fetch({success: fetchSuccess, error: fetchError});
+    states.fetch({success: fetchSuccess, error: fetchError});
   };
 
   app.newProposal = function(initiator, receiver, tagGroupName, tagGroupId) {

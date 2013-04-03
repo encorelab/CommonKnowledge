@@ -1,4 +1,11 @@
 class CK.Model
+    @requiredCollections = [
+        'contributions',
+        'tags',
+        'states',
+        'proposals'
+    ]
+
     @init: (url, db) ->
         deferredConfigure = $.Deferred()
 
@@ -13,28 +20,9 @@ class CK.Model
         @server = new Drowsy.Server(url)
         @db = @server.database(db)
 
-        @createNecessaryCollections([
-            'contributions',
-            'tags',
-            'states',
-            'user_states',
-            'proposals'
-        ]).then =>
+        @createNecessaryCollections(@requiredCollections).then =>
             @defineModelClasses()
-
-            # create required items
-            tags = new CK.Model.Tags()
-            tags.fetch
-                success: (tags) =>
-                    # if tags.find( (t) => t.get('name') is "N/A" )
-                    #     console.log("Not creating 'N/A' tag because it already exists")
-                    # else
-                    #     console.log("Creating 'N/A' tag...")
-                    #     tag = new CK.Model.Tag()
-                    #     tag.set('name', "N/A")
-                    #     tag.save()
-
-                    deferredConfigure.resolve()
+            deferredConfigure.resolve()
 
         return deferredConfigure
                     
@@ -48,33 +36,18 @@ class CK.Model
         
             for col in requiredCollections
                 unless col in existingCollections
-                    console.log "Creating collection '#{col}' under #{CK.Model.dbURL}";
+                    console.log "Creating collection '#{col}' under #{CK.Model.dbURL}"
                     dfs.push(@db.createCollection col)
 
         $.when.apply($, dfs).done -> df.resolve()
         return df
 
-        # jQuery.ajax CK.Model.dbURL,
-        #     type: 'get',
-        #     dataType: 'json',
-        #     success: (existingCollections) =>
-        #         for col in requiredCollections
-        #             unless col in existingCollections
-        #                 console.log "Creating collection '#{col}' under #{CK.Model.dbURL}";
-        #                 jQuery.post CK.Model.dbURL,
-        #                     collection: col
-        #     error: (err) =>
-        #         console.error "Couldn't fetch list of collections from #{CK.Model.dbURL} because: ", JSON.parse(err.responseText)
-        #         throw err.responseText
-
 
     @defineModelClasses: ->
-        class @Contribution extends @db.Document('contributions')
+        Drowsy.Document.prototype.defaults = ->
+            created_at: new Date()
 
-            initialize: =>
-                super()
-                unless @get('created_at')
-                    @set 'created_at', new Date()
+        class @Contribution extends @db.Document('contributions')
 
             get: (attr) =>
                 val = super(attr)
@@ -129,11 +102,6 @@ class CK.Model
 
 
         class @Proposal extends @db.Document('proposals')
-
-            initialize: =>
-                super()
-                unless @get('created_at')
-                    @set 'created_at', new Date()
 
             get: (attr) =>
                 val = super(attr)
@@ -200,9 +168,19 @@ class CK.Model
         class @States extends @db.Collection('states')
             model: CK.Model.State
 
-        class @UserState extends @db.Document('user_states')
+    @initWakefulCollections = (wakefulUrl) ->
+        deferreds = []
 
-        class @UserStates extends @db.Collection('user_states')
-            model: CK.Model.UserState
+        camelCase = (str) ->
+            str.replace(/([\-_][a-z]|^[a-z])/g, ($1) -> $1.toUpperCase().replace(/[\-_]/,''))
 
+        @awake = {}
+
+        for collName in @requiredCollections
+            coll = new @[camelCase(collName)]()
+            coll.wake wakefulUrl
+            @awake[collName] = coll
+            deferreds.push coll.fetch()
+
+        jQuery.when.apply jQuery, deferreds
             
