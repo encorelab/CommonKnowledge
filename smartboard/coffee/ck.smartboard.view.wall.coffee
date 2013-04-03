@@ -92,6 +92,57 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
 
         balloonList[doc.id] = b
 
+    # check collisions for the given balloon (given ballon exerts force and gets no pushback)..
+    # any other balloon that the given balloon collides with will also be checked for collision
+    collideBalloon: (balloon) => # balloon should be a BallonView
+        b = balloon
+
+        for id,o of @balloonViews
+            o.width = o.$el.outerWidth()
+            o.height = o.$el.outerHeight()
+            pos = o.$el.position()
+            o.x = pos.left
+            o.y = pos.top
+
+        for id,o of @balloonViews
+            continue if o is b # don't collide with self
+
+            w = b.width/2 + o.width/2
+            h = b.height/2 + o.height/2
+
+            xDist = Math.abs(b.x - o.x)
+            yDist = Math.abs(b.y - o.y)
+            if xDist < w && yDist < h
+                yOverlap = h - yDist
+                xOverlap = w - xDist
+
+                if xDist/w < yDist/h
+
+                    # yNudge = (yOverlap/yDist) * yOverlap/h * force.alpha()
+                    # b.y = b.y + yNudge*qRepulsion
+                    # o.y = o.y - yNudge*bRepulsion
+                    
+                    yNudge = yOverlap #(yOverlap/2)
+                    if b.y < o.y
+                        o.y += yNudge
+                    else
+                        o.y -= yNudge
+                else
+                    # xNudge = (xOverlap/xDist) * xOverlap/w * force.alpha()
+                    # b.x = b.x + xNudge*qRepulsion
+                    # o.x = o.x - xNudge*bRepulsion
+                    
+                    xNudge = xOverlap #(xOverlap/2)
+                    if b.x < o.x
+                        o.x += xNudge 
+                    else
+                        o.x -= xNudge
+
+        for id,o of @balloonViews
+            o.$el.css
+                left: o.x + 'px'
+                top: o.y + 'px'
+
     render: =>
         mode = @runState.get('mode')
         if mode isnt @$el.data('mode')

@@ -199,6 +199,8 @@
 
       this.render = __bind(this.render, this);
 
+      this.collideBalloon = __bind(this.collideBalloon, this);
+
       this.addBalloon = __bind(this.addBalloon, this);
       this.runState = options.runState;
       this.tags = options.tags;
@@ -233,6 +235,60 @@
       b.render();
       this.$el.append(b.$el);
       return balloonList[doc.id] = b;
+    };
+
+    Wall.prototype.collideBalloon = function(balloon) {
+      var b, h, id, o, pos, w, xDist, xNudge, xOverlap, yDist, yNudge, yOverlap, _ref, _ref1, _ref2, _results;
+      b = balloon;
+      _ref = this.balloonViews;
+      for (id in _ref) {
+        o = _ref[id];
+        o.width = o.$el.outerWidth();
+        o.height = o.$el.outerHeight();
+        pos = o.$el.position();
+        o.x = pos.left;
+        o.y = pos.top;
+      }
+      _ref1 = this.balloonViews;
+      for (id in _ref1) {
+        o = _ref1[id];
+        if (o === b) {
+          continue;
+        }
+        w = b.width / 2 + o.width / 2;
+        h = b.height / 2 + o.height / 2;
+        xDist = Math.abs(b.x - o.x);
+        yDist = Math.abs(b.y - o.y);
+        if (xDist < w && yDist < h) {
+          yOverlap = h - yDist;
+          xOverlap = w - xDist;
+          if (xDist / w < yDist / h) {
+            yNudge = yOverlap;
+            if (b.y < o.y) {
+              o.y += yNudge;
+            } else {
+              o.y -= yNudge;
+            }
+          } else {
+            xNudge = xOverlap;
+            if (b.x < o.x) {
+              o.x += xNudge;
+            } else {
+              o.x -= xNudge;
+            }
+          }
+        }
+      }
+      _ref2 = this.balloonViews;
+      _results = [];
+      for (id in _ref2) {
+        o = _ref2[id];
+        _results.push(o.$el.css({
+          left: o.x + 'px',
+          top: o.y + 'px'
+        }));
+      }
+      return _results;
     };
 
     Wall.prototype.render = function() {
@@ -536,86 +592,87 @@
         distance: 5,
         containment: '#wall',
         stack: '.balloon',
-        obstacle: ".balloon:not(#" + (this.$el.attr('id')) + ")",
-        stop: function(ev, ui) {
-          var pos, tag, tid;
-          _this.model.save({
-            'pos': ui.position
-          });
-          console.log("Saving pinned tag's position");
-          pos = _this.$el.position();
-          tid = _this.$el.attr('id');
-          tag = Sail.app.tags.get(tid);
-          if (tag) {
-            tag.set({
-              pos: {
-                left: pos.left,
-                top: pos.top,
-                pinned: true
-              }
-            }, {
-              silent: true
-            });
-            return tag.save({}, {
-              silent: true
-            });
-          } else {
-            return console.log("Couldn't save pinned tag's position -- couldn't find a tag with id: ", tid);
-          }
-        }
+        obstacle: ".balloon:not(#" + (this.$el.attr('id')) + ")"
       }).css('position', 'absolute');
-      this.$el.on('collision', function(ev, ui) {
-        return _this.checkCollisions();
+      this.$el.on('drag', function(ev, ui) {
+        return Sail.app.wall.collideBalloon(_this);
+      }).on('stop', function(ev, ui) {
+        var pos, tag, tid;
+        _this.model.save({
+          'pos': ui.position
+        });
+        console.log("Saving pinned tag's position");
+        pos = _this.$el.position();
+        tid = _this.$el.attr('id');
+        tag = Sail.app.tags.get(tid);
+        if (tag) {
+          tag.set({
+            pos: {
+              left: pos.left,
+              top: pos.top,
+              pinned: true
+            }
+          }, {
+            silent: true
+          });
+          return tag.save({}, {
+            silent: true
+          });
+        } else {
+          return console.log("Couldn't save pinned tag's position -- couldn't find a tag with id: ", tid);
+        }
       });
       return this.draggable = true;
     };
 
     Balloon.prototype.checkCollisions = function() {
-      var b, bView, done, h, id, o, ov, w, xDist, yDist, _ref;
+      var b, bPos, done, h, id, o, oPos, w, xDist, yDist, _ref, _ref1, _ref2, _ref3;
       this.checkingCollisions = true;
-      bView = this;
-      b = this.el;
+      b = this;
       b.width = this.$el.outerWidth();
       b.height = this.$el.outerHeight();
-      b.x = this.$el.position().left;
-      b.y = this.$el.position().top;
+      bPos = this.$el.position();
+      b.x = bPos.left;
+      b.y = bPos.top;
       done = jQuery.Deferred();
       _ref = Sail.app.wall.balloonViews;
       for (id in _ref) {
-        ov = _ref[id];
-        o = ov.el;
+        o = _ref[id];
         if (o === b) {
           return;
         }
-        o.width = ov.$el.outerWidth();
-        o.height = ov.$el.outerHeight();
-        o.x = ov.$el.position().left;
-        o.y = ov.$el.position().top;
+        if ((_ref1 = o.width) == null) {
+          o.width = o.$el.outerWidth();
+        }
+        if ((_ref2 = o.height) == null) {
+          o.height = o.$el.outerHeight();
+        }
+        oPos = o.$el.position();
+        o.x = oPos.left;
+        o.y = oPos.top;
         w = b.width / 2 + o.width / 2;
         h = b.height / 2 + o.height / 2;
         xDist = Math.abs(b.x - o.x);
         yDist = Math.abs(b.y - o.y);
-        this.doneColliding = true;
         if (xDist < w && yDist < h) {
-          this.doneColliding = false;
-          bView.collideWith(o);
-          ov.$el.css({
-            left: o.x + 'px',
-            top: o.y + 'px'
-          });
-        }
-        if (this.doneColliding) {
-          done.resolve();
+          b.collideWith(o);
         }
       }
-      this.checkingCollisions = false;
-      return done;
+      _ref3 = Sail.app.wall.balloonViews;
+      for (id in _ref3) {
+        o = _ref3[id];
+        o.$el.css({
+          left: o.x + 'px',
+          top: o.y + 'px'
+        });
+      }
+      return this.checkingCollisions = false;
     };
 
     Balloon.prototype.collideWith = function(obstacle) {
       var b, h, o, w, xDist, xNudge, xOverlap, yDist, yNudge, yOverlap;
       o = obstacle;
-      b = this.el;
+      b = this;
       w = b.width / 2 + o.width / 2;
       h = b.height / 2 + o.height / 2;
       xDist = Math.abs(b.x - o.x);

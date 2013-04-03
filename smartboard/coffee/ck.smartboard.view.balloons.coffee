@@ -19,8 +19,8 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
     #     @$el.zIndex maxZ
 
     render: =>
-
         @makeDraggable() if not @draggable
+
 
     makeDraggable: =>
         @$el
@@ -29,115 +29,24 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
                 containment: '#wall'
                 stack: '.balloon'
                 obstacle: ".balloon:not(##{@$el.attr('id')})" # don't collide with self
-                stop: (ev, ui) =>
-                    @model.save('pos': ui.position)
-
-                    console.log("Saving pinned tag's position")
-                    pos = @$el.position()
-                    tid = @$el.attr('id')
-                    tag = Sail.app.tags.get(tid)
-                    if tag
-                        tag.set({pos: {left: pos.left, top: pos.top, pinned: true}}, {silent: true})
-                        tag.save({}, {silent: true})
-                    else
-                        console.log("Couldn't save pinned tag's position -- couldn't find a tag with id: ", tid)
-
             .css 'position', 'absolute' # draggable makes position relative, but we need absolute
 
-        @$el.on 'collision', (ev, ui) => 
-            #console.log(ev, ui)
-            @checkCollisions() #unless @checkingCollisions
+        @$el
+            .on 'drag', (ev, ui) => 
+                Sail.app.wall.collideBalloon(this)
+            .on 'stop', (ev, ui) =>
+                @model.save('pos': ui.position)
+                console.log("Saving pinned tag's position")
+                pos = @$el.position()
+                tid = @$el.attr('id')
+                tag = Sail.app.tags.get(tid)
+                if tag
+                    tag.set({pos: {left: pos.left, top: pos.top, pinned: true}}, {silent: true})
+                    tag.save({}, {silent: true})
+                else
+                    console.log("Couldn't save pinned tag's position -- couldn't find a tag with id: ", tid)
 
         @draggable = true
-
-    checkCollisions: =>
-        @checkingCollisions = true
-
-        bView = this
-        b = @el
-
-        b.width = @$el.outerWidth()
-        b.height = @$el.outerHeight()
-        b.x = @$el.position().left
-        b.y = @$el.position().top
-
-        done = jQuery.Deferred()
-
-        #jQuery('.balloon').each ->
-        for id,ov of Sail.app.wall.balloonViews
-
-            o = ov.el
-
-            return if o is b
-
-            o.width = ov.$el.outerWidth()
-            o.height = ov.$el.outerHeight()
-            o.x = ov.$el.position().left
-            o.y = ov.$el.position().top
-
-            w = b.width/2 + o.width/2
-            h = b.height/2 + o.height/2
-
-            xDist = Math.abs(b.x - o.x)
-            yDist = Math.abs(b.y - o.y)
-            @doneColliding = true
-            if xDist < w && yDist < h
-                @doneColliding = false
-                bView.collideWith(o)
-
-                ov.$el.css
-                    left: o.x + 'px'
-                    top: o.y + 'px'
-            if @doneColliding
-                done.resolve()
-
-        # @$el.css
-        #     left: b.x + 'px'
-        #     top: b.y + 'px'
-
-        @checkingCollisions = false
-        return done
-
-    collideWith: (obstacle) =>
-        o = obstacle
-        b = @el
-
-        w = b.width/2 + o.width/2
-        h = b.height/2 + o.height/2
-
-        xDist = Math.abs(b.x - o.x)
-        yDist = Math.abs(b.y - o.y)
-
-        if xDist < w && yDist < h
-            #qIsTag = o.hasClass('tag')
-
-            # if bIsTag
-            #     force.alpha(0.01)
-
-            yOverlap = h - yDist
-            xOverlap = w - xDist
-
-            if xDist/w < yDist/h
-
-                # yNudge = (yOverlap/yDist) * yOverlap/h * force.alpha()
-                # b.y = b.y + yNudge*qRepulsion
-                # o.y = o.y - yNudge*bRepulsion
-                
-                yNudge = yOverlap #(yOverlap/2)
-                if b.y < o.y
-                    o.y += yNudge
-                else
-                    o.y -= yNudge
-            else
-                # xNudge = (xOverlap/xDist) * xOverlap/w * force.alpha()
-                # b.x = b.x + xNudge*qRepulsion
-                # o.x = o.x - xNudge*bRepulsion
-                
-                xNudge = xOverlap #(xOverlap/2)
-                if b.x < o.x
-                    o.x += xNudge 
-                else
-                    o.x -= xNudge
 
 
 class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
