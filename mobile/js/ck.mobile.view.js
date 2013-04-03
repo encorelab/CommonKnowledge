@@ -218,11 +218,14 @@
         // }
 
         // enable/disable the Share button
-        if (view.model.get('tags').length > 0) {
-          jQuery('#share-note-btn').removeClass('disabled');
-        } else {
-          jQuery('#share-note-btn').addClass('disabled');
+        if (Sail.app.tagList.length > 1) {
+           if (view.model.get('tags').length > 0) {
+            jQuery('#share-note-btn').removeClass('disabled');
+          } else {
+            jQuery('#share-note-btn').addClass('disabled');
+          }
         }
+
       },      
 
       'keyup :input': function (ev) {
@@ -417,11 +420,11 @@
       });
 
       // enable/disable the Share button - TODO: set me to Tag it! or something
-      if (Sail.app.bucketedContribution && Sail.app.bucketedContribution.get('tags').length > 0) {
-        jQuery('#share-note-btn').removeClass('disabled');
-      } else {
-        jQuery('#share-note-btn').addClass('disabled');
-      }
+      // if (Sail.app.bucketedContribution && Sail.app.bucketedContribution.get('tags').length > 0) {
+      //   jQuery('#share-note-btn').removeClass('disabled');
+      // } else {
+      //   jQuery('#share-note-btn').addClass('disabled');
+      // }
     }
 
   });
