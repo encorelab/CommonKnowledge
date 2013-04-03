@@ -29,10 +29,13 @@ CK.Mobile = function() {
   //app.userState = null;?
   app.contributionList = null;
   app.contributionListView = null;
+  app.inputView = null;
   app.tagList = null;
   app.tagListView = null;
+  app.bucketedContribution = null;
+  app.bucketTaggingView = null;
 
-  app.inputView = null;
+  
 
   // Global vars - a lot of this stuff can go TODO
   app.userData = null;
@@ -99,6 +102,7 @@ CK.Mobile = function() {
   };
 
   app.restoreState = function () {
+    console.log("Going in to restoreState...");
     app.hideWaitScreen();
  
     //var stateObj = {"type":"phase"};
@@ -358,16 +362,16 @@ CK.Mobile = function() {
     // onSuccess, app.restoreState();
 
 
-    // TAGS COLLECTION
+    // TAGS COLLECTION - used in both BucketTaggingView and ContributionInputView
     app.tagList = new CK.Model.Tags();      // TODO app.tagList = new CK.Model.awake.tags CHECKME, then remove wakeful call and then do for other collections
-    // if (app.tagListView === null) {
-    //    app.tagListView = new CK.Mobile.View.TagListView({
-    //      el: jQuery('#tag-submission-container'),
-    //      collection: app.tagList
-    //    });
-    //  }    
-    //  app.tagList.on('change', function(model) { console.log(model.changedAttributes()); });
-    //  app.tagList.on('reset add sync', app.tagListView.render, app.tagListView);
+    if (app.bucketTaggingView === null) {
+      app.bucketTaggingView = new CK.Mobile.View.BucketTaggingView({
+        el: jQuery('#bucket-tagging'),
+        collection: app.tagList
+      });
+    }    
+    app.tagList.on('change', function(model) { console.log(model.changedAttributes()); });
+    app.tagList.on('reset add sync', app.bucketTaggingView.render, app.bucketTaggingView);
     app.tagList.wake(Sail.app.config.wakeful.url); 
     app.tagList.fetch();
 
@@ -487,6 +491,7 @@ CK.Mobile = function() {
   /* State related function */
 
   app.startAnalysis = function(callback) {
+    // THIS ALL NEEDS TO BE REDONE
     CK.getUserState(app.userData.account.login, function (user_state){
       var analysis_obj = user_state.get('analysis');
       if (!analysis_obj || analysis_obj === null || analysis_obj === "") {
@@ -500,7 +505,7 @@ CK.Mobile = function() {
 
       if (app.tagListView === null) {
         app.tagListView = new CK.Mobile.View.TagListView({
-          el: jQuery('#tag-list'),
+          el: jQuery('#bucket-tagging-btn-container'),
           collection: tagList
         });
       } else {
@@ -641,7 +646,6 @@ CK.Mobile = function() {
     app.showWaitScreen();
     // jQuery('#index-screen').removeClass('hide');
     // jQuery('.brand').text('Common Knowledge - Notes');
-    // jQuery('#tag-list').addClass('hide');
     // jQuery('#contribution-list').removeClass('hide');
     // jQuery('.row').removeClass('disabled');
     // jQuery('#tag-submission-container .tag-btn').addClass('disabled');

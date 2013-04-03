@@ -54,7 +54,7 @@ i {
 }
 
 .scrollable {
-	overflow: scroll;
+	overflow-y: scroll;
 	height: 80%;				/* leaving room for the buttons */
 }
 
@@ -148,12 +148,12 @@ i {
 	border-radius: 8px 8px 8px 8px;	
 }
 
-#contribution-details, #selected-tag-container, #proposal-details {
+#contribution-details, #proposal-details {
 	margin-left: 0;
 	border-left-width: 0px;				/* overwritting .view-container to prevent dup borders btw 1/2 */
 }
 
-#tag-list {
+#bucket-tagging-btn-container {
 	width: 95%;
 	text-align: center;
 }
@@ -181,10 +181,6 @@ i {
 
 #note-to-tag-content {
 	margin: 5px 10px 10px 5px;
-}
-
-#selected-tag-container {
-	text-align: center;
 }
 
 .proposal-container {
@@ -275,7 +271,7 @@ i {
 	width: 90%;
 }
 
-#tag-list .tag-btn, #tag-submission-container .tag-btn, #selected-tag-btn-container .tag-btn, #grouping-screen .user-btn {
+#bucket-tagging-btn-container .tag-btn, #tag-submission-container .tag-btn, #grouping-screen .user-btn {
   	-webkit-border-radius: 4px 4px 4px 4px;
     -moz-border-radius: 4px 4px 4px 4px;
     border-radius: 4px 4px 4px 4px;		
@@ -290,9 +286,10 @@ i {
 	background-color: #FD1654;
 }
 
-#tag-list .tag-btn, #selected-tag-btn-container .tag-btn {
+#bucket-tagging-btn-container .tag-btn {
+	width: 70%;
 	font-size: 18px;
-	margin-top: 16%;	
+	margin-top: 8%;	
 }
 
 #tag-submission-container .tag-btn {

@@ -199,6 +199,7 @@
         } else {
           jQuery(jqButtonSelector).addClass('active');
           view.model.addTag(tag);
+          // add tagger, other?  ie tag.set('tagger',Sail.app.userData.account.login);
         }
 
         // TODO: do we need to deal with N/A?
@@ -341,54 +342,89 @@
 
 
   /**
-    TagListView
+    BucketTaggingView
   **/
-  // self.TagListView = Backbone.View.extend({
-  //   events: {
-  //     // 'click #tag-list-btn-container .tag-btn': function (ev) {
-  //     //   var chosenTagId = ev.currentTarget.id;
-  //     //   var chosenTag = jQuery('#'+chosenTagId).text();
-  //     //   var ok = confirm("Do you want to choose <"+ chosenTag + "> as your specialization?");
-  //     //   if (ok) {
-  //     //     Sail.app.choseTagGroup(chosenTag, chosenTagId);
-  //     //   }
-  //     // }
-  //   },
+  self.BucketTaggingView = Backbone.View.extend({
+    events: {
+      // 'click #bucket-tagging-btn-container .tag-btn': function (ev) {
+      //   // console.log('id: '+ev.target.id);
+      //   var tag = jQuery(ev.target).data('tag');
 
-  //   initialize: function () {
-  //     console.log("Initializing TagListView...");
-  //   },
+      //   // toggle the clicked tag in the model
+      //   if (Sail.app.taggedContribution.hasTag(tag)) {
+      //     Sail.app.taggedContribution.removeTag(tag);
+      //   } else {
+      //     // due to our deadlines, this is all hideous, and fighting backbone... TODO - fixme when there's more time
+      //     if (tag.get('name') === "N/A") {
+      //       Sail.app.taggedContribution.attributes.tags = [];                       // eeeewwwwwwww
+      //       jQuery('.tag-btn').removeClass('active');
+      //     } else {
+      //       var naTag = Sail.app.tagList.find(function(t) { return t.get('name') === "N/A"; } );
+      //       Sail.app.taggedContribution.removeTag(naTag);
+      //       jQuery("button:contains('N/A')").removeClass('active');
+      //     }
+      //     Sail.app.taggedContribution.addTag(tag, Sail.app.userData.account.login);
+      //   }
 
-  //   /**
-  //     Triggers full update of all dynamic elements in the list view
-  //   **/
-  //   render: function () {
-  //     var view = this;
-  //     console.log("rendering TagListView!");
+      //   // enable/disable the Share button - dup'd in the render, probably a better way to do this
+      //   if (Sail.app.taggedContribution.attributes.tags.length > 0) {
+      //     jQuery('#share-note-btn').removeClass('disabled');
+      //   } else {
+      //     jQuery('#share-note-btn').addClass('disabled');
+      //   }
 
-  //     // clear all buttons
-  //     // jQuery('.tag-btn').removeClass('active');
+      // }
+    },
 
-  //     view.collection.each(function(tag) {
-  //       // don't show the N/A tag
-  //       if (tag.get('name') !== "N/A") {
-  //         var tagButton = jQuery('button#'+tag.id);
-  //         // length avoids duplicating (probably a better way to do this in backbone?)
-  //         //if (tagButton.length === 0 && tag.get('name') != "N/A") {
-  //         if (tagButton.length === 0) {
-  //           tagButton = jQuery('<button id='+tag.id+' type="button" class="btn tag-btn"></button>');
-  //           //tagButton = jQuery(tagButton);
-  //           jQuery('#tag-submission-container').append(tagButton);
-  //         }
+    initialize: function () {
+      console.log("Initializing TagListView...");
 
-  //         tagButton.text(tag.get('name'));
-  //       }
-  //     });
-  //   }
+      // jQuery('.brand').text('Common Knowledge - Tagging');
+      // jQuery('#contribution-list').addClass('hide');
+      // jQuery('#bucket-tagging').removeClass('hide');
+      // jQuery('#share-note-btn').addClass('disabled');
+    },
 
-  // });
+    /**
+      Triggers full update of all dynamic elements in the list view
+    **/
+    render: function () {
+      console.log("rendering BucketTaggingView...");
 
+      // clear all buttons TODO
+      jQuery('.tag-btn').removeClass('active');
 
+      Sail.app.tagList.each(function(tag) {
+        var tagButton = jQuery('button#'+tag.id);
+        // length avoids duplicating (probably a better way to do this in backbone?)
+        //if (tagButton.length === 0 && tag.get('name') != "N/A") {
+        if (tagButton.length === 0) {
+          tagButton = jQuery('<button id='+tag.id+' type="button" class="btn tag-btn"></button>');
+          tagButton = jQuery(tagButton);
+          jQuery('#bucket-tagging-btn-container').append(tagButton);
+        }
+
+        tagButton.text(tag.get('name'));
+
+        // add tagger and store the tag object in the button for later
+        tag.set('tagger',Sail.app.userData.account.login);
+        tagButton.data('tag',tag);
+
+        // turn button on if previously tagged with this tag
+        if (Sail.app.bucketedContribution && Sail.app.bucketedContribution.hasTag(tag)) {
+          tagButton.addClass('active');
+        }
+      });
+
+      // enable/disable the Share button - TODO: set me to Tag it! or something
+      if (Sail.app.bucketedContribution && Sail.app.bucketedContribution.get('tags').length > 0) {
+        jQuery('#share-note-btn').removeClass('disabled');
+      } else {
+        jQuery('#share-note-btn').addClass('disabled');
+      }
+    }
+
+  });
 
 
 
