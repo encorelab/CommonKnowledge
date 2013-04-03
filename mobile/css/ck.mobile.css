@@ -10,12 +10,6 @@ body {
 	padding-left: 6px;
 	/*background-color: #F5F5F5;*/
 	background-color: #ab2;
-}
-
-/*
-maybe add these for the lis? And others?
-li*/
-* {
 	-moz-user-select: none;
  	-webkit-user-select: none;
  	user-select: none;
@@ -80,7 +74,11 @@ i {
 	right: 3px;
 }
 
-#logout-container * {
+#logout-container div {
+	display: inline-block;
+}
+
+#logout-container a {
 	display: inline-block;
 }
 
@@ -150,7 +148,7 @@ i {
 
 #contribution-details, #selected-tag-container, #proposal-details {
 	margin-left: 0;
-	border-left-width: 0px;				/* overwritting .view-container to prevent dup borders btw 1/2 */
+	border-left-width: 0;				/* overwritting .view-container to prevent dup borders btw 1/2 */
 }
 
 #tag-list {
@@ -169,7 +167,7 @@ i {
 }
 
 #contribution-input .control-group {
-	margin-bottom: 0px;
+	margin-bottom: 0;
 }
 
 #contribution-input #tag-submission-container {
@@ -188,13 +186,13 @@ i {
 }
 
 .proposal-container {
-	padding: 5px 0px 5px 5px;
+	padding: 5px 0 5px 5px;
 	background-color: #ddd;
 	border-radius: 7px;
 }
 
 #proposal-body-entry-container {
-	margin-left: 0px;
+	margin-left: 0;
 }
 
 #justification-body-entry-container {
@@ -247,7 +245,7 @@ i {
 }
 
 .selected-note {
-	padding: 6px 15px 0px 15px;
+	padding: 6px 15px 0 15px;
 
 }
 
