@@ -15,10 +15,10 @@
         _this = this;
       deferredConfigure = $.Deferred();
       if (url == null) {
-        throw "Cannot configure model because no DrowsyDromedary URL was given!";
+        throw new Error("Cannot configure model because no DrowsyDromedary URL was given!");
       }
       if (db == null) {
-        throw "Cannot configure model because no database name was given!";
+        throw new Error("Cannot configure model because no database name was given!");
       }
       this.baseURL = url;
       this.dbURL = "" + url + "/" + db;

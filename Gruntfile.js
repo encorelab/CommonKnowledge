@@ -95,7 +95,7 @@ module.exports = function(grunt) {
 
   // Default task(s).
   // grunt.registerTask('default', ['uglify']);
-  grunt.registerTask('default', ['jshint', 'csslint', 'jsonlint', 'coffeelint', 'coffee', 'sass']);
+  grunt.registerTask('default', ['jshint', 'csslint', 'jsonlint', 'coffee', 'sass']);
   
 
 };
