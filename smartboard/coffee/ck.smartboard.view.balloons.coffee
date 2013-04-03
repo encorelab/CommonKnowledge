@@ -1,17 +1,17 @@
 class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
     initialize: ->
-        Object.defineProperty @el, 'x',
-            get: => @$el.position().left
-            set: (x) => @$el.css('left', x + 'px')
-        Object.defineProperty @el, 'y',
-            get: => @$el.position().top
-            set: (y) => @$el.css('top', y + 'px')
-        Object.defineProperty @el, 'width',
-            get: => @$el.outerWidth()
-            set: (w) => @$el.css('width', w + 'px')
-        Object.defineProperty @el, 'height',
-            get: => @$el.outerHeight()
-            set: (h) => @$el.css('height', h + 'px')
+        # Object.defineProperty @el, 'x',
+        #     get: => @$el.position().left
+        #     set: (x) => @$el.css('left', x + 'px')
+        # Object.defineProperty @el, 'y',
+        #     get: => @$el.position().top
+        #     set: (y) => @$el.css('top', y + 'px')
+        # Object.defineProperty @el, 'width',
+        #     get: => @$el.outerWidth()
+        #     set: (w) => @$el.css('width', w + 'px')
+        # Object.defineProperty @el, 'height',
+        #     get: => @$el.outerHeight()
+        #     set: (h) => @$el.css('height', h + 'px')
 
     # moveToTop: =>
     #     maxZ = _.max jQuery('.balloon').map -> 
@@ -63,13 +63,24 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
         bView = this
         b = @el
 
+        b.width = @$el.outerWidth()
+        b.height = @$el.outerHeight()
+        b.x = @$el.position().left
+        b.y = @$el.position().top
+
         done = jQuery.Deferred()
 
         #jQuery('.balloon').each ->
         for id,ov of Sail.app.wall.balloonViews
+
             o = ov.el
 
             return if o is b
+
+            o.width = ov.$el.outerWidth()
+            o.height = ov.$el.outerHeight()
+            o.x = ov.$el.position().left
+            o.y = ov.$el.position().top
 
             w = b.width/2 + o.width/2
             h = b.height/2 + o.height/2
@@ -80,8 +91,16 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
             if xDist < w && yDist < h
                 @doneColliding = false
                 bView.collideWith(o)
+
+                ov.$el.css
+                    left: o.x + 'px'
+                    top: o.y + 'px'
             if @doneColliding
                 done.resolve()
+
+        @$el.css
+            left: b.x + 'px'
+            top: b.y + 'px'
 
         @checkingCollisions = false
         return done

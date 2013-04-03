@@ -524,41 +524,7 @@
       return Balloon.__super__.constructor.apply(this, arguments);
     }
 
-    Balloon.prototype.initialize = function() {
-      var _this = this;
-      Object.defineProperty(this.el, 'x', {
-        get: function() {
-          return _this.$el.position().left;
-        },
-        set: function(x) {
-          return _this.$el.css('left', x + 'px');
-        }
-      });
-      Object.defineProperty(this.el, 'y', {
-        get: function() {
-          return _this.$el.position().top;
-        },
-        set: function(y) {
-          return _this.$el.css('top', y + 'px');
-        }
-      });
-      Object.defineProperty(this.el, 'width', {
-        get: function() {
-          return _this.$el.outerWidth();
-        },
-        set: function(w) {
-          return _this.$el.css('width', w + 'px');
-        }
-      });
-      return Object.defineProperty(this.el, 'height', {
-        get: function() {
-          return _this.$el.outerHeight();
-        },
-        set: function(h) {
-          return _this.$el.css('height', h + 'px');
-        }
-      });
-    };
+    Balloon.prototype.initialize = function() {};
 
     Balloon.prototype.render = function() {
       this.updatePosition();
@@ -624,6 +590,10 @@
       this.checkingCollisions = true;
       bView = this;
       b = this.el;
+      b.width = this.$el.outerWidth();
+      b.height = this.$el.outerHeight();
+      b.x = this.$el.position().left;
+      b.y = this.$el.position().top;
       done = jQuery.Deferred();
       _ref = Sail.app.wall.balloonViews;
       for (id in _ref) {
@@ -632,6 +602,10 @@
         if (o === b) {
           return;
         }
+        o.width = ov.$el.outerWidth();
+        o.height = ov.$el.outerHeight();
+        o.x = ov.$el.position().left;
+        o.y = ov.$el.position().top;
         w = b.width / 2 + o.width / 2;
         h = b.height / 2 + o.height / 2;
         xDist = Math.abs(b.x - o.x);
@@ -640,11 +614,19 @@
         if (xDist < w && yDist < h) {
           this.doneColliding = false;
           bView.collideWith(o);
+          ov.$el.css({
+            left: o.x + 'px',
+            top: o.y + 'px'
+          });
         }
         if (this.doneColliding) {
           done.resolve();
         }
       }
+      this.$el.css({
+        left: b.x + 'px',
+        top: b.y + 'px'
+      });
       this.checkingCollisions = false;
       return done;
     };
