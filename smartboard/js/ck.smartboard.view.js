@@ -205,7 +205,7 @@
     }
 
     Wall.prototype.initialize = function() {
-      var collide, requestAnimationFrame,
+      var updateAllPositions, updating,
         _this = this;
       this.runState.on('change', this.render);
       this.balloonViews = {};
@@ -221,27 +221,23 @@
       this.contributions.each(function(c) {
         return _this.addBalloon(c, CK.Smartboard.View.ContributionBalloon, _this.balloonViews);
       });
-      this.balloonQuadtree = d3.geom.quadtree(_.collect(_.values(this.balloonViews), function(bv) {
-        return bv.el;
-      }));
-      requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame;
-      window.animationStart = Date.now();
-      collide = function(nextTimestamp) {
-        var bv, id, _ref;
-        if (!_this.colliding) {
-          _this.colliding = true;
-          console.log("Colliding", nextTimestamp);
+      updating = false;
+      updateAllPositions = function() {
+        var b, id, _ref;
+        if (!updating) {
+          updating = true;
           _ref = _this.balloonViews;
           for (id in _ref) {
-            bv = _ref[id];
-            _this.balloonQuadtree.visit(_this.detectCollisions(bv.$el));
+            b = _ref[id];
+            if (!b.$el.hasClass('.ui-draggable-dragging')) {
+              b.updatePosition();
+            }
           }
-          _this.colliding = false;
-          console.log("Done colliding", nextTimestamp);
-          return requestAnimationFrame(collide);
+          updating = false;
+          return window.webkitRequestAnimationFrame(updateAllPositions);
         }
       };
-      return requestAnimationFrame(collide);
+      return updateAllPositions();
     };
 
     Wall.prototype.addBalloon = function(doc, view, balloonList) {
@@ -252,9 +248,6 @@
       doc.on('change', b.render);
       b.render();
       this.$el.append(b.$el);
-      this.balloonQuadtree = d3.geom.quadtree(_.collect(_.values(this.balloonViews), function(bv) {
-        return bv.el;
-      }));
       return balloonList[doc.id] = b;
     };
 
@@ -507,184 +500,143 @@
     __extends(Balloon, _super);
 
     function Balloon() {
-      this.detectCollisions = __bind(this.detectCollisions, this);
-
       this.collideWith = __bind(this.collideWith, this);
 
       this.checkCollisions = __bind(this.checkCollisions, this);
+
+      this.makeDraggable = __bind(this.makeDraggable, this);
+
+      this.updatePosition = __bind(this.updatePosition, this);
 
       this.render = __bind(this.render, this);
       return Balloon.__super__.constructor.apply(this, arguments);
     }
 
-    Balloon.prototype.initialize = function() {
-      var _this = this;
-      Object.defineProperty(this.el, 'x', {
-        get: function() {
-          return _this.$el.position().left;
-        },
-        set: function(x) {
-          return _this.$el.css('left', x + 'px');
-        }
-      });
-      Object.defineProperty(this.el, 'y', {
-        get: function() {
-          return _this.$el.position().top;
-        },
-        set: function(y) {
-          return _this.$el.css('top', y + 'px');
-        }
-      });
-      Object.defineProperty(this.el, 'width', {
-        get: function() {
-          return _this.$el.outerWidth();
-        },
-        set: function(w) {
-          return _this.$el.css('width', w + 'px');
-        }
-      });
-      return Object.defineProperty(this.el, 'height', {
-        get: function() {
-          return _this.$el.outerHeight();
-        },
-        set: function(h) {
-          return _this.$el.css('height', h + 'px');
-        }
-      });
-    };
+    Balloon.prototype.initialize = function() {};
 
     Balloon.prototype.render = function() {
+      this.updatePosition();
+      if (!this.draggable) {
+        return this.makeDraggable();
+      }
+    };
+
+    Balloon.prototype.updatePosition = function() {
+      if (this.el.x && this.el.y) {
+        return this.$el.css({
+          left: this.el.x + 'px',
+          top: this.el.y + 'px'
+        });
+      }
+    };
+
+    Balloon.prototype.makeDraggable = function() {
       var _this = this;
-      return this.$el.draggable({
+      this.$el.draggable({
         distance: 5,
         containment: '#wall',
         stack: '.balloon',
+        obstacle: ".balloon:not(#" + (this.$el.attr('id')) + ")",
         stop: function(ev, ui) {
-          return _this.model.save({
+          var pos, tag, tid;
+          _this.model.save({
             'pos': ui.position
           });
+          console.log("Saving pinned tag's position");
+          pos = _this.$el.position();
+          tid = _this.$el.attr('id');
+          tag = Sail.app.tags.get(tid);
+          if (tag) {
+            tag.set({
+              pos: {
+                left: pos.left,
+                top: pos.top,
+                pinned: true
+              }
+            }, {
+              silent: true
+            });
+            return tag.save({}, {
+              silent: true
+            });
+          } else {
+            return console.log("Couldn't save pinned tag's position -- couldn't find a tag with id: ", tid);
+          }
         }
       }).css('position', 'absolute');
+      this.$el.on('collision', function(ev, ui) {
+        console.log(ev, ui);
+        if (!_this.checkingCollisions) {
+          return _this.checkCollisions();
+        }
+      });
+      return this.draggable = true;
     };
 
     Balloon.prototype.checkCollisions = function() {
-      var b, bHeight, bPos, bView, bWidth;
+      var b, bPos, bView;
+      this.checkingCollisions = true;
       bView = this;
-      b = this.$el;
-      bWidth = b.outerWidth();
-      bHeight = b.outerHeight();
-      bPos = b.position();
-      return jQuery('.balloon').each(function() {
-        var h, o, oHeight, oPos, oWidth, w, xDist, yDist;
-        o = jQuery(this);
-        oWidth = o.outerWidth();
-        oHeight = o.outerHeight();
-        oPos = o.position();
-        w = bWidth / 2 + oWidth / 2;
-        h = bHeight / 2 + oHeight / 2;
-        xDist = Math.abs(bPos.left - oPos.left);
-        yDist = Math.abs(bPos.top - oPos.top);
+      b = this.el;
+      b.width = this.$el.outerWidth();
+      b.height = this.$el.outerHeight();
+      bPos = this.$el.position();
+      b.x = bPos.left;
+      b.y = bPos.top;
+      jQuery('.balloon').each(function() {
+        var $o, h, o, oPos, w, xDist, yDist;
+        o = this;
+        if (o === b) {
+          return;
+        }
+        $o = jQuery(o);
+        oPos = $o.position();
+        o.width = $o.outerWidth();
+        o.height = $o.outerHeight();
+        o.x = oPos.left;
+        o.y = oPos.top;
+        w = b.width / 2 + o.width / 2;
+        h = b.height / 2 + o.height / 2;
+        xDist = Math.abs(b.x - o.x);
+        yDist = Math.abs(b.y - o.y);
         if (xDist < w && yDist < h) {
           return bView.collideWith(o);
         }
       });
+      return this.checkingCollisions = false;
     };
 
     Balloon.prototype.collideWith = function(obstacle) {
-      var b, bHeight, bPos, bWidth, h, o, oHeight, oPos, oWidth, w, xDist, xNudge, xOverlap, yDist, yNudge, yOverlap;
+      var b, h, o, w, xDist, xNudge, xOverlap, yDist, yNudge, yOverlap;
       o = obstacle;
-      b = this.$el;
-      bWidth = b.outerWidth();
-      bHeight = b.outerHeight();
-      oWidth = o.outerWidth();
-      oHeight = o.outerHeight();
-      bPos = b.position();
-      oPos = o.position();
-      w = bWidth / 2 + oWidth / 2;
-      h = bHeight / 2 + oHeight / 2;
-      xDist = Math.abs(bPos.left - oPos.left);
-      yDist = Math.abs(bPos.top - oPos.top);
+      b = this.el;
+      w = b.width / 2 + o.width / 2;
+      h = b.height / 2 + o.height / 2;
+      xDist = Math.abs(b.x - o.x);
+      yDist = Math.abs(b.y - o.y);
       if (xDist < w && yDist < h) {
         yOverlap = h - yDist;
         xOverlap = w - xDist;
         if (xDist / w < yDist / h) {
           yNudge = yOverlap / 2;
-          if (bPos.top < oPos.top) {
-            bPos.top -= yNudge;
-            oPos.top += yNudge;
+          if (b.y < o.y) {
+            b.y -= yNudge;
+            return o.y += yNudge;
           } else {
-            bPos.top += yNudge;
-            oPos.top -= yNudge;
+            b.y += yNudge;
+            return o.y -= yNudge;
           }
         } else {
           xNudge = xOverlap / 2;
-          if (bPos.left < oPos.left) {
-            bPos.left -= xNudge;
-            oPos.left += xNudge;
+          if (b.x < o.x) {
+            b.x -= xNudge;
+            return o.x += xNudge;
           } else {
-            bPos.left += xNudge;
-            oPos.left -= xNudge;
+            b.x += xNudge;
+            return o.x -= xNudge;
           }
         }
-        b.css(bPos);
-        return o.css(oPos);
       }
-    };
-
-    Balloon.prototype.detectCollisions = function(b) {
-      var $b, bHeight, bIsTag, bWidth, nx1, nx2, ny1, ny2,
-        _this = this;
-      if (!((b.x != null) && (b.y != null))) {
-        return;
-      }
-      $b = b.view.$el;
-      bWidth = $b.outerWidth();
-      bHeight = $b.outerHeight();
-      nx1 = b.x - bWidth / 2;
-      nx2 = b.x + bWidth / 2;
-      ny1 = b.y - bHeight / 2;
-      ny2 = b.y + bHeight / 2;
-      bIsTag = $b.hasClass('tag');
-      return function(quad, x1, y1, x2, y2) {
-        var $q, h, qHeight, qIsTag, qWidth, w, xDist, xNudge, xOverlap, yDist, yNudge, yOverlap;
-        if (!((quad.point != null) && (quad.point.x != null) && (quad.point.y != null))) {
-          return;
-        }
-        if (quad.point && quad.point !== b) {
-          qWidth = quad.point.view.$el.outerWidth();
-          qHeight = quad.point.view.$el.outerHeight();
-          w = bWidth / 2 + qWidth / 2;
-          h = bHeight / 2 + qHeight / 2;
-          xDist = Math.abs(b.x - quad.point.x);
-          yDist = Math.abs(b.y - quad.point.y);
-          if (xDist < w && yDist < h) {
-            $q = quad.point.view.$el;
-            qIsTag = $q.hasClass('tag');
-            yOverlap = h - yDist;
-            xOverlap = w - xDist;
-            if (xDist / w < yDist / h) {
-              yNudge = yOverlap / 2;
-              if (b.y < quad.point.y) {
-                b.y -= yNudge;
-                quad.point.y += yNudge;
-              } else {
-                b.y += yNudge;
-                quad.point.y -= yNudge;
-              }
-            } else {
-              xNudge = xOverlap / 2;
-              if (b.x < quad.point.x) {
-                b.x -= xNudge;
-                quad.point.x += xNudge;
-              } else {
-                b.x += xNudge;
-                quad.point.x -= xNudge;
-              }
-            }
-          }
-        }
-        return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
-      };
     };
 
     return Balloon;
@@ -913,9 +865,6 @@
     }
 
     ContributionProposalBalloon.prototype.events = {
-      'mousedown': function(ev) {
-        return this.moveToTop();
-      },
       'click': function(ev) {
         this.$el.toggleClass('opened');
         this.$el.toggleClass(this.colorClass);
@@ -1124,31 +1073,6 @@
     };
 
     TagBalloon.prototype.events = {
-      'mouseout': function(ev) {
-        var pos, tag, tid;
-        if (this.model.get('pinned')) {
-          console.log("Saving pinned tag's position");
-          pos = this.$el.position();
-          tid = this.$el.attr('id');
-          tag = Sail.app.tags.get(tid);
-          if (tag) {
-            tag.set({
-              pos: {
-                left: pos.left,
-                top: pos.top,
-                pinned: true
-              }
-            }, {
-              silent: true
-            });
-            return tag.save({}, {
-              silent: true
-            });
-          } else {
-            return console.log("Couldn't save pinned tag's position -- couldn't find a tag with id: ", tid);
-          }
-        }
-      },
       'click': function(ev) {
         this.model.set('pinned', !this.model.get('pinned'), {
           silent: true

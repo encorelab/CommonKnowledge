@@ -1,23 +1,5 @@
 class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
     initialize: ->
-        
-        # We set these up to make things easier for d3-related stuff
-        # ... d3 wants .x and .y properties, so we just translate those to css 'left' and 'top'
-        # see https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object/defineProperty
-        Object.defineProperty @el, 'x',
-            get: => @$el.position().left
-            set: (x) => @$el.css('left', x + 'px')
-        Object.defineProperty @el, 'y',
-            get: => @$el.position().top
-            set: (y) => @$el.css('top', y + 'px')
-
-        Object.defineProperty @el, 'width',
-            get: => @$el.outerWidth()
-            set: (w) => @$el.css('width', w + 'px')
-        Object.defineProperty @el, 'height',
-            get: => @$el.outerHeight()
-            set: (h) => @$el.css('height', h + 'px')
-
 
     # moveToTop: =>
     #     maxZ = _.max jQuery('.balloon').map -> 
@@ -25,71 +7,90 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
     #     @$el.zIndex maxZ
 
     render: =>
-        # if @x?
-        #     @$el.css 'left', @xToLeft(@x)
-        # if @y?
-        #     @$el.css 'top', @yToTop(@y)
+        @updatePosition()
 
+        @makeDraggable() if not @draggable
+
+    updatePosition: =>
+        if @el.x and @el.y
+            @$el.css
+                left: @el.x + 'px'
+                top: @el.y + 'px'
+
+    makeDraggable: =>
         @$el
             .draggable
                 distance: 5
                 containment: '#wall'
                 stack: '.balloon'
-                #obstacle: ".balloon:not(##{@$el.attr('id')})" # se jquery-ui-draggable-collision.js
+                obstacle: ".balloon:not(##{@$el.attr('id')})" # se jquery-ui-draggable-collision.js
                 stop: (ev, ui) =>
                     @model.save('pos': ui.position)
+
+                    console.log("Saving pinned tag's position")
+                    pos = @$el.position()
+                    tid = @$el.attr('id')
+                    tag = Sail.app.tags.get(tid)
+                    if tag
+                        tag.set({pos: {left: pos.left, top: pos.top, pinned: true}}, {silent: true})
+                        tag.save({}, {silent: true})
+                    else
+                        console.log("Couldn't save pinned tag's position -- couldn't find a tag with id: ", tid)
+
             .css 'position', 'absolute' # draggable makes position relative, but we need absolute
 
-        # @$el.on 'collision', (ev, ui) => 
-        #     console.log(ev, ui)
-        #     @checkCollisions()
+        @$el.on 'collision', (ev, ui) => 
+            console.log(ev, ui)
+            @checkCollisions() unless @checkingCollisions
 
-
+        @draggable = true
 
     checkCollisions: =>
+        @checkingCollisions = true
+
         bView = this
-        b = @$el
+        b = @el
 
-        bWidth = b.outerWidth()
-        bHeight = b.outerHeight()
-
-        bPos = b.position()
+        # TODO: only update width/height when it changes
+        b.width = @$el.outerWidth()
+        b.height = @$el.outerHeight()
+        bPos = @$el.position()
+        b.x = bPos.left
+        b.y = bPos.top
 
         jQuery('.balloon').each ->
-            o = jQuery(this)
+            o = this
 
-            oWidth = o.outerWidth()
-            oHeight = o.outerHeight()
-            
-            oPos = o.position()
+            return if o is b
 
-            w = bWidth/2 + oWidth/2
-            h = bHeight/2 + oHeight/2
+            $o = jQuery(o)
+            # TODO: only update width/height when it changes
+            oPos = $o.position()
+            o.width = $o.outerWidth()
+            o.height = $o.outerHeight()
+            o.x = oPos.left
+            o.y = oPos.top
 
-            xDist = Math.abs(bPos.left - oPos.left)
-            yDist = Math.abs(bPos.top - oPos.top)
+            w = b.width/2 + o.width/2
+            h = b.height/2 + o.height/2
+
+            xDist = Math.abs(b.x - o.x)
+            yDist = Math.abs(b.y - o.y)
 
             if xDist < w && yDist < h
                 bView.collideWith(o)
 
+        @checkingCollisions = false
+
     collideWith: (obstacle) =>
         o = obstacle
-        b = @$el
+        b = @el
 
-        bWidth = b.outerWidth()
-        bHeight = b.outerHeight()
+        w = b.width/2 + o.width/2
+        h = b.height/2 + o.height/2
 
-        oWidth = o.outerWidth()
-        oHeight = o.outerHeight()
-
-        bPos = b.position()
-        oPos = o.position()
-
-        w = bWidth/2 + oWidth/2
-        h = bHeight/2 + oHeight/2
-
-        xDist = Math.abs(bPos.left - oPos.left)
-        yDist = Math.abs(bPos.top - oPos.top)
+        xDist = Math.abs(b.x - o.x)
+        yDist = Math.abs(b.y - o.y)
 
         if xDist < w && yDist < h
             #qIsTag = o.hasClass('tag')
@@ -122,123 +123,29 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
             if xDist/w < yDist/h
 
                 # yNudge = (yOverlap/yDist) * yOverlap/h * force.alpha()
-                # bPos.top = bPos.top + yNudge*qRepulsion
-                # oPos.top = oPos.top - yNudge*bRepulsion
+                # b.y = b.y + yNudge*qRepulsion
+                # o.y = o.y - yNudge*bRepulsion
                 
                 yNudge = (yOverlap/2)
-                if bPos.top < oPos.top
-                    bPos.top -= yNudge
-                    oPos.top += yNudge
+                if b.y < o.y
+                    b.y -= yNudge
+                    o.y += yNudge
                 else
-                    bPos.top += yNudge
-                    oPos.top -= yNudge
+                    b.y += yNudge
+                    o.y -= yNudge
             else
                 # xNudge = (xOverlap/xDist) * xOverlap/w * force.alpha()
-                # bPos.left = bPos.left + xNudge*qRepulsion
-                # oPos.left = oPos.left - xNudge*bRepulsion
+                # b.x = b.x + xNudge*qRepulsion
+                # o.x = o.x - xNudge*bRepulsion
                 
                 xNudge = (xOverlap/2)
-                if bPos.left < oPos.left
-                    bPos.left -= xNudge
-                    oPos.left += xNudge 
+                if b.x < o.x
+                    b.x -= xNudge
+                    o.x += xNudge 
                 else
-                    bPos.left += xNudge 
-                    oPos.left -= xNudge 
+                    b.x += xNudge 
+                    o.x -= xNudge
 
-            b.css(bPos)
-            o.css(oPos)
-
-
-    detectCollisions: (b) =>
-        # based on collision detection example 
-        #   from https://gist.github.com/3116713
-
-        return unless b.x? and b.y?
-
-        $b = b.view.$el
-        bWidth = $b.outerWidth()
-        bHeight = $b.outerHeight()
-
-        nx1 = b.x - bWidth/2
-        nx2 = b.x + bWidth/2
-        ny1 = b.y - bHeight/2
-        ny2 = b.y + bHeight/2
-
-        bIsTag = $b.hasClass('tag')
-
-        return (quad, x1, y1, x2, y2) =>
-            return unless quad.point? and quad.point.x? and quad.point.y?
-
-            if quad.point && quad.point isnt b # don't try to collide with self
-
-                qWidth = quad.point.view.$el.outerWidth()
-                qHeight = quad.point.view.$el.outerHeight()
-
-                w = bWidth/2 + qWidth/2
-                h = bHeight/2 + qHeight/2
-
-                xDist = Math.abs(b.x - quad.point.x)
-                yDist = Math.abs(b.y - quad.point.y)
-
-                if xDist < w && yDist < h
-                    $q = quad.point.view.$el
-                    qIsTag = $q.hasClass('tag')
-
-                    # bRepulsion = 2
-                    # qRepulsion = 2
-                    # if bIsTag
-                    #     bRepulsion = 3
-                    #     if b.contribs && not (quad.point.id in b.contribs)
-                    #         bRepulsion = 7
-                    # if qIsTag
-                    #     qRepulsion = 3
-                    #     if quad.point.contribs && not (b.id in quad.point.contribs)
-                    #         qRepulsion = 7
-
-                    # if qIsTag && bIsTag
-                    #     qRepulsion = 6
-                    #     bRepulsion = 6
-
-                    # bRepulsion *= 2
-                    # qRepulsion *= 2
-
-
-                    # if bIsTag
-                    #     force.alpha(0.01)
-
-                    yOverlap = h - yDist
-                    xOverlap = w - xDist
-
-                    if xDist/w < yDist/h
-
-                        # yNudge = (yOverlap/yDist) * yOverlap/h * force.alpha()
-                        # b.y = b.y + yNudge*qRepulsion
-                        # quad.point.y = quad.point.y - yNudge*bRepulsion
-                        
-                        yNudge = (yOverlap/2)
-                        if b.y < quad.point.y
-                            b.y -= yNudge
-                            quad.point.y += yNudge
-                        else
-                            b.y += yNudge
-                            quad.point.y -= yNudge
-                    else
-                        # xNudge = (xOverlap/xDist) * xOverlap/w * force.alpha()
-                        # b.x = b.x + xNudge*qRepulsion
-                        # quad.point.x = quad.point.x - xNudge*bRepulsion
-                        
-                        xNudge = (xOverlap/2)
-                        if b.x < quad.point.x
-                            b.x -= xNudge
-                            quad.point.x += xNudge 
-                        else
-                            b.x += xNudge 
-                            quad.point.x -= xNudge 
-
-            return x1 > nx2 || 
-                x2 < nx1 || 
-                y1 > ny2 || 
-                y2 < ny1
 
 class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
     tagName: 'article'
@@ -451,7 +358,7 @@ class CK.Smartboard.View.ContributionProposalBalloon extends CK.Smartboard.View.
         @tagList = {}
 
     events:
-        'mousedown': (ev) -> @moveToTop()
+        #'mousedown': (ev) -> @moveToTop()
 
         'click': (ev) ->
             @$el.toggleClass('opened')
@@ -702,19 +609,6 @@ class CK.Smartboard.View.TagBalloon extends CK.Smartboard.View.Balloon
 
     events:
         # 'mousedown': (ev) -> @moveToTop()
-
-        # can't do on mouseup because d3's drag prevents bubbling of that event
-        'mouseout': (ev) ->
-            if @model.get('pinned')
-                console.log("Saving pinned tag's position")
-                pos = @$el.position()
-                tid = @$el.attr('id')
-                tag = Sail.app.tags.get(tid)
-                if tag
-                    tag.set({pos: {left: pos.left, top: pos.top, pinned: true}}, {silent: true})
-                    tag.save({}, {silent: true})
-                else
-                    console.log("Couldn't save pinned tag's position -- couldn't find a tag with id: ", tid)
 
         'click': (ev) ->
             @model.set('pinned', !@model.get('pinned'), {silent:true})

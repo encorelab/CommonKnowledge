@@ -67,26 +67,16 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             @addBalloon c, CK.Smartboard.View.ContributionBalloon, @balloonViews
         @contributions.each (c) => @addBalloon c, CK.Smartboard.View.ContributionBalloon, @balloonViews
 
-        @balloonQuadtree = d3.geom.quadtree _.collect(_.values(@balloonViews), (bv) -> bv.el)
-
-        requestAnimationFrame = window.requestAnimationFrame || 
-                                window.mozRequestAnimationFrame ||
-                                window.webkitRequestAnimationFrame
-
-        window.animationStart = Date.now()
-
-        collide = (nextTimestamp) =>
-            unless @colliding
-                @colliding = true
-                console.log("Colliding", nextTimestamp)
-                for id,bv of @balloonViews
-                    @balloonQuadtree.visit @detectCollisions(bv.$el)
-                @colliding = false
-                console.log("Done colliding", nextTimestamp)
-                requestAnimationFrame collide
-
-        requestAnimationFrame collide
-            
+        # updating = false
+        # updateAllPositions = =>
+        #     unless updating
+        #         updating = true
+        #         for id,b of @balloonViews
+        #             unless b.$el.hasClass('.ui-draggable-dragging')
+        #                 b.updatePosition()
+        #         updating = false
+        #         window.webkitRequestAnimationFrame updateAllPositions
+        # updateAllPositions()
 
     addBalloon: (doc, view, balloonList) =>
         b = new view
@@ -94,8 +84,6 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
         doc.on 'change', b.render
         b.render()
         @$el.append b.$el
-
-        @balloonQuadtree = d3.geom.quadtree _.collect(_.values(@balloonViews), (bv) -> bv.el)
 
         # b.$el.on 'drag', (ev, ui) =>
         #     console.log ev, ui
