@@ -22,17 +22,15 @@ class CK.Smartboard extends Sail.App
         @curnit = @config.curnit
 
         @run = @run || JSON.parse jQuery.cookie('run')
-        if @run
-            @groupchatRoom = @run.name + '@conference.' + @config.xmpp.domain
 
         userFilter = (user) -> user.kind is 'Instructor'
 
         Sail.modules
             .load('Rollcall.Authenticator', {mode: 'picker', askForRun: true, curnit: @curnit, userFilter: userFilter})
-            .load('Strophe.AutoConnector')
+            .load('Wakeful.ConnStatusIndicator')
             .load('AuthStatusWidget', {indicatorContainer: 'body', clickNameToLogout: true})
             .thenRun =>
-                Sail.autobindEvents(@)
+                Sail.autobindEvents(this)
                 @trigger('initialized')
 
         @rollcall = new Rollcall.Client(@config.rollcall.url)
@@ -59,76 +57,16 @@ class CK.Smartboard extends Sail.App
 
         tag = new CK.Model.Tag({'name': name, 'colourClass': colourClassName})
         tag.wake @config.wakeful.url
-        tag.save {},
-            success: =>
-                sev = new Sail.Event 'new_tag', tag.toJSON()
-                @groupchat.sendEvent sev
+        tag.save {}
 
     pause: =>
-        sev = new Sail.Event 'screen_lock'
-        @groupchat.sendEvent sev
-        
         CK.setState('run', {paused: true})
 
-        # take this opportunity to save positions
-        for b in _.union(@contributions.models, @tags.models)
-            pos = @wall.$el.find('#'+b.id).position()
-            
-            if pos?
-                b.set({pos: {left: pos.left, top: pos.top}}, {silent: true})
-                b.save({}, {silent: true})
-
-        # if (@wall.mode is 'interpret')
-        #         @switchToEvaluation()
-
-        
-
     unpause: =>
-        sev = new Sail.Event 'screen_unlock'
-        @groupchat.sendEvent sev
         CK.setState('run', {paused: false})
 
         if @wall.mode is 'evaluate'
             @switchToInterpretation()
-        
-    startAnalysis: =>
-        sev = new Sail.Event 'start_analysis'
-        @groupchat.sendEvent sev
-
-    startProposal: =>
-        sev = new Sail.Event 'start_proposal'
-        @groupchat.sendEvent sev
-
-    startInterpretation: =>
-        sev = new Sail.Event 'start_interpretation'
-        @groupchat.sendEvent sev
-
-    switchToAnalysis: =>
-        mode = 'analysis'
-        @wall.setMode(mode)
-        @wall.cloud.reRenderForState(mode)
-
-    switchToProposal: =>
-        mode = 'propose'
-        @wall.setMode(mode)
-        @wall.cloud.reRenderForState(mode)
-
-    switchToInterpretation: =>
-        mode = 'interpret'
-        @wall.setMode(mode)
-        @wall.cloud.reRenderForState(mode)
-
-    switchToEvaluation: =>
-        mode = 'evaluate'
-        @wall.setMode(mode)
-
-    # used for unit testing proposals
-    createNewProposal: (headline, description, justification, voteNumber, tagID, tagName, buildOnArray) =>
-        proposal = new CK.Model.Proposal()
-        proposal.wake @config.wakeful.url
-        proposal.set({'headline': headline, 'title': headline, 'description': description, 'justification': justification, 'published': true, 'author': 'ck1-ck2',
-        'votes': voteNumber, 'tag_group_id': tagID, 'tag_group_name': tagName, 'build_ons': buildOnArray})
-        proposal.save {}
 
     # set up all the Collections used by the board
     setupModel: =>
@@ -195,6 +133,8 @@ class CK.Smartboard extends Sail.App
             
         authenticated: (ev) ->
             console.log "Authenticated..."
+
+            @nickname = @session.account.login
 
             CK.Model.init(@config.drowsy.url, @run.name).done =>
                 Wakeful.loadFayeClient(@config.wakeful.url).done =>
