@@ -3,7 +3,7 @@ class CK.Smartboard extends Sail.App
     name: 'CK.Smartboard'
 
     requiredConfig: {
-        xmpp: 
+        xmpp:
             domain: 'string'
             port: 'number'
             url: 'string'
@@ -129,7 +129,7 @@ class CK.Smartboard extends Sail.App
     createNewProposal: (headline, description, justification, voteNumber, tagID, tagName, buildOnArray) =>
         proposal = new CK.Model.Proposal()
         proposal.wake @config.wakeful.url
-        proposal.set({'headline': headline, 'title': headline, 'description': description, 'justification': justification, 'published': true, 'author': 'ck1-ck2', 
+        proposal.set({'headline': headline, 'title': headline, 'description': description, 'justification': justification, 'published': true, 'author': 'ck1-ck2',
         'votes': voteNumber, 'tag_group_id': tagID, 'tag_group_name': tagName, 'build_ons': buildOnArray})
         proposal.save {}
 
@@ -143,7 +143,7 @@ class CK.Smartboard extends Sail.App
             @wall.cloud.ensureNode contrib
             @wall.cloud.render()
 
-        # @contributions.on 'reset', => 
+        # @contributions.on 'reset', =>
         #     @contributions.each @wall.cloud.ensureNode
         #     @wall.cloud.render()
 
@@ -156,7 +156,7 @@ class CK.Smartboard extends Sail.App
                 #do the render!
                 @wall.cloud.render()
 
-        # @proposals.on 'reset', => 
+        # @proposals.on 'reset', =>
         #     @proposals.each @wall.cloud.ensureNode
         #     @wall.cloud.render()
 
@@ -183,9 +183,9 @@ class CK.Smartboard extends Sail.App
         #setTimeout (=> @switchToInterpretation()), 5000
 
         #
-        # a = => @createNewProposal 'tag 3 headlines are great!', 'cookie descriptions are not as cool but whatever...', 
-        #  'justification justification justification justification justification justification justification justification', 3, 
-        #  '5137fbab65fd712a3a000002', 'Cookies', 
+        # a = => @createNewProposal 'tag 3 headlines are great!', 'cookie descriptions are not as cool but whatever...',
+        #  'justification justification justification justification justification justification justification justification', 3,
+        #  '5137fbab65fd712a3a000002', 'Cookies',
         #  [{"content": "Blah comment on!!", "author": "ck2", "created_at": "Mon Oct 29 2012 13:42:00 GMT-0400 (EDT)", "tag_group_id": '51366fd242901f5cf4000002'}, { "content": "Blah comment on and on and on", "author": "ck2", "created_at": "Mon Oct 29 2012 13:40:00 GMT-0400 (EDT)", "tag_group_id": '51366dd942901f51c6000000'}]
 
         # setTimeout a, 5000
@@ -216,7 +216,7 @@ class CK.Smartboard extends Sail.App
             # TODO: maybe also wait until we're connected?
             console.log "Ready..."
 
-            @wall = new CK.Smartboard.View.Wall 
+            @wall = new CK.Smartboard.View.Wall
                 el: jQuery('#wall')
                 runState: @runState
                 tags: @tags

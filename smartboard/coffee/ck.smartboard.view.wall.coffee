@@ -8,7 +8,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             addTagContainer = @$el.find('#add-tag-container')
             addTagContainer.toggleClass('opened')
             if addTagContainer.hasClass('opened')
-                setTimeout(=> 
+                setTimeout(=>
                     @$el.find('#new-tag').focus()
                 , 1000)
 
@@ -20,7 +20,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             if (@showCloud)
                 wordCloudObject.addClass('disabled')
                 wordCloudObject.text('Drawing Cloud... Please wait...')
-                @showWordCloud()           
+                @showWordCloud()
                 @showCloud = false
             else
                 @hideWordCloud()
@@ -134,7 +134,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                     
                     xNudge = xOverlap #(xOverlap/2)
                     if b.x < o.x
-                        o.x += xNudge 
+                        o.x += xNudge
                     else
                         o.x -= xNudge
 
@@ -301,7 +301,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
         # enable the clicking of the button once the word cloud is rendered
         wordCloudObject = jQuery('#show-word-cloud')
         wordCloudObject.text('Hide Word Cloud')
-        wordCloudObject.removeClass('disabled') 
+        wordCloudObject.removeClass('disabled')
 
     pause: =>
         @$el.find('#toggle-pause')
@@ -323,8 +323,8 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
 
     changeWatermark: (text) =>
         jQuery('#watermark').fadeOut 800, ->
-                jQuery(this).text(text)
-                    .fadeIn 800
+            jQuery(this).text(text)
+                .fadeIn 800
 
     benchmarkCollisions: =>
         @startBenchmark ?= performance.now()
@@ -334,7 +334,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
         jQuery('.contribution').each ->
             bs.push Sail.app.wall.balloonViews[jQuery(this).attr('id')]
 
-        dones = []        
+        dones = []
         for b in bs
             dones.push b.checkCollisions()
 
@@ -348,7 +348,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
     detectCollisions: ($b) =>
         b = $b[0]
 
-        # based on collision detection example 
+        # based on collision detection example
         #   from https://gist.github.com/3116713
         bWidth = $b.outerWidth()
         bHeight = $b.outerHeight()
@@ -422,13 +422,12 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                         xNudge = (xOverlap/2)
                         if b.x < quad.point.x
                             b.x -= xNudge
-                            quad.point.x += xNudge 
+                            quad.point.x += xNudge
                         else
-                            b.x += xNudge 
-                            quad.point.x -= xNudge 
-
-            return x1 > nx2 || 
-                x2 < nx1 || 
-                y1 > ny2 || 
+                            b.x += xNudge
+                            quad.point.x -= xNudge
+            return x1 > nx2 ||
+                x2 < nx1 ||
+                y1 > ny2 ||
                 y2 < ny1
     
