@@ -486,7 +486,9 @@ CK.Mobile = function() {
   /* State related function */
 
   app.startAnalysis = function(callback) {
+
     // THIS ALL NEEDS TO BE REDONE
+
     var user_state = CK.getState(app.userData.account.login);
     var analysis_obj = user_state.get('analysis');
     if (!analysis_obj || analysis_obj === null || analysis_obj === "") {
@@ -498,16 +500,14 @@ CK.Mobile = function() {
     var tagList = new CK.Model.Tags();
     tagList.on('change', function(model) { console.log(model.changedAttributes()); });   
 
-      if (app.tagListView === null) {
-        app.tagListView = new CK.Mobile.View.TagListView({
-          el: jQuery('#bucket-tagging-btn-container'),
-          collection: tagList
-        });
-      } else {
-        if (typeof app.tagListView.collection !== 'undefined' && app.tagListView.collection !== null) {
-          app.tagListView.stopListening(app.tagListView.collection);
-        }
-        app.tagListView.collection = tagList;
+    if (app.tagListView === null) {
+      app.tagListView = new CK.Mobile.View.TagListView({
+        el: jQuery('#bucket-tagging-btn-container'),
+        collection: tagList
+      });
+    } else {
+      if (typeof app.tagListView.collection !== 'undefined' && app.tagListView.collection !== null) {
+        app.tagListView.stopListening(app.tagListView.collection);
       }
       app.tagListView.collection = tagList;
     }
