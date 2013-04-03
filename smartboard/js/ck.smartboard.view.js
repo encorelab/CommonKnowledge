@@ -120,6 +120,8 @@
 
     Wall.prototype.showCloud = true;
 
+    Wall.prototype.maxCollisionRecursion = 5;
+
     Wall.prototype.events = {
       'click #add-tag-opener': function(ev) {
         var addTagContainer,
@@ -233,17 +235,24 @@
       return balloonList[doc.id] = b;
     };
 
-    Wall.prototype.collideBalloon = function(balloon) {
+    Wall.prototype.collideBalloon = function(balloon, recursionLevel) {
       var b, h, id, o, pos, w, xDist, xNudge, xOverlap, yDist, yNudge, yOverlap, _ref, _ref1, _ref2, _results;
+      if (recursionLevel == null) {
+        recursionLevel = 0;
+      }
       b = balloon;
-      _ref = this.balloonViews;
-      for (id in _ref) {
-        o = _ref[id];
-        o.width = o.$el.outerWidth();
-        o.height = o.$el.outerHeight();
-        pos = o.$el.position();
-        o.x = pos.left;
-        o.y = pos.top;
+      if (recursionLevel === 0) {
+        this._boundsWidth = this.$el.innerWidth();
+        this._boundsHeight = this.$el.innerHeight();
+        _ref = this.balloonViews;
+        for (id in _ref) {
+          o = _ref[id];
+          o.width = o.$el.outerWidth();
+          o.height = o.$el.outerHeight();
+          pos = o.$el.position();
+          o.x = pos.left;
+          o.y = pos.top;
+        }
       }
       _ref1 = this.balloonViews;
       for (id in _ref1) {
@@ -273,18 +282,30 @@
               o.x -= xNudge;
             }
           }
+          if (o.y + o.height > this._boundsHeight) {
+            o.y -= o.y + o.height - this._boundsHeight;
+          } else if (o.y < 0) {
+            o.y = 0;
+          }
+          if (o.x + o.width > this._boundsWidth) {
+            o.x -= o.x + o.width - this._boundsWidth;
+          } else if (o.x < 0) {
+            o.x = 0;
+          }
         }
       }
-      _ref2 = this.balloonViews;
-      _results = [];
-      for (id in _ref2) {
-        o = _ref2[id];
-        _results.push(o.$el.css({
-          left: o.x + 'px',
-          top: o.y + 'px'
-        }));
+      if (recursionLevel === 0) {
+        _ref2 = this.balloonViews;
+        _results = [];
+        for (id in _ref2) {
+          o = _ref2[id];
+          _results.push(o.$el.css({
+            left: o.x + 'px',
+            top: o.y + 'px'
+          }));
+        }
+        return _results;
       }
-      return _results;
     };
 
     Wall.prototype.render = function() {

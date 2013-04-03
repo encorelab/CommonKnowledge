@@ -3,6 +3,8 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
     id: 'wall'
     showCloud: true
 
+    maxCollisionRecursion: 5 # determines how deep collision detection will be checked (from balloons hitting other balloons hitting other balloons...)
+
     events:
         'click #add-tag-opener': (ev) ->
             addTagContainer = @$el.find('#add-tag-container')
@@ -94,15 +96,19 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
 
     # check collisions for the given balloon (given ballon exerts force and gets no pushback)..
     # any other balloon that the given balloon collides with will also be checked for collision
-    collideBalloon: (balloon) => # balloon should be a BallonView
+    collideBalloon: (balloon, recursionLevel = 0) => # `balloon` should be a BallonView, `recursionLevel` is used internally for recursive collisions
         b = balloon
 
-        for id,o of @balloonViews
-            o.width = o.$el.outerWidth()
-            o.height = o.$el.outerHeight()
-            pos = o.$el.position()
-            o.x = pos.left
-            o.y = pos.top
+        if recursionLevel is 0
+            @_boundsWidth = @$el.innerWidth()
+            @_boundsHeight = @$el.innerHeight()
+
+            for id,o of @balloonViews
+                o.width = o.$el.outerWidth()
+                o.height = o.$el.outerHeight()
+                pos = o.$el.position()
+                o.x = pos.left
+                o.y = pos.top
 
         for id,o of @balloonViews
             continue if o is b # don't collide with self
@@ -117,7 +123,6 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                 xOverlap = w - xDist
 
                 if xDist/w < yDist/h
-
                     # yNudge = (yOverlap/yDist) * yOverlap/h * force.alpha()
                     # b.y = b.y + yNudge*qRepulsion
                     # o.y = o.y - yNudge*bRepulsion
@@ -138,10 +143,20 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                     else
                         o.x -= xNudge
 
-        for id,o of @balloonViews
-            o.$el.css
-                left: o.x + 'px'
-                top: o.y + 'px'
+                if o.y + o.height > @_boundsHeight
+                    o.y -= o.y + o.height - @_boundsHeight
+                else if o.y < 0
+                    o.y = 0
+                if o.x + o.width > @_boundsWidth
+                    o.x -= o.x + o.width - @_boundsWidth
+                else if o.x < 0
+                    o.x = 0
+
+        if recursionLevel is 0
+            for id,o of @balloonViews
+                o.$el.css
+                    left: o.x + 'px'
+                    top: o.y + 'px'
 
     render: =>
         mode = @runState.get('mode')
