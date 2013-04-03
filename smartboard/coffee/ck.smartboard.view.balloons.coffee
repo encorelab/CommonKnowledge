@@ -19,15 +19,8 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
     #     @$el.zIndex maxZ
 
     render: =>
-        @updatePosition()
 
         @makeDraggable() if not @draggable
-
-    updatePosition: =>
-        if @el.x and @el.y
-            @$el.css
-                left: @el.x + 'px'
-                top: @el.y + 'px'
 
     makeDraggable: =>
         @$el
@@ -52,8 +45,8 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
             .css 'position', 'absolute' # draggable makes position relative, but we need absolute
 
         @$el.on 'collision', (ev, ui) => 
-            console.log(ev, ui)
-            @checkCollisions() unless @checkingCollisions
+            #console.log(ev, ui)
+            @checkCollisions() #unless @checkingCollisions
 
         @draggable = true
 
@@ -98,9 +91,9 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
             if @doneColliding
                 done.resolve()
 
-        @$el.css
-            left: b.x + 'px'
-            top: b.y + 'px'
+        # @$el.css
+        #     left: b.x + 'px'
+        #     top: b.y + 'px'
 
         @checkingCollisions = false
         return done
@@ -130,24 +123,20 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
                 # b.y = b.y + yNudge*qRepulsion
                 # o.y = o.y - yNudge*bRepulsion
                 
-                yNudge = (yOverlap/2)
+                yNudge = yOverlap #(yOverlap/2)
                 if b.y < o.y
-                    b.y -= yNudge
                     o.y += yNudge
                 else
-                    b.y += yNudge
                     o.y -= yNudge
             else
                 # xNudge = (xOverlap/xDist) * xOverlap/w * force.alpha()
                 # b.x = b.x + xNudge*qRepulsion
                 # o.x = o.x - xNudge*bRepulsion
                 
-                xNudge = (xOverlap/2)
+                xNudge = xOverlap #(xOverlap/2)
                 if b.x < o.x
-                    b.x -= xNudge
                     o.x += xNudge 
                 else
-                    b.x += xNudge 
                     o.x -= xNudge
 
 

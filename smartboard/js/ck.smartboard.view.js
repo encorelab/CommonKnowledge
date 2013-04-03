@@ -518,8 +518,6 @@
 
       this.makeDraggable = __bind(this.makeDraggable, this);
 
-      this.updatePosition = __bind(this.updatePosition, this);
-
       this.render = __bind(this.render, this);
       return Balloon.__super__.constructor.apply(this, arguments);
     }
@@ -527,18 +525,8 @@
     Balloon.prototype.initialize = function() {};
 
     Balloon.prototype.render = function() {
-      this.updatePosition();
       if (!this.draggable) {
         return this.makeDraggable();
-      }
-    };
-
-    Balloon.prototype.updatePosition = function() {
-      if (this.el.x && this.el.y) {
-        return this.$el.css({
-          left: this.el.x + 'px',
-          top: this.el.y + 'px'
-        });
       }
     };
 
@@ -577,10 +565,7 @@
         }
       }).css('position', 'absolute');
       this.$el.on('collision', function(ev, ui) {
-        console.log(ev, ui);
-        if (!_this.checkingCollisions) {
-          return _this.checkCollisions();
-        }
+        return _this.checkCollisions();
       });
       return this.draggable = true;
     };
@@ -623,10 +608,6 @@
           done.resolve();
         }
       }
-      this.$el.css({
-        left: b.x + 'px',
-        top: b.y + 'px'
-      });
       this.checkingCollisions = false;
       return done;
     };
@@ -643,21 +624,17 @@
         yOverlap = h - yDist;
         xOverlap = w - xDist;
         if (xDist / w < yDist / h) {
-          yNudge = yOverlap / 2;
+          yNudge = yOverlap;
           if (b.y < o.y) {
-            b.y -= yNudge;
             return o.y += yNudge;
           } else {
-            b.y += yNudge;
             return o.y -= yNudge;
           }
         } else {
-          xNudge = xOverlap / 2;
+          xNudge = xOverlap;
           if (b.x < o.x) {
-            b.x -= xNudge;
             return o.x += xNudge;
           } else {
-            b.x += xNudge;
             return o.x -= xNudge;
           }
         }
