@@ -207,7 +207,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
         jQuery('#word-cloud svg').remove()
 
     generateWordCloud: (wordHash) ->
-        fadeDiv = jQuery('#fade');
+        fadeDiv = jQuery('#fade')
         width = fadeDiv.width() #650
         height = fadeDiv.height() #400
         wordCloud = jQuery('#word-cloud')
