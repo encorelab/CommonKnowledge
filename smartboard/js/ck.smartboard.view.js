@@ -511,8 +511,6 @@
       return Balloon.__super__.constructor.apply(this, arguments);
     }
 
-    Balloon.prototype.initialize = function() {};
-
     Balloon.prototype.render = function() {
       if (!this.draggable) {
         return this.makeDraggable();

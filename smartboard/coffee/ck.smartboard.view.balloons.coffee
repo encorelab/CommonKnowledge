@@ -1,17 +1,4 @@
 class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
-    initialize: ->
-        # Object.defineProperty @el, 'x',
-        #     get: => @$el.position().left
-        #     set: (x) => @$el.css('left', x + 'px')
-        # Object.defineProperty @el, 'y',
-        #     get: => @$el.position().top
-        #     set: (y) => @$el.css('top', y + 'px')
-        # Object.defineProperty @el, 'width',
-        #     get: => @$el.outerWidth()
-        #     set: (w) => @$el.css('width', w + 'px')
-        # Object.defineProperty @el, 'height',
-        #     get: => @$el.outerHeight()
-        #     set: (h) => @$el.css('height', h + 'px')
 
     # moveToTop: =>
     #     maxZ = _.max jQuery('.balloon').map ->

@@ -113,17 +113,6 @@ class CK.Smartboard extends Sail.App
 
         @runState.wake @config.wakeful.url
 
-        # test state change
-    
-        #setTimeout (=> @switchToInterpretation()), 5000
-
-        #
-        # a = => @createNewProposal 'tag 3 headlines are great!', 'cookie descriptions are not as cool but whatever...',
-        #  'justification justification justification justification justification justification justification justification', 3,
-        #  '5137fbab65fd712a3a000002', 'Cookies',
-        #  [{"content": "Blah comment on!!", "author": "ck2", "created_at": "Mon Oct 29 2012 13:42:00 GMT-0400 (EDT)", "tag_group_id": '51366fd242901f5cf4000002'}, { "content": "Blah comment on and on and on", "author": "ck2", "created_at": "Mon Oct 29 2012 13:40:00 GMT-0400 (EDT)", "tag_group_id": '51366dd942901f51c6000000'}]
-
-        # setTimeout a, 5000
         @trigger 'ready'
 
     events:
@@ -133,8 +122,6 @@ class CK.Smartboard extends Sail.App
             
         authenticated: (ev) ->
             console.log "Authenticated..."
-
-            @nickname = @session.account.login
 
             CK.Model.init(@config.drowsy.url, @run.name).done =>
                 Wakeful.loadFayeClient(@config.wakeful.url).done =>
@@ -160,50 +147,3 @@ class CK.Smartboard extends Sail.App
                 contributions: @contributions
 
             @wall.render()
-
-        sail:
-            contribution: (sev) ->
-                @contributions.add(sev.payload)
-                #@contributions.fetch()#.done =>
-                #     @contributions.get(sev.payload).newlyAdded = true
-
-            build_on: (sev) ->
-                contrib = @contributions.get(sev.payload._id)
-
-                contrib.set(sev.payload).done ->
-                    # TODO: move to view, plus do more (pop?)
-                    jQuery('#'+sev.payload._id).effect('highlight', 2000)
-
-            # new_tag: (sev) ->
-            #     @tags.fetch().done ->
-            #         jQuery('#'+sev.payload._id).addClass('new')
-            #         setTimeout ->
-            #             jQuery('#'+sev.payload._id).removeClass('new')
-            #         , 2000
-
-            contribution_tagged: (sev) ->
-                # @contributions.get(sev.payload._id).fetch()
-                contrib = @contributions.get(sev.payload._id)
-
-                contrib.set(sev.payload)
-
-                if @wall.cloud.ensureNode contrib
-                    console.log 'Calling Wall Render with contribution....'
-                    console.log contrib
-                    @wall.cloud.render()
-                    
-
-            screen_lock: (sev) ->
-                @wall.pause()
-
-            screen_unlock: (sev) ->
-                @wall.unpause()
-
-            start_analysis: (sev) ->
-                @switchToAnalysis()
-
-            start_proposal: (sev) ->
-                @switchToProposal()
-
-            start_interpretation: (sev) ->
-                @switchToInterpretation()

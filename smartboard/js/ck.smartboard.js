@@ -179,43 +179,6 @@
           contributions: this.contributions
         });
         return this.wall.render();
-      },
-      sail: {
-        contribution: function(sev) {
-          return this.contributions.add(sev.payload);
-        },
-        build_on: function(sev) {
-          var contrib;
-          contrib = this.contributions.get(sev.payload._id);
-          return contrib.set(sev.payload).done(function() {
-            return jQuery('#' + sev.payload._id).effect('highlight', 2000);
-          });
-        },
-        contribution_tagged: function(sev) {
-          var contrib;
-          contrib = this.contributions.get(sev.payload._id);
-          contrib.set(sev.payload);
-          if (this.wall.cloud.ensureNode(contrib)) {
-            console.log('Calling Wall Render with contribution....');
-            console.log(contrib);
-            return this.wall.cloud.render();
-          }
-        },
-        screen_lock: function(sev) {
-          return this.wall.pause();
-        },
-        screen_unlock: function(sev) {
-          return this.wall.unpause();
-        },
-        start_analysis: function(sev) {
-          return this.switchToAnalysis();
-        },
-        start_proposal: function(sev) {
-          return this.switchToProposal();
-        },
-        start_interpretation: function(sev) {
-          return this.switchToInterpretation();
-        }
       }
     };
 
