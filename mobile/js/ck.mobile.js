@@ -26,8 +26,9 @@ CK.Mobile = function() {
     curnit:'string'
   };
 
-  app.runState = null;     // START HERE, fix restoreState
+  app.runState = null;
   //app.userState = null;?
+  app.contribution = null;
   app.contributionList = null;
   app.contributionListView = null;
   app.inputView = null;
@@ -89,7 +90,7 @@ CK.Mobile = function() {
   };
 
   app.authenticate = function() {
-    // TODO: implement me... probalby just copy + modify code from washago?
+    // TODO: implement me... probably just copy + modify code from washago?
 
     // TODO: for now we're hard-coding a run name... need to get this from auth
     //this.config.run = {name: "ck-alpha1", id: 12};
@@ -98,86 +99,94 @@ CK.Mobile = function() {
     } else {
       Rollcall.Authenticator.requestLogin();
     }
-
-    
   };
 
   app.restoreState = function () {
     console.log("Going in to restoreState...");
     app.hideWaitScreen();
  
-    //var stateObj = {"type":"phase"};
-    var s = CK.getState("run", "phase");
+    //ar s = CK.getState("run", "phase");
+    var phase = app.runState.get('phase');
 
-    if (s && s.get('state')) {
-      var phase = s.get('state');
-      // once phase is retrieved get the user_state
-      var user_state = CK.getState(Sail.app.userData.account.login);
-
+    if (phase) {
       if (phase === 'brainstorm') {
-        // check first if we started to work on a contribution and got booted out during work
-        // contribution in our name with published false
+        console.log('Entering brainstorm phase...');
+
         var unfinishedContrib = _.find(app.contributionList.models, function(contrib) {
           return contrib.get('author') === Sail.app.userData.account.login && contrib.get('published') === false;
         });
 
         if (unfinishedContrib) {
-          console.log('Unfinished Contribution found');
+          console.log('Unfinished Contribution found...');
           app.restoreUnfinishedNote(unfinishedContrib);
-        }
-      } else if (phase === "analysis") {
-        console.log('phase is analysis');
-        app.startAnalysis(function (){
-          // get the data from user_states stored under the phase key
-          var data_for_state = user_state.get(phase);
+        }        
+      }
+      // var phase = s.get('state');
+      // // once phase is retrieved get the user_state
+      // var user_state = CK.getState(Sail.app.userData.account.login);
+
+      // if (phase === 'brainstorm') {
+      //   // check first if we started to work on a contribution and got booted out during work
+      //   // contribution in our name with published false
+      //   var unfinishedContrib = _.find(app.contributionList.models, function(contrib) {
+      //     return contrib.get('author') === Sail.app.userData.account.login && contrib.get('published') === false;
+      //   });
+
+      //   if (unfinishedContrib) {
+      //     console.log('Unfinished Contribution found');
+      //     app.restoreUnfinishedNote(unfinishedContrib);
+      //   }
+      // } else if (phase === "analysis") {
+      //   console.log('phase is analysis');
+      //   app.startAnalysis(function (){
+      //     // get the data from user_states stored under the phase key
+      //     var data_for_state = user_state.get(phase);
           
-          console.log('Check if contribution left to do or done with tagging');
-          // CK.getUserState(Sail.app.userData.account.login, "contribution_to_tag", function(user_state){
-          if (data_for_state && data_for_state.contribution_to_tag) {
-            // var data_from_state = user_state.get('data');
-            if (data_for_state.done_tagging === true) {
-              // go to done tagging
-              app.doneTagging();
-            } else if (data_for_state.contribution_to_tag.contribution_id !== "") {
-              console.log('Need to work on contribution with id: '+data_for_state.contribution_to_tag.contribution_id);
-              app.contributionToTag(data_for_state.contribution_to_tag.contribution_id);
-            }
-          } else {
-            console.log('I am on a boat');
-          }
-        });
-      } else if (phase === "proposal") {
-        console.log('phase is proposal');
+      //     console.log('Check if contribution left to do or done with tagging');
+      //     // CK.getUserState(Sail.app.userData.account.login, "contribution_to_tag", function(user_state){
+      //     if (data_for_state && data_for_state.contribution_to_tag) {
+      //       // var data_from_state = user_state.get('data');
+      //       if (data_for_state.done_tagging === true) {
+      //         // go to done tagging
+      //         app.doneTagging();
+      //       } else if (data_for_state.contribution_to_tag.contribution_id !== "") {
+      //         console.log('Need to work on contribution with id: '+data_for_state.contribution_to_tag.contribution_id);
+      //         app.contributionToTag(data_for_state.contribution_to_tag.contribution_id);
+      //       }
+      //     } else {
+      //       console.log('I am on a boat');
+      //     }
+      //   });
+      // } else if (phase === "proposal") {
+      //   console.log('phase is proposal');
 
-        var myState = CK.getState(Sail.app.userData.account.login);
+      //   var myState = CK.getState(Sail.app.userData.account.login);
 
-        if (myState) {
-          app.myTagGroup = myState.get('analysis').tag_group;
-        } else {
-          console.warn("No user_state found for ", Sail.app.userData.account.login);
-        }
+      //   if (myState) {
+      //     app.myTagGroup = myState.get('analysis').tag_group;
+      //   } else {
+      //     console.warn("No user_state found for ", Sail.app.userData.account.login);
+      //   }
 
-        app.startProposal();
+      //   app.startProposal();
 
-                   
-      } else if (phase === "interpretation") {
-        console.log('phase is interpretation');
-        app.startInterpretation();
-      } else {
-        console.log('could not find state for type phase');
-      }
+      // } else if (phase === "interpretation") {
+      //   console.log('phase is interpretation');
+      //   app.startInterpretation();
+      // } else {
+      //   console.log('could not find state for type phase');
+      // }
 
 
-// TODO: This needs much more work
-      if (s && s.get('screen_lock') === true){
-        console.log('screen lock is active');
-        jQuery('#lock-screen').removeClass('hide');
-        jQuery('.row').addClass('disabled');
-      } else {
-        console.log('screen lock is NOT active');
-        jQuery('#lock-screen').addClass('hide');
-        jQuery('.row').removeClass('disabled');
-      }
+      // if (s && s.get('screen_lock') === true){
+      //   console.log('screen lock is active');
+      //   jQuery('#lock-screen').removeClass('hide');
+      //   jQuery('.row').addClass('disabled');
+      // } else {
+      //   console.log('screen lock is NOT active');
+      //   jQuery('#lock-screen').addClass('hide');
+      //   jQuery('.row').removeClass('disabled');
+      // }
     } else {
       console.warn("Seems like the state object was invalid which means we are in trouble");
     }
@@ -352,10 +361,9 @@ CK.Mobile = function() {
     console.log('Initializing models...');      // TODO: MOVE THESE ALL INTO THEIR OWN FUNCTIONS, THINK ABOUT THEIR ORDERING AND SYNC
 
     // PHASE MODEL
-    // app.runState = CK.getState("RUN");
-    // app.runState.wake(Sail.app.config.wakeful.url);
-    // onSuccess, app.restoreState();
-
+    //app.runState = CK.getState('RUN');
+    app.runState = CK.getState('run');
+    app.runState.wake(Sail.app.config.wakeful.url);
 
     // TAGS COLLECTION - used in both BucketTaggingView and ContributionInputView
     app.tagList = new CK.Model.Tags();      // TODO app.tagList = new CK.Model.awake.tags CHECKME, then remove wakeful call and then do for other collections
@@ -387,45 +395,48 @@ CK.Mobile = function() {
     var sort = ['created_at', 'DESC'];
     app.contributionList.fetch({
       data: { sort: JSON.stringify(sort) }
+    }).done(function() {
+      app.restoreState();
     });
   };
 
-  app.createNewContribution = function(kind) {
-    console.log('Creating a new contribution of type', kind);
+  app.createNewContribution = function() {
+    console.log("Creating a new brainstorm note");
 
-    var contrib = new CK.Model.Contribution();
+    app.contribution = new CK.Model.Contribution();
     // ensure that models inside the collection are wakeful
-    contrib.wake(Sail.app.config.wakeful.url);
+    app.contribution.wake(Sail.app.config.wakeful.url);
 
     if (app.inputView === null) {
       app.inputView = new CK.Mobile.View.ContributionInputView({
         el: jQuery('#contribution-input'),
-        model: contrib
+        model: app.contribution
       });
     } else {
       if (typeof app.inputView.model !== 'undefined' && app.inputView.model !== null) {
         app.inputView.stopListening(app.inputView.model);
       }
-      app.inputView.model = contrib;
+      app.inputView.model = app.contribution;
     }
 
     app.inputView.$el.show('slide', {direction: 'up'});
 
-    contrib.set('justAdded', true);
-    contrib.set('author', app.userData.account.login);
-    contrib.set('published', false);
-    contrib.set('tags', []);
-    // contrib.set('build_ons', app.buildOnArray);
-    contrib.set('kind', kind);
+    app.contribution.set('author', app.userData.account.login);
+    app.contribution.set('published', false);
+    app.contribution.set('tags', []);
+    // app.contribution.set('build_ons', app.buildOnArray);
+    app.contribution.set('kind', 'brainstorm');
 
-    // since we do manual saves, we don't need sync. We don't need both (used to be change and sync)
-    contrib.on('change', app.inputView.render, app.inputView);
+    app.contribution.save();
+    // app.contributionList.add(contribution);
+  };
 
-    contrib.save();
-    // app.contributionList.add(contrib);
+  app.createNewBuildOn = function() {
+    console.log('TODO');
   };
 
   app.restoreUnfinishedNote = function (contrib) {
+    app.contribution = contrib;
     if (app.inputView === null) {
       app.inputView = new CK.Mobile.View.ContributionInputView({
         el: jQuery('#contribution-input'),
@@ -467,7 +478,7 @@ CK.Mobile = function() {
   };
 
   app.hideWaitScreen = function() {
-    console.log('hiding wait screen');
+    console.log("Hiding wait screen...");
 
     jQuery('#wait-screen').addClass('hide');
     jQuery('.row').removeClass('disabled');
@@ -814,14 +825,14 @@ CK.Mobile = function() {
 
   // ******** HELPER FUNCTIONS ********* //
 
-  app.autoSave = function(view, inputKey, inputValue, instantSave) {
+  app.autoSave = function(model, inputKey, inputValue, instantSave) {
     //var view = this;
     Sail.app.keyCount++;
     console.log("saving stuff as we go at", Sail.app.keyCount);
 
     if (instantSave || Sail.app.keyCount > 9) {
-      view.model.set(inputKey, inputValue);
-      view.model.save(null, {silent: true});
+      model.set(inputKey, inputValue);
+      model.save(null, {silent: true});
       Sail.app.keyCount = 0;
     }
   };
