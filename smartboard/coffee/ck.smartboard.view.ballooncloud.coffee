@@ -98,9 +98,9 @@ class CK.Smartboard.View.BalloonCloud
 
         @connectors
             .style("z-index", -1)
-            .style("left", (d) => 
+            .style("left", (d) =>
                 d.source.x + "px")
-            .style("top", (d) => 
+            .style("top", (d) =>
                 d.source.y + "px")
             .style("width", (d) =>
                 dx = d.target.x - d.source.x
@@ -207,7 +207,7 @@ class CK.Smartboard.View.BalloonCloud
     # collision detection - takes a single balloon, checks if its colliding with anything else,
     # and takes appopriate action (moves things out of the way, if necessary)
     detectCollision: (b) =>
-        # based on collision detection example 
+        # based on collision detection example
         #   from https://gist.github.com/3116713
 
         return unless b.x? and b.y?
@@ -287,14 +287,14 @@ class CK.Smartboard.View.BalloonCloud
                         xNudge = (xOverlap/2)
                         if b.x < quad.point.x
                             b.x -= xNudge
-                            quad.point.x += xNudge 
+                            quad.point.x += xNudge
                         else
-                            b.x += xNudge 
-                            quad.point.x -= xNudge 
+                            b.x += xNudge
+                            quad.point.x -= xNudge
 
-            return x1 > nx2 || 
-                x2 < nx1 || 
-                y1 > ny2 || 
+            return x1 > nx2 ||
+                x2 < nx1 ||
+                y1 > ny2 ||
                 y2 < ny1
 
     startForce: =>
@@ -324,7 +324,7 @@ class CK.Smartboard.View.BalloonCloud
             return shouldRender
 
         # make sure node n doesn't already exist
-        unless _.any(@nodes, 
+        unless _.any(@nodes,
                 (node) -> node.id is n.id)
             @nodes.push n
             shouldRender = true
@@ -385,7 +385,7 @@ class CK.Smartboard.View.BalloonCloud
             target: toTag
 
         # make sure link doesn't already exist
-        unless _.any(@links, 
+        unless _.any(@links,
                 (l) -> l.source.id is fromContribution.id and l.target.id is toTag.id)
             @links.push link
             shouldRender = true
@@ -424,7 +424,7 @@ class CK.Smartboard.View.BalloonCloud
                     
                     if screenState is 'analysis'
                         view.ballonContributionType = view.balloonContributionTypes.analysis
-                    else 
+                    else
                         view.balloonContributionType = view.balloonContributionTypes.default
 
                 else if d.collectionName is "proposals"
@@ -455,12 +455,12 @@ class CK.Smartboard.View.BalloonCloud
 
                 d.view = view
                 
-                if d.collectionName is "contributions" or d.collectionName is "proposals" 
+                if d.collectionName is "contributions" or d.collectionName is "proposals"
                     view.render()
                     view.resetView()
 
 
-            if ! view? 
+            if ! view?
                  console.error 'Could not create or set view for ' + d.collectionName + '!'
                  return
             
@@ -489,7 +489,7 @@ class CK.Smartboard.View.BalloonCloud
                     #remove previous backbone views and all the events that are tied to it
                     view.remove()
                     view = null
-                else 
+                else
                     view.ballonContributionType = view.balloonContributionTypes.default
 
             else if b.collectionName is 'proposals'
@@ -501,8 +501,8 @@ class CK.Smartboard.View.BalloonCloud
             if view?
                 view.render()
 
-                if b.collectionName is "contributions" or b.collectionName is "proposals" 
-                    view.resetView() 
+                if b.collectionName is "contributions" or b.collectionName is "proposals"
+                    view.resetView()
 
                 
 
@@ -616,4 +616,4 @@ class CK.Smartboard.View.BalloonCloud
         #     .append("div")
         #         .attr("class", "locator")
 
-        #force.on('drag.force', -> force2.resume(); console.log('drag!'))   
+        #force.on('drag.force', -> force2.resume(); console.log('drag!'))

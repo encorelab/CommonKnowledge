@@ -4,7 +4,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
     wordCloudShowable: true
 
     # determines how deep collision detection will be checked (from balloons hitting other balloons hitting other balloons...)
-    maxCollisionRecursion: 2 
+    maxCollisionRecursion: 2
 
     events:
         'click #add-tag-opener': (ev) ->
