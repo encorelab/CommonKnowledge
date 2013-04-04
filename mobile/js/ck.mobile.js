@@ -69,7 +69,7 @@ CK.Mobile = function() {
     Sail.modules
       // Enable multi-picker login for CommonKnowledge curnit - asking for run (must be linked to curnit)
       .load('Rollcall.Authenticator', {mode: 'picker', askForRun: true, curnit: app.config.curnit})
-      .load('Strophe.AutoConnector')
+      .load('Wakeful.ConnStatusIndicator')
       .load('AuthStatusWidget', {indicatorContainer: '#logout-container'})
       .thenRun(function () {
         Sail.autobindEvents(app);
@@ -340,7 +340,7 @@ CK.Mobile = function() {
       return false;
     }
 
-    Sail.app.groupchat.sendEvent(sev);
+    //Sail.app.groupchat.sendEvent(sev);
     return true;
   };
 
@@ -553,7 +553,7 @@ CK.Mobile = function() {
           console.log('State saved');
           // send out and sail event
           var sev = new Sail.Event('chosen_tag_group', analysis_obj);
-          Sail.app.groupchat.sendEvent(sev);
+          //Sail.app.groupchat.sendEvent(sev);
           // Show wait screen until agent answers with the contribution to be tagged
           Sail.app.showWaitScreen();
         },
@@ -603,7 +603,7 @@ CK.Mobile = function() {
 
     function saveSuccess (m) {
       console.log('contribution saved successfully in tagContribution');
-      Sail.app.groupchat.sendEvent(sev);
+      //Sail.app.groupchat.sendEvent(sev);
     }
     function saveError (err) {
       console.warn('error saving contribution in tagContribution');
@@ -632,7 +632,7 @@ CK.Mobile = function() {
       taggedContribution.fetch({success: fetchSuccess, error: fetchError});
     } else {
       console.log('Contribution: '+contributionId+' not tagged');
-      Sail.app.groupchat.sendEvent(sev);
+      //Sail.app.groupchat.sendEvent(sev);
     }
   };
 

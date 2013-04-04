@@ -10,22 +10,6 @@
     function Smartboard() {
       this.setupModel = __bind(this.setupModel, this);
 
-      this.createNewProposal = __bind(this.createNewProposal, this);
-
-      this.switchToEvaluation = __bind(this.switchToEvaluation, this);
-
-      this.switchToInterpretation = __bind(this.switchToInterpretation, this);
-
-      this.switchToProposal = __bind(this.switchToProposal, this);
-
-      this.switchToAnalysis = __bind(this.switchToAnalysis, this);
-
-      this.startInterpretation = __bind(this.startInterpretation, this);
-
-      this.startProposal = __bind(this.startProposal, this);
-
-      this.startAnalysis = __bind(this.startAnalysis, this);
-
       this.unpause = __bind(this.unpause, this);
 
       this.pause = __bind(this.pause, this);
@@ -67,9 +51,6 @@
       console.log("Configuration is valid.");
       this.curnit = this.config.curnit;
       this.run = this.run || JSON.parse(jQuery.cookie('run'));
-      if (this.run) {
-        this.groupchatRoom = this.run.name + '@conference.' + this.config.xmpp.domain;
-      }
       userFilter = function(user) {
         return user.kind === 'Instructor';
       };
@@ -78,7 +59,7 @@
         askForRun: true,
         curnit: this.curnit,
         userFilter: userFilter
-      }).load('Strophe.AutoConnector').load('AuthStatusWidget', {
+      }).load('Wakeful.ConnStatusIndicator').load('AuthStatusWidget', {
         indicatorContainer: 'body',
         clickNameToLogout: true
       }).thenRun(function() {
@@ -104,58 +85,23 @@
     };
 
     Smartboard.prototype.createNewTag = function(name) {
-      var colourClassName, tag,
-        _this = this;
+      var colourClassName, tag;
       colourClassName = this.getColourTagClassName();
       tag = new CK.Model.Tag({
         'name': name,
         'colourClass': colourClassName
       });
       tag.wake(this.config.wakeful.url);
-      return tag.save({}, {
-        success: function() {
-          var sev;
-          sev = new Sail.Event('new_tag', tag.toJSON());
-          return _this.groupchat.sendEvent(sev);
-        }
-      });
+      return tag.save({});
     };
 
     Smartboard.prototype.pause = function() {
-      var b, pos, sev, _i, _len, _ref, _results;
-      sev = new Sail.Event('screen_lock');
-      this.groupchat.sendEvent(sev);
-      CK.setState('run', {
+      return CK.setState('run', {
         paused: true
       });
-      _ref = _.union(this.contributions.models, this.tags.models);
-      _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        b = _ref[_i];
-        pos = this.wall.$el.find('#' + b.id).position();
-        if (pos != null) {
-          b.set({
-            pos: {
-              left: pos.left,
-              top: pos.top
-            }
-          }, {
-            silent: true
-          });
-          _results.push(b.save({}, {
-            silent: true
-          }));
-        } else {
-          _results.push(void 0);
-        }
-      }
-      return _results;
     };
 
     Smartboard.prototype.unpause = function() {
-      var sev;
-      sev = new Sail.Event('screen_unlock');
-      this.groupchat.sendEvent(sev);
       CK.setState('run', {
         paused: false
       });
@@ -164,99 +110,10 @@
       }
     };
 
-    Smartboard.prototype.startAnalysis = function() {
-      var sev;
-      sev = new Sail.Event('start_analysis');
-      return this.groupchat.sendEvent(sev);
-    };
-
-    Smartboard.prototype.startProposal = function() {
-      var sev;
-      sev = new Sail.Event('start_proposal');
-      return this.groupchat.sendEvent(sev);
-    };
-
-    Smartboard.prototype.startInterpretation = function() {
-      var sev;
-      sev = new Sail.Event('start_interpretation');
-      return this.groupchat.sendEvent(sev);
-    };
-
-    Smartboard.prototype.switchToAnalysis = function() {
-      var mode;
-      mode = 'analysis';
-      this.wall.setMode(mode);
-      return this.wall.cloud.reRenderForState(mode);
-    };
-
-    Smartboard.prototype.switchToProposal = function() {
-      var mode;
-      mode = 'propose';
-      this.wall.setMode(mode);
-      return this.wall.cloud.reRenderForState(mode);
-    };
-
-    Smartboard.prototype.switchToInterpretation = function() {
-      var mode;
-      mode = 'interpret';
-      this.wall.setMode(mode);
-      return this.wall.cloud.reRenderForState(mode);
-    };
-
-    Smartboard.prototype.switchToEvaluation = function() {
-      var mode;
-      mode = 'evaluate';
-      return this.wall.setMode(mode);
-    };
-
-    Smartboard.prototype.createNewProposal = function(headline, description, justification, voteNumber, tagID, tagName, buildOnArray) {
-      var proposal;
-      proposal = new CK.Model.Proposal();
-      proposal.wake(this.config.wakeful.url);
-      proposal.set({
-        'headline': headline,
-        'title': headline,
-        'description': description,
-        'justification': justification,
-        'published': true,
-        'author': 'ck1-ck2',
-        'votes': voteNumber,
-        'tag_group_id': tagID,
-        'tag_group_name': tagName,
-        'build_ons': buildOnArray
-      });
-      return proposal.save({});
-    };
-
     Smartboard.prototype.setupModel = function() {
-      var _this = this;
       this.contributions = CK.Model.awake.contributions;
       this.proposals = CK.Model.awake.proposals;
       this.tags = CK.Model.awake.tags;
-      this.contributions.on('add', function(contrib) {
-        _this.wall.cloud.ensureNode(contrib);
-        return _this.wall.cloud.render();
-      });
-      this.proposals.on('add', function(proposal) {
-        _this.wall.cloud.ensureNode(proposal);
-        return _this.wall.cloud.render();
-      });
-      this.proposals.on('change', function(proposal) {
-        if (_this.wall.cloud.ensureNode(proposal)) {
-          return _this.wall.cloud.render();
-        }
-      });
-      this.tags.on('add', function(tag) {
-        _this.wall.cloud.ensureNode(tag);
-        tag.newlyAdded = true;
-        return _this.wall.cloud.render();
-      });
-      this.tags.on('reset', function(collection) {
-        _this.tagCount = collection.length;
-        console.log("Number of Tags: " + _this.tagCount);
-        collection.each(_this.wall.cloud.ensureNode);
-        return _this.wall.cloud.render();
-      });
       this.runState = CK.getState('run');
       if (this.runState == null) {
         this.runState = CK.setState('run', {});
@@ -296,43 +153,6 @@
           contributions: this.contributions
         });
         return this.wall.render();
-      },
-      sail: {
-        contribution: function(sev) {
-          return this.contributions.add(sev.payload);
-        },
-        build_on: function(sev) {
-          var contrib;
-          contrib = this.contributions.get(sev.payload._id);
-          return contrib.set(sev.payload).done(function() {
-            return jQuery('#' + sev.payload._id).effect('highlight', 2000);
-          });
-        },
-        contribution_tagged: function(sev) {
-          var contrib;
-          contrib = this.contributions.get(sev.payload._id);
-          contrib.set(sev.payload);
-          if (this.wall.cloud.ensureNode(contrib)) {
-            console.log('Calling Wall Render with contribution....');
-            console.log(contrib);
-            return this.wall.cloud.render();
-          }
-        },
-        screen_lock: function(sev) {
-          return this.wall.pause();
-        },
-        screen_unlock: function(sev) {
-          return this.wall.unpause();
-        },
-        start_analysis: function(sev) {
-          return this.switchToAnalysis();
-        },
-        start_proposal: function(sev) {
-          return this.switchToProposal();
-        },
-        start_interpretation: function(sev) {
-          return this.switchToInterpretation();
-        }
       }
     };
 

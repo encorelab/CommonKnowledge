@@ -1,7 +1,10 @@
 class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
     tagName: 'div'
     id: 'wall'
-    showCloud: true
+    wordCloudShowable: true
+
+    # determines how deep collision detection will be checked (from balloons hitting other balloons hitting other balloons...)
+    maxCollisionRecursion: 2 
 
     events:
         'click #add-tag-opener': (ev) ->
@@ -15,17 +18,18 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
         'click #submit-new-tag': (ev) -> @submitNewTag()
 
         'click #show-word-cloud': (ev) ->
-            wordCloudObject = jQuery('#show-word-cloud')
+            wordCloudButton = jQuery('#show-word-cloud')
             
-            if (@showCloud)
-                wordCloudObject.addClass('disabled')
-                wordCloudObject.text('Drawing Cloud... Please wait...')
-                @showWordCloud()
-                @showCloud = false
+            if (@wordCloudShowable)
+                wordCloudButton.addClass('disabled')
+                wordCloudButton.text('Drawing Cloud... Please wait...')
+                @wordCloud ?= new CK.Smartboard.View.WordCloud()
+                @wordCloud.render()
+                @wordCloudShowable = false
             else
-                @hideWordCloud()
-                wordCloudObject.text('Show Word Cloud')
-                @showCloud = true
+                @wordCloud.hide()
+                wordCloudButton.text('Show Word Cloud')
+                @wordCloudShowable = true
 
         #'click #close-word-cloud': (ev) -> @hideWordCloud()
             
@@ -37,16 +41,13 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             @runState.save(paused: !paused)
 
         'click #go-analyze': (ev) ->
-            if !@mode? || @mode is 'brainstorm'
-                Sail.app.startAnalysis()
+            @runState.save(mode: 'analysis')
 
         'click #go-propose': (ev) ->
-            if @mode is 'analysis'
-                Sail.app.startProposal()
+            @runState.save(mode: 'propose')
 
         'click #go-interpret': (ev) ->
-            if @mode is 'propose'
-                Sail.app.startInterpretation()
+            @runState.save(mode: 'interpret')
 
     constructor: (options) ->
         @runState = options.runState
@@ -94,15 +95,15 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
 
     # check collisions for the given balloon (given ballon exerts force and gets no pushback)..
     # any other balloon that the given balloon collides with will also be checked for collision
-    collideBalloon: (balloon) => # balloon should be a BallonView
+    collideBalloon: (balloon, recursionLevel = 0) => # `balloon` should be a BallonView, `recursionLevel` is used internally for recursive collisions
         b = balloon
 
-        for id,o of @balloonViews
-            o.width = o.$el.outerWidth()
-            o.height = o.$el.outerHeight()
-            pos = o.$el.position()
-            o.x = pos.left
-            o.y = pos.top
+        if recursionLevel is 0
+            @_boundsWidth = @$el.innerWidth()
+            @_boundsHeight = @$el.innerHeight()
+
+            for id,o of @balloonViews
+                o.cachePositionAndBounds()
 
         for id,o of @balloonViews
             continue if o is b # don't collide with self
@@ -117,7 +118,6 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                 xOverlap = w - xDist
 
                 if xDist/w < yDist/h
-
                     # yNudge = (yOverlap/yDist) * yOverlap/h * force.alpha()
                     # b.y = b.y + yNudge*qRepulsion
                     # o.y = o.y - yNudge*bRepulsion
@@ -138,10 +138,23 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                     else
                         o.x -= xNudge
 
-        for id,o of @balloonViews
-            o.$el.css
-                left: o.x + 'px'
-                top: o.y + 'px'
+                if o.y + o.height > @_boundsHeight
+                    o.y -= o.y + o.height - @_boundsHeight
+                else if o.y < 0
+                    o.y = 0
+                if o.x + o.width > @_boundsWidth
+                    o.x -= o.x + o.width - @_boundsWidth
+                else if o.x < 0
+                    o.x = 0
+
+                if recursionLevel <= @maxCollisionRecursion
+                    @collideBalloon(o, recursionLevel + 1)
+
+        if recursionLevel is 0
+            for id,o of @balloonViews
+                o.$el.css
+                    left: o.x + 'px'
+                    top: o.y + 'px'
 
     render: =>
         mode = @runState.get('mode')
@@ -188,120 +201,6 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             .removeClass('opened')
             .blur()
         @$el.find('#new-tag').val('')
-
-
-    showWordCloud: =>
-        words = []
-        # make sure old word cloud is removed to avoid accumulating clouds
-        jQuery('#word-cloud svg').remove()
-        # call function that returns an array with all words to consider for the cloud
-        @gatherWordsForCloud words, (gatheredWords) ->
-            words = gatheredWords
-            #filteredWords = w for w in words when not (stopWords.test(w) or punctuation.test(w))
-            filteredWords = Wall.prototype.filterWords (words)
-            console.log filteredWords
-
-            # count the occurance of each word and create a has with word and count {word1: 3}
-            wordCount = {}
-            for w in filteredWords
-                wordCount[w] ?= 0
-                wordCount[w]++
-
-            # Now some math to calculate the size of a word depending on it's occurance (count)
-            maxSize = 70
-            maxCount = _.max wordCount, (count,word) -> count
-            console.log maxCount, wordCount
-            wordHash = for word,count of wordCount
-                h = {text: word, size: Math.pow(count / maxCount, 0.5) * maxSize}
-                console.log word,count,h
-                h
-                
-            # call the function that actually generates the word cloud
-            Wall.prototype.generateWordCloud(wordHash)
-            # make the object holding the word-cloud and the overlay visible
-            wordCloud = jQuery('#word-cloud')
-            wordCloud.addClass('visible')
-            fade = jQuery('#fade')
-            fade.addClass('visible')
-
-    gatherWordsForCloud: (wordsToReturn, callback) =>
-        punctuation = /[!"&()*+,-\.\/:;<=>?\[\\\]^`\{|\}~]+/g
-        wordSeparators = /[\s\u3031-\u3035\u309b\u309c\u30a0\u30fc\uff70]+/g
-        text = ''
-        
-        @contributions = new CK.Model.Contributions()
-        @contributions.fetch success: (collection, response) ->
-            _.each collection.models, (c) ->
-                console.log c.get('headline'), c.get('content')
-                text += c.get('headline') + ' '
-                text += c.get('content') + ' '
-            _.each text.split(wordSeparators), (word) ->
-                word = word.replace(punctuation, "")
-                wordsToReturn.push(word)
-            callback (wordsToReturn)
-
-
-    filterWords: (wordsToFilter) ->
-        stopWords = /^(i|me|my|myself|we|us|our|ours|ourselves|you|your|yours|yourself|yourselves|he|him|his|himself|she|her|hers|herself|it|its|itself|they|them|their|theirs|themselves|what|which|who|whom|whose|this|that|these|those|am|is|are|was|were|be|been|being|have|has|had|having|do|does|did|doing|will|would|should|can|could|ought|i'm|you're|he's|she's|it's|we're|they're|i've|you've|we've|they've|i'd|you'd|he'd|she'd|we'd|they'd|i'll|you'll|he'll|she'll|we'll|they'll|isn't|aren't|wasn't|weren't|hasn't|haven't|hadn't|doesn't|don't|didn't|won't|wouldn't|shan't|shouldn't|can't|cannot|couldn't|mustn't|let's|that's|who's|what's|here's|there's|when's|where's|why's|how's|a|an|the|and|but|if|or|because|as|until|while|of|at|by|for|with|about|against|between|into|through|during|before|after|above|below|to|from|up|upon|down|in|out|on|off|over|under|again|further|then|once|here|there|when|where|why|how|all|any|both|each|few|more|most|other|some|such|no|nor|not|only|own|same|so|than|too|very|say|says|said|shall|sd|sdf|fuck|shit|poo|pooped|boop|boops|asshole|undefined)$/i
-        # punctuation = /[!"&()*+,-\.\/:;<=>?\[\\\]^`\{|\}~]+/g
-        # wordSeparators = /[\s\u3031-\u3035\u309b\u309c\u30a0\u30fc\uff70]+/g
-        discard = /^(@|https?:)/
-        htmlTags = /(<[^>]*?>|<script.*?<\/script>|<style.*?<\/style>|<head.*?><\/head>)/g
-        filteredWords = _.filter wordsToFilter, (w) -> not (stopWords.test(w))
-        return filteredWords
-
-
-    hideWordCloud: =>
-        wordCloud = jQuery('#word-cloud')
-        wordCloud.removeClass('visible')
-        fade = jQuery('#fade')
-        fade.removeClass('visible')
-        jQuery('#word-cloud svg').remove()
-
-    generateWordCloud: (wordHash) ->
-        fadeDiv = jQuery('#fade')
-        width = fadeDiv.width() #650
-        height = fadeDiv.height() #400
-        wordCloud = jQuery('#word-cloud')
-        wordCloud.height(height + 'px')
-        wordCloud.width(width + 'px')
-
-        #alert height
-        #alert width
-        draw = (words) ->
-            d3.select("#word-cloud")
-            .append("svg")
-            .attr("width", "99%")
-            .attr("height", "99%")
-            .append("g")
-            .attr("transform", "translate(#{width/2},#{height/2})")
-            .selectAll("text")
-            .data(words)
-            .enter()
-            .append("text")
-            .style("font-size", (d) ->
-                d.size + "px"
-            ).style("font-family", "Ubuntu")
-            .style("fill", (d, i) ->
-                fill i
-            ).attr("text-anchor", "middle")
-            .attr("transform", (d) ->
-                "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")"
-            ).text (d) ->
-                d.text
-
-        fill = d3.scale.category20()
-        d3.layout.cloud().size([width, height]).words(wordHash).rotate(->
-            ~~(Math.random() * 5) * 30 - 60
-            # ~~(Math.random() * 2) * 90
-        ).font("Ubuntu").fontSize((d) ->
-            d.size
-        ).on("end", draw).start()
-
-        # enable the clicking of the button once the word cloud is rendered
-        wordCloudObject = jQuery('#show-word-cloud')
-        wordCloudObject.text('Hide Word Cloud')
-        wordCloudObject.removeClass('disabled')
 
     pause: =>
         @$el.find('#toggle-pause')

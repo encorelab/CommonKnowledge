@@ -118,7 +118,9 @@
 
     Wall.prototype.id = 'wall';
 
-    Wall.prototype.showCloud = true;
+    Wall.prototype.wordCloudShowable = true;
+
+    Wall.prototype.maxCollisionRecursion = 2;
 
     Wall.prototype.events = {
       'click #add-tag-opener': function(ev) {
@@ -136,17 +138,20 @@
         return this.submitNewTag();
       },
       'click #show-word-cloud': function(ev) {
-        var wordCloudObject;
-        wordCloudObject = jQuery('#show-word-cloud');
-        if (this.showCloud) {
-          wordCloudObject.addClass('disabled');
-          wordCloudObject.text('Drawing Cloud... Please wait...');
-          this.showWordCloud();
-          return this.showCloud = false;
+        var wordCloudButton, _ref;
+        wordCloudButton = jQuery('#show-word-cloud');
+        if (this.wordCloudShowable) {
+          wordCloudButton.addClass('disabled');
+          wordCloudButton.text('Drawing Cloud... Please wait...');
+          if ((_ref = this.wordCloud) == null) {
+            this.wordCloud = new CK.Smartboard.View.WordCloud();
+          }
+          this.wordCloud.render();
+          return this.wordCloudShowable = false;
         } else {
-          this.hideWordCloud();
-          wordCloudObject.text('Show Word Cloud');
-          return this.showCloud = true;
+          this.wordCloud.hide();
+          wordCloudButton.text('Show Word Cloud');
+          return this.wordCloudShowable = true;
         }
       },
       'keydown #new-tag': function(ev) {
@@ -162,19 +167,19 @@
         });
       },
       'click #go-analyze': function(ev) {
-        if (!(this.mode != null) || this.mode === 'brainstorm') {
-          return Sail.app.startAnalysis();
-        }
+        return this.runState.save({
+          mode: 'analysis'
+        });
       },
       'click #go-propose': function(ev) {
-        if (this.mode === 'analysis') {
-          return Sail.app.startProposal();
-        }
+        return this.runState.save({
+          mode: 'propose'
+        });
       },
       'click #go-interpret': function(ev) {
-        if (this.mode === 'propose') {
-          return Sail.app.startInterpretation();
-        }
+        return this.runState.save({
+          mode: 'interpret'
+        });
       }
     };
 
@@ -184,12 +189,6 @@
       this.unpause = __bind(this.unpause, this);
 
       this.pause = __bind(this.pause, this);
-
-      this.hideWordCloud = __bind(this.hideWordCloud, this);
-
-      this.gatherWordsForCloud = __bind(this.gatherWordsForCloud, this);
-
-      this.showWordCloud = __bind(this.showWordCloud, this);
 
       this.submitNewTag = __bind(this.submitNewTag, this);
 
@@ -233,17 +232,20 @@
       return balloonList[doc.id] = b;
     };
 
-    Wall.prototype.collideBalloon = function(balloon) {
-      var b, h, id, o, pos, w, xDist, xNudge, xOverlap, yDist, yNudge, yOverlap, _ref, _ref1, _ref2, _results;
+    Wall.prototype.collideBalloon = function(balloon, recursionLevel) {
+      var b, h, id, o, w, xDist, xNudge, xOverlap, yDist, yNudge, yOverlap, _ref, _ref1, _ref2, _results;
+      if (recursionLevel == null) {
+        recursionLevel = 0;
+      }
       b = balloon;
-      _ref = this.balloonViews;
-      for (id in _ref) {
-        o = _ref[id];
-        o.width = o.$el.outerWidth();
-        o.height = o.$el.outerHeight();
-        pos = o.$el.position();
-        o.x = pos.left;
-        o.y = pos.top;
+      if (recursionLevel === 0) {
+        this._boundsWidth = this.$el.innerWidth();
+        this._boundsHeight = this.$el.innerHeight();
+        _ref = this.balloonViews;
+        for (id in _ref) {
+          o = _ref[id];
+          o.cachePositionAndBounds();
+        }
       }
       _ref1 = this.balloonViews;
       for (id in _ref1) {
@@ -273,18 +275,33 @@
               o.x -= xNudge;
             }
           }
+          if (o.y + o.height > this._boundsHeight) {
+            o.y -= o.y + o.height - this._boundsHeight;
+          } else if (o.y < 0) {
+            o.y = 0;
+          }
+          if (o.x + o.width > this._boundsWidth) {
+            o.x -= o.x + o.width - this._boundsWidth;
+          } else if (o.x < 0) {
+            o.x = 0;
+          }
+          if (recursionLevel <= this.maxCollisionRecursion) {
+            this.collideBalloon(o, recursionLevel + 1);
+          }
         }
       }
-      _ref2 = this.balloonViews;
-      _results = [];
-      for (id in _ref2) {
-        o = _ref2[id];
-        _results.push(o.$el.css({
-          left: o.x + 'px',
-          top: o.y + 'px'
-        }));
+      if (recursionLevel === 0) {
+        _ref2 = this.balloonViews;
+        _results = [];
+        for (id in _ref2) {
+          o = _ref2[id];
+          _results.push(o.$el.css({
+            left: o.x + 'px',
+            top: o.y + 'px'
+          }));
+        }
+        return _results;
       }
-      return _results;
     };
 
     Wall.prototype.render = function() {
@@ -333,122 +350,6 @@
       return this.$el.find('#new-tag').val('');
     };
 
-    Wall.prototype.showWordCloud = function() {
-      var words;
-      words = [];
-      jQuery('#word-cloud svg').remove();
-      return this.gatherWordsForCloud(words, function(gatheredWords) {
-        var count, fade, filteredWords, h, maxCount, maxSize, w, word, wordCloud, wordCount, wordHash, _i, _len, _ref;
-        words = gatheredWords;
-        filteredWords = Wall.prototype.filterWords(words);
-        console.log(filteredWords);
-        wordCount = {};
-        for (_i = 0, _len = filteredWords.length; _i < _len; _i++) {
-          w = filteredWords[_i];
-          if ((_ref = wordCount[w]) == null) {
-            wordCount[w] = 0;
-          }
-          wordCount[w]++;
-        }
-        maxSize = 70;
-        maxCount = _.max(wordCount, function(count, word) {
-          return count;
-        });
-        console.log(maxCount, wordCount);
-        wordHash = (function() {
-          var _results;
-          _results = [];
-          for (word in wordCount) {
-            count = wordCount[word];
-            h = {
-              text: word,
-              size: Math.pow(count / maxCount, 0.5) * maxSize
-            };
-            console.log(word, count, h);
-            _results.push(h);
-          }
-          return _results;
-        })();
-        Wall.prototype.generateWordCloud(wordHash);
-        wordCloud = jQuery('#word-cloud');
-        wordCloud.addClass('visible');
-        fade = jQuery('#fade');
-        return fade.addClass('visible');
-      });
-    };
-
-    Wall.prototype.gatherWordsForCloud = function(wordsToReturn, callback) {
-      var punctuation, text, wordSeparators;
-      punctuation = /[!"&()*+,-\.\/:;<=>?\[\\\]^`\{|\}~]+/g;
-      wordSeparators = /[\s\u3031-\u3035\u309b\u309c\u30a0\u30fc\uff70]+/g;
-      text = '';
-      this.contributions = new CK.Model.Contributions();
-      return this.contributions.fetch({
-        success: function(collection, response) {
-          _.each(collection.models, function(c) {
-            console.log(c.get('headline'), c.get('content'));
-            text += c.get('headline') + ' ';
-            return text += c.get('content') + ' ';
-          });
-          _.each(text.split(wordSeparators), function(word) {
-            word = word.replace(punctuation, "");
-            return wordsToReturn.push(word);
-          });
-          return callback(wordsToReturn);
-        }
-      });
-    };
-
-    Wall.prototype.filterWords = function(wordsToFilter) {
-      var discard, filteredWords, htmlTags, stopWords;
-      stopWords = /^(i|me|my|myself|we|us|our|ours|ourselves|you|your|yours|yourself|yourselves|he|him|his|himself|she|her|hers|herself|it|its|itself|they|them|their|theirs|themselves|what|which|who|whom|whose|this|that|these|those|am|is|are|was|were|be|been|being|have|has|had|having|do|does|did|doing|will|would|should|can|could|ought|i'm|you're|he's|she's|it's|we're|they're|i've|you've|we've|they've|i'd|you'd|he'd|she'd|we'd|they'd|i'll|you'll|he'll|she'll|we'll|they'll|isn't|aren't|wasn't|weren't|hasn't|haven't|hadn't|doesn't|don't|didn't|won't|wouldn't|shan't|shouldn't|can't|cannot|couldn't|mustn't|let's|that's|who's|what's|here's|there's|when's|where's|why's|how's|a|an|the|and|but|if|or|because|as|until|while|of|at|by|for|with|about|against|between|into|through|during|before|after|above|below|to|from|up|upon|down|in|out|on|off|over|under|again|further|then|once|here|there|when|where|why|how|all|any|both|each|few|more|most|other|some|such|no|nor|not|only|own|same|so|than|too|very|say|says|said|shall|sd|sdf|fuck|shit|poo|pooped|boop|boops|asshole|undefined)$/i;
-      discard = /^(@|https?:)/;
-      htmlTags = /(<[^>]*?>|<script.*?<\/script>|<style.*?<\/style>|<head.*?><\/head>)/g;
-      filteredWords = _.filter(wordsToFilter, function(w) {
-        return !(stopWords.test(w));
-      });
-      return filteredWords;
-    };
-
-    Wall.prototype.hideWordCloud = function() {
-      var fade, wordCloud;
-      wordCloud = jQuery('#word-cloud');
-      wordCloud.removeClass('visible');
-      fade = jQuery('#fade');
-      fade.removeClass('visible');
-      return jQuery('#word-cloud svg').remove();
-    };
-
-    Wall.prototype.generateWordCloud = function(wordHash) {
-      var draw, fadeDiv, fill, height, width, wordCloud, wordCloudObject;
-      fadeDiv = jQuery('#fade');
-      width = fadeDiv.width();
-      height = fadeDiv.height();
-      wordCloud = jQuery('#word-cloud');
-      wordCloud.height(height + 'px');
-      wordCloud.width(width + 'px');
-      draw = function(words) {
-        return d3.select("#word-cloud").append("svg").attr("width", "99%").attr("height", "99%").append("g").attr("transform", "translate(" + (width / 2) + "," + (height / 2) + ")").selectAll("text").data(words).enter().append("text").style("font-size", function(d) {
-          return d.size + "px";
-        }).style("font-family", "Ubuntu").style("fill", function(d, i) {
-          return fill(i);
-        }).attr("text-anchor", "middle").attr("transform", function(d) {
-          return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
-        }).text(function(d) {
-          return d.text;
-        });
-      };
-      fill = d3.scale.category20();
-      d3.layout.cloud().size([width, height]).words(wordHash).rotate(function() {
-        return ~~(Math.random() * 5) * 30 - 60;
-      }).font("Ubuntu").fontSize(function(d) {
-        return d.size;
-      }).on("end", draw).start();
-      wordCloudObject = jQuery('#show-word-cloud');
-      wordCloudObject.text('Hide Word Cloud');
-      return wordCloudObject.removeClass('disabled');
-    };
-
     Wall.prototype.pause = function() {
       this.$el.find('#toggle-pause').addClass('paused').text('Resume');
       if (this.mode !== 'evaluate') {
@@ -480,18 +381,162 @@
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
+  CK.Smartboard.View.WordCloud = (function(_super) {
+
+    __extends(WordCloud, _super);
+
+    function WordCloud() {
+      this.hide = __bind(this.hide, this);
+
+      this.gatherWordsForCloud = __bind(this.gatherWordsForCloud, this);
+
+      this.render = __bind(this.render, this);
+      return WordCloud.__super__.constructor.apply(this, arguments);
+    }
+
+    WordCloud.prototype.render = function() {
+      var words,
+        _this = this;
+      words = [];
+      return this.gatherWordsForCloud(words, function(gatheredWords) {
+        var count, fade, filteredWords, h, maxCount, maxSize, w, word, wordCloud, wordCount, wordHash, _i, _len, _ref;
+        words = gatheredWords;
+        filteredWords = _this.filterWords(words);
+        console.log(filteredWords);
+        wordCount = {};
+        for (_i = 0, _len = filteredWords.length; _i < _len; _i++) {
+          w = filteredWords[_i];
+          if ((_ref = wordCount[w]) == null) {
+            wordCount[w] = 0;
+          }
+          wordCount[w]++;
+        }
+        maxSize = 70;
+        maxCount = _.max(wordCount, function(count, word) {
+          return count;
+        });
+        console.log(maxCount, wordCount);
+        wordHash = (function() {
+          var _results;
+          _results = [];
+          for (word in wordCount) {
+            count = wordCount[word];
+            h = {
+              text: word,
+              size: Math.pow(count / maxCount, 0.5) * maxSize
+            };
+            console.log(word, count, h);
+            _results.push(h);
+          }
+          return _results;
+        })();
+        _this.generate(wordHash);
+        wordCloud = jQuery('#word-cloud');
+        wordCloud.addClass('visible');
+        fade = jQuery('#fade');
+        return fade.addClass('visible');
+      });
+    };
+
+    WordCloud.prototype.gatherWordsForCloud = function(wordsToReturn, callback) {
+      var punctuation, text, wordSeparators,
+        _this = this;
+      punctuation = /[!"&()*+,-\.\/:;<=>?\[\\\]^`\{|\}~]+/g;
+      wordSeparators = /[\s\u3031-\u3035\u309b\u309c\u30a0\u30fc\uff70]+/g;
+      text = '';
+      this.contributions = new CK.Model.Contributions();
+      return this.contributions.fetch({
+        success: function(collection, response) {
+          _.each(collection.models, function(c) {
+            console.log(c.get('headline'), c.get('content'));
+            text += c.get('headline') + ' ';
+            return text += c.get('content') + ' ';
+          });
+          _.each(text.split(wordSeparators), function(word) {
+            word = word.replace(punctuation, "");
+            return wordsToReturn.push(word);
+          });
+          return callback(wordsToReturn);
+        }
+      });
+    };
+
+    WordCloud.prototype.filterWords = function(wordsToFilter) {
+      var discard, filteredWords, htmlTags, stopWords;
+      stopWords = /^(i|me|my|myself|we|us|our|ours|ourselves|you|your|yours|yourself|yourselves|he|him|his|himself|she|her|hers|herself|it|its|itself|they|them|their|theirs|themselves|what|which|who|whom|whose|this|that|these|those|am|is|are|was|were|be|been|being|have|has|had|having|do|does|did|doing|will|would|should|can|could|ought|i'm|you're|he's|she's|it's|we're|they're|i've|you've|we've|they've|i'd|you'd|he'd|she'd|we'd|they'd|i'll|you'll|he'll|she'll|we'll|they'll|isn't|aren't|wasn't|weren't|hasn't|haven't|hadn't|doesn't|don't|didn't|won't|wouldn't|shan't|shouldn't|can't|cannot|couldn't|mustn't|let's|that's|who's|what's|here's|there's|when's|where's|why's|how's|a|an|the|and|but|if|or|because|as|until|while|of|at|by|for|with|about|against|between|into|through|during|before|after|above|below|to|from|up|upon|down|in|out|on|off|over|under|again|further|then|once|here|there|when|where|why|how|all|any|both|each|few|more|most|other|some|such|no|nor|not|only|own|same|so|than|too|very|say|says|said|shall|sd|sdf|fuck|shit|poo|pooped|boop|boops|asshole|undefined)$/i;
+      discard = /^(@|https?:)/;
+      htmlTags = /(<[^>]*?>|<script.*?<\/script>|<style.*?<\/style>|<head.*?><\/head>)/g;
+      filteredWords = _.filter(wordsToFilter, function(w) {
+        return !(stopWords.test(w));
+      });
+      return filteredWords;
+    };
+
+    WordCloud.prototype.hide = function() {
+      var fade, wordCloud;
+      wordCloud = jQuery('#word-cloud');
+      wordCloud.removeClass('visible');
+      fade = jQuery('#fade');
+      fade.removeClass('visible');
+      return jQuery('#word-cloud svg').remove();
+    };
+
+    WordCloud.prototype.generate = function(wordHash) {
+      var draw, fadeDiv, fill, height, width, wordCloud, wordCloudObject;
+      fadeDiv = jQuery('#fade');
+      width = fadeDiv.width();
+      height = fadeDiv.height();
+      wordCloud = jQuery('#word-cloud');
+      wordCloud.height(height + 'px');
+      wordCloud.width(width + 'px');
+      draw = function(words) {
+        return d3.select("#word-cloud").append("svg").attr("width", "99%").attr("height", "99%").append("g").attr("transform", "translate(" + (width / 2) + "," + (height / 2) + ")").selectAll("text").data(words).enter().append("text").style("font-size", function(d) {
+          return d.size + "px";
+        }).style("font-family", "Ubuntu").style("fill", function(d, i) {
+          return fill(i);
+        }).attr("text-anchor", "middle").attr("transform", function(d) {
+          return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+        }).text(function(d) {
+          return d.text;
+        });
+      };
+      fill = d3.scale.category20();
+      d3.layout.cloud().size([width, height]).words(wordHash).rotate(function() {
+        return ~~(Math.random() * 5) * 30 - 60;
+      }).font("Ubuntu").fontSize(function(d) {
+        return d.size;
+      }).on("end", draw).start();
+      wordCloudObject = jQuery('#show-word-cloud');
+      wordCloudObject.text('Hide Word Cloud');
+      return wordCloudObject.removeClass('disabled');
+    };
+
+    return WordCloud;
+
+  })(CK.Smartboard.View.Base);
+
+}).call(this);
+
+(function() {
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
   CK.Smartboard.View.Balloon = (function(_super) {
 
     __extends(Balloon, _super);
 
     function Balloon() {
-      this.makeDraggable = __bind(this.makeDraggable, this);
-
       this.render = __bind(this.render, this);
       return Balloon.__super__.constructor.apply(this, arguments);
     }
 
-    Balloon.prototype.initialize = function() {};
+    Balloon.prototype.initialize = function() {
+      var _this = this;
+      return this.model.on('change', function() {
+        return _this.render();
+      });
+    };
 
     Balloon.prototype.render = function() {
       if (!this.draggable) {
@@ -502,15 +547,16 @@
     Balloon.prototype.makeDraggable = function() {
       var _this = this;
       this.$el.draggable({
-        distance: 5,
+        distance: 25,
         containment: '#wall',
         stack: '.balloon',
         obstacle: ".balloon:not(#" + (this.$el.attr('id')) + ")"
       }).css('position', 'absolute');
       this.$el.on('drag', function(ev, ui) {
         return Sail.app.wall.collideBalloon(_this);
-      }).on('stop', function(ev, ui) {
+      }).on('dragstop', function(ev, ui) {
         var pos, tag, tid;
+        _this.$el.addClass('just-dragged');
         _this.model.save({
           'pos': ui.position
         });
@@ -536,6 +582,15 @@
         }
       });
       return this.draggable = true;
+    };
+
+    Balloon.prototype.cachePositionAndBounds = function() {
+      var pos;
+      this.width = this.$el.outerWidth();
+      this.height = this.$el.outerHeight();
+      pos = this.$el.position();
+      this.x = pos.left;
+      return this.y = pos.top;
     };
 
     return Balloon;
@@ -587,8 +642,12 @@
 
     ContributionBalloon.prototype.events = {
       'click': function(ev) {
-        this.$el.toggleClass('opened');
-        return this.processContributionByType();
+        if (this.$el.hasClass('just-dragged')) {
+          return this.$el.removeClass('just-dragged');
+        } else {
+          this.$el.toggleClass('opened');
+          return this.processContributionByType();
+        }
       }
     };
 
@@ -709,6 +768,7 @@
   })(CK.Smartboard.View.Balloon);
 
   CK.Smartboard.View.ContributionProposalBalloon = (function(_super) {
+    var _this = this;
 
     __extends(ContributionProposalBalloon, _super);
 
@@ -765,14 +825,18 @@
 
     ContributionProposalBalloon.prototype.events = {
       'click': function(ev) {
-        this.$el.toggleClass('opened');
-        this.$el.toggleClass(this.colorClass);
-        if (this.$el.hasClass('opened')) {
-          this.$el.removeClass('balloon-note');
+        if (ContributionProposalBalloon.$el.hasClass('just-dragged')) {
+          return ContributionProposalBalloon.$el.removeClass('just-dragged');
         } else {
-          this.$el.addClass('balloon-note');
+          ContributionProposalBalloon.$el.toggleClass('opened');
+          ContributionProposalBalloon.$el.toggleClass(ContributionProposalBalloon.colorClass);
+          if (ContributionProposalBalloon.$el.hasClass('opened')) {
+            ContributionProposalBalloon.$el.removeClass('balloon-note');
+          } else {
+            ContributionProposalBalloon.$el.addClass('balloon-note');
+          }
+          return ContributionProposalBalloon.processContributionByType();
         }
-        return this.processContributionByType();
       }
     };
 
@@ -944,9 +1008,10 @@
 
     return ContributionProposalBalloon;
 
-  })(CK.Smartboard.View.Balloon);
+  }).call(this, CK.Smartboard.View.Balloon);
 
   CK.Smartboard.View.TagBalloon = (function(_super) {
+    var _this = this;
 
     __extends(TagBalloon, _super);
 
@@ -973,18 +1038,10 @@
 
     TagBalloon.prototype.events = {
       'click': function(ev) {
-        this.model.set('pinned', !this.model.get('pinned'), {
-          silent: true
-        });
-        if (this.model.get('pinned')) {
-          this.$el.addClass('pinned');
+        if (TagBalloon.$el.hasClass('just-dragged')) {
+          return TagBalloon.$el.removeClass('just-dragged');
         } else {
-          this.$el.removeClass('pinned');
-        }
-        if (this.$el.get('pinned')) {
-          return this.$el[0].fixed = true;
-        } else {
-          this.$el[0].fixed = false;
+          return console.log('clicked tag..');
         }
       }
     };
@@ -1006,6 +1063,6 @@
 
     return TagBalloon;
 
-  })(CK.Smartboard.View.Balloon);
+  }).call(this, CK.Smartboard.View.Balloon);
 
 }).call(this);

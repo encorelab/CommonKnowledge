@@ -13,7 +13,6 @@ class CK.Smartboard.View.Base extends Backbone.View
 
     constructor: (options) ->
         super(options)
-
         
         # # check if element is in DOM; if not, insert it
         # unless @$el.parent().length > 0
@@ -39,10 +38,6 @@ class CK.Smartboard.View.Base extends Backbone.View
             else
                 console.log("autopositioning", this)
                 @autoPosition()
-
-        # if @model
-        #     @model.x ?= @$el.position().left if @$el.position().left > 0
-        #     @model.y ?= @$el.position().top if @$el.position().top > 0
 
         @$el.show()
 
