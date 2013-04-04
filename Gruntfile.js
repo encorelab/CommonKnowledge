@@ -71,6 +71,7 @@ module.exports = function(grunt) {
           'smartboard/js/ck.smartboard.view.js': [
             'smartboard/coffee/ck.smartboard.view.coffee',
             'smartboard/coffee/ck.smartboard.view.wall.coffee',
+            'smartboard/coffee/ck.smartboard.view.wordcloud.coffee',
             'smartboard/coffee/ck.smartboard.view.balloons.coffee'
           ]
         }

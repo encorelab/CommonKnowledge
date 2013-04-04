@@ -14,6 +14,8 @@
         Sail.JS_ROOT_PATH = "/shared/js/sail.js";
         Sail.load()
             .then(Sail.JS_ROOT_PATH+'/rollcall.js')
+            .then('../smartboard/js/d3.v2.js')
+            .then('../smartboard/js/d3.layout.cloud.js')
             .then('../shared/js/ck.js')
             .then('../node_modules/backbone.drowsy/backbone.drowsy.js')
             .then('../node_modules/backbone.drowsy/wakeful.js')
