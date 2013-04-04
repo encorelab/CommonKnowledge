@@ -1,3 +1,21 @@
+if typeof exports isnt "undefined" and exports isnt null
+  # we're in node
+  $ = require("jquery")
+  _ = require("underscore")
+  Backbone = require("backbone")
+  Backbone.$ = $
+  Drowsy = require("Backbone.Drowsy").Drowsy
+  
+  #var Wakeful = require('Backbone.Drowsy/wakeful').Wakeful;
+  CK = {}
+  exports.CK = CK
+else
+  window.CK = window.CK or {}
+  CK = window.CK
+  $ = window.$
+  _ = window._
+  Drowsy = window.Drowsy
+
 class CK.Model
     @requiredCollections = [
         'contributions',
