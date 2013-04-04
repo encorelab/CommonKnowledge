@@ -202,6 +202,8 @@
           // add tagger, other?  ie tag.set('tagger',Sail.app.userData.account.login);
         }
 
+        view.model.save();
+
         // TODO: do we need to deal with N/A?
         // else {
         //   // case: N/A tag selected
@@ -323,24 +325,21 @@
         }
       }
 
-      // add the tags
+      // add the tags   
       Sail.app.tagList.each(function(tag) {
         // TODO: what are we doing with the N/A tag
         if (tag.get('name') !== "N/A") {
           var tagButton = jQuery('button#'+tag.id);
-          // length avoids duplicating (probably a better way to do this in backbone?)
           //if (tagButton.length === 0 && tag.get('name') != "N/A") {
           if (tagButton.length === 0) {
             tagButton = jQuery('<button id='+tag.id+' type="button" class="btn tag-btn"></button>');
-            //tagButton = jQuery(tagButton);
-            jQuery('#tag-submission-container').append(tagButton);
+            tagButton.text(tag.get('name'));
+            tagButton.data('tag',tag);
+            jQuery('#tag-submission-container').append(tagButton);          
           }
-          tagButton.text(tag.get('name'));
-          tagButton.data('tag',tag);
         }
       });
-
-    } // end of render
+    }
   });
 
 
@@ -376,6 +375,10 @@
       //     jQuery('#share-note-btn').addClass('disabled');
       //   }
 
+      // },
+
+      // 'click #none-button': function(ev) {
+      //   // define none button behaviour
       // }
     },
 
@@ -398,11 +401,9 @@
       jQuery('.tag-btn').removeClass('active');
 
       Sail.app.tagList.each(function(tag) {
-        var tagButton = jQuery('button#'+tag.id);
-        // length avoids duplicating (probably a better way to do this in backbone?)
-        //if (tagButton.length === 0 && tag.get('name') != "N/A") {
+        var tagButton = jQuery('button#bucket'+tag.id);
         if (tagButton.length === 0) {
-          tagButton = jQuery('<button id='+tag.id+' type="button" class="btn tag-btn"></button>');
+          tagButton = jQuery('<button id="bucket'+tag.id+'" type="button" class="btn tag-btn"></button>');
           tagButton = jQuery(tagButton);
           jQuery('#bucket-tagging-btn-container').append(tagButton);
         }
@@ -418,6 +419,10 @@
           tagButton.addClass('active');
         }
       });
+      var noneButton = jQuery('#none-button');
+      if (noneButton.length === 0) {
+        jQuery('#bucket-tagging-btn-container').append(noneButton);
+      }      
 
       // enable/disable the Share button - TODO: set me to Tag it! or something
       // if (Sail.app.bucketedContribution && Sail.app.bucketedContribution.get('tags').length > 0) {
