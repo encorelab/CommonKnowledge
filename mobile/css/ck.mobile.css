@@ -251,7 +251,7 @@ i {
 	margin-bottom: 5px;
 }
 
-.selected-note .note-metadata {
+.selected-note .note-metadata, .selected-note .build-on-metadata {
 	float: right;
 }
 

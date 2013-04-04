@@ -22,7 +22,12 @@
         $target.children().first().addClass('selected');
         var contribId = $target.attr('id');
 
-        Sail.app.showDetails(Sail.app.contributionList.get(contribId));        
+        var selectedContrib = Sail.app.contributionList.get(contribId);
+
+        // DetailsView
+        Sail.app.showDetails(selectedContrib);
+        // preparing for buildOns, if clicked
+        Sail.app.contribution = selectedContrib;
       },
 
       'click #new-note-btn': 'new-note'
@@ -45,12 +50,12 @@
     **/
     render: function () {
       console.log("rendering ContributionListView!");
-      var view = this,
-        created_at;
+      var createdAt;
 
       jQuery('#contribution-list li').remove();
 
-      _.each(view.collection.models, function(contrib) {
+      // TODO: order this by published (in mobile.js?)
+      Sail.app.contributionList.each(function(contrib) {
         if (contrib.get('published') === true) {
           console.log('headline: ' + contrib.get('headline'));
 
@@ -65,9 +70,9 @@
           note.find('.headline').text(contrib.get('headline'));
 
           // functions toLocaleDateString() and toLocaleTimeString() are only defined if created_at is a Date object
-          created_at = new Date(contrib.get('created_at'));  // created_at as Date object
-          if (typeof created_at !== 'undefined' && created_at !== null) {
-            note.find('.date').text(' (' + created_at.toLocaleDateString() + ' ' + created_at.toLocaleTimeString() + ')');
+          createdAt = new Date(contrib.get('created_at'));  // createdAt as Date object
+          if (typeof createdAt !== 'undefined' && createdAt !== null) {
+            note.find('.date').text(' (' + createdAt.toLocaleDateString() + ' ' + createdAt.toLocaleTimeString() + ')');
           }
 
           note.find('.author').text(contrib.get('author'));               
@@ -105,7 +110,8 @@
     },
 
     'build-on': function () {
-      console.log("Creating a build-on note");
+      jQuery('#note-body-entry').removeClass('disabled');
+      jQuery('#note-headline-entry').addClass('disabled');     
       Sail.app.createNewBuildOn();
     },
 
@@ -119,7 +125,7 @@
 
       jQuery('#contribution-details .field').text('');
 
-      // created_at will return undefined, so need to check it exists... (not sure if this will happen in Beta, might be unnecessary)
+      // created_at will return undefined, so need to check it exists...
       if (view.model && view.model.get('created_at')) {
         // TODO - do this with a loop instead of manually
         jQuery('#contribution-details .note-headline').text(view.model.get('headline'));
@@ -132,11 +138,15 @@
           jQuery('#contribution-details .note-created-at').text(' (' + created_at.toLocaleDateString() + ' ' + created_at.toLocaleTimeString() + ')');
         }
 
-        var buildOnEl = "<hr /><div>";
+        // add the buildOns (if they are published)
+        var buildOnEl = '<hr /><div>';
         _.each(view.model.get('build_ons'), function(b) {
-          var date = new Date(b.created_at);
-          buildOnEl += b.content + "<br />~" + b.author;
-          buildOnEl += " (" + date.toLocaleDateString() + ' ' + date.toLocaleTimeString() + ")" +  "<hr />";
+          if (b.published === true) {
+            var date = new Date(b.created_at);
+            buildOnEl += b.content;
+            buildOnEl += '<br /><span class="build-on-metadata">~' + b.author;
+            buildOnEl += ' (' + date.toLocaleDateString() + ' ' + date.toLocaleTimeString() + ')' +  '</span><hr />';            
+          }
         });
 
         buildOnEl += "</div>";
@@ -220,19 +230,19 @@
       },      
 
       'keyup :input': function (ev) {
-        //var view = this,
-        var inputKey = ev.target.name,
+        var view = this,
+          inputKey = ev.target.name,
           userValue = jQuery('#'+ev.target.id).val();
         // If we hit a key clear intervals so that during typing intervals don't kick in
         window.clearTimeout(Sail.app.autoSaveTimer);
 
         // save after 10 keystrokes
-        Sail.app.autoSave(Sail.app.contribution, inputKey, userValue, false);
+        Sail.app.autoSave(view.model, inputKey, userValue, false);
 
         // setting up a timer so that if we stop typing we save stuff after 5 seconds
         Sail.app.autoSaveTimer = setTimeout( function(){
           console.log('Autosave data for: '+inputKey);
-          Sail.app.autoSave(Sail.app.contribution, inputKey, userValue, true);
+          Sail.app.autoSave(view.model, inputKey, userValue, true);
         }, 5000);
       },
 
@@ -254,51 +264,37 @@
       // avoid weird entries showing up in the model
       window.clearTimeout(Sail.app.autoSaveTimer);
 
-      Sail.app.contribution.set('content',jQuery('#note-body-entry').val());
-      Sail.app.contribution.set('headline',jQuery('#note-headline-entry').val());
-      
-      if (Sail.app.contribution.get('kind') === 'brainstorm') {
+      if (view.model.kind && view.model.kind === 'buildOn') {
+        // grab the buildOns and then choose the one for this user
+        var buildOnArray = Sail.app.contribution.get('build_ons');
+        var buildOnToUpdate = _.find(buildOnArray, function(b) {
+          return b.author === Sail.app.userData.account.login && b.published === false;
+        });
+        buildOnToUpdate.content = jQuery('#note-body-entry').val();
+        if (buildOnToUpdate.content !== "") {
+          buildOnToUpdate.published = true;
+          Sail.app.contribution.set('build_ons',buildOnArray);
+          Sail.app.saveContribution(view);
+        } else {
+          jQuery().toastmessage('showErrorToast', "Please enter content for your build on");
+        }
+      } else {    // for brainstorms
+        Sail.app.contribution.set('content',jQuery('#note-body-entry').val());
+        Sail.app.contribution.set('headline',jQuery('#note-headline-entry').val());
+        // is this check doing what we think it's doing?
         if (Sail.app.contribution.has('content') && Sail.app.contribution.has('headline')) {
-
           Sail.app.contribution.set('published', true);
-          console.log("Submitting contribution...");
-          
-          Sail.app.contribution.save(null, {
-            complete: function () {
-              console.log("Brainstorm note submitted!");
-            },
-            success: function () {
-              console.log("Contribution saved");
-
-              jQuery('#contribution-input').hide('slide', {direction: 'up'});
-              jQuery().toastmessage('showSuccessToast', "Contribution submitted");
-
-              // I think we need to lock the fields again and force the student to use the new note button
-              jQuery('#note-body-entry').addClass('disabled');
-              jQuery('#note-headline-entry').addClass('disabled');
-              jQuery('.tag-btn').removeClass('active');       // TODO: check, do we also need to unselect/refresh the button or something here?
-
-              // clear the old contribution plus ui fields
-              Sail.app.contribution.clear(null, {silent: true});
-              view.stopListening(Sail.app.contribution);
-              view.$el.find(".field").val(null);
-            },
-            failure: function(model, response) {
-              console.log('Error submitting: ' + response);
-            }
-          });
+          Sail.app.saveContribution(view);
         } else {
           jQuery().toastmessage('showErrorToast', "Please enter both a note and a headline");
-        }        
+        }
       }
-
     },
 
     /**
       Triggers full update of all dynamic elements in the input view
     **/
     render: function () {
-      //var view = this;
       console.log("rendering ContributionInputView...");
       var contrib = Sail.app.contribution;
 
