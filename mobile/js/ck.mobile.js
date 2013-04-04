@@ -116,13 +116,22 @@ CK.Mobile = function() {
         console.log('Entering brainstorm phase...');
 
         var unfinishedContrib = _.find(app.contributionList.models, function(contrib) {
-          return contrib.get('author') === Sail.app.userData.account.login && contrib.get('published') === false && contrib.get('content') && contrib.get('headline');
+          return contrib.get('author') === app.userData.account.login && contrib.get('published') === false && contrib.get('content') && contrib.get('headline');
+        });
+
+        var unfinishedBuildOn = _.find(app.contributionList.models, function(contrib) {
+          return _.find(contrib.get('build_ons'), function(b) {
+            return b.author === app.userData.account.login && b.published === false;
+          });
         });
 
         if (unfinishedContrib) {
           console.log('Unfinished Contribution found...');
           app.restoreUnfinishedNote(unfinishedContrib);
-        }        
+        } else if (unfinishedBuildOn) {                       // I guess we want unfinished contribs to trump unfinished buildons?
+          console.log('Unfinished BuildOn found...');
+          app.restoreUnfinishedBuildOn(unfinishedBuildOn);
+        }
       }
       // var phase = s.get('state');
       // // once phase is retrieved get the user_state
@@ -435,6 +444,7 @@ CK.Mobile = function() {
     app.contribution.set('kind', 'brainstorm');
 
     app.contribution.save();
+    app.inputView.render();
   };
 
   app.createNewBuildOn = function() {
@@ -464,6 +474,7 @@ CK.Mobile = function() {
     app.inputView.$el.show('slide', {direction: 'up'});
 
     app.contribution.save();
+    app.inputView.render();
   };
 
   app.saveContribution = function(view) {
@@ -495,7 +506,8 @@ CK.Mobile = function() {
     });
   };
 
-  app.restoreUnfinishedNote = function (contrib) {
+  app.restoreUnfinishedNote = function(contrib) {
+    console.log("Restoring Contribution");
     app.contribution = contrib;
     if (app.inputView === null) {
       app.inputView = new CK.Mobile.View.ContributionInputView({
@@ -512,6 +524,31 @@ CK.Mobile = function() {
 
     app.inputView.render();
   };
+
+  app.restoreUnfinishedBuildOn = function(contrib) {
+    console.log("Restoring BuildOn");
+    app.contribution = contrib;
+    // gawd, we need a getMyBuildOn helper
+    var buildOnArray = app.contribution.get('build_ons');
+    app.buildOn = _.find(buildOnArray, function(b) {
+      return b.author === app.userData.account.login && b.published === false;
+    });
+
+    if (app.inputView === null) {
+      app.inputView = new CK.Mobile.View.ContributionInputView({
+        el: jQuery('#contribution-input'),
+        model: app.buildOn
+      });
+    } else {
+      if (typeof app.inputView.model !== 'undefined' && app.inputView.model !== null) {
+        app.inputView.stopListening(app.inputView.model);
+      }
+      app.inputView.model = app.buildOn;
+    }
+    app.inputView.$el.show('slide', {direction: 'up'});
+
+    app.inputView.render();    
+  }
 
   app.showDetails = function(contrib) {
     console.log('creating a new Details');
@@ -886,28 +923,28 @@ CK.Mobile = function() {
   };
 
   app.autoSave = function(model, inputKey, inputValue, instantSave) {
-    Sail.app.keyCount++;
-    console.log("saving stuff as we go at", Sail.app.keyCount);
+    app.keyCount++;
+    console.log("saving stuff as we go at", app.keyCount);
 
     if (model.kind === 'buildOn') {
-      if (instantSave || Sail.app.keyCount > 9) {
+      if (instantSave || app.keyCount > 9) {
         // save to buildOn model to stay current with view
         app.buildOn = inputValue;
         // save to contribution model so that it actually saves
-        var buildOnArray = Sail.app.contribution.get('build_ons');
+        var buildOnArray = app.contribution.get('build_ons');
         var buildOnToUpdate = _.find(buildOnArray, function(b) {
-          return b.author === Sail.app.userData.account.login && b.published === false;
+          return b.author === app.userData.account.login && b.published === false;
         });
         buildOnToUpdate.content = inputValue;
-        Sail.app.contribution.set('build_ons',buildOnArray);
-        Sail.app.contribution.save(null, {silent: true});
-        Sail.app.keyCount = 0;
+        app.contribution.set('build_ons',buildOnArray);
+        app.contribution.save(null, {silent: true});
+        app.keyCount = 0;
       }
     } else {
-      if (instantSave || Sail.app.keyCount > 9) {
+      if (instantSave || app.keyCount > 9) {
         model.set(inputKey, inputValue);
         model.save(null, {silent: true});
-        Sail.app.keyCount = 0;
+        app.keyCount = 0;
       }
     }
   };

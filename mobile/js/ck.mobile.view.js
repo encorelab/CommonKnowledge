@@ -278,7 +278,7 @@
         } else {
           jQuery().toastmessage('showErrorToast', "Please enter content for your build on");
         }
-      } else {    // for brainstorms
+      } else {    // for brainstorm
         Sail.app.contribution.set('content',jQuery('#note-body-entry').val());
         Sail.app.contribution.set('headline',jQuery('#note-headline-entry').val());
         // is this check doing what we think it's doing?
@@ -295,39 +295,43 @@
       Triggers full update of all dynamic elements in the input view
     **/
     render: function () {
+      var view = this;
       console.log("rendering ContributionInputView...");
-      var contrib = Sail.app.contribution;
-
-      jQuery('#note-body-entry').val(contrib.get('content'));
-      jQuery('#note-headline-entry').val(contrib.get('headline'));
-
-      if (typeof contrib !== 'undefined' && contrib !== null) {
+      
+      if (view.model.kind && view.model.kind === 'buildOn') {
+        jQuery('#note-body-label').text('Build On');                // TODO: make these pop way more
         jQuery('#note-body-entry').removeClass('disabled');
-        jQuery('#note-headline-entry').removeClass('disabled');
-      }
+        jQuery('#note-body-entry').val(view.model.content);
 
-      if (contrib.get('kind') === 'brainstorm') {
+      } else {      // for brainstorm
+        var contrib = Sail.app.contribution;
         jQuery('#note-body-label').text('New Note');
-      } else if (contrib.kind === 'buildOn') {
-        jQuery('#note-body-label').text('Build On Note');
-      } else {
-        console.log('unknown note type');
+
+        jQuery('#note-body-entry').val(contrib.get('content'));
+        jQuery('#note-headline-entry').val(contrib.get('headline'));
+
+        if (typeof contrib !== 'undefined' && contrib !== null) {
+          jQuery('#note-body-entry').removeClass('disabled');
+          jQuery('#note-headline-entry').removeClass('disabled');
+        }
+
+        // add the tags   
+        Sail.app.tagList.each(function(tag) {
+          // TODO: what are we doing with the N/A tag
+          if (tag.get('name') !== "N/A") {
+            var tagButton = jQuery('button#'+tag.id);
+            //if (tagButton.length === 0 && tag.get('name') != "N/A") {
+            if (tagButton.length === 0) {
+              tagButton = jQuery('<button id='+tag.id+' type="button" class="btn tag-btn"></button>');
+              tagButton.text(tag.get('name'));
+              tagButton.data('tag',tag);
+              jQuery('#tag-submission-container').append(tagButton);          
+            }
+          }
+        });        
       }
 
-      // add the tags   
-      Sail.app.tagList.each(function(tag) {
-        // TODO: what are we doing with the N/A tag
-        if (tag.get('name') !== "N/A") {
-          var tagButton = jQuery('button#'+tag.id);
-          //if (tagButton.length === 0 && tag.get('name') != "N/A") {
-          if (tagButton.length === 0) {
-            tagButton = jQuery('<button id='+tag.id+' type="button" class="btn tag-btn"></button>');
-            tagButton.text(tag.get('name'));
-            tagButton.data('tag',tag);
-            jQuery('#tag-submission-container').append(tagButton);          
-          }
-        }
-      });
+
     }
   });
 
