@@ -4,7 +4,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
     wordCloudShowable: true
 
     # determines how deep collision detection will be checked (from balloons hitting other balloons hitting other balloons...)
-    maxCollisionRecursion: 2 
+    maxCollisionRecursion: 1
 
     events:
         'click #add-tag-opener': (ev) ->
@@ -80,18 +80,19 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
         # updateAllPositions()
 
     addBalloon: (doc, view, balloonList) =>
-        b = new view
+        bv = new view
             model: doc
-        doc.on 'change', b.render
-        b.render()
-        @$el.append b.$el
+        doc.on 'change', bv.render
+        bv.wall = this
+        bv.render()
+        @$el.append bv.$el
 
-        # b.$el.on 'drag', (ev, ui) =>
-        #     console.log ev, ui
-        #     for id,bv of @balloonViews
-        #         @balloonQuadtree.visit @detectCollisions(bv.$el)
+        # kind of an awkward place to call this, but this needs to happen after teh view has been
+        # rendered and after it's been added to the DOM
+        bv.cachePositionAndBounds()
+        bv.renderConnectors() if bv.renderConnectors?
 
-        balloonList[doc.id] = b
+        balloonList[doc.id] = bv
 
     # check collisions for the given balloon (given ballon exerts force and gets no pushback)..
     # any other balloon that the given balloon collides with will also be checked for collision
@@ -118,26 +119,27 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                 yOverlap = Math.min(topOverlap, bottomOverlap)
                 xOverlap = Math.min(leftOverlap, rightOverlap)
                 #console.log b.model.get('name'), o.model.get('name'), topOverlap, bottomOverlap, leftOverlap, rightOverlap
+
+                # TODO: this isn't quite behaving the way I intended... wanted bubbles to stack up a bit
+                #       when there are a lot piled up together
+                # if recursionLevel > 0
+                #     nudgeScale = 1 - (recursionLevel / @maxCollisionRecursion)
+                # else
+                #     nudgeScale = 1
+                nudgeScale = 1
+
                 if yOverlap < xOverlap
-                    # yNudge = (yOverlap/yDist) * yOverlap/h * force.alpha()
-                    # b.top = b.top + yNudge*qRepulsion
-                    # o.top = o.top - yNudge*bRepulsion
-                    
                     yNudge = yOverlap #(yOverlap/2)
                     if b.top < o.top
-                        o.top += yNudge
+                        o.top += yNudge * nudgeScale
                     else
-                        o.top -= yNudge
+                        o.top -= yNudge * nudgeScale
                 else
-                    # xNudge = (xOverlap/xDist) * xOverlap/w * force.alpha()
-                    # b.left = b.left + xNudge*qRepulsion
-                    # o.left = o.left - xNudge*bRepulsion
-                    
                     xNudge = xOverlap #(xOverlap/2)
                     if b.left < o.left
-                        o.left += xNudge
+                        o.left += xNudge * nudgeScale
                     else
-                        o.left -= xNudge
+                        o.left -= xNudge * nudgeScale
 
                 if o.bottom > @_boundsHeight
                     o.top -= o.bottom - @_boundsHeight
@@ -148,7 +150,9 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                 else if o.left < 0
                     o.left = 0
 
-                if recursionLevel <= @maxCollisionRecursion
+                o.renderConnectors() if o.renderConnectors?
+
+                if recursionLevel < @maxCollisionRecursion
                     ignoreBalloons.push(b)
                     @collideBalloon(o, recursionLevel + 1, ignoreBalloons)
 

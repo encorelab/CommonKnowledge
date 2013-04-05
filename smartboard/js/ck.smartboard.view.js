@@ -121,7 +121,7 @@
 
     Wall.prototype.wordCloudShowable = true;
 
-    Wall.prototype.maxCollisionRecursion = 2;
+    Wall.prototype.maxCollisionRecursion = 1;
 
     Wall.prototype.events = {
       'click #add-tag-opener': function(ev) {
@@ -223,18 +223,23 @@
     };
 
     Wall.prototype.addBalloon = function(doc, view, balloonList) {
-      var b;
-      b = new view({
+      var bv;
+      bv = new view({
         model: doc
       });
-      doc.on('change', b.render);
-      b.render();
-      this.$el.append(b.$el);
-      return balloonList[doc.id] = b;
+      doc.on('change', bv.render);
+      bv.wall = this;
+      bv.render();
+      this.$el.append(bv.$el);
+      bv.cachePositionAndBounds();
+      if (bv.renderConnectors != null) {
+        bv.renderConnectors();
+      }
+      return balloonList[doc.id] = bv;
     };
 
     Wall.prototype.collideBalloon = function(balloon, recursionLevel, ignoreBalloons) {
-      var b, bottomOverlap, id, leftOverlap, o, rightOverlap, topOverlap, xNudge, xOverlap, yNudge, yOverlap, _ref, _ref1, _ref2, _results;
+      var b, bottomOverlap, id, leftOverlap, nudgeScale, o, rightOverlap, topOverlap, xNudge, xOverlap, yNudge, yOverlap, _ref, _ref1, _ref2, _results;
       if (recursionLevel == null) {
         recursionLevel = 0;
       }
@@ -267,19 +272,20 @@
         if (rightOverlap > 0 && leftOverlap > 0 && topOverlap > 0 && bottomOverlap > 0) {
           yOverlap = Math.min(topOverlap, bottomOverlap);
           xOverlap = Math.min(leftOverlap, rightOverlap);
+          nudgeScale = 1;
           if (yOverlap < xOverlap) {
             yNudge = yOverlap;
             if (b.top < o.top) {
-              o.top += yNudge;
+              o.top += yNudge * nudgeScale;
             } else {
-              o.top -= yNudge;
+              o.top -= yNudge * nudgeScale;
             }
           } else {
             xNudge = xOverlap;
             if (b.left < o.left) {
-              o.left += xNudge;
+              o.left += xNudge * nudgeScale;
             } else {
-              o.left -= xNudge;
+              o.left -= xNudge * nudgeScale;
             }
           }
           if (o.bottom > this._boundsHeight) {
@@ -292,7 +298,10 @@
           } else if (o.left < 0) {
             o.left = 0;
           }
-          if (recursionLevel <= this.maxCollisionRecursion) {
+          if (o.renderConnectors != null) {
+            o.renderConnectors();
+          }
+          if (recursionLevel < this.maxCollisionRecursion) {
             ignoreBalloons.push(b);
             this.collideBalloon(o, recursionLevel + 1, ignoreBalloons);
           }
@@ -528,7 +537,8 @@
 (function() {
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   CK.Smartboard.View.Balloon = (function(_super) {
 
@@ -561,33 +571,35 @@
         obstacle: ".balloon:not(#" + (this.$el.attr('id')) + ")"
       }).css('position', 'absolute');
       this.$el.on('drag', function(ev, ui) {
-        return Sail.app.wall.collideBalloon(_this);
+        return _this.wall.collideBalloon(_this);
       }).on('dragstop', function(ev, ui) {
-        var pos, tag, tid;
+        var bv, id, _ref, _results;
         _this.$el.addClass('just-dragged');
         _this.model.save({
           'pos': ui.position
         });
-        console.log("Saving pinned tag's position");
-        pos = _this.$el.position();
-        tid = _this.$el.attr('id');
-        tag = Sail.app.tags.get(tid);
-        if (tag) {
-          tag.set({
+        _ref = _this.wall.balloonViews;
+        _results = [];
+        for (id in _ref) {
+          bv = _ref[id];
+          if (bv === _this) {
+            continue;
+          }
+          bv.model.set({
             pos: {
-              left: pos.left,
-              top: pos.top,
-              pinned: true
+              left: bv.left,
+              top: bv.top
             }
-          }, {
-            silent: true
           });
-          return tag.save({}, {
-            silent: true
-          });
-        } else {
-          return console.log("Couldn't save pinned tag's position -- couldn't find a tag with id: ", tid);
+          if (bv.model.hasChanged()) {
+            _results.push(bv.model.save({}, {
+              silent: true
+            }));
+          } else {
+            _results.push(void 0);
+          }
         }
+        return _results;
       });
       return this.draggable = true;
     };
@@ -628,6 +640,8 @@
 
       this.renderTags = __bind(this.renderTags, this);
 
+      this.renderConnectors = __bind(this.renderConnectors, this);
+
       this.render = __bind(this.render, this);
 
       this.toggleAnalysis = __bind(this.toggleAnalysis, this);
@@ -635,6 +649,8 @@
       this.resetView = __bind(this.resetView, this);
 
       this.processContributionByType = __bind(this.processContributionByType, this);
+
+      this.makeDraggable = __bind(this.makeDraggable, this);
 
       this.setColorClass = __bind(this.setColorClass, this);
 
@@ -659,6 +675,14 @@
           return this.processContributionByType();
         }
       }
+    };
+
+    ContributionBalloon.prototype.makeDraggable = function() {
+      var _this = this;
+      ContributionBalloon.__super__.makeDraggable.call(this);
+      return this.$el.on('drag', function(ev, ui) {
+        return _this.renderConnectors();
+      });
     };
 
     ContributionBalloon.prototype.processContributionByType = function() {
@@ -721,8 +745,40 @@
       meta = this.findOrCreate('.meta', "<div class='meta'><span class='author'></span></div>");
       meta.find('.author').text(this.model.get('author')).addClass("author-" + (this.model.get('author')));
       this.renderBuildons();
+      this.renderConnectors();
       this.processContributionByType();
       return this;
+    };
+
+    ContributionBalloon.prototype.renderConnectors = function() {
+      var connector, connectorId, connectorLength, connectorTransform, tag, tagId, tagView, x1, x2, y1, y2, _i, _len, _ref, _ref1, _results;
+      _ref1 = (_ref = this.model.get('tags')) != null ? _ref : [];
+      _results = [];
+      for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+        tag = _ref1[_i];
+        tagId = tag.id.toLowerCase();
+        tagView = this.wall.balloonViews[tagId];
+        if (tagView == null) {
+          continue;
+        }
+        connectorId = this.model.id + "-" + tagId;
+        connector = CK.Smartboard.View.findOrCreate(this.wall.$el, "#" + connectorId, "<div class='connector' id='" + connectorId + "'></div>");
+        x1 = this.left + this.width / 2;
+        y1 = this.top + this.height / 2;
+        x2 = tagView.left + tagView.width / 2;
+        y2 = tagView.top + tagView.height / 2;
+        connectorLength = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+        connectorTransform = "rotate(" + (Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI) + "deg)";
+        _results.push(connector.css({
+          'top': "" + y1 + "px",
+          'left': "" + x1 + "px",
+          'width': "" + connectorLength + "px",
+          '-webkit-transform': connectorTransform,
+          '-moz-transform': connectorTransform,
+          'transform': connectorTransform
+        }));
+      }
+      return _results;
     };
 
     ContributionBalloon.prototype.renderTags = function() {
@@ -777,249 +833,6 @@
 
   })(CK.Smartboard.View.Balloon);
 
-  CK.Smartboard.View.ContributionProposalBalloon = (function(_super) {
-    var _this = this;
-
-    __extends(ContributionProposalBalloon, _super);
-
-    ContributionProposalBalloon.prototype.tagName = 'article';
-
-    ContributionProposalBalloon.prototype.className = 'contribution balloon';
-
-    ContributionProposalBalloon.prototype.id = function() {
-      return this.domID();
-    };
-
-    ContributionProposalBalloon.prototype.setColorClass = function(colorClass) {
-      return this.colorClass = colorClass;
-    };
-
-    ContributionProposalBalloon.prototype.setTagColorList = function(colorList) {
-      return this.tagList = colorList;
-    };
-
-    function ContributionProposalBalloon(options) {
-      this.renderBuildons = __bind(this.renderBuildons, this);
-
-      this.renderTags = __bind(this.renderTags, this);
-
-      this.render = __bind(this.render, this);
-
-      this.setIdeaCount = __bind(this.setIdeaCount, this);
-
-      this.toggleProposal = __bind(this.toggleProposal, this);
-
-      this.toggleInterpret = __bind(this.toggleInterpret, this);
-
-      this.resetView = __bind(this.resetView, this);
-
-      this.processContributionByType = __bind(this.processContributionByType, this);
-
-      this.setTagColorList = __bind(this.setTagColorList, this);
-
-      this.setColorClass = __bind(this.setColorClass, this);
-
-      this.id = __bind(this.id, this);
-      ContributionProposalBalloon.__super__.constructor.call(this, options);
-      this.balloonContributionTypes = {
-        "default": 'default',
-        analysis: 'analysis',
-        propose: 'propose',
-        interpret: 'interpret'
-      };
-      console.log(this.balloonContributionTypes);
-      this.ballonContributionType = this.balloonContributionTypes.propose;
-      this.colorClass = "whiteGradient";
-      this.tagList = {};
-    }
-
-    ContributionProposalBalloon.prototype.events = {
-      'click': function(ev) {
-        if (ContributionProposalBalloon.$el.hasClass('just-dragged')) {
-          return ContributionProposalBalloon.$el.removeClass('just-dragged');
-        } else {
-          ContributionProposalBalloon.$el.toggleClass('opened');
-          ContributionProposalBalloon.$el.toggleClass(ContributionProposalBalloon.colorClass);
-          if (ContributionProposalBalloon.$el.hasClass('opened')) {
-            ContributionProposalBalloon.$el.removeClass('balloon-note');
-          } else {
-            ContributionProposalBalloon.$el.addClass('balloon-note');
-          }
-          return ContributionProposalBalloon.processContributionByType();
-        }
-      }
-    };
-
-    ContributionProposalBalloon.prototype.processContributionByType = function() {
-      if (this.ballonContributionType === this.balloonContributionTypes.propose) {
-        return this.toggleProposal();
-      } else if (this.ballonContributionType === this.balloonContributionTypes.interpret) {
-        return this.toggleInterpret();
-      }
-    };
-
-    ContributionProposalBalloon.prototype.resetView = function() {
-      var balloonID, balloonObj;
-      console.log('Reset Proposal Views');
-      balloonObj = jQuery(this.$el);
-      balloonID = balloonObj.attr('id');
-      balloonObj.removeClass(this.colorClass).removeClass('opened').addClass('balloon-note');
-      jQuery('#' + balloonID + ' .headline').hide();
-      jQuery('#' + balloonID + ' .proposal').hide();
-      jQuery('#' + balloonID + ' .proposal-body').hide();
-      jQuery('#' + balloonID + ' .justification').hide();
-      jQuery('#' + balloonID + ' .justification-body').hide();
-      jQuery('#' + balloonID + ' .meta').hide();
-      jQuery('#' + balloonID + ' .idea-counter').hide();
-      return jQuery('#' + balloonID + ' img.balloon-note').fadeIn('fast');
-    };
-
-    ContributionProposalBalloon.prototype.toggleInterpret = function() {
-      var balloonID, balloonObj;
-      console.log('Toggle Interpret');
-      balloonObj = jQuery(this.$el);
-      balloonID = balloonObj.attr('id');
-      if (this.$el.hasClass('opened')) {
-        jQuery('#' + balloonID + ' img.balloon-note').hide();
-        jQuery('#' + balloonID + ' .headline').fadeIn('fast');
-        jQuery('#' + balloonID + ' .proposal').fadeIn('fast');
-        jQuery('#' + balloonID + ' .justification').fadeIn('fast');
-        jQuery('#' + balloonID + ' .meta').fadeIn('fast');
-        return jQuery('#' + balloonID + ' .idea-counter').fadeIn('fast');
-      } else {
-        jQuery('#' + balloonID + ' .headline').hide();
-        jQuery('#' + balloonID + ' .proposal').hide();
-        jQuery('#' + balloonID + ' .proposal-body').hide();
-        jQuery('#' + balloonID + ' .justification').hide();
-        jQuery('#' + balloonID + ' .justification-body').hide();
-        jQuery('#' + balloonID + ' .meta').hide();
-        jQuery('#' + balloonID + ' .idea-counter').hide();
-        return jQuery('#' + balloonID + ' img.balloon-note').fadeIn('fast');
-      }
-    };
-
-    ContributionProposalBalloon.prototype.toggleProposal = function() {
-      var balloonID, balloonObj;
-      console.log('Toggle Proposal');
-      balloonObj = jQuery(this.$el);
-      balloonID = balloonObj.attr('id');
-      balloonID = balloonObj.attr('id');
-      if (this.$el.hasClass('opened')) {
-        jQuery('#' + balloonID + ' img.balloon-note').hide();
-        jQuery('#' + balloonID + ' .headline').fadeIn('fast');
-        jQuery('#' + balloonID + ' .proposal').fadeIn('fast');
-        jQuery('#' + balloonID + ' .justification').fadeIn('fast');
-        return jQuery('#' + balloonID + ' .meta').fadeIn('fast');
-      } else {
-        jQuery('#' + balloonID + ' .headline').hide();
-        jQuery('#' + balloonID + ' .proposal').hide();
-        jQuery('#' + balloonID + ' .proposal-body').hide();
-        jQuery('#' + balloonID + ' .justification').hide();
-        jQuery('#' + balloonID + ' .justification-body').hide();
-        jQuery('#' + balloonID + ' .meta').hide();
-        return jQuery('#' + balloonID + ' img.balloon-note').fadeIn('fast');
-      }
-    };
-
-    ContributionProposalBalloon.prototype.setIdeaCount = function(count) {
-      var balloonID, balloonObj, countNumber, ideaCounterContainer, ideaCounterObj;
-      balloonObj = jQuery(this.$el);
-      balloonID = balloonObj.attr('id');
-      ideaCounterObj = jQuery('#' + balloonID + ' div.idea-counter span.idea-count');
-      ideaCounterContainer = jQuery('#' + balloonID + ' div.idea-counter');
-      countNumber = parseInt(count, 10);
-      if (countNumber < 1) {
-        ideaCounterContainer.removeClass('idea-counter-on').addClass('idea-counter-off');
-        return ideaCounterObj.html('&nbsp;');
-      } else if (countNumber < 10) {
-        ideaCounterContainer.removeClass('idea-counter-off').addClass('idea-counter-on');
-        return ideaCounterObj.html('&nbsp;' + countNumber);
-      } else {
-        ideaCounterContainer.removeClass('idea-counter-off').addClass('idea-counter-on');
-        return ideaCounterObj.html(countNumber);
-      }
-    };
-
-    ContributionProposalBalloon.prototype.render = function() {
-      var headline, ideaCounter, justification, meta, nodeHeader, numberOfVotes, proposal;
-      ContributionProposalBalloon.__super__.render.call(this);
-      this.$el.addClass('contribution').toggleClass('balloon-note');
-      console.log('Rendering propose balloon.');
-      nodeHeader = this.findOrCreate('.balloon-note', '<img style="display: none;" class="balloon-note" src="/smartboard/img/notes_large.png" alt="Note">');
-      ideaCounter = this.findOrCreate('.idea-counter', '<div class="idea-counter idea-counter-off" style="display: none"><span class="idea-count">&nbsp;</span></div>');
-      headline = this.findOrCreate('.headline', "<h3 class='headline'></h3>");
-      headline.text(this.model.get('headline'));
-      proposal = this.findOrCreate('.proposal', "<div class='proposal'>&#8227; Proposal<div class='proposal-body' tyle='display: none'></div></div>");
-      proposal.find('.proposal-body').text(this.model.get('proposal'));
-      proposal.unbind('click');
-      proposal.click(function(e) {
-        e.stopPropagation();
-        return jQuery(this).find('.proposal-body').slideToggle('fast');
-      });
-      justification = this.findOrCreate('.justification', "<div class='justification'>&#8227; Justification<div class='justification-body' style='display: none'></div></div>");
-      justification.find('.justification-body').text(this.model.get('justification'));
-      justification.unbind('click');
-      justification.click(function(e) {
-        e.stopPropagation();
-        return jQuery(this).find('.justification-body').slideToggle('fast');
-      });
-      meta = this.findOrCreate('.meta', "<div class='meta'><span class='author'></span></div>");
-      meta.find('.author').text(this.model.get('author')).addClass("author-" + (this.model.get('author')));
-      numberOfVotes = this.model.get('votes');
-      if (numberOfVotes != null) {
-        this.setIdeaCount(numberOfVotes);
-      }
-      this.renderBuildons();
-      return this;
-    };
-
-    ContributionProposalBalloon.prototype.renderTags = function() {
-      var tagId;
-      if (!this.model.has('tag_group_id')) {
-        return;
-      }
-      tagId = this.model.get('tag_group_id');
-      this.$el.attr('data-tags', tagId);
-      return this;
-    };
-
-    ContributionProposalBalloon.prototype.renderBuildons = function() {
-      var $b, b, buildons, changed, container, counter, tagClass, tagGroupID, _i, _len, _results;
-      if (!(this.model.has('build_ons') && this.ballonContributionType === this.balloonContributionTypes.interpret)) {
-        return;
-      }
-      buildons = this.model.get('build_ons');
-      container = this.findOrCreate('.buildons', "<div class='buildons'></div>");
-      changed = false;
-      if (buildons.length !== container.find('div.buildon').length) {
-        changed = true;
-      }
-      container.children('div.buildon').remove();
-      counter = CK.Smartboard.View.findOrCreate(this.$el.find('.meta'), '.buildon-counter', "<div class='buildon-counter'></div>");
-      counter.html('');
-      _results = [];
-      for (_i = 0, _len = buildons.length; _i < _len; _i++) {
-        b = buildons[_i];
-        counter.append("•");
-        $b = jQuery("                <div class='buildon'>                    <div class='author'></div>                    <div class='content'></div>                </div>            ");
-        $b.find('.author').text(b.author);
-        $b.find('.content').text(b.content);
-        tagGroupID = b.tag_group_id;
-        if ((tagGroupID != null) && (this.tagList[tagGroupID] != null)) {
-          tagClass = this.tagList[tagGroupID].className;
-          if (tagClass != null) {
-            $b.addClass(tagClass + '-buildon');
-          }
-        }
-        _results.push(container.append($b));
-      }
-      return _results;
-    };
-
-    return ContributionProposalBalloon;
-
-  }).call(this, CK.Smartboard.View.Balloon);
-
   CK.Smartboard.View.TagBalloon = (function(_super) {
     var _this = this;
 
@@ -1027,6 +840,10 @@
 
     function TagBalloon() {
       this.render = __bind(this.render, this);
+
+      this.renderConnectors = __bind(this.renderConnectors, this);
+
+      this.makeDraggable = __bind(this.makeDraggable, this);
 
       this.setColorClass = __bind(this.setColorClass, this);
 
@@ -1056,6 +873,31 @@
           return console.log('clicked tag..');
         }
       }
+    };
+
+    TagBalloon.prototype.makeDraggable = function() {
+      var _this = this;
+      TagBalloon.__super__.makeDraggable.call(this);
+      return this.$el.on('drag', function(ev, ui) {
+        return _this.renderConnectors();
+      });
+    };
+
+    TagBalloon.prototype.renderConnectors = function() {
+      var cv, taggedContributionViews, _i, _len, _results,
+        _this = this;
+      taggedContributionViews = _.filter(this.wall.balloonViews, function(bv) {
+        var _ref;
+        return bv.model instanceof CK.Model.Contribution && (_ref = _this.model.id, __indexOf.call(_.map(_.pluck(bv.model.get('tags'), 'id'), function(id) {
+          return id.toLowerCase();
+        }), _ref) >= 0);
+      });
+      _results = [];
+      for (_i = 0, _len = taggedContributionViews.length; _i < _len; _i++) {
+        cv = taggedContributionViews[_i];
+        _results.push(cv.renderConnectors());
+      }
+      return _results;
     };
 
     TagBalloon.prototype.render = function() {
