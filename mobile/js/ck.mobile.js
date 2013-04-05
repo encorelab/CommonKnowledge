@@ -548,7 +548,7 @@ CK.Mobile = function() {
     app.inputView.$el.show('slide', {direction: 'up'});
 
     app.inputView.render();    
-  }
+  };
 
   app.showDetails = function(contrib) {
     console.log('creating a new Details');
