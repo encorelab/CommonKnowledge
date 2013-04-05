@@ -95,7 +95,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
 
     # check collisions for the given balloon (given ballon exerts force and gets no pushback)..
     # any other balloon that the given balloon collides with will also be checked for collision
-    collideBalloon: (balloon, recursionLevel = 0) => # `balloon` should be a BallonView, `recursionLevel` is used internally for recursive collisions
+    collideBalloon: (balloon, recursionLevel = 0, ignoreBalloons = []) => # `balloon` should be a BallonView, `recursionLevel` is used internally for recursive collisions
         b = balloon
 
         if recursionLevel is 0
@@ -107,54 +107,56 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
 
         for id,o of @balloonViews
             continue if o is b # don't collide with self
+            continue if o in ignoreBalloons # don't ignore with balloons we've already collided with
 
-            w = b.width/2 + o.width/2
-            h = b.height/2 + o.height/2
+            rightOverlap  = b.right - o.left
+            leftOverlap   = o.right - b.left
+            topOverlap    = b.bottom - o.top
+            bottomOverlap = o.bottom - b.top
 
-            xDist = Math.abs(b.x - o.x)
-            yDist = Math.abs(b.y - o.y)
-            if xDist < w && yDist < h
-                yOverlap = h - yDist
-                xOverlap = w - xDist
-
-                if xDist/w < yDist/h
+            if rightOverlap > 0 and leftOverlap > 0 and topOverlap > 0 and bottomOverlap > 0
+                yOverlap = Math.min(topOverlap, bottomOverlap)
+                xOverlap = Math.min(leftOverlap, rightOverlap)
+                #console.log b.model.get('name'), o.model.get('name'), topOverlap, bottomOverlap, leftOverlap, rightOverlap
+                if yOverlap < xOverlap
                     # yNudge = (yOverlap/yDist) * yOverlap/h * force.alpha()
-                    # b.y = b.y + yNudge*qRepulsion
-                    # o.y = o.y - yNudge*bRepulsion
+                    # b.top = b.top + yNudge*qRepulsion
+                    # o.top = o.top - yNudge*bRepulsion
                     
                     yNudge = yOverlap #(yOverlap/2)
-                    if b.y < o.y
-                        o.y += yNudge
+                    if b.top < o.top
+                        o.top += yNudge
                     else
-                        o.y -= yNudge
+                        o.top -= yNudge
                 else
                     # xNudge = (xOverlap/xDist) * xOverlap/w * force.alpha()
-                    # b.x = b.x + xNudge*qRepulsion
-                    # o.x = o.x - xNudge*bRepulsion
+                    # b.left = b.left + xNudge*qRepulsion
+                    # o.left = o.left - xNudge*bRepulsion
                     
                     xNudge = xOverlap #(xOverlap/2)
-                    if b.x < o.x
-                        o.x += xNudge
+                    if b.left < o.left
+                        o.left += xNudge
                     else
-                        o.x -= xNudge
+                        o.left -= xNudge
 
-                if o.y + o.height > @_boundsHeight
-                    o.y -= o.y + o.height - @_boundsHeight
-                else if o.y < 0
-                    o.y = 0
-                if o.x + o.width > @_boundsWidth
-                    o.x -= o.x + o.width - @_boundsWidth
-                else if o.x < 0
-                    o.x = 0
+                if o.bottom > @_boundsHeight
+                    o.top -= o.bottom - @_boundsHeight
+                else if o.top < 0
+                    o.top = 0
+                if o.right > @_boundsWidth
+                    o.left -= o.right - @_boundsWidth
+                else if o.left < 0
+                    o.left = 0
 
                 if recursionLevel <= @maxCollisionRecursion
-                    @collideBalloon(o, recursionLevel + 1)
+                    ignoreBalloons.push(b)
+                    @collideBalloon(o, recursionLevel + 1, ignoreBalloons)
 
         if recursionLevel is 0
             for id,o of @balloonViews
                 o.$el.css
-                    left: o.x + 'px'
-                    top: o.y + 'px'
+                    left: o.left + 'px'
+                    top: o.top + 'px'
 
     render: =>
         mode = @runState.get('mode')

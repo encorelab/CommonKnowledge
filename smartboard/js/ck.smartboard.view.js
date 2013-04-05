@@ -108,7 +108,8 @@
 (function() {
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   CK.Smartboard.View.Wall = (function(_super) {
 
@@ -232,10 +233,13 @@
       return balloonList[doc.id] = b;
     };
 
-    Wall.prototype.collideBalloon = function(balloon, recursionLevel) {
-      var b, h, id, o, w, xDist, xNudge, xOverlap, yDist, yNudge, yOverlap, _ref, _ref1, _ref2, _results;
+    Wall.prototype.collideBalloon = function(balloon, recursionLevel, ignoreBalloons) {
+      var b, bottomOverlap, id, leftOverlap, o, rightOverlap, topOverlap, xNudge, xOverlap, yNudge, yOverlap, _ref, _ref1, _ref2, _results;
       if (recursionLevel == null) {
         recursionLevel = 0;
+      }
+      if (ignoreBalloons == null) {
+        ignoreBalloons = [];
       }
       b = balloon;
       if (recursionLevel === 0) {
@@ -253,40 +257,44 @@
         if (o === b) {
           continue;
         }
-        w = b.width / 2 + o.width / 2;
-        h = b.height / 2 + o.height / 2;
-        xDist = Math.abs(b.x - o.x);
-        yDist = Math.abs(b.y - o.y);
-        if (xDist < w && yDist < h) {
-          yOverlap = h - yDist;
-          xOverlap = w - xDist;
-          if (xDist / w < yDist / h) {
+        if (__indexOf.call(ignoreBalloons, o) >= 0) {
+          continue;
+        }
+        rightOverlap = b.right - o.left;
+        leftOverlap = o.right - b.left;
+        topOverlap = b.bottom - o.top;
+        bottomOverlap = o.bottom - b.top;
+        if (rightOverlap > 0 && leftOverlap > 0 && topOverlap > 0 && bottomOverlap > 0) {
+          yOverlap = Math.min(topOverlap, bottomOverlap);
+          xOverlap = Math.min(leftOverlap, rightOverlap);
+          if (yOverlap < xOverlap) {
             yNudge = yOverlap;
-            if (b.y < o.y) {
-              o.y += yNudge;
+            if (b.top < o.top) {
+              o.top += yNudge;
             } else {
-              o.y -= yNudge;
+              o.top -= yNudge;
             }
           } else {
             xNudge = xOverlap;
-            if (b.x < o.x) {
-              o.x += xNudge;
+            if (b.left < o.left) {
+              o.left += xNudge;
             } else {
-              o.x -= xNudge;
+              o.left -= xNudge;
             }
           }
-          if (o.y + o.height > this._boundsHeight) {
-            o.y -= o.y + o.height - this._boundsHeight;
-          } else if (o.y < 0) {
-            o.y = 0;
+          if (o.bottom > this._boundsHeight) {
+            o.top -= o.bottom - this._boundsHeight;
+          } else if (o.top < 0) {
+            o.top = 0;
           }
-          if (o.x + o.width > this._boundsWidth) {
-            o.x -= o.x + o.width - this._boundsWidth;
-          } else if (o.x < 0) {
-            o.x = 0;
+          if (o.right > this._boundsWidth) {
+            o.left -= o.right - this._boundsWidth;
+          } else if (o.left < 0) {
+            o.left = 0;
           }
           if (recursionLevel <= this.maxCollisionRecursion) {
-            this.collideBalloon(o, recursionLevel + 1);
+            ignoreBalloons.push(b);
+            this.collideBalloon(o, recursionLevel + 1, ignoreBalloons);
           }
         }
       }
@@ -296,8 +304,8 @@
         for (id in _ref2) {
           o = _ref2[id];
           _results.push(o.$el.css({
-            left: o.x + 'px',
-            top: o.y + 'px'
+            left: o.left + 'px',
+            top: o.top + 'px'
           }));
         }
         return _results;
@@ -589,8 +597,10 @@
       this.width = this.$el.outerWidth();
       this.height = this.$el.outerHeight();
       pos = this.$el.position();
-      this.x = pos.left;
-      return this.y = pos.top;
+      this.left = pos.left;
+      this.top = pos.top;
+      this.right = pos.left + this.width;
+      return this.bottom = pos.top + this.height;
     };
 
     return Balloon;
