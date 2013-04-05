@@ -70,8 +70,10 @@
           note.find('.headline').text(contrib.get('headline'));
 
           // functions toLocaleDateString() and toLocaleTimeString() are only defined if created_at is a Date object
-          createdAt = new Date(contrib.get('created_at'));  // createdAt as Date object
-          if (typeof createdAt !== 'undefined' && createdAt !== null) {
+          //createdAt = new Date(contrib.get('created_at'));  // createdAt as Date object
+          createdAt = contrib.get('created_at');
+          console.log(createdAt);
+          if (!createdAt) {
             note.find('.date').text(' (' + createdAt.toLocaleDateString() + ' ' + createdAt.toLocaleTimeString() + ')');
           }
 
