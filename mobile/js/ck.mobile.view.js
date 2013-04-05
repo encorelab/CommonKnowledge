@@ -49,7 +49,7 @@
       Triggers full update of all dynamic elements in the list view
     **/
     render: function () {
-      if (this.collection.any(function(c) { return c.hasChanged('pos') }) ) {
+      if (this.collection.any(function(c) { return c.hasChanged('pos'); }) ) {
         return;
       }
 
