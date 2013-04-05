@@ -3,7 +3,7 @@
 // color theme: https://kuler.adobe.com/#themeID/2129122
 
 $wall-color: #ab2;
-$wall-color-analysis: #51ba34;
+$wall-color-tagging: #51ba34;
 $wall-color-propose: #34ba70;
 $wall-color-interpret: #34bab3;
 $wall-color-evaluate: #c0b7ca;
@@ -56,10 +56,10 @@ body {
         opacity: 0.4;
     }
 
-    &.mode-analysis {
-        background-color: $wall-color-analysis;
+    &.mode-tagging {
+        background-color: $wall-color-tagging;
 
-        #go-analyze {
+        #go-tagging {
             opacity: 0.4;
         }
 
@@ -75,7 +75,7 @@ body {
     &.mode-propose {
         background-color: $wall-color-propose;
 
-        #go-analyze {
+        #go-tagging {
             opacity: 0.4;
         }
 
@@ -91,7 +91,7 @@ body {
      &.mode-interpret {
         background-color: $wall-color-interpret;
 
-        #go-analyze {
+        #go-tagging {
             opacity: 0.4;
         }
 
@@ -107,7 +107,7 @@ body {
     &.mode-evaluate {
         background-color: $wall-color-evaluate;
 
-        #go-analyze {
+        #go-tagging {
             opacity: 0.4;
         }
 
@@ -520,7 +520,7 @@ button {
     bottom: 44px;
 }
 
-#go-analyze {
+#go-tagging {
 }
 
 #go-propose {
