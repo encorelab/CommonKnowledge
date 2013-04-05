@@ -96,13 +96,13 @@
     };
 
     Smartboard.prototype.pause = function() {
-      return CK.setState('run', {
+      return CK.setState('RUN', {
         paused: true
       });
     };
 
     Smartboard.prototype.unpause = function() {
-      CK.setState('run', {
+      CK.setState('RUN', {
         paused: false
       });
       if (this.wall.mode === 'evaluate') {
@@ -114,9 +114,9 @@
       this.contributions = CK.Model.awake.contributions;
       this.proposals = CK.Model.awake.proposals;
       this.tags = CK.Model.awake.tags;
-      this.runState = CK.getState('run');
+      this.runState = CK.getState('RUN');
       if (this.runState == null) {
-        this.runState = CK.setState('run', {});
+        this.runState = CK.setState('RUN', {});
       }
       this.runState.wake(this.config.wakeful.url);
       return this.trigger('ready');
