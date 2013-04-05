@@ -18,7 +18,8 @@
     "underscore": "1.4.4",
     "backbone": "1.0.0",
     "Backbone.Drowsy": "0.0.10",
-    "optimist": "~0.3.7"
+    "optimist": "~0.3.7",
+    "mongodb": "~1.2.14"
   },
   "devDependencies": {
     "coffee-script": "1.6.2",
