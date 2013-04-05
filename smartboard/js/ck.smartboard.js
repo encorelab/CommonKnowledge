@@ -116,7 +116,9 @@
       this.tags = CK.Model.awake.tags;
       this.runState = CK.getState('RUN');
       if (this.runState == null) {
-        this.runState = CK.setState('RUN', {});
+        this.runState = CK.setState('RUN', {
+          phase: 'brainstorm'
+        });
       }
       this.runState.wake(this.config.wakeful.url);
       return this.trigger('ready');

@@ -82,7 +82,12 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
     addBalloon: (doc, view, balloonList) =>
         bv = new view
             model: doc
+
+        doc.wake Sail.app.config.wakeful.url
         doc.on 'change', bv.render
+        # highlight only on changes coming in from wakeful, not self changes
+        doc.on 'wakeful:broadcast:received', -> cbv.$el.effect('highlight')
+
         bv.wall = this
         bv.render()
         @$el.append bv.$el
@@ -115,40 +120,33 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             topOverlap    = b.bottom - o.top
             bottomOverlap = o.bottom - b.top
 
+            # if recursionLevel > 0
+            #     overlapTolerance = 1 - (recursionLevel / (@maxCollisionRecursion+1))
+            # else
+            #     overlapTolerance = 1
+            
+
             if rightOverlap > 0 and leftOverlap > 0 and topOverlap > 0 and bottomOverlap > 0
                 yOverlap = Math.min(topOverlap, bottomOverlap)
                 xOverlap = Math.min(leftOverlap, rightOverlap)
                 #console.log b.model.get('name'), o.model.get('name'), topOverlap, bottomOverlap, leftOverlap, rightOverlap
 
-                # TODO: this isn't quite behaving the way I intended... wanted bubbles to stack up a bit
-                #       when there are a lot piled up together
-                # if recursionLevel > 0
-                #     nudgeScale = 1 - (recursionLevel / @maxCollisionRecursion)
-                # else
-                #     nudgeScale = 1
-                nudgeScale = 1
-
                 if yOverlap < xOverlap
                     yNudge = yOverlap #(yOverlap/2)
                     if b.top < o.top
-                        o.top += yNudge * nudgeScale
+                        o.top += yNudge
+                        o.bottom += yNudge
                     else
-                        o.top -= yNudge * nudgeScale
+                        o.top -= yNudge
+                        o.bottom -= yNudge
                 else
                     xNudge = xOverlap #(xOverlap/2)
                     if b.left < o.left
-                        o.left += xNudge * nudgeScale
+                        o.left += xNudge
+                        o.right += xNudge
                     else
-                        o.left -= xNudge * nudgeScale
-
-                if o.bottom > @_boundsHeight
-                    o.top -= o.bottom - @_boundsHeight
-                else if o.top < 0
-                    o.top = 0
-                if o.right > @_boundsWidth
-                    o.left -= o.right - @_boundsWidth
-                else if o.left < 0
-                    o.left = 0
+                        o.left -= xNudge
+                        o.right -= xNudge
 
                 o.renderConnectors() if o.renderConnectors?
 
@@ -158,6 +156,21 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
 
         if recursionLevel is 0
             for id,o of @balloonViews
+                console.log(@_boundsWidth, @_boundsHeight)
+                if o.bottom > @_boundsHeight
+                    o.top = @_boundsHeight - o.height
+                else if o.top < 0
+                    o.top = 0
+
+                o.bottom = o.top + o.height
+
+                if o.right > @_boundsWidth
+                    o.left = @_boundsWidth - o.width
+                else if o.left < 0
+                    o.left = 0
+
+                o.right = o.left + o.width
+
                 o.$el.css
                     left: o.left + 'px'
                     top: o.top + 'px'

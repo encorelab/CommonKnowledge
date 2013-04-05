@@ -77,7 +77,7 @@ class CK.Smartboard extends Sail.App
         @runState = CK.getState 'RUN'
 
         unless @runState?
-            @runState = CK.setState 'RUN', {}
+            @runState = CK.setState 'RUN', {phase: 'brainstorm'}
 
         @runState.wake @config.wakeful.url
 

@@ -227,7 +227,11 @@
       bv = new view({
         model: doc
       });
+      doc.wake(Sail.app.config.wakeful.url);
       doc.on('change', bv.render);
+      doc.on('wakeful:broadcast:received', function() {
+        return cbv.$el.effect('highlight');
+      });
       bv.wall = this;
       bv.render();
       this.$el.append(bv.$el);
@@ -239,7 +243,7 @@
     };
 
     Wall.prototype.collideBalloon = function(balloon, recursionLevel, ignoreBalloons) {
-      var b, bottomOverlap, id, leftOverlap, nudgeScale, o, rightOverlap, topOverlap, xNudge, xOverlap, yNudge, yOverlap, _ref, _ref1, _ref2, _results;
+      var b, bottomOverlap, id, leftOverlap, o, rightOverlap, topOverlap, xNudge, xOverlap, yNudge, yOverlap, _ref, _ref1, _ref2, _results;
       if (recursionLevel == null) {
         recursionLevel = 0;
       }
@@ -272,31 +276,24 @@
         if (rightOverlap > 0 && leftOverlap > 0 && topOverlap > 0 && bottomOverlap > 0) {
           yOverlap = Math.min(topOverlap, bottomOverlap);
           xOverlap = Math.min(leftOverlap, rightOverlap);
-          nudgeScale = 1;
           if (yOverlap < xOverlap) {
             yNudge = yOverlap;
             if (b.top < o.top) {
-              o.top += yNudge * nudgeScale;
+              o.top += yNudge;
+              o.bottom += yNudge;
             } else {
-              o.top -= yNudge * nudgeScale;
+              o.top -= yNudge;
+              o.bottom -= yNudge;
             }
           } else {
             xNudge = xOverlap;
             if (b.left < o.left) {
-              o.left += xNudge * nudgeScale;
+              o.left += xNudge;
+              o.right += xNudge;
             } else {
-              o.left -= xNudge * nudgeScale;
+              o.left -= xNudge;
+              o.right -= xNudge;
             }
-          }
-          if (o.bottom > this._boundsHeight) {
-            o.top -= o.bottom - this._boundsHeight;
-          } else if (o.top < 0) {
-            o.top = 0;
-          }
-          if (o.right > this._boundsWidth) {
-            o.left -= o.right - this._boundsWidth;
-          } else if (o.left < 0) {
-            o.left = 0;
           }
           if (o.renderConnectors != null) {
             o.renderConnectors();
@@ -312,6 +309,19 @@
         _results = [];
         for (id in _ref2) {
           o = _ref2[id];
+          console.log(this._boundsWidth, this._boundsHeight);
+          if (o.bottom > this._boundsHeight) {
+            o.top = this._boundsHeight - o.height;
+          } else if (o.top < 0) {
+            o.top = 0;
+          }
+          o.bottom = o.top + o.height;
+          if (o.right > this._boundsWidth) {
+            o.left = this._boundsWidth - o.width;
+          } else if (o.left < 0) {
+            o.left = 0;
+          }
+          o.right = o.left + o.width;
           _results.push(o.$el.css({
             left: o.left + 'px',
             top: o.top + 'px'
@@ -558,7 +568,14 @@
 
     Balloon.prototype.render = function() {
       if (!this.draggable) {
-        return this.makeDraggable();
+        this.makeDraggable();
+      }
+      if (this.model.has('published')) {
+        if (this.model.get('published')) {
+          return this.$el.removeClass('unpublished');
+        } else {
+          return this.$el.addClass('unpublished');
+        }
       }
     };
 
@@ -576,7 +593,9 @@
         var bv, id, _ref, _results;
         _this.$el.addClass('just-dragged');
         _this.model.save({
-          'pos': ui.position
+          pos: ui.position
+        }, {
+          patch: true
         });
         _ref = _this.wall.balloonViews;
         _results = [];
@@ -593,7 +612,8 @@
           });
           if (bv.model.hasChanged()) {
             _results.push(bv.model.save({}, {
-              silent: true
+              silent: true,
+              patch: true
             }));
           } else {
             _results.push(void 0);
@@ -668,6 +688,7 @@
 
     ContributionBalloon.prototype.events = {
       'click': function(ev) {
+        jQuery('.contribution').not("#" + this.model.id);
         if (this.$el.hasClass('just-dragged')) {
           return this.$el.removeClass('just-dragged');
         } else {
@@ -818,6 +839,9 @@
       _results = [];
       for (_i = 0, _len = buildons.length; _i < _len; _i++) {
         b = buildons[_i];
+        if (!b.published) {
+          continue;
+        }
         counter.append("•");
         $b = jQuery("                <div class='buildon'>                    <div class='author'></div>                    <div class='content'></div>                </div>            ");
         $b.find('.author').text(b.author);
