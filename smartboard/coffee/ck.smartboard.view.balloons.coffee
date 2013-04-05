@@ -84,7 +84,7 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
             else
                 @$el.toggleClass('opened')
                 
-                @processContributionByType()
+                #@processContributionByType()
 
     # initialize: =>
     #     # make this View accessible from the element
@@ -169,7 +169,7 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
         # @renderTags()
         @renderBuildons()
         @renderConnectors()
-        @processContributionByType()
+        #@processContributionByType()
 
         return this # return this for chaining
 

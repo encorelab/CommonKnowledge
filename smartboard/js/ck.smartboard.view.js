@@ -671,8 +671,7 @@
         if (this.$el.hasClass('just-dragged')) {
           return this.$el.removeClass('just-dragged');
         } else {
-          this.$el.toggleClass('opened');
-          return this.processContributionByType();
+          return this.$el.toggleClass('opened');
         }
       }
     };
@@ -746,7 +745,6 @@
       meta.find('.author').text(this.model.get('author')).addClass("author-" + (this.model.get('author')));
       this.renderBuildons();
       this.renderConnectors();
-      this.processContributionByType();
       return this;
     };
 
