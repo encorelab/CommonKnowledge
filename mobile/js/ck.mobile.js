@@ -387,7 +387,7 @@ CK.Mobile = function() {
     app.buildOn.content = '';
     app.buildOn.author = app.userData.account.login;
     app.buildOn.published = false;
-    app.buildOn.created_at = 'tempDate';
+    app.buildOn.created_at = new Date;
 
     app.inputView.model = app.buildOn;
 
