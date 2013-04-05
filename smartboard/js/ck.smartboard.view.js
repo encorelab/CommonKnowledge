@@ -1048,8 +1048,10 @@
 
     TagBalloon.prototype.events = {
       'click': function(ev) {
-        if (TagBalloon.$el.hasClass('just-dragged')) {
-          return TagBalloon.$el.removeClass('just-dragged');
+        var $el;
+        $el = jQuery(ev.target);
+        if ($el.hasClass('just-dragged')) {
+          return $el.removeClass('just-dragged');
         } else {
           return console.log('clicked tag..');
         }

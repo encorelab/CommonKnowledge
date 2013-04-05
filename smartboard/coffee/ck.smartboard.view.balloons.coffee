@@ -518,8 +518,9 @@ class CK.Smartboard.View.TagBalloon extends CK.Smartboard.View.Balloon
         # 'mousedown': (ev) -> @moveToTop()
 
         'click': (ev) =>
-            if @$el.hasClass('just-dragged')
-                @$el.removeClass('just-dragged')
+            $el = jQuery(ev.target)
+            if $el.hasClass('just-dragged')
+                $el.removeClass('just-dragged')
             else
                 console.log('clicked tag..')
                 # do click handler stuff here...
