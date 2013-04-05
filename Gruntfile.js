@@ -13,7 +13,7 @@ module.exports = function(grunt) {
     //   }
     // }
     jshint: {
-      all: ['Gruntfile.js', 'mobile/js/ck.mobile.view.js', 'mobile/js/ck.mobile.js']
+      all: ['Gruntfile.js', 'mobile/js/ck.mobile.view.js', 'mobile/js/ck.mobile.js', 'agents/**/*.js']
     },
     csslint: {
       dev: {
@@ -37,7 +37,7 @@ module.exports = function(grunt) {
       }
     },
     coffeelint: {
-      tests: {
+      dev: {
         files: {
           src: ['shared/coffee/*.coffee', 'smartboard/coffee/*.coffee']
         },
@@ -46,15 +46,36 @@ module.exports = function(grunt) {
             'level': 'warn'
           },
           'max_line_length': {
-            'value': 140,
+            'value': 120,
             'level': 'ignore'
+          },
+          'indentation': {
+            'value': 4,
+            'level': 'ignore'
+          },
+          'no_throwing_strings': {
+            'level': 'ignore'
+          }
+        }
+      },
+      linting: {
+        files: {
+          src: ['shared/coffee/*.coffee', 'smartboard/coffee/*.coffee']
+        },
+        options: {
+          'no_trailing_whitespace': {
+            'level': 'warn'
+          },
+          'max_line_length': {
+            'value': 120,
+            'level': 'warn'
           },
           'indentation': {
             'value': 4,
             'level': 'warn'
           },
           'no_throwing_strings': {
-            'level': 'ignore'
+            'level': 'warn'
           }
         }
       }
@@ -96,7 +117,7 @@ module.exports = function(grunt) {
 
   // Default task(s).
   // grunt.registerTask('default', ['uglify']);
-  grunt.registerTask('default', ['jshint', 'csslint', 'jsonlint', 'coffee', 'sass']);
-  grunt.registerTask('lint', ['jshint', 'csslint', 'jsonlint', 'coffeelint']);
+  grunt.registerTask('default', ['jshint', 'csslint', 'jsonlint', 'coffeelint:dev', 'coffee', 'sass']);
+  grunt.registerTask('lint', ['jshint', 'csslint', 'jsonlint', 'coffeelint:linting']);
   grunt.registerTask('compile', ['coffee', 'sass']);
 };

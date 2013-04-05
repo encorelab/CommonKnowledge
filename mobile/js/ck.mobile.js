@@ -26,11 +26,15 @@ CK.Mobile = function() {
     curnit:'string'
   };
 
-  app.runState = null;     // START HERE, fix restoreState
+  app.runState = null;
   //app.userState = null;?
+  app.contribution = null;
   app.contributionList = null;
   app.contributionListView = null;
   app.inputView = null;
+  //app.contributionToBuildOn = null;
+  app.buildOn = null;
+
   app.tagList = null;
   app.tagListView = null;
   app.bucketedContribution = null;
@@ -89,7 +93,7 @@ CK.Mobile = function() {
   };
 
   app.authenticate = function() {
-    // TODO: implement me... probalby just copy + modify code from washago?
+    // TODO: implement me... probably just copy + modify code from washago?
 
     // TODO: for now we're hard-coding a run name... need to get this from auth
     //this.config.run = {name: "ck-alpha1", id: 12};
@@ -98,86 +102,103 @@ CK.Mobile = function() {
     } else {
       Rollcall.Authenticator.requestLogin();
     }
-
-    
   };
 
   app.restoreState = function () {
     console.log("Going in to restoreState...");
     app.hideWaitScreen();
  
-    //var stateObj = {"type":"phase"};
-    var s = CK.getState("run", "phase");
+    //ar s = CK.getState("run", "phase");
+    var phase = app.runState.get('phase');
 
-    if (s && s.get('state')) {
-      var phase = s.get('state');
-      // once phase is retrieved get the user_state
-      var user_state = CK.getState(Sail.app.userData.account.login);
-
+    if (phase) {
       if (phase === 'brainstorm') {
-        // check first if we started to work on a contribution and got booted out during work
-        // contribution in our name with published false
+        console.log('Entering brainstorm phase...');
+
         var unfinishedContrib = _.find(app.contributionList.models, function(contrib) {
-          return contrib.get('author') === Sail.app.userData.account.login && contrib.get('published') === false;
+          return contrib.get('author') === app.userData.account.login && contrib.get('published') === false && contrib.get('content') && contrib.get('headline');
+        });
+
+        var unfinishedBuildOn = _.find(app.contributionList.models, function(contrib) {
+          return _.find(contrib.get('build_ons'), function(b) {
+            return b.author === app.userData.account.login && b.published === false;
+          });
         });
 
         if (unfinishedContrib) {
-          console.log('Unfinished Contribution found');
+          console.log('Unfinished Contribution found...');
           app.restoreUnfinishedNote(unfinishedContrib);
+        } else if (unfinishedBuildOn) {                       // I guess we want unfinished contribs to trump unfinished buildons?
+          console.log('Unfinished BuildOn found...');
+          app.restoreUnfinishedBuildOn(unfinishedBuildOn);
         }
-      } else if (phase === "analysis") {
-        console.log('phase is analysis');
-        app.startAnalysis(function (){
-          // get the data from user_states stored under the phase key
-          var data_for_state = user_state.get(phase);
+      }
+      // var phase = s.get('state');
+      // // once phase is retrieved get the user_state
+      // var user_state = CK.getState(Sail.app.userData.account.login);
+
+      // if (phase === 'brainstorm') {
+      //   // check first if we started to work on a contribution and got booted out during work
+      //   // contribution in our name with published false
+      //   var unfinishedContrib = _.find(app.contributionList.models, function(contrib) {
+      //     return contrib.get('author') === Sail.app.userData.account.login && contrib.get('published') === false;
+      //   });
+
+      //   if (unfinishedContrib) {
+      //     console.log('Unfinished Contribution found');
+      //     app.restoreUnfinishedNote(unfinishedContrib);
+      //   }
+      // } else if (phase === "analysis") {
+      //   console.log('phase is analysis');
+      //   app.startAnalysis(function (){
+      //     // get the data from user_states stored under the phase key
+      //     var data_for_state = user_state.get(phase);
           
-          console.log('Check if contribution left to do or done with tagging');
-          // CK.getUserState(Sail.app.userData.account.login, "contribution_to_tag", function(user_state){
-          if (data_for_state && data_for_state.contribution_to_tag) {
-            // var data_from_state = user_state.get('data');
-            if (data_for_state.done_tagging === true) {
-              // go to done tagging
-              app.doneTagging();
-            } else if (data_for_state.contribution_to_tag.contribution_id !== "") {
-              console.log('Need to work on contribution with id: '+data_for_state.contribution_to_tag.contribution_id);
-              app.contributionToTag(data_for_state.contribution_to_tag.contribution_id);
-            }
-          } else {
-            console.log('I am on a boat');
-          }
-        });
-      } else if (phase === "proposal") {
-        console.log('phase is proposal');
+      //     console.log('Check if contribution left to do or done with tagging');
+      //     // CK.getUserState(Sail.app.userData.account.login, "contribution_to_tag", function(user_state){
+      //     if (data_for_state && data_for_state.contribution_to_tag) {
+      //       // var data_from_state = user_state.get('data');
+      //       if (data_for_state.done_tagging === true) {
+      //         // go to done tagging
+      //         app.doneTagging();
+      //       } else if (data_for_state.contribution_to_tag.contribution_id !== "") {
+      //         console.log('Need to work on contribution with id: '+data_for_state.contribution_to_tag.contribution_id);
+      //         app.contributionToTag(data_for_state.contribution_to_tag.contribution_id);
+      //       }
+      //     } else {
+      //       console.log('I am on a boat');
+      //     }
+      //   });
+      // } else if (phase === "proposal") {
+      //   console.log('phase is proposal');
 
-        var myState = CK.getState(Sail.app.userData.account.login);
+      //   var myState = CK.getState(Sail.app.userData.account.login);
 
-        if (myState) {
-          app.myTagGroup = myState.get('analysis').tag_group;
-        } else {
-          console.warn("No user_state found for ", Sail.app.userData.account.login);
-        }
+      //   if (myState) {
+      //     app.myTagGroup = myState.get('analysis').tag_group;
+      //   } else {
+      //     console.warn("No user_state found for ", Sail.app.userData.account.login);
+      //   }
 
-        app.startProposal();
+      //   app.startProposal();
 
-                   
-      } else if (phase === "interpretation") {
-        console.log('phase is interpretation');
-        app.startInterpretation();
-      } else {
-        console.log('could not find state for type phase');
-      }
+      // } else if (phase === "interpretation") {
+      //   console.log('phase is interpretation');
+      //   app.startInterpretation();
+      // } else {
+      //   console.log('could not find state for type phase');
+      // }
 
 
-// TODO: This needs much more work
-      if (s && s.get('screen_lock') === true){
-        console.log('screen lock is active');
-        jQuery('#lock-screen').removeClass('hide');
-        jQuery('.row').addClass('disabled');
-      } else {
-        console.log('screen lock is NOT active');
-        jQuery('#lock-screen').addClass('hide');
-        jQuery('.row').removeClass('disabled');
-      }
+      // if (s && s.get('screen_lock') === true){
+      //   console.log('screen lock is active');
+      //   jQuery('#lock-screen').removeClass('hide');
+      //   jQuery('.row').addClass('disabled');
+      // } else {
+      //   console.log('screen lock is NOT active');
+      //   jQuery('#lock-screen').addClass('hide');
+      //   jQuery('.row').removeClass('disabled');
+      // }
     } else {
       console.warn("Seems like the state object was invalid which means we are in trouble");
     }
@@ -352,13 +373,12 @@ CK.Mobile = function() {
     console.log('Initializing models...');      // TODO: MOVE THESE ALL INTO THEIR OWN FUNCTIONS, THINK ABOUT THEIR ORDERING AND SYNC
 
     // PHASE MODEL
-    // app.runState = CK.getState("RUN");
-    // app.runState.wake(Sail.app.config.wakeful.url);
-    // onSuccess, app.restoreState();
-
+    //app.runState = CK.getState('RUN');
+    app.runState = CK.getState('run');
+    app.runState.wake(Sail.app.config.wakeful.url);
 
     // TAGS COLLECTION - used in both BucketTaggingView and ContributionInputView
-    app.tagList = new CK.Model.Tags();      // TODO app.tagList = new CK.Model.awake.tags CHECKME, then remove wakeful call and then do for other collections
+    app.tagList = CK.Model.awake.tags; //CHECKME, then remove wakeful call and then do for other collections
     if (app.bucketTaggingView === null) {
       app.bucketTaggingView = new CK.Mobile.View.BucketTaggingView({
         el: jQuery('#bucket-tagging'),
@@ -367,12 +387,13 @@ CK.Mobile = function() {
     }    
     app.tagList.on('change', function(model) { console.log(model.changedAttributes()); });
     app.tagList.on('reset add sync', app.bucketTaggingView.render, app.bucketTaggingView);
-    app.tagList.wake(Sail.app.config.wakeful.url); 
+    //app.tagList.wake(Sail.app.config.wakeful.url); 
     app.tagList.fetch();
 
 
     // CONTRIBUTIONS COLLECTION
-    app.contributionList = new CK.Model.Contributions();
+    // app.contributionList = new CK.Model.Contributions();
+    app.contributionList = CK.Model.awake.contributions;
     // check if view already exists
    if (app.contributionListView === null) {
       app.contributionListView = new CK.Mobile.View.ContributionListView({
@@ -381,51 +402,113 @@ CK.Mobile = function() {
       });
     }
     app.contributionList.on('change', function(model) { console.log(model.changedAttributes()); });
-    app.contributionList.on('reset add sync', app.contributionListView.render, app.contributionListView);
-    app.contributionList.wake(Sail.app.config.wakeful.url);    
+    app.contributionList.on('reset add sync change', app.contributionListView.render, app.contributionListView);
+    //app.contributionList.wake(Sail.app.config.wakeful.url);    
     
     var sort = ['created_at', 'DESC'];
     app.contributionList.fetch({
       data: { sort: JSON.stringify(sort) }
+    }).done(function() {
+      app.restoreState();
     });
   };
 
-  app.createNewContribution = function(kind) {
-    console.log('Creating a new contribution of type', kind);
+  app.createNewContribution = function() {
+    console.log("Creating a new brainstorm note");
 
-    var contrib = new CK.Model.Contribution();
+    app.contribution = new CK.Model.Contribution();
     // ensure that models inside the collection are wakeful
-    contrib.wake(Sail.app.config.wakeful.url);
+    app.contribution.wake(Sail.app.config.wakeful.url);
 
+    // case: no previous inputView
     if (app.inputView === null) {
       app.inputView = new CK.Mobile.View.ContributionInputView({
         el: jQuery('#contribution-input'),
-        model: contrib
+        model: app.contribution
+      });
+    // case: already have an inputView with attached model
+    } else {
+      // detatch that model and attach the current contrib model
+      if (typeof app.inputView.model !== 'undefined' && app.inputView.model !== null) {
+        app.inputView.stopListening(app.inputView.model);
+      }
+      app.inputView.model = app.contribution;
+    }
+
+    app.inputView.$el.show('slide', {direction: 'up'});
+
+    app.contribution.set('author', app.userData.account.login);
+    app.contribution.set('published', false);
+    app.contribution.set('tags', []);
+    app.contribution.set('build_ons', []);
+    app.contribution.set('kind', 'brainstorm');
+
+    app.contribution.save();
+    app.inputView.render();
+  };
+
+  app.createNewBuildOn = function() {
+    console.log("Creating a new buildOn for", Sail.app.contribution);
+
+    if (app.inputView === null) {
+      app.inputView = new CK.Mobile.View.ContributionInputView({
+        el: jQuery('#contribution-input')
       });
     } else {
       if (typeof app.inputView.model !== 'undefined' && app.inputView.model !== null) {
         app.inputView.stopListening(app.inputView.model);
       }
-      app.inputView.model = contrib;
     }
+    app.buildOn = {};
+    app.buildOn.kind = "buildOn";
+    app.buildOn.content = '';
+    app.buildOn.author = app.userData.account.login;
+    app.buildOn.published = false;
+    app.buildOn.created_at = 'tempDate';
+
+    app.inputView.model = app.buildOn;
+
+    var buildOnArray = app.contribution.get('build_ons');
+    buildOnArray.push(app.buildOn);
 
     app.inputView.$el.show('slide', {direction: 'up'});
 
-    contrib.set('justAdded', true);
-    contrib.set('author', app.userData.account.login);
-    contrib.set('published', false);
-    contrib.set('tags', []);
-    // contrib.set('build_ons', app.buildOnArray);
-    contrib.set('kind', kind);
-
-    // since we do manual saves, we don't need sync. We don't need both (used to be change and sync)
-    contrib.on('change', app.inputView.render, app.inputView);
-
-    contrib.save();
-    // app.contributionList.add(contrib);
+    app.contribution.save();
+    app.inputView.render();
   };
 
-  app.restoreUnfinishedNote = function (contrib) {
+  app.saveContribution = function(view) {
+    console.log("Submitting contribution...");
+    
+    Sail.app.contribution.save(null, {
+      complete: function () {
+        console.log("Contribution submitted");
+      },
+      success: function () {
+        console.log("Contribution saved!");
+
+        jQuery('#contribution-input').hide('slide', {direction: 'up'});
+        jQuery().toastmessage('showSuccessToast', "Contribution submitted");
+
+        // I think we need to lock the fields again and force the student to use the new note/build on button
+        jQuery('#note-body-entry').addClass('disabled');
+        jQuery('#note-headline-entry').addClass('disabled');
+        jQuery('.tag-btn').removeClass('active');       // TODO: check, do we also need to unselect/refresh the button or something here?
+
+        // clear the old contribution plus ui fields
+        view.stopListening(Sail.app.contribution);
+        // assign new blank model (placeholder until new note or build on buttons have been clicked)
+        view.$el.find(".field").val(null);
+      },
+      failure: function(model, response) {
+        console.log('Error submitting: ' + response);
+      }
+    });
+  };
+
+  app.restoreUnfinishedNote = function(contrib) {
+    console.log("Restoring Contribution");
+    app.contribution = contrib;
     if (app.inputView === null) {
       app.inputView = new CK.Mobile.View.ContributionInputView({
         el: jQuery('#contribution-input'),
@@ -442,6 +525,31 @@ CK.Mobile = function() {
     app.inputView.render();
   };
 
+  app.restoreUnfinishedBuildOn = function(contrib) {
+    console.log("Restoring BuildOn");
+    app.contribution = contrib;
+    // gawd, we need a getMyBuildOn helper
+    var buildOnArray = app.contribution.get('build_ons');
+    app.buildOn = _.find(buildOnArray, function(b) {
+      return b.author === app.userData.account.login && b.published === false;
+    });
+
+    if (app.inputView === null) {
+      app.inputView = new CK.Mobile.View.ContributionInputView({
+        el: jQuery('#contribution-input'),
+        model: app.buildOn
+      });
+    } else {
+      if (typeof app.inputView.model !== 'undefined' && app.inputView.model !== null) {
+        app.inputView.stopListening(app.inputView.model);
+      }
+      app.inputView.model = app.buildOn;
+    }
+    app.inputView.$el.show('slide', {direction: 'up'});
+
+    app.inputView.render();    
+  }
+
   app.showDetails = function(contrib) {
     console.log('creating a new Details');
 
@@ -457,30 +565,6 @@ CK.Mobile = function() {
 
     // have to call this manually because there are no change events later
     detailsView.render();
-  };
-
-  app.showWaitScreen = function() {
-    console.log('showing wait screen');
-
-    jQuery('#wait-screen').removeClass('hide');
-    jQuery('.row').addClass('disabled');
-  };
-
-  app.hideWaitScreen = function() {
-    console.log('hiding wait screen');
-
-    jQuery('#wait-screen').addClass('hide');
-    jQuery('.row').removeClass('disabled');
-  };
-
-  app.hideAll = function() {
-    console.log('hiding all screens');
-    jQuery('#wait-screen').addClass('hide');
-    jQuery('#lock-screen').addClass('hide');
-    jQuery('#index-screen').addClass('hide');
-    jQuery('#choose-tag-screen').addClass('hide');
-    jQuery('#tagging-screen').addClass('hide');
-    jQuery('#proposal-screen').addClass('hide');
   };
 
   /* State related function */
@@ -814,17 +898,57 @@ CK.Mobile = function() {
 
   // ******** HELPER FUNCTIONS ********* //
 
-  app.autoSave = function(view, inputKey, inputValue, instantSave) {
-    //var view = this;
-    Sail.app.keyCount++;
-    console.log("saving stuff as we go at", Sail.app.keyCount);
+  app.showWaitScreen = function() {
+    console.log('showing wait screen');
 
-    if (instantSave || Sail.app.keyCount > 9) {
-      view.model.set(inputKey, inputValue);
-      view.model.save(null, {silent: true});
-      Sail.app.keyCount = 0;
+    jQuery('#wait-screen').removeClass('hide');
+    jQuery('.row').addClass('disabled');
+  };
+
+  app.hideWaitScreen = function() {
+    console.log("Hiding wait screen...");
+
+    jQuery('#wait-screen').addClass('hide');
+    jQuery('.row').removeClass('disabled');
+  };
+
+  app.hideAll = function() {
+    console.log('hiding all screens');
+    jQuery('#wait-screen').addClass('hide');
+    jQuery('#lock-screen').addClass('hide');
+    jQuery('#index-screen').addClass('hide');
+    jQuery('#choose-tag-screen').addClass('hide');
+    jQuery('#tagging-screen').addClass('hide');
+    jQuery('#proposal-screen').addClass('hide');
+  };
+
+  app.autoSave = function(model, inputKey, inputValue, instantSave) {
+    app.keyCount++;
+    console.log("saving stuff as we go at", app.keyCount);
+
+    if (model.kind === 'buildOn') {
+      if (instantSave || app.keyCount > 9) {
+        // save to buildOn model to stay current with view
+        app.buildOn = inputValue;
+        // save to contribution model so that it actually saves
+        var buildOnArray = app.contribution.get('build_ons');
+        var buildOnToUpdate = _.find(buildOnArray, function(b) {
+          return b.author === app.userData.account.login && b.published === false;
+        });
+        buildOnToUpdate.content = inputValue;
+        app.contribution.set('build_ons',buildOnArray);
+        app.contribution.save(null, {silent: true});
+        app.keyCount = 0;
+      }
+    } else {
+      if (instantSave || app.keyCount > 9) {
+        model.set(inputKey, inputValue);
+        model.save(null, {silent: true});
+        app.keyCount = 0;
+      }
     }
   };
+
 };
 
 CK.Mobile.prototype = new Sail.App();
