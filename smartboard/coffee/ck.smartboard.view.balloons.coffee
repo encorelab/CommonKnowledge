@@ -34,7 +34,7 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
                 #           to do this with a one or two PUTs to the tags/contributions collections
                 for id,bv of @wall.balloonViews
                     continue if bv is this
-                    bv.model.set 
+                    bv.model.set
                         pos: {left: bv.left, top: bv.top}
                     if bv.model.hasChanged()
                         bv.model.save {},
@@ -185,7 +185,7 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
             connectorId = @model.id + "-" + tagId
 
             # FIXME: add the connector to the ballon element rather than the wall (just need to set its z-index so that it shows up behind)
-            connector = CK.Smartboard.View.findOrCreate @wall.$el, "##{connectorId}", 
+            connector = CK.Smartboard.View.findOrCreate @wall.$el, "##{connectorId}",
                 "<div class='connector' id='#{connectorId}'></div>"
 
             x1 = @left + @width/2
@@ -198,7 +198,7 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
             connectorTransform =
                 "rotate(" + ((Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI) ) + "deg)"
 
-            # TODO: for better performance, during collision, we might need to delay changing 
+            # TODO: for better performance, during collision, we might need to delay changing
             #       the css until after collision step is done
 
             connector.css

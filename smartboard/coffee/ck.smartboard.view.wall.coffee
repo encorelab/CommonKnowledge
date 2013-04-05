@@ -40,14 +40,14 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             paused = @runState.get('paused')
             @runState.save(paused: !paused)
 
-        'click #go-analyze': (ev) ->
-            @runState.save(mode: 'analysis')
+        'click #go-tagging': (ev) ->
+            @runState.save(phase: 'tagging')
 
         'click #go-propose': (ev) ->
-            @runState.save(mode: 'propose')
+            @runState.save(phase: 'propose')
 
         'click #go-interpret': (ev) ->
-            @runState.save(mode: 'interpret')
+            @runState.save(phase: 'interpret')
 
     constructor: (options) ->
         @runState = options.runState
@@ -163,17 +163,17 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                     top: o.top + 'px'
 
     render: =>
-        mode = @runState.get('mode')
-        if mode isnt @$el.data('mode')
-            switch mode
-                when 'analysis'
+        phase = @runState.get('phase')
+        if phase isnt @$el.data('phase')
+            switch phase
+                when 'tagging'
                     jQuery('body')
                         .removeClass('mode-synthesis')
-                        .addClass('mode-analysis')
-                    @changeWatermark("analysis")
+                        .addClass('mode-tagging')
+                    @changeWatermark("tagging")
                 when 'propose'
                     jQuery('body')
-                        .removeClass('mode-analysis')
+                        .removeClass('mode-tagging')
                         .addClass('mode-propose')
                     @changeWatermark("propose")
                 when 'interpret'
@@ -189,11 +189,11 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                     @changeWatermark("evaluate")
                 else
                     jQuery('body')
-                        .removeClass('mode-analysis')
+                        .removeClass('mode-tagging')
                         .removeClass('mode-synthesis')
                     @changeWatermark("brainstorm")
 
-            @$el.data('mode', mode)
+            @$el.data('phase', phase)
 
         paused = @runState.get('paused')
         if paused isnt @$el.data('paused')
