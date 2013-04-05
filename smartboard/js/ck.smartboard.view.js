@@ -230,7 +230,7 @@
       doc.wake(Sail.app.config.wakeful.url);
       doc.on('change', bv.render);
       doc.on('wakeful:broadcast:received', function() {
-        return cbv.$el.effect('highlight');
+        return bv.$el.effect('highlight');
       });
       bv.wall = this;
       bv.render();
