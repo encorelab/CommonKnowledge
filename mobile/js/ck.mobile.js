@@ -294,8 +294,7 @@ CK.Mobile = function() {
         el: jQuery('#bucket-tagging'),
         collection: app.tagList
       });
-    }    
-    app.tagList.on('change', function(model) { console.log(model.changedAttributes()); });
+    }
     app.tagList.on('reset add sync', app.bucketTaggingView.render, app.bucketTaggingView);
     app.tagList.fetch();
 
@@ -313,7 +312,6 @@ CK.Mobile = function() {
       return -contrib.get('created_at').getTime();
     };
     app.contributionList.comparator = sorter;
-    app.contributionList.on('change', function(model) { console.log(model.changedAttributes()); });
     app.contributionList.on('reset add sync change', app.contributionListView.render, app.contributionListView);
     
     app.contributionList.sortBy(sorter);      // TODO - figure me out!
@@ -390,6 +388,7 @@ CK.Mobile = function() {
     console.log("Submitting contribution...");
     Sail.app.contribution.wake(Sail.app.config.wakeful.url);
     Sail.app.contribution.save(null, {
+      patch:true,
       complete: function () {
         console.log("Contribution submitted");
       },
@@ -846,13 +845,13 @@ CK.Mobile = function() {
         });
         buildOnToUpdate.content = inputValue;
         app.contribution.set('build_ons',buildOnArray);
-        app.contribution.save(null, {silent: true});
+        app.contribution.save(null, {patch:true});
         app.keyCount = 0;
       }
     } else {
       if (instantSave || app.keyCount > 9) {
         model.set(inputKey, inputValue);
-        model.save(null, {silent: true});
+        model.save(null, {patch:true});
         app.keyCount = 0;
       }
     }

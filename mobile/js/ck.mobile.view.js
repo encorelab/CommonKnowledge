@@ -49,13 +49,13 @@
       Triggers full update of all dynamic elements in the list view
     **/
     render: function () {
-      console.log("rendering ContributionListView!");
-      var createdAt;
+      if (this.collection.any(function(c) { return c.hasChanged('pos') }) ) {
+        return;
+      }
 
+      var createdAt;
       // clear out the list
       jQuery('#contribution-list li').remove();
-      // sort the list
-
 
       Sail.app.contributionList.each(function(contrib) {
         if (contrib.get('published') === true) {
@@ -176,7 +176,7 @@
           // add tagger, other?  ie tag.set('tagger',Sail.app.userData.account.login);
         }
 
-        Sail.app.contribution.save();
+        Sail.app.contribution.save();     // TODO probably needs a patch here
 
         // TODO: do we need to deal with N/A?
         // else {
