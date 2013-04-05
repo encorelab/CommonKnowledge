@@ -12,6 +12,13 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
     render: =>
         @makeDraggable() if not @draggable
 
+        if @model.has('published')
+            if @model.get('published')
+                @$el.removeClass('unpublished')
+            else
+                @$el.addClass('unpublished')
+
+
 
     makeDraggable: ->
         @$el

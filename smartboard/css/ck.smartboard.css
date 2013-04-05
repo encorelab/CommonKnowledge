@@ -486,6 +486,9 @@ button {
   cursor: -webkit-grab;
   cursor: grab; }
 
+.balloon.unpublished {
+  display: none !important; }
+
 .balloon.ui-draggable-dragging {
   cursor: move;
   cursor: -moz-grabbing;

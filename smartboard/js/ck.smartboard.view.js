@@ -558,7 +558,14 @@
 
     Balloon.prototype.render = function() {
       if (!this.draggable) {
-        return this.makeDraggable();
+        this.makeDraggable();
+      }
+      if (this.model.has('published')) {
+        if (this.model.get('published')) {
+          return this.$el.removeClass('unpublished');
+        } else {
+          return this.$el.addClass('unpublished');
+        }
       }
     };
 
