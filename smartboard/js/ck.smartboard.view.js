@@ -169,17 +169,17 @@
       },
       'click #go-analyze': function(ev) {
         return this.runState.save({
-          mode: 'analysis'
+          phase: 'analysis'
         });
       },
       'click #go-propose': function(ev) {
         return this.runState.save({
-          mode: 'propose'
+          phase: 'propose'
         });
       },
       'click #go-interpret': function(ev) {
         return this.runState.save({
-          mode: 'interpret'
+          phase: 'interpret'
         });
       }
     };

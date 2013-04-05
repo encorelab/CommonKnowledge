@@ -41,13 +41,13 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             @runState.save(paused: !paused)
 
         'click #go-analyze': (ev) ->
-            @runState.save(mode: 'analysis')
+            @runState.save(phase: 'analysis')
 
         'click #go-propose': (ev) ->
-            @runState.save(mode: 'propose')
+            @runState.save(phase: 'propose')
 
         'click #go-interpret': (ev) ->
-            @runState.save(mode: 'interpret')
+            @runState.save(phase: 'interpret')
 
     constructor: (options) ->
         @runState = options.runState
