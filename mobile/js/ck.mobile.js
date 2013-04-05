@@ -388,7 +388,7 @@ CK.Mobile = function() {
     console.log("Submitting contribution...");
     Sail.app.contribution.wake(Sail.app.config.wakeful.url);
     Sail.app.contribution.save(null, {
-      patch:true,
+      //patch:true,    // does this need to stay patch?
       complete: function () {
         console.log("Contribution submitted");
       },
@@ -845,13 +845,13 @@ CK.Mobile = function() {
         });
         buildOnToUpdate.content = inputValue;
         app.contribution.set('build_ons',buildOnArray);
-        app.contribution.save(null, {patch:true});
+        app.contribution.save(null, {silent:true});
         app.keyCount = 0;
       }
     } else {
       if (instantSave || app.keyCount > 9) {
         model.set(inputKey, inputValue);
-        model.save(null, {patch:true});
+        model.save(null, {silent:null});
         app.keyCount = 0;
       }
     }
