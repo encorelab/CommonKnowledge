@@ -388,7 +388,7 @@ CK.Mobile = function() {
 
   app.saveContribution = function(view) {
     console.log("Submitting contribution...");
-    
+    Sail.app.contribution.wake(Sail.app.config.wakeful.url);
     Sail.app.contribution.save(null, {
       complete: function () {
         console.log("Contribution submitted");
