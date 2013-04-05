@@ -437,7 +437,7 @@ CK.Mobile = function() {
   app.restoreUnfinishedBuildOn = function(contrib) {
     console.log("Restoring BuildOn");
     app.contribution = contrib;
-    // gawd, we need a getMyBuildOn helper
+    // gawd, we need a getMyBuildOn helper TODO
     var buildOnArray = app.contribution.get('build_ons');
     app.buildOn = _.find(buildOnArray, function(b) {
       return b.author === app.userData.account.login && b.published === false;
