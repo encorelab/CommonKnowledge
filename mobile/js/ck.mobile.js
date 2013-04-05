@@ -851,7 +851,7 @@ CK.Mobile = function() {
     } else {
       if (instantSave || app.keyCount > 9) {
         model.set(inputKey, inputValue);
-        model.save(null, {silent:null});
+        model.save(null, {silent:true});
         app.keyCount = 0;
       }
     }
