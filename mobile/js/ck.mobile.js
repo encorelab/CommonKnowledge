@@ -100,12 +100,12 @@ CK.Mobile = function() {
         console.log('Entering brainstorm phase...');
 
         var unfinishedContrib = _.find(app.contributionList.models, function(contrib) {
-          return contrib.get('author') === app.userData.account.login && contrib.get('published') === false && contrib.get('content') && contrib.get('headline');
+          return contrib.get('author') === app.userData.account.login && contrib.get('published') === false && (contrib.get('content') || contrib.get('headline'));
         });
 
         var unfinishedBuildOn = _.find(app.contributionList.models, function(contrib) {
           return _.find(contrib.get('build_ons'), function(b) {
-            return b.author === app.userData.account.login && b.published === false;
+            return b.author === app.userData.account.login && b.published === false && b.content !== "";
           });
         });
 
@@ -294,14 +294,12 @@ CK.Mobile = function() {
         el: jQuery('#bucket-tagging'),
         collection: app.tagList
       });
-    }    
-    app.tagList.on('change', function(model) { console.log(model.changedAttributes()); });
+    }
     app.tagList.on('reset add sync', app.bucketTaggingView.render, app.bucketTaggingView);
     app.tagList.fetch();
 
 
     // CONTRIBUTIONS COLLECTION
-    // app.contributionList = new CK.Model.Contributions();
     app.contributionList = CK.Model.awake.contributions;
     // check if view already exists
    if (app.contributionListView === null) {
@@ -310,16 +308,16 @@ CK.Mobile = function() {
         collection: app.contributionList
       });
     }
-    app.contributionList.on('change', function(model) { console.log(model.changedAttributes()); });
+    var sorter = function(contrib) {
+      return -contrib.get('created_at').getTime();
+    };
+    app.contributionList.comparator = sorter;
     app.contributionList.on('reset add sync change', app.contributionListView.render, app.contributionListView);
-    // so for the sort, do we bind it here or what?
     
-    var sort = ['created_at', 'DESC'];
-    app.contributionList.fetch({
-      data: { sort: JSON.stringify(sort) }
-    }).done(function() {
-      app.restoreState();
-    });
+    app.contributionList.sortBy(sorter);      // TODO - figure me out!
+    
+    app.contributionListView.render();
+    app.restoreState();
   };
 
   app.createNewContribution = function() {
@@ -388,8 +386,9 @@ CK.Mobile = function() {
 
   app.saveContribution = function(view) {
     console.log("Submitting contribution...");
-    
+    Sail.app.contribution.wake(Sail.app.config.wakeful.url);
     Sail.app.contribution.save(null, {
+      patch:true,
       complete: function () {
         console.log("Contribution submitted");
       },
@@ -437,7 +436,7 @@ CK.Mobile = function() {
   app.restoreUnfinishedBuildOn = function(contrib) {
     console.log("Restoring BuildOn");
     app.contribution = contrib;
-    // gawd, we need a getMyBuildOn helper
+    // gawd, we need a getMyBuildOn helper TODO
     var buildOnArray = app.contribution.get('build_ons');
     app.buildOn = _.find(buildOnArray, function(b) {
       return b.author === app.userData.account.login && b.published === false;
@@ -846,13 +845,13 @@ CK.Mobile = function() {
         });
         buildOnToUpdate.content = inputValue;
         app.contribution.set('build_ons',buildOnArray);
-        app.contribution.save(null, {silent: true});
+        app.contribution.save(null, {patch:true});
         app.keyCount = 0;
       }
     } else {
       if (instantSave || app.keyCount > 9) {
         model.set(inputKey, inputValue);
-        model.save(null, {silent: true});
+        model.save(null, {patch:true});
         app.keyCount = 0;
       }
     }

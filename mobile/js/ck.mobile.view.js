@@ -49,12 +49,14 @@
       Triggers full update of all dynamic elements in the list view
     **/
     render: function () {
-      console.log("rendering ContributionListView!");
-      var createdAt;
+      if (this.collection.any(function(c) { return c.hasChanged('pos') }) ) {
+        return;
+      }
 
+      var createdAt;
+      // clear out the list
       jQuery('#contribution-list li').remove();
 
-      // TODO: order this by published (in mobile.js?)
       Sail.app.contributionList.each(function(contrib) {
         if (contrib.get('published') === true) {
           console.log('headline: ' + contrib.get('headline'));
@@ -108,7 +110,8 @@
 
     'build-on': function () {
       jQuery('#note-body-entry').removeClass('disabled');
-      jQuery('#note-headline-entry').addClass('disabled');     
+      jQuery('#note-headline-entry').addClass('disabled');
+      jQuery('#contribution-input .field').val('');
       Sail.app.createNewBuildOn();
     },
 
@@ -173,7 +176,7 @@
           // add tagger, other?  ie tag.set('tagger',Sail.app.userData.account.login);
         }
 
-        Sail.app.contribution.save();
+        Sail.app.contribution.save();     // TODO probably needs a patch here
 
         // TODO: do we need to deal with N/A?
         // else {
@@ -243,7 +246,7 @@
           return b.author === Sail.app.userData.account.login && b.published === false;
         });
         buildOnToUpdate.content = jQuery('#note-body-entry').val();
-        if (buildOnToUpdate.content !== "") {
+        if (!_.isEmpty(buildOnToUpdate.content)) {
           buildOnToUpdate.published = true;
           Sail.app.contribution.set('build_ons',buildOnArray);
           Sail.app.saveContribution(view);
@@ -253,8 +256,8 @@
       } else {    // for brainstorm
         Sail.app.contribution.set('content',jQuery('#note-body-entry').val());
         Sail.app.contribution.set('headline',jQuery('#note-headline-entry').val());
-        // is this check doing what we think it's doing?
-        if (Sail.app.contribution.has('content') && Sail.app.contribution.has('headline')) {
+        // if content and headline are not empty
+        if (!_.isEmpty(Sail.app.contribution.get('content')) && !_.isEmpty(Sail.app.contribution.get('headline'))) {
           Sail.app.contribution.set('published', true);
           Sail.app.saveContribution(view);
         } else {
@@ -272,7 +275,7 @@
       
       if (view.model.kind && view.model.kind === 'buildOn') {
         jQuery('#note-body-label').text('Build On');                // TODO: make these pop way more - talk to Matt, is this the best way?
-        jQuery('#note-body-label').effect("highlight", {}, 1500);
+        jQuery('#note-body-label').effect("highlight", {}, 1500);         // TODO: add me and make me nicer
         jQuery('#note-body-entry').removeClass('disabled');
         jQuery('#note-body-entry').val(view.model.content);
 
