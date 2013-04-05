@@ -183,7 +183,8 @@ img.balloon-note {
     border-radius: 15px;
     //background-color: rgba($contribution-bubble-color, 0.85);
     background-color: transparent;
-    
+
+    overflow: hidden;    
 
     ///
 
@@ -216,7 +217,7 @@ img.balloon-note {
     }
 
     max-height: 95%;
-    overflow-y: auto;
+    // overflow-y: auto;
 
     @include transition(0.5s, width);
 

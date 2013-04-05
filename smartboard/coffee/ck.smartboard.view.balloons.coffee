@@ -35,7 +35,7 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
             .on 'dragstop', (ev, ui) =>
                 @$el.addClass 'just-dragged' # prevent 'click' handlers from doing their thing
 
-                @model.save('pos': ui.position)
+                @model.save {pos: ui.position}, {patch: true}
                 
                 # FIXME: this is really inefficienct... would be nice
                 #           to do this with a one or two PUTs to the tags/contributions collections
@@ -45,7 +45,7 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
                         pos: {left: bv.left, top: bv.top}
                     if bv.model.hasChanged()
                         bv.model.save {},
-                            {silent: true} # avoid broadcasting this for now since it could be a bit floodish
+                            {silent: true, patch: true} # avoid broadcasting this for now since it could be a bit floodish
         @draggable = true
 
     # Sets .left, .top, .width, and .height on this object, based on data from the DOM.
@@ -86,6 +86,8 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
         # 'mousedown': (ev) -> @moveToTop()
 
         'click': (ev) ->
+            jQuery('.contribution').not("##{@model.id}")
+
             if @$el.hasClass('just-dragged')
                 @$el.removeClass('just-dragged')
             else
@@ -263,6 +265,8 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
         counter.html('')
 
         for b in buildons
+            continue unless b.published
+
             counter.append("•")
 
             $b = jQuery("

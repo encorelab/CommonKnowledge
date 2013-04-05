@@ -104,8 +104,8 @@ img.balloon-note {
   min-height: 64px;
   border-radius: 15px;
   background-color: transparent;
+  overflow: hidden;
   max-height: 95%;
-  overflow-y: auto;
   -webkit-transition: width 0.5s ease 0;
   -moz-transition: width 0.5s ease 0;
   transition: width 0.5s ease 0;

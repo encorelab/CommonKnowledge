@@ -82,7 +82,12 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
     addBalloon: (doc, view, balloonList) =>
         bv = new view
             model: doc
+
+        doc.wake Sail.app.config.wakeful.url
         doc.on 'change', bv.render
+        # highlight only on changes coming in from wakeful, not self changes
+        doc.on 'wakeful:broadcast:received', -> cbv.$el.effect('highlight')
+
         bv.wall = this
         bv.render()
         @$el.append bv.$el
@@ -130,23 +135,18 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                     yNudge = yOverlap #(yOverlap/2)
                     if b.top < o.top
                         o.top += yNudge
+                        o.bottom += yNudge
                     else
                         o.top -= yNudge
+                        o.bottom -= yNudge
                 else
                     xNudge = xOverlap #(xOverlap/2)
                     if b.left < o.left
                         o.left += xNudge
+                        o.right += xNudge
                     else
                         o.left -= xNudge
-
-                if o.bottom > @_boundsHeight
-                    o.top -= o.bottom - @_boundsHeight
-                else if o.top < 0
-                    o.top = 0
-                if o.right > @_boundsWidth
-                    o.left -= o.right - @_boundsWidth
-                else if o.left < 0
-                    o.left = 0
+                        o.right -= xNudge
 
                 o.renderConnectors() if o.renderConnectors?
 
@@ -156,6 +156,21 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
 
         if recursionLevel is 0
             for id,o of @balloonViews
+                console.log(@_boundsWidth, @_boundsHeight)
+                if o.bottom > @_boundsHeight
+                    o.top = @_boundsHeight - o.height
+                else if o.top < 0
+                    o.top = 0
+
+                o.bottom = o.top + o.height
+
+                if o.right > @_boundsWidth
+                    o.left = @_boundsWidth - o.width
+                else if o.left < 0
+                    o.left = 0
+
+                o.right = o.left + o.width
+
                 o.$el.css
                     left: o.left + 'px'
                     top: o.top + 'px'
