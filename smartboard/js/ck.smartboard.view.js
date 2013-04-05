@@ -239,7 +239,7 @@
     };
 
     Wall.prototype.collideBalloon = function(balloon, recursionLevel, ignoreBalloons) {
-      var b, bottomOverlap, id, leftOverlap, nudgeScale, o, rightOverlap, topOverlap, xNudge, xOverlap, yNudge, yOverlap, _ref, _ref1, _ref2, _results;
+      var b, bottomOverlap, id, leftOverlap, o, rightOverlap, topOverlap, xNudge, xOverlap, yNudge, yOverlap, _ref, _ref1, _ref2, _results;
       if (recursionLevel == null) {
         recursionLevel = 0;
       }
@@ -272,20 +272,19 @@
         if (rightOverlap > 0 && leftOverlap > 0 && topOverlap > 0 && bottomOverlap > 0) {
           yOverlap = Math.min(topOverlap, bottomOverlap);
           xOverlap = Math.min(leftOverlap, rightOverlap);
-          nudgeScale = 1;
           if (yOverlap < xOverlap) {
             yNudge = yOverlap;
             if (b.top < o.top) {
-              o.top += yNudge * nudgeScale;
+              o.top += yNudge;
             } else {
-              o.top -= yNudge * nudgeScale;
+              o.top -= yNudge;
             }
           } else {
             xNudge = xOverlap;
             if (b.left < o.left) {
-              o.left += xNudge * nudgeScale;
+              o.left += xNudge;
             } else {
-              o.left -= xNudge * nudgeScale;
+              o.left -= xNudge;
             }
           }
           if (o.bottom > this._boundsHeight) {

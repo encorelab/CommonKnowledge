@@ -115,31 +115,29 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             topOverlap    = b.bottom - o.top
             bottomOverlap = o.bottom - b.top
 
+            # if recursionLevel > 0
+            #     overlapTolerance = 1 - (recursionLevel / (@maxCollisionRecursion+1))
+            # else
+            #     overlapTolerance = 1
+            
+
             if rightOverlap > 0 and leftOverlap > 0 and topOverlap > 0 and bottomOverlap > 0
                 yOverlap = Math.min(topOverlap, bottomOverlap)
                 xOverlap = Math.min(leftOverlap, rightOverlap)
                 #console.log b.model.get('name'), o.model.get('name'), topOverlap, bottomOverlap, leftOverlap, rightOverlap
 
-                # TODO: this isn't quite behaving the way I intended... wanted bubbles to stack up a bit
-                #       when there are a lot piled up together
-                # if recursionLevel > 0
-                #     nudgeScale = 1 - (recursionLevel / @maxCollisionRecursion)
-                # else
-                #     nudgeScale = 1
-                nudgeScale = 1
-
                 if yOverlap < xOverlap
                     yNudge = yOverlap #(yOverlap/2)
                     if b.top < o.top
-                        o.top += yNudge * nudgeScale
+                        o.top += yNudge
                     else
-                        o.top -= yNudge * nudgeScale
+                        o.top -= yNudge
                 else
                     xNudge = xOverlap #(xOverlap/2)
                     if b.left < o.left
-                        o.left += xNudge * nudgeScale
+                        o.left += xNudge
                     else
-                        o.left -= xNudge * nudgeScale
+                        o.left -= xNudge
 
                 if o.bottom > @_boundsHeight
                     o.top -= o.bottom - @_boundsHeight
