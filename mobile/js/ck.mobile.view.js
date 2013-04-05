@@ -59,7 +59,6 @@
         if (contrib.get('published') === true) {
           console.log('headline: ' + contrib.get('headline'));
 
-          //var note = jQuery('li#'+contrib.id);
           var note = "<li id=" + contrib.id + " class='list-item'><a class='note'><span class='headline'></span>";
           note += "<br /><i class='icon-chevron-right'></i>";
           note += "<span class='author'></span><span class='date'></span></a></li>";
@@ -70,7 +69,6 @@
           note.find('.headline').text(contrib.get('headline'));
 
           // functions toLocaleDateString() and toLocaleTimeString() are only defined if created_at is a Date object
-          //createdAt = new Date(contrib.get('created_at'));  // createdAt as Date object
           createdAt = contrib.get('created_at');
           console.log(createdAt);
           if (createdAt) {
@@ -90,11 +88,8 @@
         } else {
           console.log(contrib.id, 'is unpublished');
         }
-
-      });
-          
+      });    
     }
-
   });
 
 
@@ -128,7 +123,6 @@
 
       // created_at will return undefined, so need to check it exists...
       if (view.model && view.model.get('created_at')) {
-        // TODO - do this with a loop instead of manually
         jQuery('#contribution-details .note-headline').text(view.model.get('headline'));
         jQuery('#contribution-details .note-body').text(view.model.get('content'));
         jQuery('#contribution-details .note-author').text('~'+view.model.get('author'));
@@ -163,27 +157,6 @@
   **/
   self.ContributionInputView = Backbone.View.extend({
     events: {
-      'change .field': function (ev) {
-        // TODO - this probably all wants to go now (it's handled by autosave)
-        // var view = this;
-        // var f;
-        // if (view.model.get('kind') === 'brainstorm') {
-        //   f = jQuery(ev.target);
-        //   console.log("Setting "+f.attr("name")+" to "+f.val());
-        //   view.model.set(f.attr('name'), f.val());
-        // } else if (view.model.get('kind') === 'buildOn') {
-        //   // TODO: accessing currentBuildOn is wrong and object is {} -- empty
-        //   console.log('setting build-on values');
-        //   Sail.app.currentBuildOn.content = jQuery('#note-body-entry').val();
-        //   Sail.app.currentBuildOn.author = Sail.app.userData.account.login;
-        //   var d = new Date();
-        //   Sail.app.currentBuildOn.created_at = d;
-        //   console.log(d);
-        // } else {
-        //   console.log('unknown note type');
-        // }
-      },
-
       'click #tag-submission-container .tag-btn': function (ev) {
         // var view = this;
         var tag = jQuery(ev.target).data('tag');
@@ -298,7 +271,8 @@
       console.log("rendering ContributionInputView...");
       
       if (view.model.kind && view.model.kind === 'buildOn') {
-        jQuery('#note-body-label').text('Build On');                // TODO: make these pop way more
+        jQuery('#note-body-label').text('Build On');                // TODO: make these pop way more - talk to Matt, is this the best way?
+        jQuery('#note-body-label').effect("highlight", {}, 1500);
         jQuery('#note-body-entry').removeClass('disabled');
         jQuery('#note-body-entry').val(view.model.content);
 

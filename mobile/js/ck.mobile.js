@@ -27,12 +27,13 @@ CK.Mobile = function() {
   };
 
   app.runState = null;
-  //app.userState = null;?
+  app.userData = null;
+  app.keyCount = 0;
+  //app.userState = null;? should be combined with above?
   app.contribution = null;
   app.contributionList = null;
   app.contributionListView = null;
   app.inputView = null;
-  //app.contributionToBuildOn = null;
   app.buildOn = null;
 
   app.tagList = null;
@@ -40,26 +41,10 @@ CK.Mobile = function() {
   app.bucketedContribution = null;
   app.bucketTaggingView = null;
 
-  
-
   // Global vars - a lot of this stuff can go TODO
-  app.userData = null;
-  app.currentBuildOn = {};
-  app.buildOnArray = [];
   app.synthesisFlag = false;
-  app.keyCount = 0;
   app.myTagGroup = null;
-
-  // app.currentState = {"type":"tablet"};
-
-  // adding view object to global object and instanciate with null
-  // this is necessary to ensure view is not created over and over again.
-  // having the global pointer at a view allows us to detach a model before we attach a newly created one
-  
-  //app.tagListView = null;
-  //app.taggingView = null;
   app.proposalInputView = null;
-
   // these are both used in Interpretation phase
   app.proposalList = null;
   app.interpretationListView = null;
@@ -326,7 +311,8 @@ CK.Mobile = function() {
       });
     }
     app.contributionList.on('change', function(model) { console.log(model.changedAttributes()); });
-    app.contributionList.on('reset add sync change', app.contributionListView.render, app.contributionListView);   
+    app.contributionList.on('reset add sync change', app.contributionListView.render, app.contributionListView);
+    // so for the sort, do we bind it here or what?
     
     var sort = ['created_at', 'DESC'];
     app.contributionList.fetch({
@@ -371,7 +357,7 @@ CK.Mobile = function() {
   };
 
   app.createNewBuildOn = function() {
-    console.log("Creating a new buildOn for", Sail.app.contribution);
+    console.log("Creating a new buildOn for", app.contribution);
 
     if (app.inputView === null) {
       app.inputView = new CK.Mobile.View.ContributionInputView({
@@ -387,7 +373,7 @@ CK.Mobile = function() {
     app.buildOn.content = '';
     app.buildOn.author = app.userData.account.login;
     app.buildOn.published = false;
-    app.buildOn.created_at = new Date;
+    app.buildOn.created_at = new Date();
 
     app.inputView.model = app.buildOn;
 
@@ -416,7 +402,7 @@ CK.Mobile = function() {
         // I think we need to lock the fields again and force the student to use the new note/build on button
         jQuery('#note-body-entry').addClass('disabled');
         jQuery('#note-headline-entry').addClass('disabled');
-        jQuery('.tag-btn').removeClass('active');       // TODO: check, do we also need to unselect/refresh the button or something here?
+        jQuery('.tag-btn').removeClass('active');
 
         // clear the old contribution plus ui fields
         view.stopListening(Sail.app.contribution);
