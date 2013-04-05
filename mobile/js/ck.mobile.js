@@ -310,7 +310,7 @@ CK.Mobile = function() {
       });
     }
     var sorter = function(contrib) {
-      return contrib.get('created_at').getTime();
+      return -contrib.get('created_at').getTime();
     };
     app.contributionList.comparator = sorter;
     app.contributionList.on('change', function(model) { console.log(model.changedAttributes()); });
