@@ -1,6 +1,6 @@
 {
   "name": "CommonKnowledge",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "...",
   "main": "server.js",
   "scripts": {
@@ -17,7 +17,7 @@
     "jquery": "~1.8.3",
     "underscore": "1.4.4",
     "backbone": "1.0.0",
-    "backbone.drowsy": "0.1.0",
+    "backbone.drowsy": "0.1.1",
     "optimist": "~0.3.7"
   },
   "devDependencies": {
