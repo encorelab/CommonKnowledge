@@ -167,19 +167,19 @@
           paused: !paused
         });
       },
-      'click #go-analyze': function(ev) {
+      'click #go-tagging': function(ev) {
         return this.runState.save({
-          mode: 'analysis'
+          phase: 'tagging'
         });
       },
       'click #go-propose': function(ev) {
         return this.runState.save({
-          mode: 'propose'
+          phase: 'propose'
         });
       },
       'click #go-interpret': function(ev) {
         return this.runState.save({
-          mode: 'interpret'
+          phase: 'interpret'
         });
       }
     };
@@ -322,16 +322,16 @@
     };
 
     Wall.prototype.render = function() {
-      var mode, paused;
-      mode = this.runState.get('mode');
-      if (mode !== this.$el.data('mode')) {
-        switch (mode) {
-          case 'analysis':
-            jQuery('body').removeClass('mode-synthesis').addClass('mode-analysis');
-            this.changeWatermark("analysis");
+      var paused, phase;
+      phase = this.runState.get('phase');
+      if (phase !== this.$el.data('phase')) {
+        switch (phase) {
+          case 'tagging':
+            jQuery('body').removeClass('mode-synthesis').addClass('mode-tagging');
+            this.changeWatermark("tagging");
             break;
           case 'propose':
-            jQuery('body').removeClass('mode-analysis').addClass('mode-propose');
+            jQuery('body').removeClass('mode-tagging').addClass('mode-propose');
             this.changeWatermark("propose");
             break;
           case 'interpret':
@@ -343,10 +343,10 @@
             this.changeWatermark("evaluate");
             break;
           default:
-            jQuery('body').removeClass('mode-analysis').removeClass('mode-synthesis');
+            jQuery('body').removeClass('mode-tagging').removeClass('mode-synthesis');
             this.changeWatermark("brainstorm");
         }
-        this.$el.data('mode', mode);
+        this.$el.data('phase', phase);
       }
       paused = this.runState.get('paused');
       if (paused !== this.$el.data('paused')) {

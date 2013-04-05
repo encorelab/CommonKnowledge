@@ -60,10 +60,10 @@ class CK.Smartboard extends Sail.App
         tag.save {}
 
     pause: =>
-        CK.setState('run', {paused: true})
+        CK.setState('RUN', {paused: true})
 
     unpause: =>
-        CK.setState('run', {paused: false})
+        CK.setState('RUN', {paused: false})
 
         if @wall.mode is 'evaluate'
             @switchToInterpretation()
@@ -74,10 +74,10 @@ class CK.Smartboard extends Sail.App
         @proposals = CK.Model.awake.proposals
         @tags = CK.Model.awake.tags
 
-        @runState = CK.getState 'run'
+        @runState = CK.getState 'RUN'
 
         unless @runState?
-            @runState = CK.setState 'run', {}
+            @runState = CK.setState 'RUN', {}
 
         @runState.wake @config.wakeful.url
 

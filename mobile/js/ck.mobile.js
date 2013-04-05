@@ -108,7 +108,6 @@ CK.Mobile = function() {
     console.log("Going in to restoreState...");
     app.hideWaitScreen();
  
-    //ar s = CK.getState("run", "phase");
     var phase = app.runState.get('phase');
 
     if (phase) {
@@ -206,6 +205,37 @@ CK.Mobile = function() {
  
   };
 
+  // think about combining this with restoreState - are they the same thing?
+  app.updateRunState = function() {
+    // checking paused status
+    if (app.runState.get('paused') === true) {
+      console.log('Locking screen...');
+      jQuery('#lock-screen').removeClass('hide');
+      jQuery('.row').addClass('disabled');      
+    } else if (app.runState.get('paused') === false) {
+      console.log('Unlocking screen...');
+      jQuery('#lock-screen').addClass('hide');
+      jQuery('.row').removeClass('disabled');      
+    }
+
+    // checking phase status
+    var p = app.runState.get('phase');
+    if (p === 'brainstorm') {
+      console.log('Switching to brainstorm phase!');
+      // UI changes
+    } else if (p === 'tagging') {
+
+    } else if (app.runState.get('clients_start_tagging') === true) {
+      // make sure to set this to false at some point
+    } else if (p === 'exploration') {
+
+    } else if (p === 'proposal') {
+
+    } else {
+      console.log("Unknown state");
+    }
+  };
+
   app.events = {
     initialized: function(ev) {
       app.authenticate();
@@ -260,125 +290,20 @@ CK.Mobile = function() {
 
     'unauthenticated': function(ev) {
       app.authenticate();
-    },
-
-    sail: {
-      screen_lock: function(sev) {
-        console.log('freezing display');
-
-        jQuery('#lock-screen').removeClass('hide');
-        jQuery('.row').addClass('disabled');
-      },
-
-      screen_unlock: function(sev) {
-        console.log('unfreezing display');
-
-        jQuery('#lock-screen').addClass('hide');
-        jQuery('.row').removeClass('disabled');
-      },
-
-      // contribution: function(sev) {
-      //   console.log('heard a contribution');
-
-      //   var contrib = new CK.Model.Contribution(sev.payload);
-      //   Sail.app.contributionList.add(contrib);
-      //   var sort = ['created_at', 'DESC'];
-      //   // var selector = {"author": "matt"};
-      //   app.contributionList.fetch({
-      //     data: {
-
-      //       sort: JSON.stringify(sort)
-      //     }
-      //   });
-      // },
-
-      start_analysis: function(sev) {
-        console.log('start_analysis heard, creating TagView');
-        app.startAnalysis(function (){
-          console.log('startAnalysis completed');
-        });
-      },
-
-      contribution_to_tag: function(sev) {
-        console.log('contribution_to_tag heard');
-        console.log('id: '+sev.payload.contribution_id);
-        
-        if (sev.payload.recipient === app.userData.account.login) {
-          console.log('name: '+sev.payload.recipient);
-          // This should happen in analysis (alternatively we could get the state from the db but maybe later)
-          var user_state = CK.getState(app.userData.account.login);
-          // get the analysis value since we should be in analysis state
-          var data = user_state.get('analysis');
-          data.contribution_to_tag = {'contribution_id': sev.payload.contribution_id};
-
-          user_state.set('analysis', data);
-          user_state.save();
-
-          app.contributionToTag(sev.payload.contribution_id);
-        }
-      },
-
-      done_tagging: function(sev) {
-        console.log('done_tagging event heard');
-        if (sev.payload.recipient === app.userData.account.login) {
-          // store state for restoreState ;)
-          var user_state = CK.getState(app.userData.account.login);
-          var data = user_state.get('analysis');
-          data.done_tagging = true;
-
-          user_state.set('analysis', data);
-          user_state.save();
-
-          app.doneTagging();
-        }
-      },
-
-      start_proposal: function(sev) {
-        console.log('start_proposal heard');
-        CK.setState("run", {phase: "proposal"});
-        app.startProposal();
-      },
-
-      start_interpretation: function(sev) {
-        console.log('start_interpretation heard');
-        CK.setState("run", {phase: "interpretation"});
-        app.startInterpretation();
-      }
-
     }
   };
-
-  /* Outgoing events */
-
-  app.sendContribution = function(kind, model) {
-    var sev;
-    if (kind === 'brainstorm') {
-      sev = new Sail.Event('contribution', model.toJSON());
-    } else if (kind === 'buildOn') {
-      sev = new Sail.Event('build_on', app.contributionDetails.toJSON());
-    } else {
-      console.error('unknown type of submission, cant send contribution');
-      return false;
-    }
-
-    //Sail.app.groupchat.sendEvent(sev);
-    return true;
-  };
-
-
-  /* Helper functions */
 
 
   app.initModels = function() {
     console.log('Initializing models...');      // TODO: MOVE THESE ALL INTO THEIR OWN FUNCTIONS, THINK ABOUT THEIR ORDERING AND SYNC
 
     // PHASE MODEL
-    //app.runState = CK.getState('RUN');
-    app.runState = CK.getState('run');
+    app.runState = CK.getState('RUN');
     app.runState.wake(Sail.app.config.wakeful.url);
+    app.runState.on('change', app.updateRunState());
 
     // TAGS COLLECTION - used in both BucketTaggingView and ContributionInputView
-    app.tagList = CK.Model.awake.tags; //CHECKME, then remove wakeful call and then do for other collections
+    app.tagList = CK.Model.awake.tags;
     if (app.bucketTaggingView === null) {
       app.bucketTaggingView = new CK.Mobile.View.BucketTaggingView({
         el: jQuery('#bucket-tagging'),
@@ -387,7 +312,6 @@ CK.Mobile = function() {
     }    
     app.tagList.on('change', function(model) { console.log(model.changedAttributes()); });
     app.tagList.on('reset add sync', app.bucketTaggingView.render, app.bucketTaggingView);
-    //app.tagList.wake(Sail.app.config.wakeful.url); 
     app.tagList.fetch();
 
 
@@ -402,8 +326,7 @@ CK.Mobile = function() {
       });
     }
     app.contributionList.on('change', function(model) { console.log(model.changedAttributes()); });
-    app.contributionList.on('reset add sync change', app.contributionListView.render, app.contributionListView);
-    //app.contributionList.wake(Sail.app.config.wakeful.url);    
+    app.contributionList.on('reset add sync change', app.contributionListView.render, app.contributionListView);   
     
     var sort = ['created_at', 'DESC'];
     app.contributionList.fetch({
@@ -464,7 +387,7 @@ CK.Mobile = function() {
     app.buildOn.content = '';
     app.buildOn.author = app.userData.account.login;
     app.buildOn.published = false;
-    app.buildOn.created_at = 'tempDate';
+    app.buildOn.created_at = new Date;
 
     app.inputView.model = app.buildOn;
 

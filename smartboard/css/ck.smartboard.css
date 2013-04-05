@@ -13,17 +13,17 @@ body {
     opacity: 0.4; }
   body #go-interpret {
     opacity: 0.4; }
-  body.mode-analysis {
+  body.mode-tagging {
     background-color: #51ba34; }
-    body.mode-analysis #go-analyze {
+    body.mode-tagging #go-tagging {
       opacity: 0.4; }
-    body.mode-analysis #go-propose {
+    body.mode-tagging #go-propose {
       opacity: 1.0; }
-    body.mode-analysis #go-interpret {
+    body.mode-tagging #go-interpret {
       opacity: 0.4; }
   body.mode-propose {
     background-color: #34ba70; }
-    body.mode-propose #go-analyze {
+    body.mode-propose #go-tagging {
       opacity: 0.4; }
     body.mode-propose #go-propose {
       opacity: 0.4; }
@@ -31,7 +31,7 @@ body {
       opacity: 1.0; }
   body.mode-interpret {
     background-color: #34bab3; }
-    body.mode-interpret #go-analyze {
+    body.mode-interpret #go-tagging {
       opacity: 0.4; }
     body.mode-interpret #go-propose {
       opacity: 0.4; }
@@ -39,7 +39,7 @@ body {
       opacity: 0.4; }
   body.mode-evaluate {
     background-color: #c0b7ca; }
-    body.mode-evaluate #go-analyze {
+    body.mode-evaluate #go-tagging {
       opacity: 0.4; }
     body.mode-evaluate #go-propose {
       opacity: 0.4; }
@@ -185,7 +185,6 @@ img.balloon-note {
       .contribution.balloon .buildons .buildon .content {
         font-size: 13px; }
   .contribution.balloon.opened {
-    min-width: 200px;
     max-width: 240px;
     background-color: white; }
   .contribution.balloon.opened .body {

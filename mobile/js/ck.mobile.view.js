@@ -70,21 +70,23 @@
           note.find('.headline').text(contrib.get('headline'));
 
           // functions toLocaleDateString() and toLocaleTimeString() are only defined if created_at is a Date object
-          createdAt = new Date(contrib.get('created_at'));  // createdAt as Date object
-          if (typeof createdAt !== 'undefined' && createdAt !== null) {
+          //createdAt = new Date(contrib.get('created_at'));  // createdAt as Date object
+          createdAt = contrib.get('created_at');
+          console.log(createdAt);
+          if (createdAt) {
             note.find('.date').text(' (' + createdAt.toLocaleDateString() + ' ' + createdAt.toLocaleTimeString() + ')');
           }
 
           note.find('.author').text(contrib.get('author'));               
-          if (contrib.get('author') === Sail.app.userData.account.login) {
+
+          var buildOnArray = contrib.get('build_ons');
+          var myBuildOn = _.find(buildOnArray, function(b) {
+            return b.author === Sail.app.userData.account.login && b.published === true;
+          });
+          if (myBuildOn || contrib.get('author') === Sail.app.userData.account.login) {
             note.children().first().addClass('own-color');
           }
-          // TODO check if this is working, then add for tags as well, then port to where it's actually relevant
-          // _.each(contrib.get('build_ons'), function(b) {
-          //    if (contrib.get('author') === Sail.app.userData.account.login) {
-          //     note.children().first().addClass('own-color');
-          //   }
-          // });         
+      
         } else {
           console.log(contrib.id, 'is unpublished');
         }
@@ -120,8 +122,7 @@
     **/
     render: function () {
       console.log("rendering ContributionDetailsView!");
-      var view = this,
-        created_at;
+      var view = this;
 
       jQuery('#contribution-details .field').text('');
 
@@ -132,20 +133,18 @@
         jQuery('#contribution-details .note-body').text(view.model.get('content'));
         jQuery('#contribution-details .note-author').text('~'+view.model.get('author'));
 
-        // functions toLocaleDateString() and toLocaleTimeString() are only defined if created_at is a Date object
-        created_at = new Date(view.model.get('created_at'));  // created_at as Date object
-        if (typeof created_at !== 'undefined' && created_at !== null) {
-          jQuery('#contribution-details .note-created-at').text(' (' + created_at.toLocaleDateString() + ' ' + created_at.toLocaleTimeString() + ')');
+        var createdAt = view.model.get('created_at');
+        if (createdAt) {
+          jQuery('#contribution-details .note-created-at').text(' (' + createdAt.toLocaleDateString() + ' ' + createdAt.toLocaleTimeString() + ')');
         }
 
         // add the buildOns (if they are published)
         var buildOnEl = '<hr /><div>';
         _.each(view.model.get('build_ons'), function(b) {
           if (b.published === true) {
-            var date = new Date(b.created_at);
             buildOnEl += b.content;
             buildOnEl += '<br /><span class="build-on-metadata">~' + b.author;
-            buildOnEl += ' (' + date.toLocaleDateString() + ' ' + date.toLocaleTimeString() + ')' +  '</span><hr />';            
+            buildOnEl += ' (' + b.created_at.toLocaleDateString() + ' ' + b.created_at.toLocaleTimeString() + ')' +  '</span><hr />';            
           }
         });
 
