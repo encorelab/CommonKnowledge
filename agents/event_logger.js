@@ -14,8 +14,8 @@ Backbone.$ = jQuery;
 
 var mongo = require('mongodb');
 
-var Drowsy = require('Backbone.Drowsy').Drowsy;
-var Wakeful = require('Backbone.Drowsy/wakeful').Wakeful;
+var Drowsy = require('backbone.drowsy').Drowsy;
+var Wakeful = require('backbone.drowsy/wakeful').Wakeful;
 
 var fs = require('fs');
 var config = JSON.parse(fs.readFileSync('./config.json'));

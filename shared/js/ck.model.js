@@ -10,7 +10,7 @@
     _ = require("underscore");
     Backbone = require("backbone");
     Backbone.$ = $;
-    Drowsy = require("Backbone.Drowsy").Drowsy;
+    Drowsy = require("backbone.drowsy").Drowsy;
     CK = {};
     exports.CK = CK;
   } else {

@@ -5,7 +5,7 @@ var states = null,
   present_students = null;
 
 // grab information from user
-var myArgs = require('optimist')
+var argv = require('optimist')
   .usage('Usage:\n\t$0 database')
   .demand(1)
   .argv;
@@ -19,8 +19,8 @@ var _ = require('underscore');
 var Backbone = require('backbone');
 Backbone.$ = jQuery;
 // setting up Drowsy and Wakeful
-var Drowsy = require('Backbone.Drowsy').Drowsy;
-var Wakeful = require('Backbone.Drowsy/wakeful').Wakeful;
+var Drowsy = require('backbone.drowsy').Drowsy;
+var Wakeful = require('backbone.drowsy/wakeful').Wakeful;
 // read config.json
 var fs = require('fs');
 var config = JSON.parse(fs.readFileSync('./config.json'));
