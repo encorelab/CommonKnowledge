@@ -35,12 +35,10 @@ String.prototype.toCamelCase = function(){
 
 // changes to these collections will be logged
 var COLLECTIONS = [
-  'groups',
-  'phases',
-  'users',
-  'observations',
-  'notes',
-  'explanations'
+  'states',
+  'contributions',
+  'tags',
+  'proposals'
 ];
 
 var LOG_TO_COLLECTION = 'events';
@@ -60,23 +58,23 @@ mongoClient.open(function (err) {
 var staticData = {};
 var monitoredColls = {};
 
-loadStaticData();
+// loadStaticData();
 setupModel();
 
 console.log("Agent is agenting!");
 
 /*******************************/
 
-function loadStaticData() {
-  // paths of the static data files we want to load
-  var datafiles = {
-    'phase_definitions': __dirname+'/../assets/static_data/phase_definitions.json'
-  };
+// function loadStaticData() {
+//   // paths of the static data files we want to load
+//   var datafiles = {
+//     'phase_definitions': __dirname+'/../assets/static_data/phase_definitions.json'
+//   };
 
-  _.collect(datafiles, function (path, key) {
-    staticData[key] = JSON.parse(fs.readFileSync(path));
-  });
-}
+//   _.collect(datafiles, function (path, key) {
+//     staticData[key] = JSON.parse(fs.readFileSync(path));
+//   });
+// }
 
 function logEntry(action, doc, data) {
   var entry = {

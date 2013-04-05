@@ -4,7 +4,7 @@ if typeof exports isnt "undefined" and exports isnt null
   _ = require("underscore")
   Backbone = require("backbone")
   Backbone.$ = $
-  Drowsy = require("Backbone.Drowsy").Drowsy
+  Drowsy = require("backbone.drowsy").Drowsy
   
   #var Wakeful = require('Backbone.Drowsy/wakeful').Wakeful;
   CK = {}
