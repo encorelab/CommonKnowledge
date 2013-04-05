@@ -86,7 +86,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
         doc.wake Sail.app.config.wakeful.url
         doc.on 'change', bv.render
         # highlight only on changes coming in from wakeful, not self changes
-        doc.on 'wakeful:broadcast:received', -> cbv.$el.effect('highlight')
+        doc.on 'wakeful:broadcast:received', -> bv.$el.effect('highlight')
 
         bv.wall = this
         bv.render()
