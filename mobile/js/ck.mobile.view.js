@@ -274,14 +274,15 @@
       console.log("rendering ContributionInputView...");
       
       if (view.model.kind && view.model.kind === 'buildOn') {
-        jQuery('#note-body-label').text('Build On');                // TODO: make these pop way more - talk to Matt, is this the best way?
-        jQuery('#note-body-label').effect("highlight", {}, 1500);         // TODO: add me and make me nicer
+        jQuery('#note-body-label').text('Build On');
+        jQuery('#note-body-label').effect("highlight", {}, 1500);
         jQuery('#note-body-entry').removeClass('disabled');
         jQuery('#note-body-entry').val(view.model.content);
 
       } else {      // for brainstorm
         var contrib = Sail.app.contribution;
         jQuery('#note-body-label').text('New Note');
+        jQuery('#note-body-label').effect("highlight", {}, 1500);
 
         jQuery('#note-body-entry').val(contrib.get('content'));
         jQuery('#note-headline-entry').val(contrib.get('headline'));

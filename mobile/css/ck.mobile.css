@@ -173,7 +173,7 @@ i {
 #contribution-input #tag-submission-container {
 	height: 100px;
 	width: 70%;
-	margin-top: 15px;
+	margin-top: 5px;
 	overflow: auto;
 }
 
@@ -257,6 +257,7 @@ i {
 
 #note-body-label {
 	font-weight: bold;
+	width: 70px;
 }
 
 #note-body-entry {
@@ -266,7 +267,13 @@ i {
 }
 
 #note-headline-entry {
-	width: 90%;
+	width: 80%;
+}
+
+/* for the Share button */
+#contribution-input .btn-container {
+	bottom: 115px;
+	right: 22px;
 }
 
 #bucket-tagging-btn-container .tag-btn, #tag-submission-container .tag-btn, #grouping-screen .user-btn {
