@@ -8,6 +8,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
 
     events:
         'click #add-tag-opener': (ev) ->
+            return # temporarily disabled for April 8 run
             addTagContainer = @$el.find('#add-tag-container')
             addTagContainer.toggleClass('opened')
             if addTagContainer.hasClass('opened')
@@ -41,12 +42,15 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             @runState.save(paused: !paused)
 
         'click #go-tagging': (ev) ->
+            return # temporarily disabled for April 8 run
             @runState.save(phase: 'tagging')
 
         'click #go-propose': (ev) ->
+            return # temporarily disabled for April 8 run
             @runState.save(phase: 'propose')
 
         'click #go-interpret': (ev) ->
+            return # temporarily disabled for April 8 run
             @runState.save(phase: 'interpret')
 
     constructor: (options) ->
@@ -209,6 +213,10 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                     @changeWatermark("brainstorm")
 
             @$el.data('phase', phase)
+
+        # temporarily disabled for April 8 run
+        jQuery("#go-tagging, #go-propose, #go-interpret, #add-tag-container").css
+            opacity: 0.4
 
         paused = @runState.get('paused')
         if paused isnt @$el.data('paused')

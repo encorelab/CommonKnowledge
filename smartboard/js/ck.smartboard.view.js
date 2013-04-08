@@ -93,6 +93,7 @@
       'click #add-tag-opener': function(ev) {
         var addTagContainer,
           _this = this;
+        return;
         addTagContainer = this.$el.find('#add-tag-container');
         addTagContainer.toggleClass('opened');
         if (addTagContainer.hasClass('opened')) {
@@ -134,16 +135,19 @@
         });
       },
       'click #go-tagging': function(ev) {
+        return;
         return this.runState.save({
           phase: 'tagging'
         });
       },
       'click #go-propose': function(ev) {
+        return;
         return this.runState.save({
           phase: 'propose'
         });
       },
       'click #go-interpret': function(ev) {
+        return;
         return this.runState.save({
           phase: 'interpret'
         });
@@ -325,6 +329,9 @@
         }
         this.$el.data('phase', phase);
       }
+      jQuery("#go-tagging, #go-propose, #go-interpret, #add-tag-container").css({
+        opacity: 0.4
+      });
       paused = this.runState.get('paused');
       if (paused !== this.$el.data('paused')) {
         if (paused) {
