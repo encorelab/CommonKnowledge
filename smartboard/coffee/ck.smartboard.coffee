@@ -55,7 +55,10 @@ class CK.Smartboard extends Sail.App
     createNewTag: (name) =>
         colourClassName = @getColourTagClassName()
 
-        tag = new CK.Model.Tag({'name': name, 'colourClass': colourClassName})
+        tag = new CK.Model.Tag
+            name: name
+            created_at: new Date()
+
         tag.wake @config.wakeful.url
 
         @tags.add(tag)
