@@ -18,7 +18,11 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
             else
                 @$el.addClass('unpublished')
 
-
+        if @$el.is(':visible')
+            pos = @model.get('pos')
+            @$el.css
+                left: pos.left + 'px'
+                top: pos.top + 'px'
 
     makeDraggable: ->
         @$el
@@ -59,6 +63,7 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
         this.top = pos.top
         this.right = pos.left + this.width
         this.bottom = pos.top + this.height
+        @model.set('pos', pos)
 
 class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
     tagName: 'article'

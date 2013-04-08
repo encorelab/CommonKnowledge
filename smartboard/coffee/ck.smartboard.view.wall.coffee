@@ -92,7 +92,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
         bv.render()
         @$el.append bv.$el
 
-        # kind of an awkward place to call this, but this needs to happen after teh view has been
+        # kind of an awkward place to call this, but this needs to happen after the view has been
         # rendered and after it's been added to the DOM
         bv.cachePositionAndBounds()
         bv.renderConnectors() if bv.renderConnectors?

@@ -567,15 +567,23 @@
     };
 
     Balloon.prototype.render = function() {
+      var pos;
       if (!this.draggable) {
         this.makeDraggable();
       }
       if (this.model.has('published')) {
         if (this.model.get('published')) {
-          return this.$el.removeClass('unpublished');
+          this.$el.removeClass('unpublished');
         } else {
-          return this.$el.addClass('unpublished');
+          this.$el.addClass('unpublished');
         }
+      }
+      if (this.$el.is(':visible')) {
+        pos = this.model.get('pos');
+        return this.$el.css({
+          left: pos.left + 'px',
+          top: pos.top + 'px'
+        });
       }
     };
 
@@ -632,7 +640,8 @@
       this.left = pos.left;
       this.top = pos.top;
       this.right = pos.left + this.width;
-      return this.bottom = pos.top + this.height;
+      this.bottom = pos.top + this.height;
+      return this.model.set('pos', pos);
     };
 
     return Balloon;
