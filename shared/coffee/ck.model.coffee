@@ -62,18 +62,9 @@ class CK.Model
 
 
     @defineModelClasses: ->
-        setDefaults = ->
-            if @isReallyNew() and not @has('created_at')
-                @set created_at: new Date()
-
+ 
         class @Contribution extends @db.Document('contributions')
             
-            initialize: -> 
-                super()
-                @setDefaults()
-
-            setDefaults: setDefaults
-
             addTag: (tag, tagger) =>
                 unless tag instanceof CK.Model.Tag
                     console.error("Cannot addTag ", tag ," because it is not a CK.Model.Tag instance!")
@@ -116,24 +107,7 @@ class CK.Model
 
 
         class @Proposal extends @db.Document('proposals')
-
-            initialize: -> 
-                super()
-                @setDefaults()
-
-            setDefaults: setDefaults
-
-            get: (attr) =>
-                val = super(attr)
-                # previous versions of CK did not store created_at as a proper ISODate
-                if attr is 'created_at'
-                    unless val instanceof Date
-                        date = new Date(val)
-                        unless isNaN date.getTime()
-                            val = date
-                
-                return val
-            
+                    
             addTag: (tag) =>
                 unless tag instanceof CK.Model.Tag
                     console.error("Cannot addTag ", tag ," because it is not a CK.Model.Tag instance!")
@@ -179,11 +153,6 @@ class CK.Model
             model: CK.Model.Proposal
 
         class @Tag extends @db.Document('tags')
-            initialize: -> 
-                super()
-                @setDefaults()
-
-            setDefaults: setDefaults
 
         class @Tags extends @db.Collection('tags')
             model: CK.Model.Tag
