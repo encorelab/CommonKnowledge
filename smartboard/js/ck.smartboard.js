@@ -92,7 +92,7 @@
         'colourClass': colourClassName
       });
       tag.wake(this.config.wakeful.url);
-      return tag.save({});
+      return this.tags.add(tag);
     };
 
     Smartboard.prototype.pause = function() {

@@ -26,11 +26,7 @@
 
     __extends(Base, _super);
 
-    Base.prototype.findOrCreate = function(selector, html) {
-      return CK.Smartboard.View.findOrCreate(this.$el, selector, html);
-    };
-
-    function Base(options) {
+    function Base() {
       this.yToTop = __bind(this.yToTop, this);
 
       this.xToLeft = __bind(this.xToLeft, this);
@@ -42,41 +38,11 @@
       this.domID = __bind(this.domID, this);
 
       this.findOrCreate = __bind(this.findOrCreate, this);
-
-      var alreadyPositioned;
-      Base.__super__.constructor.call(this, options);
-      alreadyPositioned = (this.$el.position().left != null) && this.$el.position().left > 0;
-      if ((this.model != null) && !alreadyPositioned) {
-        this.$el.hide();
-        if (this.model.has('pos')) {
-          this.$el.css({
-            left: this.model.get('pos').left + 'px',
-            top: this.model.get('pos').top + 'px'
-          });
-        } else {
-          console.log("autopositioning", this);
-          this.autoPosition();
-        }
-      }
-      this.$el.show();
+      return Base.__super__.constructor.apply(this, arguments);
     }
 
-    Base.prototype.autoPosition = function() {
-      var left, top, wallHeight, wallWidth;
-      wallWidth = jQuery('#wall').width();
-      wallHeight = jQuery('#wall').height();
-      left = Math.random() * (wallWidth - this.$el.outerWidth());
-      top = Math.random() * (wallHeight - this.$el.outerHeight());
-      this.$el.css({
-        left: left + 'px',
-        top: top + 'px'
-      });
-      return this.model.save({
-        pos: {
-          left: left,
-          top: top
-        }
-      });
+    Base.prototype.findOrCreate = function(selector, html) {
+      return CK.Smartboard.View.findOrCreate(this.$el, selector, html);
     };
 
     Base.prototype.domID = function() {
@@ -206,6 +172,7 @@
 
     Wall.prototype.initialize = function() {
       var _this = this;
+      Wall.__super__.initialize.call(this);
       this.runState.on('change', this.render);
       this.balloonViews = {};
       this.tags.on('add', function(t) {
@@ -560,9 +527,44 @@
     }
 
     Balloon.prototype.initialize = function() {
-      var _this = this;
-      return this.model.on('change', function() {
+      var alreadyPositioned, pos,
+        _this = this;
+      Balloon.__super__.initialize.call(this);
+      this.model.on('change', function() {
         return _this.render();
+      });
+      alreadyPositioned = (this.$el.position().left != null) && this.$el.position().left > 0;
+      if ((this.model != null) && !alreadyPositioned) {
+        this.$el.hide();
+        if (this.model.has('pos')) {
+          pos = this.model.get('pos');
+          this.$el.css({
+            left: pos.left + 'px',
+            top: pos.top + 'px'
+          });
+        } else {
+          console.log("autopositioning", this);
+          this.autoPosition();
+        }
+        return this.$el.show();
+      }
+    };
+
+    Balloon.prototype.autoPosition = function() {
+      var left, top, wallHeight, wallWidth;
+      wallWidth = jQuery('#wall').width();
+      wallHeight = jQuery('#wall').height();
+      left = Math.random() * (wallWidth - this.$el.outerWidth());
+      top = Math.random() * (wallHeight - this.$el.outerHeight());
+      this.$el.css({
+        left: left + 'px',
+        top: top + 'px'
+      });
+      return this.model.save({
+        pos: {
+          left: left,
+          top: top
+        }
       });
     };
 

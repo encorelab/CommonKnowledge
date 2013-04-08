@@ -1,8 +1,40 @@
 class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
 
     initialize: ->
+        super()
+
         @model.on 'change', =>
             @render()
+
+        alreadyPositioned = @$el.position().left? && @$el.position().left > 0
+
+        if @model? and not alreadyPositioned
+            @$el.hide() # hide until positioned
+            if @model.has('pos')
+                pos = @model.get('pos')
+                @$el.css
+                    left: pos.left + 'px'
+                    top: pos.top + 'px'
+            else
+                console.log("autopositioning", this)
+                @autoPosition()
+
+            @$el.show()
+
+        
+
+    autoPosition: ->
+        wallWidth = jQuery('#wall').width()
+        wallHeight = jQuery('#wall').height()
+
+        left = Math.random() * (wallWidth - @$el.outerWidth())
+        top = Math.random() * (wallHeight - @$el.outerHeight())
+
+        @$el.css
+            left: left + 'px'
+            top: top + 'px'
+
+        @model.save(pos: {left: left, top: top})
 
     # moveToTop: =>
     #     maxZ = _.max jQuery('.balloon').map ->
@@ -198,7 +230,6 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
 
             connectorId = @model.id + "-" + tagId
 
-            # FIXME: add the connector to the ballon element rather than the wall (just need to set its z-index so that it shows up behind)
             connector = CK.Smartboard.View.findOrCreate @wall.$el, "##{connectorId}",
                 "<div class='connector' id='#{connectorId}'></div>"
 

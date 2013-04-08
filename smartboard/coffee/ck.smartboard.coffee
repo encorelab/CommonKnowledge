@@ -57,7 +57,9 @@ class CK.Smartboard extends Sail.App
 
         tag = new CK.Model.Tag({'name': name, 'colourClass': colourClassName})
         tag.wake @config.wakeful.url
-        tag.save {}
+
+        @tags.add(tag)
+        #tag.save() # delay saving until we're positioned
 
     pause: =>
         CK.setState('RUN', {paused: true})

@@ -56,6 +56,8 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
         super(options)
 
     initialize: ->
+        super()
+
         @runState.on 'change', @render
 
         @balloonViews = {}
