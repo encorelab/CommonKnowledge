@@ -136,7 +136,7 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
     initialize: ->
         super()
 
-        @model.on 'change:published',
+        @model.on 'change:published', =>
             @cachePositionAndBounds() # publishing changes visiblity, so we need to recache
             if @model.get('published')
                 @$el.addClass('new')

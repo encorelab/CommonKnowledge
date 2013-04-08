@@ -199,9 +199,6 @@
         model: doc
       });
       doc.wake(Sail.app.config.wakeful.url);
-      doc.on('wakeful:broadcast:received', function() {
-        return bv.$el.effect('highlight');
-      });
       bv.wall = this;
       bv.render();
       this.$el.append(bv.$el);
@@ -721,8 +718,14 @@
     }
 
     ContributionBalloon.prototype.initialize = function() {
+      var _this = this;
       ContributionBalloon.__super__.initialize.call(this);
-      return this.model.on('change:published', this.cachePositionAndBounds(), this.model.get('published') ? this.$el.addClass('new') : void 0);
+      return this.model.on('change:published', function() {
+        _this.cachePositionAndBounds();
+        if (_this.model.get('published')) {
+          return _this.$el.addClass('new');
+        }
+      });
     };
 
     ContributionBalloon.prototype.events = {
