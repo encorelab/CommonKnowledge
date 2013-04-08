@@ -62,25 +62,18 @@ class CK.Model
 
 
     @defineModelClasses: ->
-        Drowsy.Document.prototype.defaults = ->
-            if @isReallyNew()
-                {created_at: new Date()}
-            else
-                {}
+        setDefaults = ->
+            if @isReallyNew() and not @has('created_at')
+                @set created_at: new Date()
 
         class @Contribution extends @db.Document('contributions')
-
-            get: (attr) =>
-                val = super(attr)
-                # previous versions of CK did not store created_at as a proper ISODate
-                if attr is 'created_at'
-                    unless val instanceof Date
-                        date = new Date(val)
-                        unless isNaN date.getTime()
-                            val = date
-                
-                return val
             
+            initialize: -> 
+                super()
+                @setDefaults()
+
+            setDefaults: setDefaults
+
             addTag: (tag, tagger) =>
                 unless tag instanceof CK.Model.Tag
                     console.error("Cannot addTag ", tag ," because it is not a CK.Model.Tag instance!")
@@ -94,7 +87,7 @@ class CK.Model
 
                 if _.any(existingTagRelationships, (tr) => tr.id is tag.id)
                     console.warn("Cannot addTag ", tag ," to contribution ", @ , " because it already has this tag.")
-                    return @
+                    return this
 
                 tagRel =
                     id: tag.id
@@ -123,6 +116,12 @@ class CK.Model
 
 
         class @Proposal extends @db.Document('proposals')
+
+            initialize: -> 
+                super()
+                @setDefaults()
+
+            setDefaults: setDefaults
 
             get: (attr) =>
                 val = super(attr)
@@ -180,6 +179,11 @@ class CK.Model
             model: CK.Model.Proposal
 
         class @Tag extends @db.Document('tags')
+            initialize: -> 
+                super()
+                @setDefaults()
+
+            setDefaults: setDefaults
 
         class @Tags extends @db.Collection('tags')
             model: CK.Model.Tag

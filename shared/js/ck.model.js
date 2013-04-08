@@ -75,13 +75,12 @@
     };
 
     Model.defineModelClasses = function() {
-      Drowsy.Document.prototype.defaults = function() {
-        if (this.isReallyNew()) {
-          return {
+      var setDefaults;
+      setDefaults = function() {
+        if (this.isReallyNew() && !this.has('created_at')) {
+          return this.set({
             created_at: new Date()
-          };
-        } else {
-          return {};
+          });
         }
       };
       this.Contribution = (function(_super) {
@@ -94,24 +93,15 @@
           this.removeTag = __bind(this.removeTag, this);
 
           this.addTag = __bind(this.addTag, this);
-
-          this.get = __bind(this.get, this);
           return Contribution.__super__.constructor.apply(this, arguments);
         }
 
-        Contribution.prototype.get = function(attr) {
-          var date, val;
-          val = Contribution.__super__.get.call(this, attr);
-          if (attr === 'created_at') {
-            if (!(val instanceof Date)) {
-              date = new Date(val);
-              if (!isNaN(date.getTime())) {
-                val = date;
-              }
-            }
-          }
-          return val;
+        Contribution.prototype.initialize = function() {
+          Contribution.__super__.initialize.call(this);
+          return this.setDefaults();
         };
+
+        Contribution.prototype.setDefaults = setDefaults;
 
         Contribution.prototype.addTag = function(tag, tagger) {
           var existingTagRelationships, tagRel,
@@ -175,6 +165,13 @@
           this.get = __bind(this.get, this);
           return Proposal.__super__.constructor.apply(this, arguments);
         }
+
+        Proposal.prototype.initialize = function() {
+          Proposal.__super__.initialize.call(this);
+          return this.setDefaults();
+        };
+
+        Proposal.prototype.setDefaults = setDefaults;
 
         Proposal.prototype.get = function(attr) {
           var date, val;
@@ -266,6 +263,13 @@
         function Tag() {
           return Tag.__super__.constructor.apply(this, arguments);
         }
+
+        Tag.prototype.initialize = function() {
+          Tag.__super__.initialize.call(this);
+          return this.setDefaults();
+        };
+
+        Tag.prototype.setDefaults = setDefaults;
 
         return Tag;
 
