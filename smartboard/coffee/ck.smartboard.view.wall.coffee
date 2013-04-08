@@ -90,7 +90,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             model: doc
 
         doc.wake Sail.app.config.wakeful.url
-        doc.on 'change', bv.render
+        
         # highlight only on changes coming in from wakeful, not self changes
         doc.on 'wakeful:broadcast:received', -> bv.$el.effect('highlight')
 
@@ -116,6 +116,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
 
             for id,o of @balloonViews
                 o.cachePositionAndBounds()
+                o.collided = false
 
         for id,o of @balloonViews
             continue if o is b # don't collide with self
@@ -154,32 +155,41 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                         o.left -= xNudge
                         o.right -= xNudge
 
-                o.renderConnectors() if o.renderConnectors?
+                o.collided = true
 
                 if recursionLevel < @maxCollisionRecursion
                     ignoreBalloons.push(b)
                     @collideBalloon(o, recursionLevel + 1, ignoreBalloons)
 
         if recursionLevel is 0
+            # this runs after we're done the entire collision chain
+
             for id,o of @balloonViews
-                console.log(@_boundsWidth, @_boundsHeight)
-                if o.bottom > @_boundsHeight
-                    o.top = @_boundsHeight - o.height
-                else if o.top < 0
-                    o.top = 0
 
-                o.bottom = o.top + o.height
+                if o.collided
+                
+                    if o.bottom > @_boundsHeight
+                        o.top = @_boundsHeight - o.height
+                    else if o.top < 0
+                        o.top = 0
 
-                if o.right > @_boundsWidth
-                    o.left = @_boundsWidth - o.width
-                else if o.left < 0
-                    o.left = 0
+                    o.bottom = o.top + o.height
 
-                o.right = o.left + o.width
+                    if o.right > @_boundsWidth
+                        o.left = @_boundsWidth - o.width
+                    else if o.left < 0
+                        o.left = 0
 
-                o.$el.css
-                    left: o.left + 'px'
-                    top: o.top + 'px'
+                    o.right = o.left + o.width
+
+                    pos = {left: o.left, top: o.top}
+                    #console.log "updating pos on model for #{o.model.id}"
+                    o.model.set('pos', pos)
+                    o.model.moved = true
+
+                if o.renderConnectors? and
+                        (o.collided or o.model instanceof CK.Model.Tag)
+                    o.renderConnectors()
 
     render: =>
         phase = @runState.get('phase')

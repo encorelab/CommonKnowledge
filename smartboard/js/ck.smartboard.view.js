@@ -199,7 +199,6 @@
         model: doc
       });
       doc.wake(Sail.app.config.wakeful.url);
-      doc.on('change', bv.render);
       doc.on('wakeful:broadcast:received', function() {
         return bv.$el.effect('highlight');
       });
@@ -214,7 +213,7 @@
     };
 
     Wall.prototype.collideBalloon = function(balloon, recursionLevel, ignoreBalloons) {
-      var b, bottomOverlap, id, leftOverlap, o, rightOverlap, topOverlap, xNudge, xOverlap, yNudge, yOverlap, _ref, _ref1, _ref2, _results;
+      var b, bottomOverlap, id, leftOverlap, o, pos, rightOverlap, topOverlap, xNudge, xOverlap, yNudge, yOverlap, _ref, _ref1, _ref2, _results;
       if (recursionLevel == null) {
         recursionLevel = 0;
       }
@@ -229,6 +228,7 @@
         for (id in _ref) {
           o = _ref[id];
           o.cachePositionAndBounds();
+          o.collided = false;
         }
       }
       _ref1 = this.balloonViews;
@@ -266,9 +266,7 @@
               o.right -= xNudge;
             }
           }
-          if (o.renderConnectors != null) {
-            o.renderConnectors();
-          }
+          o.collided = true;
           if (recursionLevel < this.maxCollisionRecursion) {
             ignoreBalloons.push(b);
             this.collideBalloon(o, recursionLevel + 1, ignoreBalloons);
@@ -280,23 +278,31 @@
         _results = [];
         for (id in _ref2) {
           o = _ref2[id];
-          console.log(this._boundsWidth, this._boundsHeight);
-          if (o.bottom > this._boundsHeight) {
-            o.top = this._boundsHeight - o.height;
-          } else if (o.top < 0) {
-            o.top = 0;
+          if (o.collided) {
+            if (o.bottom > this._boundsHeight) {
+              o.top = this._boundsHeight - o.height;
+            } else if (o.top < 0) {
+              o.top = 0;
+            }
+            o.bottom = o.top + o.height;
+            if (o.right > this._boundsWidth) {
+              o.left = this._boundsWidth - o.width;
+            } else if (o.left < 0) {
+              o.left = 0;
+            }
+            o.right = o.left + o.width;
+            pos = {
+              left: o.left,
+              top: o.top
+            };
+            o.model.set('pos', pos);
+            o.model.moved = true;
           }
-          o.bottom = o.top + o.height;
-          if (o.right > this._boundsWidth) {
-            o.left = this._boundsWidth - o.width;
-          } else if (o.left < 0) {
-            o.left = 0;
+          if ((o.renderConnectors != null) && (o.collided || o.model instanceof CK.Model.Tag)) {
+            _results.push(o.renderConnectors());
+          } else {
+            _results.push(void 0);
           }
-          o.right = o.left + o.width;
-          _results.push(o.$el.css({
-            left: o.left + 'px',
-            top: o.top + 'px'
-          }));
         }
         return _results;
       }
@@ -537,8 +543,18 @@
       var alreadyPositioned, pos,
         _this = this;
       Balloon.__super__.initialize.call(this);
+      this.model.on('change:pos', function() {
+        var pos;
+        pos = _this.model.get('pos');
+        _this.left = pos.left;
+        _this.top = pos.top;
+        _this.right = pos.left + _this.width;
+        return _this.bottom = pos.top + _this.height;
+      });
       this.model.on('change', function() {
-        return _this.render();
+        if (_this.wall != null) {
+          return _this.render();
+        }
       });
       alreadyPositioned = (this.$el.position().left != null) && this.$el.position().left > 0;
       if ((this.model != null) && !alreadyPositioned) {
@@ -567,6 +583,7 @@
         left: left + 'px',
         top: top + 'px'
       });
+      this.cachePositionAndBounds();
       return this.model.save({
         pos: {
           left: left,
@@ -587,7 +604,7 @@
           this.$el.addClass('unpublished');
         }
       }
-      if (this.$el.is(':visible')) {
+      if (this.$el.is(':visible') && this.model.hasChanged('pos')) {
         pos = this.model.get('pos');
         return this.$el.css({
           left: pos.left + 'px',
@@ -605,9 +622,10 @@
         obstacle: ".balloon:not(#" + (this.$el.attr('id')) + ")"
       }).css('position', 'absolute');
       this.$el.on('drag', function(ev, ui) {
-        return _this.wall.collideBalloon(_this);
+        _this.wall.collideBalloon(_this);
+        return _this.model.moved = true;
       }).on('dragstop', function(ev, ui) {
-        var bv, id, _ref, _results;
+        var bv, id, pos, _ref, _results;
         _this.$el.addClass('just-dragged');
         _this.model.save({
           pos: ui.position
@@ -621,17 +639,16 @@
           if (bv === _this) {
             continue;
           }
-          bv.model.set({
-            pos: {
-              left: bv.left,
-              top: bv.top
-            }
-          });
-          if (bv.model.hasChanged()) {
-            _results.push(bv.model.save({}, {
-              silent: true,
-              patch: true
-            }));
+          if (bv.model.moved) {
+            pos = bv.model.get('pos');
+            console.log("" + id + ": saving changed pos", pos);
+            bv.model.save({
+              pos: pos
+            }, {
+              patch: true,
+              silent: true
+            });
+            _results.push(bv.model.moved = false);
           } else {
             _results.push(void 0);
           }
@@ -649,8 +666,7 @@
       this.left = pos.left;
       this.top = pos.top;
       this.right = pos.left + this.width;
-      this.bottom = pos.top + this.height;
-      return this.model.set('pos', pos);
+      return this.bottom = pos.top + this.height;
     };
 
     return Balloon;
@@ -703,6 +719,11 @@
       this.ballonContributionType = this.balloonContributionTypes["default"];
       this.colorClass = "whiteGradient";
     }
+
+    ContributionBalloon.prototype.initialize = function() {
+      ContributionBalloon.__super__.initialize.call(this);
+      return this.model.on('change:published', this.cachePositionAndBounds(), this.model.get('published') ? this.$el.addClass('new') : void 0);
+    };
 
     ContributionBalloon.prototype.events = {
       'click': function(ev) {
@@ -788,11 +809,14 @@
     };
 
     ContributionBalloon.prototype.renderConnectors = function() {
-      var connector, connectorId, connectorLength, connectorTransform, tag, tagId, tagView, x1, x2, y1, y2, _i, _len, _ref, _ref1, _results;
-      _ref1 = (_ref = this.model.get('tags')) != null ? _ref : [];
+      var connector, connectorId, connectorLength, connectorTransform, tag, tagId, tagView, x1, x2, y1, y2, _i, _len, _ref, _results;
+      if (!this.model.has('tags') || _.isEmpty(this.model.get('tags'))) {
+        return;
+      }
+      _ref = this.model.get('tags');
       _results = [];
-      for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-        tag = _ref1[_i];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        tag = _ref[_i];
         tagId = tag.id.toLowerCase();
         tagView = this.wall.balloonViews[tagId];
         if (tagView == null) {
@@ -897,6 +921,11 @@
 
     TagBalloon.prototype.id = function() {
       return this.domID();
+    };
+
+    TagBalloon.prototype.initialize = function() {
+      TagBalloon.__super__.initialize.call(this);
+      return this.model.on('add', this.$el.addClass('new'));
     };
 
     TagBalloon.prototype.setColorClass = function(className) {
