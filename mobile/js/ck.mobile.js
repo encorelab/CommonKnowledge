@@ -344,6 +344,8 @@ CK.Mobile = function() {
 
     app.inputView.$el.show('slide', {direction: 'up'});
 
+    var d = new Date();
+    app.contribution.set('created_at',d);
     app.contribution.set('author', app.userData.account.login);
     app.contribution.set('published', false);
     app.contribution.set('tags', []);
