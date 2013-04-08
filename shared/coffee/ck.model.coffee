@@ -63,7 +63,10 @@ class CK.Model
 
     @defineModelClasses: ->
         Drowsy.Document.prototype.defaults = ->
-            created_at: new Date()
+            if @isReallyNew()
+                {created_at: new Date()}
+            else
+                {}
 
         class @Contribution extends @db.Document('contributions')
 

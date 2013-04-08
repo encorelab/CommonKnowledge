@@ -76,9 +76,13 @@
 
     Model.defineModelClasses = function() {
       Drowsy.Document.prototype.defaults = function() {
-        return {
-          created_at: new Date()
-        };
+        if (this.isReallyNew()) {
+          return {
+            created_at: new Date()
+          };
+        } else {
+          return {};
+        }
       };
       this.Contribution = (function(_super) {
 
