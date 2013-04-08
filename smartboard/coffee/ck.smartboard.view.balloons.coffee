@@ -3,8 +3,15 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
     initialize: ->
         super()
 
+        @model.on 'change:pos', =>
+            pos = @model.get('pos')
+            @left = pos.left
+            @top = pos.top
+            @right = pos.left + @width
+            @bottom = pos.top + @height
+
         @model.on 'change', =>
-            @render()
+            @render() if @wall? # don't try to render until we've been properly added (wtf indeed)
 
         alreadyPositioned = @$el.position().left? && @$el.position().left > 0
 
@@ -34,6 +41,8 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
             left: left + 'px'
             top: top + 'px'
 
+        @cachePositionAndBounds()
+
         @model.save(pos: {left: left, top: top})
 
     # moveToTop: =>
@@ -50,8 +59,9 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
             else
                 @$el.addClass('unpublished')
 
-        if @$el.is(':visible')
+        if @$el.is(':visible') and @model.hasChanged('pos')
             pos = @model.get('pos')
+            #console.log "rendering pos for #{@model.id}"
             @$el.css
                 left: pos.left + 'px'
                 top: pos.top + 'px'
@@ -68,6 +78,7 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
         @$el
             .on 'drag', (ev, ui) =>
                 @wall.collideBalloon(this)
+                @model.moved = true
             .on 'dragstop', (ev, ui) =>
                 @$el.addClass 'just-dragged' # prevent 'click' handlers from doing their thing
 
@@ -77,25 +88,27 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
                 #           to do this with a one or two PUTs to the tags/contributions collections
                 for id,bv of @wall.balloonViews
                     continue if bv is this
-                    bv.model.set
-                        pos: {left: bv.left, top: bv.top}
-                    if bv.model.hasChanged()
-                        bv.model.save {},
-                            {silent: true, patch: true} # avoid broadcasting this for now since it could be a bit floodish
+                    
+                    if bv.model.moved
+                        pos = bv.model.get('pos')
+                        console.log "#{id}: saving changed pos", pos
+                        bv.model.save {pos: pos},
+                            {patch: true, silent: true} # avoid broadcasting this for now since it could be a bit floodish
+                        bv.model.moved = false
+
         @draggable = true
 
     # Sets .left, .top, .width, and .height on this object, based on data from the DOM.
     # The DOM lookup is expensive, so we try not to do it unless necessary — especially in collision detection.
     # Call this whenever the view's dimensions or position changes!
     cachePositionAndBounds: ->
-        this.width = this.$el.outerWidth()
-        this.height = this.$el.outerHeight()
-        pos = this.$el.position()
-        this.left = pos.left
-        this.top = pos.top
-        this.right = pos.left + this.width
-        this.bottom = pos.top + this.height
-        @model.set('pos', pos)
+        @width = @$el.outerWidth()
+        @height = @$el.outerHeight()
+        pos = @$el.position()
+        @left = pos.left
+        @top = pos.top
+        @right = pos.left + @width
+        @bottom = pos.top + @height
 
 class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
     tagName: 'article'
@@ -118,6 +131,15 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
 
         @ballonContributionType = @balloonContributionTypes.default
         @colorClass = "whiteGradient"
+
+
+    initialize: ->
+        super()
+
+        @model.on 'change:published', =>
+            @cachePositionAndBounds() # publishing changes visiblity, so we need to recache
+            if @model.get('published')
+                @$el.addClass('new')
 
     events:
         # 'mousedown': (ev) -> @moveToTop()
@@ -220,7 +242,9 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
         return this # return this for chaining
 
     renderConnectors: =>
-        for tag in (@model.get('tags') ? [])
+        return if not @model.has('tags') or _.isEmpty(@model.get('tags'))
+
+        for tag in @model.get('tags')
             tagId = tag.id.toLowerCase()
             tagView = @wall.balloonViews[tagId]
 
@@ -599,6 +623,12 @@ class CK.Smartboard.View.TagBalloon extends CK.Smartboard.View.Balloon
     tagName: 'div'
     className: 'tag balloon'
     id: => @domID()
+
+    initialize: ->
+        super()
+
+        @model.on 'add',
+            @$el.addClass('new')
     
     setColorClass: (className) =>
         @$el.addClass(className)

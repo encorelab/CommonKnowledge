@@ -62,7 +62,7 @@ class CK.Model
 
 
     @defineModelClasses: ->
- 
+
         class @Contribution extends @db.Document('contributions')
             
             addTag: (tag, tagger) =>

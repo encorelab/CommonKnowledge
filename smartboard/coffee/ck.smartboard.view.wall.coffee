@@ -8,6 +8,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
 
     events:
         'click #add-tag-opener': (ev) ->
+            return # temporarily disabled for April 8 run
             addTagContainer = @$el.find('#add-tag-container')
             addTagContainer.toggleClass('opened')
             if addTagContainer.hasClass('opened')
@@ -41,12 +42,15 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             @runState.save(paused: !paused)
 
         'click #go-tagging': (ev) ->
+            return # temporarily disabled for April 8 run
             @runState.save(phase: 'tagging')
 
         'click #go-propose': (ev) ->
+            return # temporarily disabled for April 8 run
             @runState.save(phase: 'propose')
 
         'click #go-interpret': (ev) ->
+            return # temporarily disabled for April 8 run
             @runState.save(phase: 'interpret')
 
     constructor: (options) ->
@@ -86,9 +90,9 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             model: doc
 
         doc.wake Sail.app.config.wakeful.url
-        doc.on 'change', bv.render
+        
         # highlight only on changes coming in from wakeful, not self changes
-        doc.on 'wakeful:broadcast:received', -> bv.$el.effect('highlight')
+        #doc.on 'wakeful:broadcast:received', -> bv.$el.effect('highlight')
 
         bv.wall = this
         bv.render()
@@ -112,6 +116,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
 
             for id,o of @balloonViews
                 o.cachePositionAndBounds()
+                o.collided = false
 
         for id,o of @balloonViews
             continue if o is b # don't collide with self
@@ -150,32 +155,41 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                         o.left -= xNudge
                         o.right -= xNudge
 
-                o.renderConnectors() if o.renderConnectors?
+                o.collided = true
 
                 if recursionLevel < @maxCollisionRecursion
                     ignoreBalloons.push(b)
                     @collideBalloon(o, recursionLevel + 1, ignoreBalloons)
 
         if recursionLevel is 0
+            # this runs after we're done the entire collision chain
+
             for id,o of @balloonViews
-                console.log(@_boundsWidth, @_boundsHeight)
-                if o.bottom > @_boundsHeight
-                    o.top = @_boundsHeight - o.height
-                else if o.top < 0
-                    o.top = 0
 
-                o.bottom = o.top + o.height
+                if o.collided
+                
+                    if o.bottom > @_boundsHeight
+                        o.top = @_boundsHeight - o.height
+                    else if o.top < 0
+                        o.top = 0
 
-                if o.right > @_boundsWidth
-                    o.left = @_boundsWidth - o.width
-                else if o.left < 0
-                    o.left = 0
+                    o.bottom = o.top + o.height
 
-                o.right = o.left + o.width
+                    if o.right > @_boundsWidth
+                        o.left = @_boundsWidth - o.width
+                    else if o.left < 0
+                        o.left = 0
 
-                o.$el.css
-                    left: o.left + 'px'
-                    top: o.top + 'px'
+                    o.right = o.left + o.width
+
+                    pos = {left: o.left, top: o.top}
+                    #console.log "updating pos on model for #{o.model.id}"
+                    o.model.set('pos', pos)
+                    o.model.moved = true
+
+                if o.renderConnectors? and
+                        (o.collided or o.model instanceof CK.Model.Tag)
+                    o.renderConnectors()
 
     render: =>
         phase = @runState.get('phase')
@@ -209,6 +223,10 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                     @changeWatermark("brainstorm")
 
             @$el.data('phase', phase)
+
+        # temporarily disabled for April 8 run
+        jQuery("#go-tagging, #go-propose, #go-interpret, #add-tag-container").css
+            opacity: 0.4
 
         paused = @runState.get('paused')
         if paused isnt @$el.data('paused')

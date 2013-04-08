@@ -88,8 +88,8 @@
       var colourClassName, tag;
       colourClassName = this.getColourTagClassName();
       tag = new CK.Model.Tag({
-        'name': name,
-        'colourClass': colourClassName
+        name: name,
+        created_at: new Date()
       });
       tag.wake(this.config.wakeful.url);
       return this.tags.add(tag);
