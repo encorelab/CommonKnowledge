@@ -57,8 +57,37 @@ CK.Model.init(config.drowsy.url, DATABASE).done(function () {
   });
 });
 
-function assign_observation_to_tag() {
-  
+function assign_observation_for_tagging(user_state) {
+  // retrieve contributions that are
+  // a) published
+  // b) have an empty tag array
+  // c) have not assigned_tagger or and empty string
+  var contrib_to_tag = contributions.find(function(con) {
+    var at = con.get('assigned_tagger');
+    if (con.get('tags').length < 1 && con.get('published') && (typeof at === 'undefined' || at === null || at === '')) {
+      return con;
+    }
+  });
+  if (contrib_to_tag) {
+    // found a contribution so assing it and inform user
+    console.log('Found contribution: ' + contrib_to_tag.id);
+
+    // make object wakeful so clients here changes
+    contrib_to_tag.wake(config.wakeful.url);
+
+    // mark contribution as assigned
+    contrib_to_tag.set('assigned_tagger', user_state.get('entity'));
+    console.log('Assign to user: ' + user_state.get('entity'));
+    contrib_to_tag.save().done(function () {
+      // write contribution id to user state and set tagging_status to assigned
+      user_state.set('contribution_to_tag', contrib_to_tag.id);
+      user_state.set('tagging_status', 'assigned');
+      user_state.save();
+    });
+  } else {
+    // no contribution found so we must be done. Inform user
+    console.log('No contribution found so we must be done. Inform user: ' + user_state.get('entity'));
+  }
 }
 
 // reacting to changes in USERS Model
@@ -71,7 +100,7 @@ function updateStateStuff(state) {
   } else if (state.get('type') === "user" && state.get('tagging_status') === "waiting") {
     console.log('Tagging started, agent is assigning students an observation to tag');
     // user waiting for a tag - assing tag or let user know that s/he is done
-
+    assign_observation_for_tagging(state);
   } else {
     console.log("Ignoring state with entity: ", state.get('entity'));
   }
