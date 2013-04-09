@@ -347,6 +347,9 @@
     Wall.prototype.submitNewTag = function() {
       var newTag;
       newTag = this.$el.find('#new-tag').val();
+      if (jQuery.trim(newTag).length < 2) {
+        return;
+      }
       Sail.app.createNewTag(newTag);
       this.$el.find('#add-tag-container').removeClass('opened').blur();
       return this.$el.find('#new-tag').val('');
