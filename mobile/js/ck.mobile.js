@@ -70,7 +70,7 @@ CK.Mobile = function() {
     // Create a Rollcall instance so that sail.app has access to it later on
     app.rollcall = new Rollcall.Client(app.config.rollcall.url);
 
-    // configure the toasts
+    // Configure the toasts
     jQuery().toastmessage({
       position : 'middle-center'
     });
@@ -89,108 +89,6 @@ CK.Mobile = function() {
     }
   };
 
-  app.restoreState = function () {
-    console.log("Going in to restoreState...");
-    app.hideWaitScreen();
- 
-    var phase = app.runState.get('phase');
-
-    if (phase) {
-      if (phase === 'brainstorm') {
-        console.log('Entering brainstorm phase...');
-
-        var unfinishedContrib = _.find(app.contributionList.models, function(contrib) {
-          return contrib.get('author') === app.userData.account.login && contrib.get('published') === false && (contrib.get('content') || contrib.get('headline'));
-        });
-
-        var unfinishedBuildOn = _.find(app.contributionList.models, function(contrib) {
-          return _.find(contrib.get('build_ons'), function(b) {
-            return b.author === app.userData.account.login && b.published === false && b.content !== "";
-          });
-        });
-
-        if (unfinishedContrib) {
-          console.log('Unfinished Contribution found...');
-          app.restoreUnfinishedNote(unfinishedContrib);
-        } else if (unfinishedBuildOn) {                       // I guess we want unfinished contribs to trump unfinished buildons?
-          console.log('Unfinished BuildOn found...');
-          app.restoreUnfinishedBuildOn(unfinishedBuildOn);
-        }
-      }
-      // var phase = s.get('state');
-      // // once phase is retrieved get the user_state
-      // var user_state = CK.getState(Sail.app.userData.account.login);
-
-      // if (phase === 'brainstorm') {
-      //   // check first if we started to work on a contribution and got booted out during work
-      //   // contribution in our name with published false
-      //   var unfinishedContrib = _.find(app.contributionList.models, function(contrib) {
-      //     return contrib.get('author') === Sail.app.userData.account.login && contrib.get('published') === false;
-      //   });
-
-      //   if (unfinishedContrib) {
-      //     console.log('Unfinished Contribution found');
-      //     app.restoreUnfinishedNote(unfinishedContrib);
-      //   }
-      // } else if (phase === "analysis") {
-      //   console.log('phase is analysis');
-      //   app.startAnalysis(function (){
-      //     // get the data from user_states stored under the phase key
-      //     var data_for_state = user_state.get(phase);
-          
-      //     console.log('Check if contribution left to do or done with tagging');
-      //     // CK.getUserState(Sail.app.userData.account.login, "contribution_to_tag", function(user_state){
-      //     if (data_for_state && data_for_state.contribution_to_tag) {
-      //       // var data_from_state = user_state.get('data');
-      //       if (data_for_state.done_tagging === true) {
-      //         // go to done tagging
-      //         app.doneTagging();
-      //       } else if (data_for_state.contribution_to_tag.contribution_id !== "") {
-      //         console.log('Need to work on contribution with id: '+data_for_state.contribution_to_tag.contribution_id);
-      //         app.contributionToTag(data_for_state.contribution_to_tag.contribution_id);
-      //       }
-      //     } else {
-      //       console.log('I am on a boat');
-      //     }
-      //   });
-      // } else if (phase === "proposal") {
-      //   console.log('phase is proposal');
-
-      //   var myState = CK.getState(Sail.app.userData.account.login);
-
-      //   if (myState) {
-      //     app.myTagGroup = myState.get('analysis').tag_group;
-      //   } else {
-      //     console.warn("No user_state found for ", Sail.app.userData.account.login);
-      //   }
-
-      //   app.startProposal();
-
-      // } else if (phase === "interpretation") {
-      //   console.log('phase is interpretation');
-      //   app.startInterpretation();
-      // } else {
-      //   console.log('could not find state for type phase');
-      // }
-
-
-      // if (s && s.get('screen_lock') === true){
-      //   console.log('screen lock is active');
-      //   jQuery('#lock-screen').removeClass('hide');
-      //   jQuery('.row').addClass('disabled');
-      // } else {
-      //   console.log('screen lock is NOT active');
-      //   jQuery('#lock-screen').addClass('hide');
-      //   jQuery('.row').removeClass('disabled');
-      // }
-    } else {
-      console.warn("Seems like the state object was invalid which means we are in trouble");
-    }
-
- 
-  };
-
-  // think about combining this with restoreState - are they the same thing?
   app.updateRunState = function() {
     // checking paused status
     if (app.runState.get('paused') === true) {
@@ -204,14 +102,43 @@ CK.Mobile = function() {
     }
 
     // checking phase status
+    app.hideWaitScreen();
+    app.hideAll();
     var p = app.runState.get('phase');
     if (p === 'brainstorm') {
-      console.log('Switching to brainstorm phase!');
-      // UI changes
-    } else if (p === 'tagging') {
+      // BRAINSTORM PHASE
+      console.log('Switching to brainstorm phase...');
+      jQuery('.brand').text('Common Knowledge - Brainstorm');
+      jQuery('#index-screen').removeClass('hide');
+      app.contributionListView.render();
 
-    } else if (app.runState.get('clients_start_tagging') === true) {
-      // make sure to set this to false at some point
+      // restoring unfinished contribs/buildons
+      // will return the first unfinished contrib it finds
+      var unfinishedContrib = _.find(app.contributionList.models, function(contrib) {
+        return contrib.get('author') === app.userData.account.login && contrib.get('published') === false && (contrib.get('content') || contrib.get('headline'));
+      });
+      var unfinishedBuildOn = _.find(app.contributionList.models, function(contrib) {
+        return _.find(contrib.get('build_ons'), function(b) {
+          return b.author === app.userData.account.login && b.published === false && b.content !== "";
+        });
+      });
+
+      // if there are both unfinished contribs and unfinished buildons, contrib wins (right?)
+      if (unfinishedContrib) {
+        console.log('Unfinished Contribution found...');
+        app.restoreUnfinishedNote(unfinishedContrib);
+      } else if (unfinishedBuildOn) {
+        console.log('Unfinished BuildOn found...');
+        app.restoreUnfinishedBuildOn(unfinishedBuildOn);
+      }
+
+    } else if (p === 'tagging') {
+      // TAGGING PHASE
+      console.log('Entering tagging phase...');
+      jQuery('.brand').text('Common Knowledge - Tagging');
+      jQuery('#bucket-tagging-screen').removeClass('hide');      
+      app.bucketTaggingView.render();
+
     } else if (p === 'exploration') {
 
     } else if (p === 'proposal') {
@@ -291,33 +218,29 @@ CK.Mobile = function() {
     app.tagList = CK.Model.awake.tags;
     if (app.bucketTaggingView === null) {
       app.bucketTaggingView = new CK.Mobile.View.BucketTaggingView({
-        el: jQuery('#bucket-tagging'),
+        el: jQuery('#bucket-tagging-screen'),
         collection: app.tagList
       });
     }
     app.tagList.on('reset add sync', app.bucketTaggingView.render, app.bucketTaggingView);
-    app.tagList.fetch();
-
 
     // CONTRIBUTIONS COLLECTION
     app.contributionList = CK.Model.awake.contributions;
-    // check if view already exists
    if (app.contributionListView === null) {
       app.contributionListView = new CK.Mobile.View.ContributionListView({
         el: jQuery('#contribution-list'),
         collection: app.contributionList
       });
     }
+    // sort the contributions by reverse created_at
     var sorter = function(contrib) {
       return -contrib.get('created_at').getTime();
     };
     app.contributionList.comparator = sorter;
     app.contributionList.on('reset add sync change', app.contributionListView.render, app.contributionListView);
+    app.contributionList.sortBy(sorter);      // TODO - figure out why the sort doesn't happen before the first render
     
-    app.contributionList.sortBy(sorter);      // TODO - figure me out!
-    
-    app.contributionListView.render();
-    app.restoreState();
+    app.updateRunState();
   };
 
   app.createNewContribution = function() {
@@ -416,6 +339,20 @@ CK.Mobile = function() {
     });
   };
 
+  app.showDetails = function(contrib) {
+    console.log('Creating a new Details...');
+    var details = contrib;
+
+    var detailsView = new CK.Mobile.View.ContributionDetailsView({
+      el: jQuery('#contribution-details'),
+      model: details
+    });
+    details.on('change', detailsView.render, detailsView);
+
+    // have to call this manually because there are no change events later
+    detailsView.render();
+  };
+
   app.restoreUnfinishedNote = function(contrib) {
     console.log("Restoring Contribution");
     app.contribution = contrib;
@@ -460,62 +397,7 @@ CK.Mobile = function() {
     app.inputView.render();    
   };
 
-  app.showDetails = function(contrib) {
-    console.log('creating a new Details');
 
-    //var details = new CK.Model.Contribution();      // not sure if we want to create a new model instance here, or just set one view up in initModels and then rebind it to different contribs here...
-    var details = contrib;
-    details.on('change', function(model) { console.log(model.changedAttributes()); });
-
-    var detailsView = new CK.Mobile.View.ContributionDetailsView({
-      el: jQuery('#contribution-details'),
-      model: details
-    });
-    details.on('change', detailsView.render, detailsView);
-
-    // have to call this manually because there are no change events later
-    detailsView.render();
-  };
-
-  /* State related function */
-
-  app.startAnalysis = function(callback) {
-
-    // THIS ALL NEEDS TO BE REDONE
-
-    var user_state = CK.getState(app.userData.account.login);
-    var analysis_obj = user_state.get('analysis');
-    if (!analysis_obj || analysis_obj === null || analysis_obj === "") {
-      analysis_obj = {};
-      user_state.set('analysis', analysis_obj);
-    }
-    user_state.save();
-
-    var tagList = new CK.Model.Tags();
-    tagList.on('change', function(model) { console.log(model.changedAttributes()); });   
-
-    if (app.tagListView === null) {
-      app.tagListView = new CK.Mobile.View.TagListView({
-        el: jQuery('#bucket-tagging-btn-container'),
-        collection: tagList
-      });
-    } else {
-      if (typeof app.tagListView.collection !== 'undefined' && app.tagListView.collection !== null) {
-        app.tagListView.stopListening(app.tagListView.collection);
-      }
-      app.tagListView.collection = tagList;
-    }
-
-    tagList.on('reset add', app.tagListView.render, app.tagListView);       // probably unnecessary, maybe even a bad idea?
-
-    var sort = ['created_at', 'ASC'];
-    tagList.fetch({
-      data: {
-        sort: JSON.stringify(sort)
-      }
-    });
-    callback();    
-  };
 
   /* 
     Sends out and event with the tag group the user has chosen and stores the tag_group
@@ -809,26 +691,23 @@ CK.Mobile = function() {
   // ******** HELPER FUNCTIONS ********* //
 
   app.showWaitScreen = function() {
-    console.log('showing wait screen');
-
+    console.log("Showing wait screen...");
     jQuery('#wait-screen').removeClass('hide');
     jQuery('.row').addClass('disabled');
   };
 
   app.hideWaitScreen = function() {
     console.log("Hiding wait screen...");
-
     jQuery('#wait-screen').addClass('hide');
     jQuery('.row').removeClass('disabled');
   };
 
   app.hideAll = function() {
-    console.log('hiding all screens');
+    console.log("Hiding all screens...");
     jQuery('#wait-screen').addClass('hide');
     jQuery('#lock-screen').addClass('hide');
     jQuery('#index-screen').addClass('hide');
-    jQuery('#choose-tag-screen').addClass('hide');
-    jQuery('#tagging-screen').addClass('hide');
+    jQuery('#bucket-tagging-screen').addClass('hide');
     jQuery('#proposal-screen').addClass('hide');
   };
 

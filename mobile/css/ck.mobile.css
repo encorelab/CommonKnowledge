@@ -48,7 +48,7 @@ i {
 }
 
 .scrollable {
-	overflow-y: scroll;
+	overflow-y: auto;			/* changed from scroll -> auto */
 	height: 80%;				/* leaving room for the buttons */
 }
 
@@ -152,8 +152,7 @@ i {
 }
 
 #bucket-tagging-btn-container {
-	width: 95%;
-	text-align: center;
+	width: 100%;
 }
 
 #contribution-input {
@@ -292,8 +291,11 @@ i {
 }
 
 #bucket-tagging-btn-container .tag-btn {
-	width: 70%;
+	/* 304 width */
+	width: 144px;
+	height: 45px;
 	font-size: 18px;
+	margin-left: 80px;
 	margin-top: 8%;	
 }
 

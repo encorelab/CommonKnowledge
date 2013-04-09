@@ -354,11 +354,6 @@
 
     initialize: function () {
       console.log("Initializing TagListView...");
-
-      // jQuery('.brand').text('Common Knowledge - Tagging');
-      // jQuery('#contribution-list').addClass('hide');
-      // jQuery('#bucket-tagging').removeClass('hide');
-      // jQuery('#share-note-btn').addClass('disabled');
     },
 
     /**
@@ -403,6 +398,10 @@
     }
 
   });
+
+
+
+
 
 
 
