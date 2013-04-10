@@ -1,9 +1,9 @@
 if typeof exports isnt "undefined" and exports isnt null
   # we're in node
-  $ = require("jquery")
+  jQuery = require("jquery")
   _ = require("underscore")
   Backbone = require("backbone")
-  Backbone.$ = $
+  Backbone.$ = jQuery
   Drowsy = require("backbone.drowsy").Drowsy
   
   #var Wakeful = require('Backbone.Drowsy/wakeful').Wakeful;
@@ -12,7 +12,7 @@ if typeof exports isnt "undefined" and exports isnt null
 else
   window.CK = window.CK or {}
   CK = window.CK
-  $ = window.$
+  jQuery = window.$
   _ = window._
   Drowsy = window.Drowsy
 
@@ -25,7 +25,7 @@ class CK.Model
     ]
 
     @init: (url, db) ->
-        deferredConfigure = $.Deferred()
+        deferredConfigure = jQuery.Deferred()
 
         unless url?
             throw new Error "Cannot configure model because no DrowsyDromedary URL was given!"
@@ -47,7 +47,7 @@ class CK.Model
 
     @createNecessaryCollections: (requiredCollections) ->
         dfs = []
-        df = $.Deferred()
+        df = jQuery.Deferred()
 
         @db.collections (colls) =>
             existingCollections = _.pluck(colls, 'name')
@@ -57,7 +57,7 @@ class CK.Model
                     console.log "Creating collection '#{col}' under #{CK.Model.dbURL}"
                     dfs.push(@db.createCollection col)
 
-        $.when.apply($, dfs).done -> df.resolve()
+        jQuery.when.apply(jQuery, dfs).done -> df.resolve()
         return df
 
 
@@ -176,5 +176,5 @@ class CK.Model
             @awake[collName] = coll
             deferreds.push coll.fetch()
 
-        $.when.apply jQuery, deferreds
+        jQuery.when.apply jQuery, deferreds
             
