@@ -27,13 +27,14 @@ CK.Mobile = function() {
   };
 
   app.runState = null;
+  app.userState = null;       // this might be more aptly named - currently only dealing with user tagging status
   app.userData = null;
   app.keyCount = 0;
   //app.userState = null;? should be combined with above?
   app.contribution = null;
+  app.inputView = null;
   app.contributionList = null;
   app.contributionListView = null;
-  app.inputView = null;
   app.buildOn = null;
 
   app.tagList = null;
@@ -136,8 +137,10 @@ CK.Mobile = function() {
       // TAGGING PHASE
       console.log('Entering tagging phase...');
       jQuery('.brand').text('Common Knowledge - Tagging');
-      jQuery('#bucket-tagging-screen').removeClass('hide');      
+      jQuery('#bucket-tagging-screen').removeClass('hide');
       app.bucketTaggingView.render();
+
+      app.userState.set('tagging_status','waiting');
 
     } else if (p === 'exploration') {
 
@@ -145,6 +148,29 @@ CK.Mobile = function() {
 
     } else {
       console.log("Unknown state");
+    }
+  };
+
+  app.updateUserState = function() {
+    console.log('Updating user state...');
+
+    // when in tagging phase (if the uses for this object are expanded, make this explicit with an if runState === tagging)
+    app.hideAll();
+    app.hideWaitScreen();
+    var status = app.userState.get('tagging_status');
+    if (status === 'waiting') {
+      app.showWaitScreen();
+    } else if (status === 'assigned') {
+      app.bucketedContribution = app.userState.get('contribution_to_tag');
+      jQuery('.brand').text('Common Knowledge - Tagging');
+      jQuery('#bucket-tagging-screen').removeClass('hide');
+      app.bucketTaggingView.render();
+    } else if (status === 'done') {
+      jQuery('#index-screen').removeClass('hide');
+      app.inputView.render();
+      app.contributionListView.render();
+    } else {
+      console.error('Unknown tagging status...');
     }
   };
 
@@ -209,10 +235,22 @@ CK.Mobile = function() {
   app.initModels = function() {
     console.log('Initializing models...');      // TODO: MOVE THESE ALL INTO THEIR OWN FUNCTIONS, THINK ABOUT THEIR ORDERING AND SYNC
 
-    // PHASE MODEL
+    // STATE MODELS
     app.runState = CK.getState('RUN');
     app.runState.wake(Sail.app.config.wakeful.url);
     app.runState.on('change', app.updateRunState);
+
+    app.userState = CK.getState(app.userData.account.login);
+    if (!app.userState) {
+      app.userState = new CK.Model.State();
+      app.userState.set('entity',app.userData.account.login);
+      app.userState.set('type','user');
+      app.userState.set('tagging_status','');
+      app.userState.set('contribution_to_tag','');
+      app.userState.save();
+    }
+    app.userState.wake(Sail.app.config.wakeful.url);
+    app.userState.on('change', app.updateUserState);
 
     // TAGS COLLECTION - used in both BucketTaggingView and ContributionInputView
     app.tagList = CK.Model.awake.tags;
@@ -356,6 +394,7 @@ CK.Mobile = function() {
   app.restoreUnfinishedNote = function(contrib) {
     console.log("Restoring Contribution");
     app.contribution = contrib;
+    app.contribution.set('tags',[]);            // remove all tags to sync up with UI (cheap and easy, but probably not ideal)
     if (app.inputView === null) {
       app.inputView = new CK.Mobile.View.ContributionInputView({
         el: jQuery('#contribution-input'),
