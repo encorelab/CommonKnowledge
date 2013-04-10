@@ -33,27 +33,12 @@ CK.Model = require('../shared/js/ck.model.js').CK.Model;
 
 // Wakeful connection via EvoRoom.Model that allows to receive change triggers 
 CK.Model.init(config.drowsy.url, DATABASE).done(function () {
-  contributions = new CK.Model.Contributions();
-  contributions.wake(config.wakeful.url);
-
-  contributions.fetch().done(function() {
+  CK.Model.initWakefulCollections(config.wakeful.url).done(function() {
+    contributions = CK.Model.awake.contributions;
     console.log('We have '+contributions.length+' contributions ...');
-    // var untagged_observations = contributions.filter(function(con){
-    //   var tags = con.get('tags');
-    //   if (con.get('tags') === null || con.get('tags').length < 1) {
-    //     return con;
-    //   }
-    // });
-    // console.log('... of which '+untagged_observations.length+' contributions are considered for tagging');
-    states = new CK.Model.States();
-    states.wake(config.wakeful.url);
 
+    states = CK.Model.awake.states;
     states.on('change add', updateStateStuff);
-    states.on('reset', function () {
-      states.each(function (state) {updateStateStuff(state);});
-    });
-
-    states.fetch();
   });
 });
 
@@ -87,6 +72,8 @@ function assign_observation_for_tagging(user_state) {
   } else {
     // no contribution found so we must be done. Inform user
     console.log('No contribution found so we must be done. Inform user: ' + user_state.get('entity'));
+    user_state.set('tagging_status', 'done');
+    user_state.save();
   }
 }
 
@@ -95,13 +82,15 @@ function updateStateStuff(state) {
   var entity = state.get('entity');
   var phase = state.get('phase');
 
-  if (entity === "RUN" && phase === 'tagging') {  
-    console.log('RUN changed to: ', phase);
-  } else if (state.get('type') === "user" && state.get('tagging_status') === "waiting") {
+  if (state.get('type') === "user" && state.get('tagging_status') === "waiting") {
     console.log('Tagging started, agent is assigning students an observation to tag');
+    // immediatelly setting user into tagging_status processing to avoid problems when state events are double triggered
+    state.set('tagging_status', 'processing');
+    state.save();
     // user waiting for a tag - assing tag or let user know that s/he is done
     assign_observation_for_tagging(state);
   } else {
-    console.log("Ignoring state with entity: ", state.get('entity'));
+    console.log('Saw state change');
+    console.log(state);
   }
 }
