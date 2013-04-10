@@ -445,7 +445,7 @@ CK.Mobile = function() {
     if (app.contributionToTagView === null) {
       // create the view, attach to DOM and hand in model
       app.contributionToTagView = new CK.Mobile.View.ContributionToTagView({
-        el: jQuery('#bucket-tagging-screen'),
+        el: jQuery('#contribution-to-tag-screen'),        // WHAAATTTT?
         model: contrib
       });
     } else {

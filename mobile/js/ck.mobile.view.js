@@ -176,7 +176,7 @@
         Sail.app.contribution.save();     // TODO probably needs a patch here
 
         // enable/disable the Share button
-        if (Sail.app.tagList.models) {
+        if (Sail.app.tagList.models.length > 0) {
            if (Sail.app.contribution.get('tags').length > 0) {
             jQuery('#share-note-btn').removeClass('disabled');
           } else {
@@ -250,7 +250,7 @@
       console.log("rendering ContributionInputView...");
 
       // enable/disable the share button based on context (view.model.kind will be buildOn or undefined here)
-      if (Sail.app.tagList.models && view.model.kind !== 'buildOn') {
+      if (Sail.app.tagList.models.length > 0 && view.model.kind !== 'buildOn') {
          if (Sail.app.contribution.get('tags').length > 0) {
           jQuery('#share-note-btn').removeClass('disabled');
         } else {
@@ -358,30 +358,30 @@
   **/
   self.BucketTaggingView = Backbone.View.extend({
     events: {
-      'click #bucket-tagging-btn-container .tag-btn': function (ev) {
-        // var tag = jQuery(ev.target).data('tag');
-        // var jqButtonSelector = "button:contains("+tag.get('name')+")";          // the jQuery selector for the button that was clicked
+      // 'click #bucket-tagging-btn-container .tag-btn': function (ev) {
+      //   var tag = jQuery(ev.target).data('tag');
+      //   var jqButtonSelector = "button:contains("+tag.get('name')+")";          // the jQuery selector for the button that was clicked
 
-        // // case: unselect a tag
-        // if (Sail.app.bucketedContribution.hasTag(tag)) {
-        //   jQuery(jqButtonSelector).removeClass('active'); 
-        //   Sail.app.bucketedContribution.removeTag(tag);
-        // // case: select a tag
-        // } else {
-        //   jQuery(jqButtonSelector).addClass('active');
-        //   Sail.app.bucketedContribution.addTag(tag);
-        //   // TODO add tagger, other?  ie tag.set('tagger',Sail.app.userData.account.login);
-        // }
+      //   // case: unselect a tag
+      //   if (Sail.app.bucketedContribution.hasTag(tag)) {
+      //     jQuery(jqButtonSelector).removeClass('active'); 
+      //     Sail.app.bucketedContribution.removeTag(tag);
+      //   // case: select a tag
+      //   } else {
+      //     jQuery(jqButtonSelector).addClass('active');
+      //     Sail.app.bucketedContribution.addTag(tag);
+      //     // TODO add tagger, other?  ie tag.set('tagger',Sail.app.userData.account.login);
+      //   }
 
-        // // enable/disable the Share button
-        // if (Sail.app.tagList.models) {
-        //    if (Sail.app.bucketedContribution.get('tags').length > 0) {
-        //     jQuery('#submit-tagged-note-btn').removeClass('disabled');
-        //   } else {
-        //     jQuery('#submit-tagged-note-btn').addClass('disabled');
-        //   }
-        // }        
-      }
+      //   // enable/disable the Share button
+      //   if (Sail.app.tagList.models) {
+      //      if (Sail.app.bucketedContribution.get('tags').length > 0) {
+      //       jQuery('#submit-tagged-note-btn').removeClass('disabled');
+      //     } else {
+      //       jQuery('#submit-tagged-note-btn').addClass('disabled');
+      //     }
+      //   }
+      // }
     },
 
     initialize: function () {
