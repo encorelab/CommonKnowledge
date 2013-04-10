@@ -138,10 +138,15 @@ CK.Mobile = function() {
       console.log('Entering tagging phase...');
       jQuery('.brand').text('Common Knowledge - Tagging');
       jQuery('#bucket-tagging-screen').removeClass('hide');
+      
+      //this should happen only on the first pass through (when teacher hits Tagging button)
+      var status = app.userState.get('tagging_status');
+      if (status === '') {
+        app.userState.set('tagging_status','waiting');
+        app.userState.save();
+      }
+      app.updateUserState();
       app.bucketTaggingView.render();
-
-      app.userState.set('tagging_status','waiting');
-      app.userState.save();
 
     } else if (p === 'exploration') {
 
@@ -168,8 +173,8 @@ CK.Mobile = function() {
       app.contributionToTag(app.userState.get('contribution_to_tag'));
     } else if (status === 'done') {
       jQuery('#index-screen').removeClass('hide');
-      app.inputView.render();
-      app.contributionListView.render();
+      //app.inputView.render();
+      //app.contributionListView.render();
     } else {
       console.error('Unknown tagging status...');
     }
@@ -466,7 +471,8 @@ CK.Mobile = function() {
     });
   };
 
-  app.saveBucketedContribution = function(tags) {
+  app.saveBucketedContribution = function() {
+    console.log("Saving bucketed contribution...");
     // add tags to note
     //Sail.app.bucketedContribution.get('tags')
 

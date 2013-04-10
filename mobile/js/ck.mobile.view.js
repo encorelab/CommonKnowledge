@@ -304,10 +304,7 @@
   **/
   self.ContributionToTagView = Backbone.View.extend({
     events: {
-      'click #submit-tagged-note-btn': function () {
-        //Sail.app.saveBucketedContribution(tags);
-        Sail.app.saveBucketedContribution();
-      }
+
     },
 
     initialize: function () {
@@ -359,6 +356,10 @@
   **/
   self.BucketTaggingView = Backbone.View.extend({
     events: {
+      'click #submit-tagged-note-btn': function () {
+        //Sail.app.saveBucketedContribution(tags);
+        Sail.app.saveBucketedContribution();
+      }      
       // 'click #bucket-tagging-btn-container .tag-btn': function (ev) {
       //   var tag = jQuery(ev.target).data('tag');
       //   var jqButtonSelector = "button:contains("+tag.get('name')+")";          // the jQuery selector for the button that was clicked
