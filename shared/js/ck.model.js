@@ -1,22 +1,22 @@
 (function() {
-  var $, Backbone, CK, Drowsy, _,
+  var Backbone, CK, Drowsy, jQuery, _,
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   if (typeof exports !== "undefined" && exports !== null) {
-    $ = require("jquery");
+    jQuery = require("jquery");
     _ = require("underscore");
     Backbone = require("backbone");
-    Backbone.$ = $;
+    Backbone.$ = jQuery;
     Drowsy = require("backbone.drowsy").Drowsy;
     CK = {};
     exports.CK = CK;
   } else {
     window.CK = window.CK || {};
     CK = window.CK;
-    $ = window.$;
+    jQuery = window.$;
     _ = window._;
     Drowsy = window.Drowsy;
   }
@@ -30,7 +30,7 @@
     Model.init = function(url, db) {
       var deferredConfigure,
         _this = this;
-      deferredConfigure = $.Deferred();
+      deferredConfigure = jQuery.Deferred();
       if (url == null) {
         throw new Error("Cannot configure model because no DrowsyDromedary URL was given!");
       }
@@ -52,7 +52,7 @@
       var df, dfs,
         _this = this;
       dfs = [];
-      df = $.Deferred();
+      df = jQuery.Deferred();
       this.db.collections(function(colls) {
         var col, existingCollections, _i, _len, _results;
         existingCollections = _.pluck(colls, 'name');
@@ -68,7 +68,7 @@
         }
         return _results;
       });
-      $.when.apply($, dfs).done(function() {
+      jQuery.when.apply(jQuery, dfs).done(function() {
         return df.resolve();
       });
       return df;
