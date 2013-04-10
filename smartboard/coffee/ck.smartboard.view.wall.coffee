@@ -72,6 +72,10 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
 
         @contributions.on 'add', (c) =>
             @addBalloon c, CK.Smartboard.View.ContributionBalloon, @balloonViews
+        
+        @contributions.on 'change', (c) =>
+            @addBalloon c, CK.Smartboard.View.ContributionBalloon, @balloonViews
+
         @contributions.each (c) => @addBalloon c, CK.Smartboard.View.ContributionBalloon, @balloonViews
 
         # updating = false
@@ -86,6 +90,13 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
         # updateAllPositions()
 
     addBalloon: (doc, view, balloonList) =>
+        
+        # add only published contributions and proposals
+        if (doc instanceof CK.Model.Contribution and doc.get('published') isnt true)
+            return
+        else if doc instanceof CK.Model.Proposal and doc.get('proposal_published') isnt true
+            return
+
         bv = new view
             model: doc
 
@@ -193,6 +204,9 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
 
     render: =>
         phase = @runState.get('phase')
+        
+        console.log('Phase: ' + phase)
+        
         if phase isnt @$el.data('phase')
             switch phase
                 when 'tagging'
@@ -237,7 +251,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
         newTag = @$el.find('#new-tag').val()
         
         # abort if the value is less then 2 chars
-        if jQuery.trim(newTag).length < 2 
+        if jQuery.trim(newTag).length < 2
             return
 
         Sail.app.createNewTag(newTag)

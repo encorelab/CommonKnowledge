@@ -112,7 +112,10 @@ class CK.Smartboard extends Sail.App
             # triggered when CK.Model has been configured (via CK.Model.init)
             # TODO: maybe also wait until we're connected?
             console.log "Ready..."
-
+            
+            # reset state for testing..
+            #CK.setState 'RUN', {phase: 'brainstorm'}
+            
             @wall = new CK.Smartboard.View.Wall
                 el: jQuery('#wall')
                 runState: @runState

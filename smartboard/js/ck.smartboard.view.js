@@ -186,6 +186,9 @@
       this.contributions.on('add', function(c) {
         return _this.addBalloon(c, CK.Smartboard.View.ContributionBalloon, _this.balloonViews);
       });
+      this.contributions.on('change', function(c) {
+        return _this.addBalloon(c, CK.Smartboard.View.ContributionBalloon, _this.balloonViews);
+      });
       return this.contributions.each(function(c) {
         return _this.addBalloon(c, CK.Smartboard.View.ContributionBalloon, _this.balloonViews);
       });
@@ -193,6 +196,11 @@
 
     Wall.prototype.addBalloon = function(doc, view, balloonList) {
       var bv;
+      if (doc instanceof CK.Model.Contribution && doc.get('published') !== true) {
+        return;
+      } else if (doc instanceof CK.Model.Proposal && doc.get('proposal_published') !== true) {
+        return;
+      }
       bv = new view({
         model: doc
       });
@@ -306,6 +314,7 @@
     Wall.prototype.render = function() {
       var paused, phase;
       phase = this.runState.get('phase');
+      console.log('Phase: ' + phase);
       if (phase !== this.$el.data('phase')) {
         switch (phase) {
           case 'tagging':
