@@ -468,7 +468,7 @@ CK.Mobile = function() {
 
   app.saveBucketedContribution = function(tags) {
     // add tags to note
-    Sail.app.bucketedContribution.get('tags')
+    //Sail.app.bucketedContribution.get('tags')
 
     // save note
     Sail.app.bucketedContribution.save();
@@ -476,7 +476,7 @@ CK.Mobile = function() {
     // set status to waiting
     Sail.app.userState.set('tagging_status','waiting');
     Sail.app.userState.save();    
-  }
+  };
 
 
   //  /** Do the tagging, update DB, send out an sail event */

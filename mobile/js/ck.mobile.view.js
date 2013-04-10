@@ -305,7 +305,8 @@
   self.ContributionToTagView = Backbone.View.extend({
     events: {
       'click #submit-tagged-note-btn': function () {
-        Sail.app.saveBucketedContribution(tags);
+        //Sail.app.saveBucketedContribution(tags);
+        Sail.app.saveBucketedContribution();
       }
     },
 
