@@ -118,10 +118,33 @@
         </div>
 
         <!-- hidden until tablet switches to bucket tagging -->
+        <div id="contribution-to-tag-screen" class="span4 view-container row hide">
+            <div class="contribution-to-tag scrollable">
+                <div class="note-headline field" name="headline">
+<!--                     These running shoes are awesome -->
+                </div>
+                <div class="note-body field" name="content">
+<!--                     I like these running shoes because I think they'd help make me run faster.
+                    They have pumps on the tongues, to help with performance. The are also
+                    light. I hope that they come in other colours. -->
+                </div>
+                <div class="note-metadata">
+                    <span class="note-author field" name="author"> </span><span class="note-created-at field" name="created_at"></span>
+                </div>
+                <br />
+                <div class="note-build-ons field" name="build_ons">
+                </div>
+            </div>
+        </div>        
         <div id="bucket-tagging-screen" class="span4 view-container row hide">
-            <div id="bucket-tagging-btn-container" class="tag-btn-group btn-group btn-group-vertical scrollable" data-toggle="buttons-checkbox">
+            <div id="bucket-tagging-btn-container" class="tag-btn-group btn-group btn-group-vertical" data-toggle="buttons-checkbox">
                 <!-- filled by BucketTaggingView -->
             </div>
+            <div class="btn-container btn-group action-btn-group">
+                <a id="submit-tagged-note-btn" class="btn btn-success">
+                    Tag me!
+                </a>
+            </div>            
         </div>
 
         <div id="proposal-screen" class="row hide">

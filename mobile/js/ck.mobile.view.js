@@ -259,27 +259,25 @@
       } else {
         jQuery('#share-note-btn').removeClass('disabled');
       }
-      
+// for buildOn
       if (view.model.kind && view.model.kind === 'buildOn') {
         jQuery('#note-body-label').text('Build On');
         jQuery('#note-body-label').effect("highlight", {}, 1500);
         jQuery('#note-body-entry').removeClass('disabled');
         jQuery('#note-body-entry').val(view.model.content);
         jQuery('.tag-btn').addClass('disabled');
-
-      } else {      // for brainstorm
+// for brainstorm
+      } else {
         var contrib = Sail.app.contribution;
         jQuery('#note-body-label').text('New Note');
         jQuery('#note-body-label').effect("highlight", {}, 1500);
         jQuery('#note-body-entry').val(contrib.get('content'));
         jQuery('#note-headline-entry').val(contrib.get('headline'));
         jQuery('.tag-btn').removeClass('disabled');
-
         if (typeof contrib !== 'undefined' && contrib !== null) {
           jQuery('#note-body-entry').removeClass('disabled');
           jQuery('#note-headline-entry').removeClass('disabled');
         }
-
         // add the tags   
         Sail.app.tagList.each(function(tag) {
           // TODO: what are we doing with the N/A tag
@@ -302,42 +300,88 @@
 
 
   /**
+    ContributionToTagView
+  **/
+  self.ContributionToTagView = Backbone.View.extend({
+    events: {
+      'click #submit-tagged-note-btn': function () {
+        Sail.app.saveBucketedContribution(tags);
+      }
+    },
+
+    initialize: function () {
+      console.log("Initializing ContributionToTagView...");
+    },
+
+    /**
+      Triggers full update of all dynamic elements in the details view
+    **/
+    render: function () {
+      console.log("rendering ContributionToTagView!");
+      var view = this;
+
+      jQuery('#contribution-to-tag-screen .field').text('');
+
+      // created_at will return undefined, so need to check it exists...
+      if (view.model && view.model.get('created_at')) {
+        jQuery('#contribution-to-tag-screen .note-headline').text(view.model.get('headline'));
+        jQuery('#contribution-to-tag-screen .note-body').text(view.model.get('content'));
+        jQuery('#contribution-to-tag-screen .note-author').text('~'+view.model.get('author'));
+
+        var createdAt = view.model.get('created_at');
+        if (createdAt) {
+          jQuery('#contribution-to-tag-screen .note-created-at').text(' (' + createdAt.toLocaleDateString() + ' ' + createdAt.toLocaleTimeString() + ')');
+        }
+
+        // add the buildOns (if they are published)
+        var buildOnEl = '<hr /><div>';
+        _.each(view.model.get('build_ons'), function(b) {
+          if (b.published === true) {
+            buildOnEl += b.content;
+            buildOnEl += '<br /><span class="build-on-metadata">~' + b.author;
+            buildOnEl += ' (' + b.created_at.toLocaleDateString() + ' ' + b.created_at.toLocaleTimeString() + ')' +  '</span><hr />';            
+          }
+        });
+
+        buildOnEl += "</div>";
+        buildOnEl = jQuery(buildOnEl);
+        jQuery('#contribution-to-tag-screen .note-build-ons').append(buildOnEl);
+      } else {
+        console.warn("ContributionToTagView render skipped this contrib because created_at doesn't exist");
+      }
+    }
+  });
+
+
+  /**
     BucketTaggingView
   **/
   self.BucketTaggingView = Backbone.View.extend({
     events: {
-      // 'click #bucket-tagging-btn-container .tag-btn': function (ev) {
-      //   // console.log('id: '+ev.target.id);
-      //   var tag = jQuery(ev.target).data('tag');
+      'click #bucket-tagging-btn-container .tag-btn': function (ev) {
+        // var tag = jQuery(ev.target).data('tag');
+        // var jqButtonSelector = "button:contains("+tag.get('name')+")";          // the jQuery selector for the button that was clicked
 
-      //   // toggle the clicked tag in the model
-      //   if (Sail.app.taggedContribution.hasTag(tag)) {
-      //     Sail.app.taggedContribution.removeTag(tag);
-      //   } else {
-      //     // due to our deadlines, this is all hideous, and fighting backbone... TODO - fixme when there's more time
-      //     if (tag.get('name') === "N/A") {
-      //       Sail.app.taggedContribution.attributes.tags = [];                       // eeeewwwwwwww
-      //       jQuery('.tag-btn').removeClass('active');
-      //     } else {
-      //       var naTag = Sail.app.tagList.find(function(t) { return t.get('name') === "N/A"; } );
-      //       Sail.app.taggedContribution.removeTag(naTag);
-      //       jQuery("button:contains('N/A')").removeClass('active');
-      //     }
-      //     Sail.app.taggedContribution.addTag(tag, Sail.app.userData.account.login);
-      //   }
+        // // case: unselect a tag
+        // if (Sail.app.bucketedContribution.hasTag(tag)) {
+        //   jQuery(jqButtonSelector).removeClass('active'); 
+        //   Sail.app.bucketedContribution.removeTag(tag);
+        // // case: select a tag
+        // } else {
+        //   jQuery(jqButtonSelector).addClass('active');
+        //   Sail.app.bucketedContribution.addTag(tag);
+        //   // TODO add tagger, other?  ie tag.set('tagger',Sail.app.userData.account.login);
+        // }
 
-      //   // enable/disable the Share button - dup'd in the render, probably a better way to do this
-      //   if (Sail.app.taggedContribution.attributes.tags.length > 0) {
-      //     jQuery('#share-note-btn').removeClass('disabled');
-      //   } else {
-      //     jQuery('#share-note-btn').addClass('disabled');
-      //   }
-
-      // },
-
-      // 'click #none-button': function(ev) {
-      //   // define none button behaviour
-      // }
+        // // enable/disable the Share button
+        // if (Sail.app.tagList.models) {
+        //    if (Sail.app.bucketedContribution.get('tags').length > 0) {
+        //     jQuery('#submit-tagged-note-btn').removeClass('disabled');
+        //   } else {
+        //     jQuery('#submit-tagged-note-btn').addClass('disabled');
+        //   }
+        // }        
+      }
     },
 
     initialize: function () {
@@ -351,7 +395,8 @@
       console.log("rendering BucketTaggingView...");
 
       // clear all buttons TODO
-      jQuery('.tag-btn').removeClass('active');
+      //jQuery('.tag-btn').removeClass('active');
+      jQuery('#bucket-tagging-btn-container').html('');
 
       Sail.app.tagList.each(function(tag) {
         var tagButton = jQuery('button#bucket'+tag.id);
@@ -374,6 +419,7 @@
       });
       var noneButton = jQuery('#none-button');
       if (noneButton.length === 0) {
+        noneButton = jQuery('<button id="none-btn" type="button" class="btn tag-btn">None</button>');
         jQuery('#bucket-tagging-btn-container').append(noneButton);
       }      
 

@@ -153,6 +153,7 @@ i {
 
 #bucket-tagging-btn-container {
 	width: 100%;
+	height: 90%;
 }
 
 #contribution-input {
@@ -293,10 +294,10 @@ i {
 #bucket-tagging-btn-container .tag-btn {
 	/* 304 width */
 	width: 144px;
-	height: 45px;
+	height: 40px;
 	font-size: 18px;
 	margin-left: 80px;
-	margin-top: 8%;	
+	margin-top: 7%;	
 }
 
 #tag-submission-container .tag-btn {
