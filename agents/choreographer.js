@@ -58,7 +58,7 @@ function assign_observation_for_tagging(user_state) {
     console.log('Found contribution: ' + contrib_to_tag.id);
 
     // make object wakeful so clients here changes
-    contrib_to_tag.wake(config.wakeful.url);
+    user_state.wake(config.wakeful.url);
 
     // mark contribution as assigned
     contrib_to_tag.set('assigned_tagger', user_state.get('entity'));
@@ -79,9 +79,6 @@ function assign_observation_for_tagging(user_state) {
 
 // reacting to changes in USERS Model
 function updateStateStuff(state) {
-  var entity = state.get('entity');
-  var phase = state.get('phase');
-
   if (state.get('type') === "user" && state.get('tagging_status') === "waiting") {
     console.log('Tagging started, agent is assigning students an observation to tag');
     // immediatelly setting user into tagging_status processing to avoid problems when state events are double triggered
@@ -90,7 +87,6 @@ function updateStateStuff(state) {
     // user waiting for a tag - assing tag or let user know that s/he is done
     assign_observation_for_tagging(state);
   } else {
-    console.log('Saw state change');
-    console.log(state);
+    console.log('Saw state change of entity '+state.get('entity'));
   }
 }
