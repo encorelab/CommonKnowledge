@@ -176,5 +176,5 @@ class CK.Model
             @awake[collName] = coll
             deferreds.push coll.fetch()
 
-        jQuery.when.apply jQuery, deferreds
+        $.when.apply jQuery, deferreds
             
