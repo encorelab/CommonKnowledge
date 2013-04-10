@@ -59,8 +59,6 @@
 
       Sail.app.contributionList.each(function(contrib) {
         if (contrib.get('published') === true) {
-          console.log('headline: ' + contrib.get('headline'));
-
           var note = "<li id=" + contrib.id + " class='list-item'><a class='note'><span class='headline'></span>";
           note += "<br /><i class='icon-chevron-right'></i>";
           note += "<span class='author'></span><span class='date'></span></a></li>";
@@ -72,7 +70,6 @@
 
           // functions toLocaleDateString() and toLocaleTimeString() are only defined if created_at is a Date object
           createdAt = contrib.get('created_at');
-          console.log(createdAt);
           if (createdAt) {
             note.find('.date').text(' (' + createdAt.toLocaleDateString() + ' ' + createdAt.toLocaleTimeString() + ')');
           }
@@ -86,10 +83,10 @@
           if (myBuildOn || contrib.get('author') === Sail.app.userData.account.login) {
             note.children().first().addClass('own-color');
           }
-      
-        } else {
-          console.log(contrib.id, 'is unpublished');
         }
+        // else {
+        //   console.log(contrib.id, 'is unpublished');
+        // }
       });    
     }
   });
@@ -178,23 +175,8 @@
 
         Sail.app.contribution.save();     // TODO probably needs a patch here
 
-        // TODO: do we need to deal with N/A?
-        // else {
-        //   // case: N/A tag selected
-        //   // add "N/A"ness - but do we want to actually be explicit here?
-        //   if (tag.get('name') === "N/A") {
-        //     Sail.app.contribution.set('tags',[]);
-        //     jQuery('.tag-btn').removeClass('active');
-        //   // remove "N/A"
-        //   } else {
-        //     var naTag = Sail.app.tagList.find(function(t) { return t.get('name') === "N/A"; } );
-        //     Sail.app.contribution.removeTag(naTag);
-        //     jQuery("button:contains('N/A')").removeClass('active');
-        //   }
-        // }
-
         // enable/disable the Share button
-        if (Sail.app.tagList.length > 1) {
+        if (Sail.app.tagList.models) {
            if (Sail.app.contribution.get('tags').length > 0) {
             jQuery('#share-note-btn').removeClass('disabled');
           } else {
@@ -226,12 +208,6 @@
 
     initialize: function () {
       console.log("Initializing ContributionInputView...");
-      // disable the share button if there are tags in the tags collection
-      if (Sail.app.tagList.models.length) {
-        jQuery('#share-note-btn').addClass('disabled');
-      } else {
-        jQuery('#share-note-btn').removeClass('disabled');
-      }
     },
 
     share: function () {
@@ -272,20 +248,32 @@
     render: function () {
       var view = this;
       console.log("rendering ContributionInputView...");
+
+      // enable/disable the share button based on context (view.model.kind will be buildOn or undefined here)
+      if (Sail.app.tagList.models && view.model.kind !== 'buildOn') {
+         if (Sail.app.contribution.get('tags').length > 0) {
+          jQuery('#share-note-btn').removeClass('disabled');
+        } else {
+          jQuery('#share-note-btn').addClass('disabled');
+        }
+      } else {
+        jQuery('#share-note-btn').removeClass('disabled');
+      }
       
       if (view.model.kind && view.model.kind === 'buildOn') {
         jQuery('#note-body-label').text('Build On');
         jQuery('#note-body-label').effect("highlight", {}, 1500);
         jQuery('#note-body-entry').removeClass('disabled');
         jQuery('#note-body-entry').val(view.model.content);
+        jQuery('.tag-btn').addClass('disabled');
 
       } else {      // for brainstorm
         var contrib = Sail.app.contribution;
         jQuery('#note-body-label').text('New Note');
         jQuery('#note-body-label').effect("highlight", {}, 1500);
-
         jQuery('#note-body-entry').val(contrib.get('content'));
         jQuery('#note-headline-entry').val(contrib.get('headline'));
+        jQuery('.tag-btn').removeClass('disabled');
 
         if (typeof contrib !== 'undefined' && contrib !== null) {
           jQuery('#note-body-entry').removeClass('disabled');
