@@ -9,11 +9,6 @@ CK.Mobile = function() {
   app.name = "CK.Mobile";
 
   app.requiredConfig = {
-    xmpp: {
-      domain: 'string',
-      port: 'number',
-      url: 'string'
-    },
     rollcall: {
       url: 'string'
     },

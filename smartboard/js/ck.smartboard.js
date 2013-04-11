@@ -27,11 +27,6 @@
     Smartboard.prototype.name = 'CK.Smartboard';
 
     Smartboard.prototype.requiredConfig = {
-      xmpp: {
-        domain: 'string',
-        port: 'number',
-        url: 'string'
-      },
       rollcall: {
         url: 'string'
       },

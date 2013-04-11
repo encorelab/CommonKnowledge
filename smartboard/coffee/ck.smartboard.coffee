@@ -2,10 +2,6 @@ class CK.Smartboard extends Sail.App
     name: 'CK.Smartboard'
 
     requiredConfig: {
-        xmpp:
-            domain: 'string'
-            port: 'number'
-            url: 'string'
         rollcall:
             url: 'string'
         drowsy:
