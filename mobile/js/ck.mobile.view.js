@@ -358,7 +358,8 @@
     events: {
       'click #submit-tagged-note-btn': function () {
         Sail.app.saveBucketedContribution();
-      },
+        // clear everything!
+      }
 
       //'click #bucket-tagging-btn-container .tag-btn': function (ev) {           // what a friggin mess - damn you backbone renders!
         //jQuery(ev.target).toggleClass('active');
