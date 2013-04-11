@@ -2,7 +2,8 @@
 // variables to store static data from MongoDB
 var states = null,
   contributions = null,
-  present_students = null;
+  present_students = null,
+  doingStuffForUser = {};
 
 // grab information from user
 var argv = require('optimist')
@@ -38,7 +39,17 @@ CK.Model.init(config.drowsy.url, DATABASE).done(function () {
     console.log('We have '+contributions.length+' contributions ...');
 
     states = CK.Model.awake.states;
+    states.each(function(state){
+      if (state.get('type') === "user") {
+        doingStuffForUser[state.get('entity')] = false;
+      }
+    });
+
+
     states.on('change add', updateStateStuff);
+
+    // when starting up check all state object if any of them requires the agent to perfom an action
+    states.each(updateStateStuff);
   });
 });
 
@@ -67,23 +78,33 @@ function assign_observation_for_tagging(user_state) {
       // write contribution id to user state and set tagging_status to assigned
       user_state.set('contribution_to_tag', contrib_to_tag.id);
       user_state.set('tagging_status', 'assigned');
-      user_state.save();
+      user_state.save().done(function (){
+        // unlocking this user
+        doingStuffForUser[user_state.get('entity')] = false;
+      });
     });
   } else {
     // no contribution found so we must be done. Inform user
     console.log('No contribution found so we must be done. Inform user: ' + user_state.get('entity'));
     user_state.set('tagging_status', 'done');
-    user_state.save();
+    user_state.save().done(function() {
+      // unlocking this user
+      doingStuffForUser[user_state.get('entity')] = false;
+    });
   }
 }
 
 // reacting to changes in USERS Model
 function updateStateStuff(state) {
-  if (state.get('type') === "user" && state.get('tagging_status') === "waiting") {
+  if (state.get('type') === "user" && state.get('tagging_status') === "waiting" && doingStuffForUser[state.get('entity')] === false) {
     console.log('Tagging started, agent is assigning students an observation to tag');
     // immediatelly setting user into tagging_status processing to avoid problems when state events are double triggered
-    state.set('tagging_status', 'processing');
-    state.save();
+    // state.set('tagging_status', 'processing');
+    // state.save();
+
+    // locking this user
+    doingStuffForUser[state.get('entity')] = true;
+
     // user waiting for a tag - assing tag or let user know that s/he is done
     assign_observation_for_tagging(state);
   } else {
