@@ -173,6 +173,7 @@ CK.Mobile = function() {
       app.contributionToTag(app.userState.get('contribution_to_tag'));
     } else if (status === 'done') {
       jQuery('#index-screen').removeClass('hide');
+      // change Brand to Brainstorm? Explore?
       //app.inputView.render();
       //app.contributionListView.render();
     } else {
@@ -266,7 +267,7 @@ CK.Mobile = function() {
         collection: app.tagList
       });
     }
-    app.tagList.on('reset add sync', app.bucketTaggingView.render, app.bucketTaggingView);
+    //app.tagList.on('add sync', app.bucketTaggingView.render, app.bucketTaggingView);
 
     // CONTRIBUTIONS COLLECTION
     app.contributionList = CK.Model.awake.contributions;
@@ -281,7 +282,7 @@ CK.Mobile = function() {
       return -contrib.get('created_at').getTime();
     };
     app.contributionList.comparator = sorter;
-    app.contributionList.on('reset add sync change', app.contributionListView.render, app.contributionListView);
+    app.contributionList.on('add sync change', app.contributionListView.render, app.contributionListView);
     app.contributionList.sortBy(sorter);      // TODO - figure out why the sort doesn't happen before the first render
     
     app.updateRunState();
@@ -450,7 +451,7 @@ CK.Mobile = function() {
     if (app.contributionToTagView === null) {
       // create the view, attach to DOM and hand in model
       app.contributionToTagView = new CK.Mobile.View.ContributionToTagView({
-        el: jQuery('#contribution-to-tag-screen'),        // WHAAATTTT?
+        el: jQuery('#contribution-to-tag-screen'),
         model: contrib
       });
     } else {
@@ -473,58 +474,18 @@ CK.Mobile = function() {
 
   app.saveBucketedContribution = function() {
     console.log("Saving bucketed contribution...");
-    // add tags to note
-    //Sail.app.bucketedContribution.get('tags')
+    // add tags to an array, then set that array to the bucketedContrib
+    // _.each(jQuery('#bucket-tagging-btn-container .active'), function(b) {
+    //   Sail.app.contribution.addTag(tag)
+    // });
 
-    // save note
+    // save the bucketedContrib
     Sail.app.bucketedContribution.save();
 
     // set status to waiting
     Sail.app.userState.set('tagging_status','waiting');
     Sail.app.userState.save();    
   };
-
-
-  //  /** Do the tagging, update DB, send out an sail event */
-  // app.tagContribution = function (contributionId, tagged) {
-  //   console.log('Contribution <'+contributionId+'> tagged: '+tagged);
-  //   var sail_data = {'contribution_id':contributionId};
-  //   var sev = new Sail.Event('contribution_tagged', sail_data);
-
-  //   function saveSuccess (m) {
-  //     console.log('contribution saved successfully in tagContribution');
-  //     //Sail.app.groupchat.sendEvent(sev);
-  //   }
-  //   function saveError (err) {
-  //     console.warn('error saving contribution in tagContribution');
-  //   }
-
-  //   function fetchSuccess (contrib) {
-  //     console.log('fetched contribution');
-  //     var data = user_state.get('analysis');
-  //     var new_tag = {'id':data.tag_group_id,'name':data.tag_group,'tagger':app.userData.account.login,'tagged_at':Date()};
-  //     var contrib_tags = taggedContribution.get('tags');
-  //     contrib_tags.push(new_tag);
-  //     taggedContribution.set('tags', contrib_tags);
-
-  //     taggedContribution.save(null, {success: saveSuccess, error: saveError});
-  //   }
-
-  //   function fetchError (err) {
-  //     console.warn('error fetching contribution');
-  //   }
-
-  //   if (tagged) {
-  //     var user_state = CK.getState(Sail.app.userData.account.login);
-  //     var taggedContribution = new CK.Model.Contribution({_id: contributionId});
-  //     taggedContribution.wake(Sail.app.config.wakeful.url);
-
-  //     taggedContribution.fetch({success: fetchSuccess, error: fetchError});
-  //   } else {
-  //     console.log('Contribution: '+contributionId+' not tagged');
-  //     //Sail.app.groupchat.sendEvent(sev);
-  //   }
-  // };
 
   app.doneTagging = function() {
     app.hideAll();

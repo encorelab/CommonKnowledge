@@ -357,23 +357,28 @@
   self.BucketTaggingView = Backbone.View.extend({
     events: {
       'click #submit-tagged-note-btn': function () {
-        //Sail.app.saveBucketedContribution(tags);
         Sail.app.saveBucketedContribution();
-      }      
-      // 'click #bucket-tagging-btn-container .tag-btn': function (ev) {
-      //   var tag = jQuery(ev.target).data('tag');
-      //   var jqButtonSelector = "button:contains("+tag.get('name')+")";          // the jQuery selector for the button that was clicked
+      },
 
-      //   // case: unselect a tag
-      //   if (Sail.app.bucketedContribution.hasTag(tag)) {
-      //     jQuery(jqButtonSelector).removeClass('active'); 
-      //     Sail.app.bucketedContribution.removeTag(tag);
-      //   // case: select a tag
-      //   } else {
-      //     jQuery(jqButtonSelector).addClass('active');
-      //     Sail.app.bucketedContribution.addTag(tag);
-      //     // TODO add tagger, other?  ie tag.set('tagger',Sail.app.userData.account.login);
-      //   }
+      //'click #bucket-tagging-btn-container .tag-btn': function (ev) {           // what a friggin mess - damn you backbone renders!
+        //jQuery(ev.target).toggleClass('active');
+        // var t = jQuery(ev.target);
+        // if (t.hasClass('active')) {
+        //   t.removeClass('active')
+        // }
+        // var tag = jQuery(ev.target).data('tag');
+        // var jqButtonSelector = "button:contains("+tag.get('name')+")";          // the jQuery selector for the button that was clicked
+
+        // // case: unselect a tag
+        // if (Sail.app.bucketedContribution.hasTag(tag)) {
+        //   jQuery(jqButtonSelector).removeClass('active'); 
+        //   Sail.app.bucketedContribution.removeTag(tag);
+        // // case: select a tag
+        // } else {
+        //   jQuery(jqButtonSelector).addClass('active');
+        //   Sail.app.bucketedContribution.addTag(tag);
+        //   // TODO add tagger, other?  ie tag.set('tagger',Sail.app.userData.account.login);
+        // }
 
       //   // enable/disable the Share button
       //   if (Sail.app.tagList.models) {
@@ -383,7 +388,7 @@
       //       jQuery('#submit-tagged-note-btn').addClass('disabled');
       //     }
       //   }
-      // }
+      //}
     },
 
     initialize: function () {
@@ -398,28 +403,29 @@
 
       // clear all buttons TODO
       //jQuery('.tag-btn').removeClass('active');
-      jQuery('#bucket-tagging-btn-container').html('');
+      //jQuery('#bucket-tagging-btn-container').html('');
 
       Sail.app.tagList.each(function(tag) {
         var tagButton = jQuery('button#bucket'+tag.id);
         if (tagButton.length === 0) {
           tagButton = jQuery('<button id="bucket'+tag.id+'" type="button" class="btn tag-btn"></button>');
           tagButton = jQuery(tagButton);
+          tagButton.data('tag',tag);        //START HERE, THEN APPEND DO ADDTAG IN MOBILE saveBucketedContribution
           jQuery('#bucket-tagging-btn-container').append(tagButton);
         }
 
         tagButton.text(tag.get('name'));
 
         // add tagger and store the tag object in the button for later
-        tag.set('tagger',Sail.app.userData.account.login);
-        tagButton.data('tag',tag);
+        //tag.set('tagger',Sail.app.userData.account.login);
+        //tagButton.data('tag',tag);      
 
         // turn button on if previously tagged with this tag
         if (Sail.app.bucketedContribution && Sail.app.bucketedContribution.hasTag(tag)) {
           tagButton.addClass('active');
         }
       });
-      var noneButton = jQuery('#none-button');
+      var noneButton = jQuery('button#none-btn');
       if (noneButton.length === 0) {
         noneButton = jQuery('<button id="none-btn" type="button" class="btn tag-btn">None</button>');
         jQuery('#bucket-tagging-btn-container').append(noneButton);
