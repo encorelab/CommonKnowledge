@@ -463,7 +463,8 @@ CK.Mobile = function() {
     //contrib.fetch().done(function() {
       //app.bucketedContribution = contrib;
       //app.bucketedContribution.wake(Sail.app.config.wakeful.url);
-      app.bucketTaggingView.render();
+    app.bucketTaggingView.render();
+    app.contributionToTagView.render();
     //});
   };
 
