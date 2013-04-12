@@ -356,9 +356,20 @@
   **/
   self.BucketTaggingView = Backbone.View.extend({
     events: {
-      'click #submit-tagged-note-btn': function () {
-        Sail.app.saveBucketedContribution();
-        // clear everything!
+      'click #bucket-tagging-btn-container .tag-choosable': function() {
+        jQuery('#none-btn').removeClass('active');
+      },
+
+      'click #none-btn': function() {
+        jQuery('#bucket-tagging-btn-container .tag-choosable').removeClass('active');
+      },
+
+      'click #submit-tagged-note-btn': function() {
+        if (jQuery('.tag-btn').hasClass('active')) {
+          Sail.app.saveBucketedContribution();
+        } else {
+          jQuery().toastmessage('showErrorToast', "Please choose one or more tags for this contribution (or select None)");
+        }
       }
 
       //'click #bucket-tagging-btn-container .tag-btn': function (ev) {           // what a friggin mess - damn you backbone renders!
@@ -409,9 +420,10 @@
       Sail.app.tagList.each(function(tag) {
         var tagButton = jQuery('button#bucket'+tag.id);
         if (tagButton.length === 0) {
-          tagButton = jQuery('<button id="bucket'+tag.id+'" type="button" class="btn tag-btn"></button>');
+          tagButton = jQuery('<button id="bucket'+tag.id+'" type="button" class="btn tag-btn tag-choosable"></button>');
+          tagButton.data('tag',tag);
           tagButton = jQuery(tagButton);
-          tagButton.data('tag',tag);        //START HERE, THEN APPEND DO ADDTAG IN MOBILE saveBucketedContribution
+          
           jQuery('#bucket-tagging-btn-container').append(tagButton);
         }
 

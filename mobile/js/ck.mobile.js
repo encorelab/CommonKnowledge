@@ -172,10 +172,8 @@ CK.Mobile = function() {
       jQuery('#contribution-to-tag-screen').removeClass('hide');
       app.contributionToTag(app.userState.get('contribution_to_tag'));
     } else if (status === 'done') {
+      jQuery('.brand').text('Common Knowledge - Explore');
       jQuery('#index-screen').removeClass('hide');
-      // change Brand to Brainstorm? Explore?
-      //app.inputView.render();
-      //app.contributionListView.render();
     } else {
       console.error('Unknown tagging status...');
     }
@@ -475,16 +473,21 @@ CK.Mobile = function() {
   app.saveBucketedContribution = function() {
     console.log("Saving bucketed contribution...");
     // add tags to an array, then set that array to the bucketedContrib
-    // _.each(jQuery('#bucket-tagging-btn-container .active'), function(b) {
-    //   Sail.app.contribution.addTag(tag)
-    // });
+    _.each(jQuery('#bucket-tagging-btn-container .active'), function(b) {
+      // TODO: do we still have a concept of tagger? Does addTag not do that? So manually?
+      Sail.app.bucketedContribution.addTag(jQuery(b).data('tag'));          // tag object is embedded in the button
+      //console.log(jQuery(b).data('tag').get('name'));
+    });
 
     // save the bucketedContrib
     Sail.app.bucketedContribution.save();
 
     // set status to waiting
     Sail.app.userState.set('tagging_status','waiting');
-    Sail.app.userState.save();    
+    Sail.app.userState.save();
+
+    // clear the fields (there's no real way to do this in the view without stepping on the render)
+    jQuery('#bucket-tagging-btn-container .active').removeClass('active');
   };
 
   app.doneTagging = function() {
