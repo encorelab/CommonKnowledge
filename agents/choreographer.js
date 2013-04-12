@@ -92,6 +92,11 @@ function assign_observation_for_tagging(user_state) {
 
 // reacting to changes in USERS Model
 function updateStateStuff(state) {
+  var userLock = doingStuffForUser[state.get('entity')];
+  if ((typeof userLock === 'undefined' || userLock === null) && state.get('type') === "user" ) {
+    doingStuffForUser[state.get('entity')] = false;
+  }
+
   if (state.get('type') === "user" && state.get('tagging_status') === "waiting" && doingStuffForUser[state.get('entity')] === false) {
     console.log('Tagging started, agent is assigning students an observation to tag');
 
