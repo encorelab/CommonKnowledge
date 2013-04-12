@@ -255,6 +255,10 @@ i {
 	float: right;
 }
 
+.selected-note .note-tags {
+	float: left;
+}
+
 #note-body-label {
 	font-weight: bold;
 	width: 70px;

@@ -135,7 +135,7 @@
         // add the tags
         var tagsEl = '<br /><div><i>';
         _.each(view.model.get('tags'), function(t) {
-          tagsEl += '  ';
+          tagsEl += ' ';
           tagsEl += t.name;
           
         });

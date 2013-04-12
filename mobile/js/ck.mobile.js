@@ -350,12 +350,8 @@ CK.Mobile = function() {
   app.saveContribution = function(view) {
     console.log("Submitting contribution...");
     Sail.app.contribution.wake(Sail.app.config.wakeful.url);
-    Sail.app.contribution.save(null, {
-      //patch:true,    // does this need to stay patch?
-      complete: function () {
-        console.log("Contribution submitted");
-      },
-      success: function () {
+    Sail.app.contribution.save()            //patch:true,    // does this want to stay patch?
+      .done( function() {
         console.log("Contribution saved!");
 
         jQuery('#contribution-input').hide('slide', {direction: 'up'});
@@ -370,11 +366,10 @@ CK.Mobile = function() {
         view.stopListening(Sail.app.contribution);
         // assign new blank model (placeholder until new note or build on buttons have been clicked)
         view.$el.find(".field").val(null);
-      },
-      failure: function(model, response) {
-        console.log('Error submitting: ' + response);
-      }
-    });
+      })
+      .fail( function() {
+        console.log('Error submitting');
+      });
   };
 
   app.showDetails = function(contrib) {
@@ -546,7 +541,7 @@ CK.Mobile = function() {
       console.warn('error fetching states');
     }
 
-    states.fetch({success: fetchSuccess, error: fetchError});
+    states.fetch({success: fetchSuccess, error: fetchError});       // this will no longer work with drowsy 0.2.0
   };
 
   app.newProposal = function(initiator, receiver, tagGroupName, tagGroupId) {
