@@ -92,8 +92,7 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
                     if bv.model.moved
                         pos = bv.model.get('pos')
                         console.log "#{id}: saving changed pos", pos
-                        bv.model.save {pos: pos},
-                            {patch: true, silent: true} # avoid broadcasting this for now since it could be a bit floodish
+                        bv.model.save {pos: pos}, {patch: true}
                         bv.model.moved = false
 
         @draggable = true

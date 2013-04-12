@@ -643,8 +643,7 @@
             bv.model.save({
               pos: pos
             }, {
-              patch: true,
-              silent: true
+              patch: true
             });
             _results.push(bv.model.moved = false);
           } else {
