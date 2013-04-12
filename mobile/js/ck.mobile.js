@@ -167,9 +167,13 @@ CK.Mobile = function() {
       jQuery('#contribution-to-tag-screen').removeClass('hide');
       app.contributionToTag(app.userState.get('contribution_to_tag'));
     } else if (status === 'done') {
-      jQuery('.brand').text('Common Knowledge - Explore');
-      jQuery('#index-screen').removeClass('hide');
-      app.contributionListView.render();
+      app.userState.set('tagging_status','done');         // going full retard here
+      app.userState.save()
+        .done(function() {
+          jQuery('.brand').text('Common Knowledge - Explore');
+          jQuery('#index-screen').removeClass('hide');
+          app.contributionListView.render();          
+        });
     } else {
       console.error('Unknown tagging status...');
     }
