@@ -485,17 +485,6 @@ CK.Mobile = function() {
     jQuery('#bucket-tagging-btn-container .active').removeClass('active');
   };
 
-  app.doneTagging = function() {
-    app.hideAll();
-    app.showWaitScreen();
-    // jQuery('#index-screen').removeClass('hide');
-    // jQuery('.brand').text('Common Knowledge - Notes');
-    // jQuery('#contribution-list').removeClass('hide');
-    // jQuery('.row').removeClass('disabled');
-    // jQuery('#tag-submission-container .tag-btn').addClass('disabled');
-  };
-
-
 
 
 
