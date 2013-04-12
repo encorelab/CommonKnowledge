@@ -457,6 +457,7 @@ CK.Mobile = function() {
     contrib.on('change sync', app.contributionToTagView.render, app.contributionToTagView);
     contrib.fetch().done(function() {
       app.bucketedContribution = contrib;
+      app.bucketedContribution.wake(Sail.app.config.wakeful.url);
       app.bucketTaggingView.render();
     });
   };

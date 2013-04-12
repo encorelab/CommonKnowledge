@@ -137,7 +137,6 @@
         _.each(view.model.get('tags'), function(t) {
           tagsEl += ' ';
           tagsEl += t.name;
-          
         });
         tagsEl += '</i></div>';
         tagsEl = jQuery(tagsEl);
