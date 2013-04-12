@@ -169,6 +169,7 @@ CK.Mobile = function() {
     } else if (status === 'done') {
       jQuery('.brand').text('Common Knowledge - Explore');
       jQuery('#index-screen').removeClass('hide');
+      app.contributionListView.render();
     } else {
       console.error('Unknown tagging status...');
     }
@@ -463,11 +464,15 @@ CK.Mobile = function() {
   app.saveBucketedContribution = function() {
     console.log("Saving bucketed contribution...");
     // add tags to an array, then set that array to the bucketedContrib
-    _.each(jQuery('#bucket-tagging-btn-container .active'), function(b) {
-      // TODO: do we still have a concept of tagger? Does addTag not do that? So manually?
-      Sail.app.bucketedContribution.addTag(jQuery(b).data('tag'));          // tag object is embedded in the button
-      //console.log(jQuery(b).data('tag').get('name'));
-    });
+    if (jQuery('#none-btn').hasClass('active')) {
+      console.log("No tags to add");
+    } else {
+      _.each(jQuery('#bucket-tagging-btn-container .active'), function(b) {
+        // TODO: do we still have a concept of tagger? Does addTag not do that? So manually?
+        Sail.app.bucketedContribution.addTag(jQuery(b).data('tag'));          // tag object is embedded in the button
+        //console.log(jQuery(b).data('tag').get('name'));
+      });
+    }
 
     // save the bucketedContrib
     Sail.app.bucketedContribution.save();
