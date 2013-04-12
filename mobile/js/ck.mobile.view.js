@@ -514,7 +514,7 @@
           buildOnEl = jQuery(buildOnEl);
           jQuery('#proposal-contribution-list .note-build-ons').append(buildOnEl);
         } else {
-          console.warn("ContributionDetailsView render skipped this contrib because created_at doesn't exist");
+          console.warn(" render skipped this contrib because created_at doesn't exist");
         }
       } else {
         console.log("rendering ProposalListView!");

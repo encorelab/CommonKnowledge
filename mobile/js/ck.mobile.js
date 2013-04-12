@@ -25,9 +25,9 @@ CK.Mobile = function() {
   app.userState = null;       // this might be more aptly named - currently only dealing with user tagging status
   app.userData = null;
   app.keyCount = 0;
-  //app.userState = null;? should be combined with above?
   app.contribution = null;
   app.inputView = null;
+  app.detailsView = null;
   app.contributionList = null;
   app.contributionListView = null;
   app.buildOn = null;
@@ -377,14 +377,22 @@ CK.Mobile = function() {
     console.log('Creating a new Details...');
     var details = contrib;
 
-    var detailsView = new CK.Mobile.View.ContributionDetailsView({
-      el: jQuery('#contribution-details'),
-      model: details
-    });
-    details.on('change', detailsView.render, detailsView);
+    if (app.detailsView === null) {
+      app.detailsView = new CK.Mobile.View.ContributionDetailsView({
+        el: jQuery('#contribution-details'),
+        model: details
+      });
+    } else {
+      if (typeof app.detailsView.model !== 'undefined' && app.detailsView.model !== null) {
+        app.detailsView.stopListening(app.detailsView.model);
+      }
+      app.detailsView.model = details;
+    }
+
+    details.on('change', app.detailsView.render, app.detailsView);
 
     // have to call this manually because there are no change events later
-    detailsView.render();
+    app.detailsView.render();
   };
 
   app.restoreUnfinishedNote = function(contrib) {
