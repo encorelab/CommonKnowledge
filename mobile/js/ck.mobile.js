@@ -433,15 +433,20 @@ CK.Mobile = function() {
   };
 
   app.contributionToTag = function (contributionId) {
+
+
+
     // create a new model using an existing ID (get data from backend)
-    var contrib = new CK.Model.Contribution({_id: contributionId});
+    //var contrib = new CK.Model.Contribution({_id: contributionId});
+    app.bucketedContribution = Sail.app.contributionList.get(contributionId);
+    app.bucketedContribution.wake(Sail.app.config.wakeful.url);
   
     // check if view exists or not
     if (app.contributionToTagView === null) {
       // create the view, attach to DOM and hand in model
       app.contributionToTagView = new CK.Mobile.View.ContributionToTagView({
         el: jQuery('#contribution-to-tag-screen'),
-        model: contrib
+        model: app.bucketedContribution
       });
     } else {
       // check if view has a model
@@ -450,16 +455,16 @@ CK.Mobile = function() {
         app.contributionToTagView.stopListening(app.contributionToTagView.model);
       }
       // overwrite the model with the newly created model
-      app.contributionToTagView.model = contrib;
+      app.contributionToTagView.model = app.bucketedContribution;
     }
 
     // if model changes or syncs render view
-    contrib.on('change sync', app.contributionToTagView.render, app.contributionToTagView);
-    contrib.fetch().done(function() {
-      app.bucketedContribution = contrib;
-      app.bucketedContribution.wake(Sail.app.config.wakeful.url);
+    //contrib.on('change sync', app.contributionToTagView.render, app.contributionToTagView);
+    //contrib.fetch().done(function() {
+      //app.bucketedContribution = contrib;
+      //app.bucketedContribution.wake(Sail.app.config.wakeful.url);
       app.bucketTaggingView.render();
-    });
+    //});
   };
 
   app.saveBucketedContribution = function() {
