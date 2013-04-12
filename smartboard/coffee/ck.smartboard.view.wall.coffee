@@ -237,7 +237,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
         newTag = @$el.find('#new-tag').val()
         
         # abort if the value is less then 2 chars
-        if jQuery.trim(newTag).length < 2 
+        if jQuery.trim(newTag).length < 2
             return
 
         Sail.app.createNewTag(newTag)
