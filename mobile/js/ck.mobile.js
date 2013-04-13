@@ -25,9 +25,9 @@ CK.Mobile = function() {
   app.userState = null;       // this might be more aptly named - currently only dealing with user tagging status
   app.userData = null;
   app.keyCount = 0;
-  //app.userState = null;? should be combined with above?
   app.contribution = null;
   app.inputView = null;
+  app.detailsView = null;
   app.contributionList = null;
   app.contributionListView = null;
   app.buildOn = null;
@@ -167,9 +167,13 @@ CK.Mobile = function() {
       jQuery('#contribution-to-tag-screen').removeClass('hide');
       app.contributionToTag(app.userState.get('contribution_to_tag'));
     } else if (status === 'done') {
-      jQuery('#index-screen').removeClass('hide');
-      //app.inputView.render();
-      //app.contributionListView.render();
+      app.userState.set('tagging_status','done');         // going full retard here
+      app.userState.save()
+        .done(function() {
+          jQuery('.brand').text('Common Knowledge - Explore');
+          jQuery('#index-screen').removeClass('hide');
+          app.contributionListView.render();          
+        });
     } else {
       console.error('Unknown tagging status...');
     }
@@ -261,7 +265,7 @@ CK.Mobile = function() {
         collection: app.tagList
       });
     }
-    app.tagList.on('reset add sync', app.bucketTaggingView.render, app.bucketTaggingView);
+    //app.tagList.on('add sync', app.bucketTaggingView.render, app.bucketTaggingView);
 
     // CONTRIBUTIONS COLLECTION
     app.contributionList = CK.Model.awake.contributions;
@@ -276,7 +280,7 @@ CK.Mobile = function() {
       return -contrib.get('created_at').getTime();
     };
     app.contributionList.comparator = sorter;
-    app.contributionList.on('reset add sync change', app.contributionListView.render, app.contributionListView);
+    app.contributionList.on('add sync change', app.contributionListView.render, app.contributionListView);
     app.contributionList.sortBy(sorter);      // TODO - figure out why the sort doesn't happen before the first render
     
     app.updateRunState();
@@ -351,12 +355,8 @@ CK.Mobile = function() {
   app.saveContribution = function(view) {
     console.log("Submitting contribution...");
     Sail.app.contribution.wake(Sail.app.config.wakeful.url);
-    Sail.app.contribution.save(null, {
-      //patch:true,    // does this need to stay patch?
-      complete: function () {
-        console.log("Contribution submitted");
-      },
-      success: function () {
+    Sail.app.contribution.save()            //patch:true,    // does this want to stay patch?
+      .done( function() {
         console.log("Contribution saved!");
 
         jQuery('#contribution-input').hide('slide', {direction: 'up'});
@@ -371,25 +371,32 @@ CK.Mobile = function() {
         view.stopListening(Sail.app.contribution);
         // assign new blank model (placeholder until new note or build on buttons have been clicked)
         view.$el.find(".field").val(null);
-      },
-      failure: function(model, response) {
-        console.log('Error submitting: ' + response);
-      }
-    });
+      })
+      .fail( function() {
+        console.log('Error submitting');
+      });
   };
 
   app.showDetails = function(contrib) {
     console.log('Creating a new Details...');
     var details = contrib;
 
-    var detailsView = new CK.Mobile.View.ContributionDetailsView({
-      el: jQuery('#contribution-details'),
-      model: details
-    });
-    details.on('change', detailsView.render, detailsView);
+    if (app.detailsView === null) {
+      app.detailsView = new CK.Mobile.View.ContributionDetailsView({
+        el: jQuery('#contribution-details'),
+        model: details
+      });
+    } else {
+      if (typeof app.detailsView.model !== 'undefined' && app.detailsView.model !== null) {
+        app.detailsView.stopListening(app.detailsView.model);
+      }
+      app.detailsView.model = details;
+    }
+
+    details.on('change', app.detailsView.render, app.detailsView);
 
     // have to call this manually because there are no change events later
-    detailsView.render();
+    app.detailsView.render();
   };
 
   app.restoreUnfinishedNote = function(contrib) {
@@ -438,15 +445,20 @@ CK.Mobile = function() {
   };
 
   app.contributionToTag = function (contributionId) {
+
+
+
     // create a new model using an existing ID (get data from backend)
-    var contrib = new CK.Model.Contribution({_id: contributionId});
+    //var contrib = new CK.Model.Contribution({_id: contributionId});
+    app.bucketedContribution = Sail.app.contributionList.get(contributionId);
+    app.bucketedContribution.wake(Sail.app.config.wakeful.url);
   
     // check if view exists or not
     if (app.contributionToTagView === null) {
       // create the view, attach to DOM and hand in model
       app.contributionToTagView = new CK.Mobile.View.ContributionToTagView({
-        el: jQuery('#contribution-to-tag-screen'),        // WHAAATTTT?
-        model: contrib
+        el: jQuery('#contribution-to-tag-screen'),
+        model: app.bucketedContribution
       });
     } else {
       // check if view has a model
@@ -455,82 +467,42 @@ CK.Mobile = function() {
         app.contributionToTagView.stopListening(app.contributionToTagView.model);
       }
       // overwrite the model with the newly created model
-      app.contributionToTagView.model = contrib;
+      app.contributionToTagView.model = app.bucketedContribution;
     }
 
     // if model changes or syncs render view
-    contrib.on('change sync', app.contributionToTagView.render, app.contributionToTagView);
-    contrib.fetch().done(function() {
-      app.bucketedContribution = contrib;
-      app.bucketTaggingView.render();
-    });
+    //contrib.on('change sync', app.contributionToTagView.render, app.contributionToTagView);
+    //contrib.fetch().done(function() {
+      //app.bucketedContribution = contrib;
+      //app.bucketedContribution.wake(Sail.app.config.wakeful.url);
+    app.bucketTaggingView.render();
+    app.contributionToTagView.render();
+    //});
   };
 
   app.saveBucketedContribution = function() {
     console.log("Saving bucketed contribution...");
-    // add tags to note
-    //Sail.app.bucketedContribution.get('tags')
+    // add tags to an array, then set that array to the bucketedContrib
+    if (jQuery('#none-btn').hasClass('active')) {
+      console.log("No tags to add");
+    } else {
+      _.each(jQuery('#bucket-tagging-btn-container .active'), function(b) {
+        // TODO: do we still have a concept of tagger? Does addTag not do that? So manually?
+        Sail.app.bucketedContribution.addTag(jQuery(b).data('tag'));          // tag object is embedded in the button
+        //console.log(jQuery(b).data('tag').get('name'));
+      });
+    }
 
-    // save note
+    // save the bucketedContrib
     Sail.app.bucketedContribution.save();
 
     // set status to waiting
     Sail.app.userState.set('tagging_status','waiting');
-    Sail.app.userState.save();    
+    Sail.app.userState.save();
+
+    // clear the fields (there's no real way to do this in the view without stepping on the render)
+    jQuery('#bucket-tagging-btn-container .active').removeClass('active');
   };
-
-
-  //  /** Do the tagging, update DB, send out an sail event */
-  // app.tagContribution = function (contributionId, tagged) {
-  //   console.log('Contribution <'+contributionId+'> tagged: '+tagged);
-  //   var sail_data = {'contribution_id':contributionId};
-  //   var sev = new Sail.Event('contribution_tagged', sail_data);
-
-  //   function saveSuccess (m) {
-  //     console.log('contribution saved successfully in tagContribution');
-  //     //Sail.app.groupchat.sendEvent(sev);
-  //   }
-  //   function saveError (err) {
-  //     console.warn('error saving contribution in tagContribution');
-  //   }
-
-  //   function fetchSuccess (contrib) {
-  //     console.log('fetched contribution');
-  //     var data = user_state.get('analysis');
-  //     var new_tag = {'id':data.tag_group_id,'name':data.tag_group,'tagger':app.userData.account.login,'tagged_at':Date()};
-  //     var contrib_tags = taggedContribution.get('tags');
-  //     contrib_tags.push(new_tag);
-  //     taggedContribution.set('tags', contrib_tags);
-
-  //     taggedContribution.save(null, {success: saveSuccess, error: saveError});
-  //   }
-
-  //   function fetchError (err) {
-  //     console.warn('error fetching contribution');
-  //   }
-
-  //   if (tagged) {
-  //     var user_state = CK.getState(Sail.app.userData.account.login);
-  //     var taggedContribution = new CK.Model.Contribution({_id: contributionId});
-  //     taggedContribution.wake(Sail.app.config.wakeful.url);
-
-  //     taggedContribution.fetch({success: fetchSuccess, error: fetchError});
-  //   } else {
-  //     console.log('Contribution: '+contributionId+' not tagged');
-  //     //Sail.app.groupchat.sendEvent(sev);
-  //   }
-  // };
-
-  app.doneTagging = function() {
-    app.hideAll();
-    app.showWaitScreen();
-    // jQuery('#index-screen').removeClass('hide');
-    // jQuery('.brand').text('Common Knowledge - Notes');
-    // jQuery('#contribution-list').removeClass('hide');
-    // jQuery('.row').removeClass('disabled');
-    // jQuery('#tag-submission-container .tag-btn').addClass('disabled');
-  };
-
 
 
 
@@ -593,7 +565,7 @@ CK.Mobile = function() {
       console.warn('error fetching states');
     }
 
-    states.fetch({success: fetchSuccess, error: fetchError});
+    states.fetch({success: fetchSuccess, error: fetchError});       // this will no longer work with drowsy 0.2.0
   };
 
   app.newProposal = function(initiator, receiver, tagGroupName, tagGroupId) {

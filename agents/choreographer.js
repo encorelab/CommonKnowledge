@@ -35,17 +35,21 @@ CK.Model = require('../shared/js/ck.model.js').CK.Model;
 // Wakeful connection via EvoRoom.Model that allows to receive change triggers 
 CK.Model.init(config.drowsy.url, DATABASE).done(function () {
   CK.Model.initWakefulCollections(config.wakeful.url).done(function() {
+    // grab awake contributions collection
     contributions = CK.Model.awake.contributions;
     console.log('We have '+contributions.length+' contributions ...');
 
+    // grab awake states collection
     states = CK.Model.awake.states;
+    // go over all user states and preset the doingStuffForUser object
+    // which is later used to lock user to avoid problems of double triggered events
     states.each(function(state){
       if (state.get('type') === "user") {
         doingStuffForUser[state.get('entity')] = false;
       }
     });
 
-
+    // register change and add events to trigger function assigning tag bucket items
     states.on('change add', updateStateStuff);
 
     // when starting up check all state object if any of them requires the agent to perfom an action
@@ -54,16 +58,8 @@ CK.Model.init(config.drowsy.url, DATABASE).done(function () {
 });
 
 function assign_observation_for_tagging(user_state) {
-  // retrieve contributions that are
-  // a) published
-  // b) have an empty tag array
-  // c) have not assigned_tagger or and empty string
-  var contrib_to_tag = contributions.find(function(con) {
-    var at = con.get('assigned_tagger');
-    if (con.get('tags').length < 1 && con.get('published') && (typeof at === 'undefined' || at === null || at === '')) {
-      return con;
-    }
-  });
+  var contrib_to_tag = retrieve_contribution_for_tagging(contributions);
+
   if (contrib_to_tag) {
     // found a contribution so assing it and inform user
     console.log('Found contribution: ' + contrib_to_tag.id);
@@ -96,13 +92,15 @@ function assign_observation_for_tagging(user_state) {
 
 // reacting to changes in USERS Model
 function updateStateStuff(state) {
+  var userLock = doingStuffForUser[state.get('entity')];
+  if ((typeof userLock === 'undefined' || userLock === null) && state.get('type') === "user" ) {
+    doingStuffForUser[state.get('entity')] = false;
+  }
+
   if (state.get('type') === "user" && state.get('tagging_status') === "waiting" && doingStuffForUser[state.get('entity')] === false) {
     console.log('Tagging started, agent is assigning students an observation to tag');
-    // immediatelly setting user into tagging_status processing to avoid problems when state events are double triggered
-    // state.set('tagging_status', 'processing');
-    // state.save();
 
-    // locking this user
+    // locking this user so that we don't assign two contributions for tagging in short order
     doingStuffForUser[state.get('entity')] = true;
 
     // user waiting for a tag - assing tag or let user know that s/he is done
@@ -110,4 +108,19 @@ function updateStateStuff(state) {
   } else {
     console.log('Saw state change of entity '+state.get('entity'));
   }
+}
+
+function retrieve_contribution_for_tagging (contribs) {
+  // retrieve contributions that are
+  // a) published
+  // b) have an empty tag array
+  // c) have not assigned_tagger or and empty string
+  var contrib_to_tag = contribs.find(function(con) {
+    var at = con.get('assigned_tagger');
+    if (con.get('tags').length < 1 && con.get('published') && (typeof at === 'undefined' || at === null || at === '')) {
+      return con;
+    }
+  });
+
+  return contrib_to_tag;
 }

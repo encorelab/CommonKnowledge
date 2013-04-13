@@ -132,6 +132,16 @@
           jQuery('#contribution-details .note-created-at').text(' (' + createdAt.toLocaleDateString() + ' ' + createdAt.toLocaleTimeString() + ')');
         }
 
+        // add the tags
+        var tagsEl = '<br /><div><i>';
+        _.each(view.model.get('tags'), function(t) {
+          tagsEl += ' ';
+          tagsEl += t.name;
+        });
+        tagsEl += '</i></div>';
+        tagsEl = jQuery(tagsEl);
+        jQuery('#contribution-details .note-tags').append(tagsEl);
+
         // add the buildOns (if they are published)
         var buildOnEl = '<hr /><div>';
         _.each(view.model.get('build_ons'), function(b) {
@@ -141,10 +151,10 @@
             buildOnEl += ' (' + b.created_at.toLocaleDateString() + ' ' + b.created_at.toLocaleTimeString() + ')' +  '</span><hr />';            
           }
         });
-
-        buildOnEl += "</div>";
+        buildOnEl += '</div>';
         buildOnEl = jQuery(buildOnEl);
         jQuery('#contribution-details .note-build-ons').append(buildOnEl);
+
       } else {
         console.warn("ContributionDetailsView render skipped this contrib because created_at doesn't exist");
       }
@@ -356,34 +366,21 @@
   **/
   self.BucketTaggingView = Backbone.View.extend({
     events: {
-      'click #submit-tagged-note-btn': function () {
-        //Sail.app.saveBucketedContribution(tags);
-        Sail.app.saveBucketedContribution();
-      }      
-      // 'click #bucket-tagging-btn-container .tag-btn': function (ev) {
-      //   var tag = jQuery(ev.target).data('tag');
-      //   var jqButtonSelector = "button:contains("+tag.get('name')+")";          // the jQuery selector for the button that was clicked
+      'click #bucket-tagging-btn-container .tag-choosable': function() {
+        jQuery('#none-btn').removeClass('active');
+      },
 
-      //   // case: unselect a tag
-      //   if (Sail.app.bucketedContribution.hasTag(tag)) {
-      //     jQuery(jqButtonSelector).removeClass('active'); 
-      //     Sail.app.bucketedContribution.removeTag(tag);
-      //   // case: select a tag
-      //   } else {
-      //     jQuery(jqButtonSelector).addClass('active');
-      //     Sail.app.bucketedContribution.addTag(tag);
-      //     // TODO add tagger, other?  ie tag.set('tagger',Sail.app.userData.account.login);
-      //   }
+      'click #none-btn': function() {
+        jQuery('#bucket-tagging-btn-container .tag-choosable').removeClass('active');
+      },
 
-      //   // enable/disable the Share button
-      //   if (Sail.app.tagList.models) {
-      //      if (Sail.app.bucketedContribution.get('tags').length > 0) {
-      //       jQuery('#submit-tagged-note-btn').removeClass('disabled');
-      //     } else {
-      //       jQuery('#submit-tagged-note-btn').addClass('disabled');
-      //     }
-      //   }
-      // }
+      'click #submit-tagged-note-btn': function() {
+        if (jQuery('.tag-btn').hasClass('active')) {
+          Sail.app.saveBucketedContribution();
+        } else {
+          jQuery().toastmessage('showErrorToast', "Please choose one or more tags for this contribution (or select None)");
+        }
+      }
     },
 
     initialize: function () {
@@ -396,41 +393,32 @@
     render: function () {
       console.log("rendering BucketTaggingView...");
 
-      // clear all buttons TODO
-      //jQuery('.tag-btn').removeClass('active');
-      jQuery('#bucket-tagging-btn-container').html('');
-
       Sail.app.tagList.each(function(tag) {
         var tagButton = jQuery('button#bucket'+tag.id);
         if (tagButton.length === 0) {
-          tagButton = jQuery('<button id="bucket'+tag.id+'" type="button" class="btn tag-btn"></button>');
+          tagButton = jQuery('<button id="bucket'+tag.id+'" type="button" class="btn tag-btn tag-choosable"></button>');
+          tagButton.data('tag',tag);
           tagButton = jQuery(tagButton);
+          
           jQuery('#bucket-tagging-btn-container').append(tagButton);
         }
 
         tagButton.text(tag.get('name'));
 
         // add tagger and store the tag object in the button for later
-        tag.set('tagger',Sail.app.userData.account.login);
-        tagButton.data('tag',tag);
+        //tag.set('tagger',Sail.app.userData.account.login);
+        //tagButton.data('tag',tag);      
 
         // turn button on if previously tagged with this tag
         if (Sail.app.bucketedContribution && Sail.app.bucketedContribution.hasTag(tag)) {
           tagButton.addClass('active');
         }
       });
-      var noneButton = jQuery('#none-button');
+      var noneButton = jQuery('button#none-btn');
       if (noneButton.length === 0) {
         noneButton = jQuery('<button id="none-btn" type="button" class="btn tag-btn">None</button>');
         jQuery('#bucket-tagging-btn-container').append(noneButton);
-      }      
-
-      // enable/disable the Share button - TODO: set me to Tag it! or something
-      // if (Sail.app.bucketedContribution && Sail.app.bucketedContribution.get('tags').length > 0) {
-      //   jQuery('#share-note-btn').removeClass('disabled');
-      // } else {
-      //   jQuery('#share-note-btn').addClass('disabled');
-      // }
+      }
     }
 
   });
@@ -526,7 +514,7 @@
           buildOnEl = jQuery(buildOnEl);
           jQuery('#proposal-contribution-list .note-build-ons').append(buildOnEl);
         } else {
-          console.warn("ContributionDetailsView render skipped this contrib because created_at doesn't exist");
+          console.warn(" render skipped this contrib because created_at doesn't exist");
         }
       } else {
         console.log("rendering ProposalListView!");
