@@ -285,7 +285,7 @@ CK.Mobile = function() {
     // PHASE MODEL
     app.runState = CK.getState('RUN');
     app.runState.wake(Sail.app.config.wakeful.url);
-    app.runState.on('change', app.updateRunState());
+    app.runState.on('change', app.updateRunState);
 
     // TAGS COLLECTION - used in both BucketTaggingView and ContributionInputView
     app.tagList = CK.Model.awake.tags;
