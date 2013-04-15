@@ -1,14 +1,44 @@
 class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
 
+
     initialize: ->
         super()
 
-        @model.on 'change:pos', =>
-            pos = @model.get('pos')
-            @left = pos.left
-            @top = pos.top
-            @right = pos.left + @width
-            @bottom = pos.top + @height
+        # These make it possible to get and set the balloon's CSS properties by doing stuff like:
+        #
+        #   console.log(ballonView.right)
+        #   ballonView.left = 500
+        #   ballonView.top += 10
+        #
+        # For more info on how this works, see:
+        # https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object/defineProperty
+        #
+        # TODO: this is too slow/inefficient to use in something like collision detection, due to the underlying DOM lookups
+        Object.defineProperty this, 'pos',
+            get: => @$el.position()
+            set: (pos) => @$el.css(left: pos.left + 'px', top: pos.top + 'px')
+
+        Object.defineProperty this, 'left',
+            get: => @pos.left
+            set: (x) => @$el.css('left', x + 'px')
+        Object.defineProperty this, 'top',
+            get: => @pos.top
+            set: (y) => @$el.css('top', y + 'px')
+
+        Object.defineProperty this, 'width',
+            get: => @$el.outerWidth()
+            set: (w) => @$el.css('width', w + 'px')
+        Object.defineProperty this, 'height',
+            get: => @$el.outerHeight()
+            set: (h) => @$el.css('height', h + 'px')
+
+        Object.defineProperty this, 'right',
+            get: => @left + @width
+            set: (x) => @$el.css('left', (x - @width) + 'px')
+        Object.defineProperty this, 'bottom',
+            get: => @top + @height
+            set: (y) => @$el.css('top', (y - @height) + 'px')
+
 
         @model.on 'change', =>
             @render() if @wall? # don't try to render until we've been properly added (wtf indeed)
@@ -19,9 +49,7 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
             @$el.hide() # hide until positioned
             if @model.has('pos')
                 pos = @model.get('pos')
-                @$el.css
-                    left: pos.left + 'px'
-                    top: pos.top + 'px'
+                @pos = pos
             else
                 console.log("autopositioning", this)
                 @autoPosition()
@@ -37,11 +65,7 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
         left = Math.random() * (wallWidth - @$el.outerWidth())
         top = Math.random() * (wallHeight - @$el.outerHeight())
 
-        @$el.css
-            left: left + 'px'
-            top: top + 'px'
-
-        @cachePositionAndBounds()
+        @pos = {left: left, top: top}
 
         @model.save(pos: {left: left, top: top})
 
@@ -61,10 +85,7 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
 
         if @$el.is(':visible') and @model.hasChanged('pos')
             pos = @model.get('pos')
-            #console.log "rendering pos for #{@model.id}"
-            @$el.css
-                left: pos.left + 'px'
-                top: pos.top + 'px'
+            @pos = pos
 
     makeDraggable: ->
         @$el
@@ -72,42 +93,20 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
                 distance: 25 # how far it needs to be moved before it's considered a drag
                 containment: '#wall'
                 stack: '.balloon'
-                obstacle: ".balloon:not(##{@$el.attr('id')})" # don't collide with self
             .css 'position', 'absolute' # draggable makes position relative, but we need absolute
 
         @$el
-            .on 'drag', (ev, ui) =>
-                @wall.collideBalloon(this)
-                @model.moved = true
             .on 'dragstop', (ev, ui) =>
                 @$el.addClass 'just-dragged' # prevent 'click' handlers from doing their thing
 
                 @model.save {pos: ui.position}, {patch: true}
-                
-                # FIXME: this is really inefficienct... would be nice
-                #           to do this with a one or two PUTs to the tags/contributions collections
-                for id,bv of @wall.balloonViews
-                    continue if bv is this
-                    
-                    if bv.model.moved
-                        pos = bv.model.get('pos')
-                        console.log "#{id}: saving changed pos", pos
-                        bv.model.save {pos: pos}, {patch: true}
-                        bv.model.moved = false
+
+        @$el
+            .on 'drag', (ev, ui) =>
+                @renderConnectors() if @renderConnectors?
 
         @draggable = true
 
-    # Sets .left, .top, .width, and .height on this object, based on data from the DOM.
-    # The DOM lookup is expensive, so we try not to do it unless necessary — especially in collision detection.
-    # Call this whenever the view's dimensions or position changes!
-    cachePositionAndBounds: ->
-        @width = @$el.outerWidth()
-        @height = @$el.outerHeight()
-        pos = @$el.position()
-        @left = pos.left
-        @top = pos.top
-        @right = pos.left + @width
-        @bottom = pos.top + @height
 
 class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
     tagName: 'article'
@@ -136,9 +135,15 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
         super()
 
         @model.on 'change:published', =>
-            @cachePositionAndBounds() # publishing changes visiblity, so we need to recache
             if @model.get('published')
                 @$el.addClass('new')
+
+        @model.on 'change:tags', =>
+            # for tagRel in @get('tags')
+            #     tagView = Sail.app.wall.ballonViews[tagRel.id]
+            #     if tagView?
+            #         tagView.renderConnectors()
+            @renderConnectors()
 
     events:
         # 'mousedown': (ev) -> @moveToTop()
@@ -157,10 +162,10 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
     #     # make this View accessible from the element
     #     @$el.data('view', @)
 
-    makeDraggable: =>
-        super()
-        @$el.on 'drag', (ev, ui) =>
-            @renderConnectors()
+    # makeDraggable: =>
+    #     super()
+    #     @$el.on 'drag', (ev, ui) =>
+    #         @renderConnectors()
         
     processContributionByType: =>
         if (@ballonContributionType is @balloonContributionTypes.analysis)
@@ -241,7 +246,9 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
         return this # return this for chaining
 
     renderConnectors: =>
-        return if not @model.has('tags') or _.isEmpty(@model.get('tags'))
+        return if not @model.has('tags') or
+            _.isEmpty(@model.get('tags')) or
+            not @$el.is(':visible')
 
         for tag in @model.get('tags')
             tagId = tag.id.toLowerCase()
@@ -256,18 +263,15 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
             connector = CK.Smartboard.View.findOrCreate @wall.$el, "##{connectorId}",
                 "<div class='connector' id='#{connectorId}'></div>"
 
-            x1 = @left + @width/2
-            y1 = @top + @height/2
-            x2 = tagView.left + tagView.width/2
-            y2 = tagView.top + tagView.height/2
+            x1 = @left + (@width/2)
+            y1 = @top + (@height/2)
+            x2 = tagView.left + (tagView.width/2)
+            y2 = tagView.top + (tagView.height/2)
 
             connectorLength = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2))
 
             connectorTransform =
                 "rotate(" + ((Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI) ) + "deg)"
-
-            # TODO: for better performance, during collision, we might need to delay changing
-            #       the css until after collision step is done
 
             connector.css
                 'top': "#{y1}px"
@@ -643,17 +647,17 @@ class CK.Smartboard.View.TagBalloon extends CK.Smartboard.View.Balloon
                 console.log('clicked tag..')
                 # do click handler stuff here...
 
-    makeDraggable: =>
-        super()
-        @$el.on 'drag', (ev, ui) =>
-            @renderConnectors()
+    # makeDraggable: =>
+    #     super()
+    #     @$el.on 'drag', (ev, ui) =>
+    #         @renderConnectors()
 
     renderConnectors: =>
         taggedContributionViews = _.filter @wall.balloonViews, (bv) =>
-                bv.model instanceof CK.Model.Contribution and
-                    @model.id in _.map(_.pluck(bv.model.get('tags'), 'id'), (id) -> id.toLowerCase())
-            for cv in taggedContributionViews
-                cv.renderConnectors()
+            bv.model instanceof CK.Model.Contribution and bv.model.hasTag(@model)
+        
+        for cv in taggedContributionViews
+            cv.renderConnectors()
 
     render: =>
         super()
@@ -670,5 +674,7 @@ class CK.Smartboard.View.TagBalloon extends CK.Smartboard.View.Balloon
             @$el.removeClass('pinned')
 
         @$el.show()
+
+        @renderConnectors()
 
         return this # return this for chaining
