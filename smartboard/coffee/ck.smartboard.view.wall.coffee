@@ -8,7 +8,6 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
 
     events:
         'click #add-tag-opener': (ev) ->
-            return # temporarily disabled for April 8 run
             addTagContainer = @$el.find('#add-tag-container')
             addTagContainer.toggleClass('opened')
             if addTagContainer.hasClass('opened')
@@ -225,7 +224,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             @$el.data('phase', phase)
 
         # temporarily disabled for April 8 run
-        jQuery("#go-tagging, #go-propose, #go-interpret, #add-tag-container").css
+        jQuery("#go-tagging, #go-propose, #go-interpret").css
             opacity: 0.4
 
         paused = @runState.get('paused')
