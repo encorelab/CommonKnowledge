@@ -431,6 +431,8 @@
 
     function Balloon() {
       this.render = __bind(this.render, this);
+
+      this.moveToTop = __bind(this.moveToTop, this);
       return Balloon.__super__.constructor.apply(this, arguments);
     }
 
@@ -534,6 +536,15 @@
       });
     };
 
+    Balloon.prototype.moveToTop = function() {
+      var maxZ;
+      maxZ = _.max(jQuery('.balloon').map(function() {
+        return parseInt(jQuery(this).zIndex()) + 1;
+      }));
+      this.$el.zIndex(maxZ);
+      return this.model.set('z-index', maxZ);
+    };
+
     Balloon.prototype.render = function() {
       var pos;
       if (!this.draggable) {
@@ -548,7 +559,10 @@
       }
       if (this.$el.is(':visible') && this.model.hasChanged('pos')) {
         pos = this.model.get('pos');
-        return this.pos = pos;
+        this.pos = pos;
+      }
+      if (this.model.has('z-index')) {
+        return this.$el.zIndex(this.model.get('z-index'));
       }
     };
 
@@ -556,9 +570,11 @@
       var _this = this;
       this.$el.draggable({
         distance: 25,
-        containment: '#wall',
-        stack: '.balloon'
+        containment: '#wall'
       }).css('position', 'absolute');
+      this.$el.on('dragstart', function(ev, ui) {
+        return _this.moveToTop();
+      });
       this.$el.on('dragstop', function(ev, ui) {
         _this.$el.addClass('just-dragged');
         return _this.model.save({
@@ -641,10 +657,11 @@
       'click': function(ev) {
         jQuery('.contribution').not("#" + this.model.id);
         if (this.$el.hasClass('just-dragged')) {
-          return this.$el.removeClass('just-dragged');
+          this.$el.removeClass('just-dragged');
         } else {
-          return this.$el.toggleClass('opened');
+          this.$el.toggleClass('opened');
         }
+        return this.moveToTop();
       }
     };
 
@@ -734,14 +751,16 @@
         y2 = tagView.top + (tagView.height / 2);
         connectorLength = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
         connectorTransform = "rotate(" + (Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI) + "deg)";
-        _results.push(connector.css({
+        connector.css({
           'top': "" + y1 + "px",
           'left': "" + x1 + "px",
           'width': "" + connectorLength + "px",
           '-webkit-transform': connectorTransform,
           '-moz-transform': connectorTransform,
           'transform': connectorTransform
-        }));
+        });
+        connector.addClass("connects-" + this.model.id);
+        _results.push(connector.addClass("connects-" + tag.id));
       }
       return _results;
     };
@@ -839,10 +858,11 @@
         var $el;
         $el = jQuery(ev.target);
         if ($el.hasClass('just-dragged')) {
-          return $el.removeClass('just-dragged');
+          $el.removeClass('just-dragged');
         } else {
-          return console.log('clicked tag..');
+          console.log('clicked tag..');
         }
+        return TagBalloon.moveToTop();
       }
     };
 

@@ -1,6 +1,5 @@
 class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
 
-
     initialize: ->
         super()
 
@@ -69,10 +68,16 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
 
         @model.save(pos: {left: left, top: top})
 
-    # moveToTop: =>
-    #     maxZ = _.max jQuery('.balloon').map ->
-    #         parseInt(jQuery(this).zIndex()) + 1
-    #     @$el.zIndex maxZ
+    moveToTop: =>
+        maxZ = _.max jQuery('.balloon').map ->
+            parseInt(jQuery(this).zIndex()) + 1
+        
+        @$el.zIndex maxZ
+
+        @model.set 'z-index', maxZ
+
+        # this would move all connectors up too, but currently disabled
+        #jQuery(".connects-#{@model.id}").zIndex maxZ - 1
 
     render: =>
         @makeDraggable() if not @draggable
@@ -87,23 +92,27 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
             pos = @model.get('pos')
             @pos = pos
 
+        if @model.has('z-index')
+            @$el.zIndex @model.get('z-index')
+
     makeDraggable: ->
         @$el
             .draggable
                 distance: 25 # how far it needs to be moved before it's considered a drag
                 containment: '#wall'
-                stack: '.balloon'
+                #stack: '.balloon'
             .css 'position', 'absolute' # draggable makes position relative, but we need absolute
 
-        @$el
-            .on 'dragstop', (ev, ui) =>
-                @$el.addClass 'just-dragged' # prevent 'click' handlers from doing their thing
+        @$el.on 'dragstart', (ev, ui) =>
+            @moveToTop()
 
-                @model.save {pos: ui.position}, {patch: true}
+        @$el.on 'dragstop', (ev, ui) =>
+            @$el.addClass 'just-dragged' # prevent 'click' handlers from doing their thing
 
-        @$el
-            .on 'drag', (ev, ui) =>
-                @renderConnectors() if @renderConnectors?
+            @model.save {pos: ui.position}, {patch: true}
+
+        @$el.on 'drag', (ev, ui) =>
+            @renderConnectors() if @renderConnectors?
 
         @draggable = true
 
@@ -155,6 +164,8 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
                 @$el.removeClass('just-dragged')
             else
                 @$el.toggleClass('opened')
+
+            @moveToTop()
                 
                 #@processContributionByType()
 
@@ -280,6 +291,9 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
                 '-webkit-transform': connectorTransform
                 '-moz-transform': connectorTransform
                 'transform': connectorTransform
+
+            connector.addClass "connects-#{@model.id}"
+            connector.addClass "connects-#{tag.id}"
 
     renderTags: =>
         # tagsContainer = @findOrCreate '.tags',
@@ -646,6 +660,8 @@ class CK.Smartboard.View.TagBalloon extends CK.Smartboard.View.Balloon
             else
                 console.log('clicked tag..')
                 # do click handler stuff here...
+
+            @moveToTop()
 
     # makeDraggable: =>
     #     super()
