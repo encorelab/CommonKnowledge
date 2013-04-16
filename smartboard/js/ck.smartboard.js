@@ -16,7 +16,7 @@
 
       this.createNewTag = __bind(this.createNewTag, this);
 
-      this.getColourTagClassName = __bind(this.getColourTagClassName, this);
+      this.getColorTagClassName = __bind(this.getColorTagClassName, this);
 
       this.authenticate = __bind(this.authenticate, this);
 
@@ -72,22 +72,29 @@
       }
     };
 
-    Smartboard.prototype.getColourTagClassName = function() {
+    Smartboard.prototype.getColorTagClassName = function() {
+      this.tagCount = this.tags.length;
       if (this.tagCount > 4) {
         console.warn('Adding more tags then you have tag classes');
       }
-      return 'group' + (++this.tagCount) + '-color';
+      return 'group' + this.tagCount + '-color';
     };
 
     Smartboard.prototype.createNewTag = function(name) {
-      var colourClassName, tag;
-      colourClassName = this.getColourTagClassName();
-      tag = new CK.Model.Tag({
-        name: name,
-        created_at: new Date()
-      });
-      tag.wake(this.config.wakeful.url);
-      return this.tags.add(tag);
+      var colorClassName, tag;
+      if (this.tags.length < 4) {
+        tag = new CK.Model.Tag({
+          name: name,
+          created_at: new Date()
+        });
+        tag.wake(this.config.wakeful.url);
+        this.tags.add(tag);
+        colorClassName = this.getColorTagClassName();
+        tag.set('colorClass', colorClassName);
+        return tag.save();
+      } else {
+        return console.warn('Adding more than 4 tags is leading to problems. Button should be disabled ...');
+      }
     };
 
     Smartboard.prototype.pause = function() {

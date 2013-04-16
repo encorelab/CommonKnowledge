@@ -5,12 +5,18 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
 
     events:
         'click #add-tag-opener': (ev) ->
-            addTagContainer = @$el.find('#add-tag-container')
-            addTagContainer.toggleClass('opened')
-            if addTagContainer.hasClass('opened')
-                setTimeout(=>
-                    @$el.find('#new-tag').focus()
-                , 1000)
+            # We only allow a maximum of 4 tags
+            if (@tags.length < 4)
+                addTagContainer = @$el.find('#add-tag-container')
+                addTagContainer.toggleClass('opened')
+                if addTagContainer.hasClass('opened')
+                    setTimeout(=>
+                        @$el.find('#new-tag').focus()
+                    , 1000)
+            else
+                # 4 tags exists, so we change opacity of button and do nothing more
+                jQuery("#add-tag-opener").css
+                    opacity: 0.4
 
         'click #submit-new-tag': (ev) -> @submitNewTag()
 
@@ -138,6 +144,10 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
         # temporarily disabled for April 8 run
         jQuery("#go-propose, #go-interpret").css
             opacity: 0.4
+
+        if (@tags.length >= 4)
+            jQuery("#add-tag-opener").css
+                opacity: 0.4
 
         paused = @runState.get('paused')
         if paused isnt @$el.data('paused')
