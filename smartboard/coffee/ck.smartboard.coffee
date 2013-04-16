@@ -41,24 +41,29 @@ class CK.Smartboard extends Sail.App
         else
             Rollcall.Authenticator.requestRun()
 
-    getColourTagClassName: =>
+    getColorTagClassName: =>
+        @tagCount = @tags.length
         if @tagCount > 4
             console.warn 'Adding more tags then you have tag classes'
 
-        'group' + (++@tagCount) + '-color'
+        'group' + (@tagCount) + '-color'
 
     # initializes and persists a new CK.Model.Tag with the given name
     createNewTag: (name) =>
-        colourClassName = @getColourTagClassName()
+        if @tags.length < 4
+            tag = new CK.Model.Tag
+                name: name
+                created_at: new Date()
 
-        tag = new CK.Model.Tag
-            name: name
-            created_at: new Date()
+            tag.wake @config.wakeful.url
 
-        tag.wake @config.wakeful.url
-
-        @tags.add(tag)
-        #tag.save() # delay saving until we're positioned
+            @tags.add(tag)
+            #tag.save() # delay saving until we're positioned
+            colorClassName = @getColorTagClassName()
+            tag.set('colorClass', colorClassName)
+            tag.save()
+        else
+            console.warn 'Adding more than 4 tags is leading to problems. Button should be disabled ...'
 
     pause: =>
         CK.setState('RUN', {paused: true})

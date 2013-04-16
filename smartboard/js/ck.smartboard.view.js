@@ -90,12 +90,18 @@
       'click #add-tag-opener': function(ev) {
         var addTagContainer,
           _this = this;
-        addTagContainer = this.$el.find('#add-tag-container');
-        addTagContainer.toggleClass('opened');
-        if (addTagContainer.hasClass('opened')) {
-          return setTimeout(function() {
-            return _this.$el.find('#new-tag').focus();
-          }, 1000);
+        if (this.tags.length < 4) {
+          addTagContainer = this.$el.find('#add-tag-container');
+          addTagContainer.toggleClass('opened');
+          if (addTagContainer.hasClass('opened')) {
+            return setTimeout(function() {
+              return _this.$el.find('#new-tag').focus();
+            }, 1000);
+          }
+        } else {
+          return jQuery("#add-tag-opener").css({
+            opacity: 0.4
+          });
         }
       },
       'click #submit-new-tag': function(ev) {
@@ -231,6 +237,11 @@
       jQuery("#go-propose, #go-interpret").css({
         opacity: 0.4
       });
+      if (this.tags.length >= 4) {
+        jQuery("#add-tag-opener").css({
+          opacity: 0.4
+        });
+      }
       paused = this.runState.get('paused');
       if (paused !== this.$el.data('paused')) {
         if (paused) {
