@@ -3,9 +3,6 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
     id: 'wall'
     wordCloudShowable: true
 
-    # determines how deep collision detection will be checked (from balloons hitting other balloons hitting other balloons...)
-    maxCollisionRecursion: 1
-
     events:
         'click #add-tag-opener': (ev) ->
             #return # temporarily disabled for April 8 run
@@ -66,13 +63,19 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
 
         @balloonViews = {}
 
-        @tags.on 'add', (t) =>
-            @addBalloon t, CK.Smartboard.View.TagBalloon, @balloonViews
-        @tags.each (t) => @addBalloon t, CK.Smartboard.View.TagBalloon, @balloonViews
-
         @contributions.on 'add', (c) =>
             @addBalloon c, CK.Smartboard.View.ContributionBalloon, @balloonViews
-        @contributions.each (c) => @addBalloon c, CK.Smartboard.View.ContributionBalloon, @balloonViews
+        @contributions.each (c) =>
+            @addBalloon c, CK.Smartboard.View.ContributionBalloon, @balloonViews
+
+        @tags.on 'add', (t) =>
+            @addBalloon t, CK.Smartboard.View.TagBalloon, @balloonViews
+        @tags.each (t) =>
+            @addBalloon t, CK.Smartboard.View.TagBalloon, @balloonViews
+
+        # need to force-render all connectors after we're done adding all balloons
+        @tags.each (t) =>
+            @balloonViews[t.id].renderConnectors()
 
         # updating = false
         # updateAllPositions = =>
@@ -98,98 +101,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
         bv.render()
         @$el.append bv.$el
 
-        # kind of an awkward place to call this, but this needs to happen after the view has been
-        # rendered and after it's been added to the DOM
-        bv.cachePositionAndBounds()
-        bv.renderConnectors() if bv.renderConnectors?
-
         balloonList[doc.id] = bv
-
-    # check collisions for the given balloon (given ballon exerts force and gets no pushback)..
-    # any other balloon that the given balloon collides with will also be checked for collision
-    collideBalloon: (balloon, recursionLevel = 0, ignoreBalloons = []) => # `balloon` should be a BallonView, `recursionLevel` is used internally for recursive collisions
-        b = balloon
-
-        if recursionLevel is 0
-            @_boundsWidth = @$el.innerWidth()
-            @_boundsHeight = @$el.innerHeight()
-
-            for id,o of @balloonViews
-                o.cachePositionAndBounds()
-                o.collided = false
-
-        for id,o of @balloonViews
-            continue if o is b # don't collide with self
-            continue if o in ignoreBalloons # don't ignore with balloons we've already collided with
-
-            rightOverlap  = b.right - o.left
-            leftOverlap   = o.right - b.left
-            topOverlap    = b.bottom - o.top
-            bottomOverlap = o.bottom - b.top
-
-            # if recursionLevel > 0
-            #     overlapTolerance = 1 - (recursionLevel / (@maxCollisionRecursion+1))
-            # else
-            #     overlapTolerance = 1
-            
-
-            if rightOverlap > 0 and leftOverlap > 0 and topOverlap > 0 and bottomOverlap > 0
-                yOverlap = Math.min(topOverlap, bottomOverlap)
-                xOverlap = Math.min(leftOverlap, rightOverlap)
-                #console.log b.model.get('name'), o.model.get('name'), topOverlap, bottomOverlap, leftOverlap, rightOverlap
-
-                if yOverlap < xOverlap
-                    yNudge = yOverlap #(yOverlap/2)
-                    if b.top < o.top
-                        o.top += yNudge
-                        o.bottom += yNudge
-                    else
-                        o.top -= yNudge
-                        o.bottom -= yNudge
-                else
-                    xNudge = xOverlap #(xOverlap/2)
-                    if b.left < o.left
-                        o.left += xNudge
-                        o.right += xNudge
-                    else
-                        o.left -= xNudge
-                        o.right -= xNudge
-
-                o.collided = true
-
-                if recursionLevel < @maxCollisionRecursion
-                    ignoreBalloons.push(b)
-                    @collideBalloon(o, recursionLevel + 1, ignoreBalloons)
-
-        if recursionLevel is 0
-            # this runs after we're done the entire collision chain
-
-            for id,o of @balloonViews
-
-                if o.collided
-                
-                    if o.bottom > @_boundsHeight
-                        o.top = @_boundsHeight - o.height
-                    else if o.top < 0
-                        o.top = 0
-
-                    o.bottom = o.top + o.height
-
-                    if o.right > @_boundsWidth
-                        o.left = @_boundsWidth - o.width
-                    else if o.left < 0
-                        o.left = 0
-
-                    o.right = o.left + o.width
-
-                    pos = {left: o.left, top: o.top}
-                    #console.log "updating pos on model for #{o.model.id}"
-                    o.model.set('pos', pos)
-                    o.model.moved = true
-
-                if o.renderConnectors? and
-                        (o.collided or o.model instanceof CK.Model.Tag)
-                    o.renderConnectors()
 
     render: =>
         phase = @runState.get('phase')

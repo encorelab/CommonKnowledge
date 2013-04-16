@@ -74,8 +74,7 @@
 (function() {
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   CK.Smartboard.View.Wall = (function(_super) {
 
@@ -86,8 +85,6 @@
     Wall.prototype.id = 'wall';
 
     Wall.prototype.wordCloudShowable = true;
-
-    Wall.prototype.maxCollisionRecursion = 1;
 
     Wall.prototype.events = {
       'click #add-tag-opener': function(ev) {
@@ -163,8 +160,6 @@
 
       this.render = __bind(this.render, this);
 
-      this.collideBalloon = __bind(this.collideBalloon, this);
-
       this.addBalloon = __bind(this.addBalloon, this);
       this.runState = options.runState;
       this.tags = options.tags;
@@ -177,17 +172,20 @@
       Wall.__super__.initialize.call(this);
       this.runState.on('change', this.render);
       this.balloonViews = {};
+      this.contributions.on('add', function(c) {
+        return _this.addBalloon(c, CK.Smartboard.View.ContributionBalloon, _this.balloonViews);
+      });
+      this.contributions.each(function(c) {
+        return _this.addBalloon(c, CK.Smartboard.View.ContributionBalloon, _this.balloonViews);
+      });
       this.tags.on('add', function(t) {
         return _this.addBalloon(t, CK.Smartboard.View.TagBalloon, _this.balloonViews);
       });
       this.tags.each(function(t) {
         return _this.addBalloon(t, CK.Smartboard.View.TagBalloon, _this.balloonViews);
       });
-      this.contributions.on('add', function(c) {
-        return _this.addBalloon(c, CK.Smartboard.View.ContributionBalloon, _this.balloonViews);
-      });
-      return this.contributions.each(function(c) {
-        return _this.addBalloon(c, CK.Smartboard.View.ContributionBalloon, _this.balloonViews);
+      return this.tags.each(function(t) {
+        return _this.balloonViews[t.id].renderConnectors();
       });
     };
 
@@ -200,107 +198,7 @@
       bv.wall = this;
       bv.render();
       this.$el.append(bv.$el);
-      bv.cachePositionAndBounds();
-      if (bv.renderConnectors != null) {
-        bv.renderConnectors();
-      }
       return balloonList[doc.id] = bv;
-    };
-
-    Wall.prototype.collideBalloon = function(balloon, recursionLevel, ignoreBalloons) {
-      var b, bottomOverlap, id, leftOverlap, o, pos, rightOverlap, topOverlap, xNudge, xOverlap, yNudge, yOverlap, _ref, _ref1, _ref2, _results;
-      if (recursionLevel == null) {
-        recursionLevel = 0;
-      }
-      if (ignoreBalloons == null) {
-        ignoreBalloons = [];
-      }
-      b = balloon;
-      if (recursionLevel === 0) {
-        this._boundsWidth = this.$el.innerWidth();
-        this._boundsHeight = this.$el.innerHeight();
-        _ref = this.balloonViews;
-        for (id in _ref) {
-          o = _ref[id];
-          o.cachePositionAndBounds();
-          o.collided = false;
-        }
-      }
-      _ref1 = this.balloonViews;
-      for (id in _ref1) {
-        o = _ref1[id];
-        if (o === b) {
-          continue;
-        }
-        if (__indexOf.call(ignoreBalloons, o) >= 0) {
-          continue;
-        }
-        rightOverlap = b.right - o.left;
-        leftOverlap = o.right - b.left;
-        topOverlap = b.bottom - o.top;
-        bottomOverlap = o.bottom - b.top;
-        if (rightOverlap > 0 && leftOverlap > 0 && topOverlap > 0 && bottomOverlap > 0) {
-          yOverlap = Math.min(topOverlap, bottomOverlap);
-          xOverlap = Math.min(leftOverlap, rightOverlap);
-          if (yOverlap < xOverlap) {
-            yNudge = yOverlap;
-            if (b.top < o.top) {
-              o.top += yNudge;
-              o.bottom += yNudge;
-            } else {
-              o.top -= yNudge;
-              o.bottom -= yNudge;
-            }
-          } else {
-            xNudge = xOverlap;
-            if (b.left < o.left) {
-              o.left += xNudge;
-              o.right += xNudge;
-            } else {
-              o.left -= xNudge;
-              o.right -= xNudge;
-            }
-          }
-          o.collided = true;
-          if (recursionLevel < this.maxCollisionRecursion) {
-            ignoreBalloons.push(b);
-            this.collideBalloon(o, recursionLevel + 1, ignoreBalloons);
-          }
-        }
-      }
-      if (recursionLevel === 0) {
-        _ref2 = this.balloonViews;
-        _results = [];
-        for (id in _ref2) {
-          o = _ref2[id];
-          if (o.collided) {
-            if (o.bottom > this._boundsHeight) {
-              o.top = this._boundsHeight - o.height;
-            } else if (o.top < 0) {
-              o.top = 0;
-            }
-            o.bottom = o.top + o.height;
-            if (o.right > this._boundsWidth) {
-              o.left = this._boundsWidth - o.width;
-            } else if (o.left < 0) {
-              o.left = 0;
-            }
-            o.right = o.left + o.width;
-            pos = {
-              left: o.left,
-              top: o.top
-            };
-            o.model.set('pos', pos);
-            o.model.moved = true;
-          }
-          if ((o.renderConnectors != null) && (o.collided || o.model instanceof CK.Model.Tag)) {
-            _results.push(o.renderConnectors());
-          } else {
-            _results.push(void 0);
-          }
-        }
-        return _results;
-      }
     };
 
     Wall.prototype.render = function() {
@@ -525,8 +423,7 @@
 (function() {
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   CK.Smartboard.View.Balloon = (function(_super) {
 
@@ -534,6 +431,8 @@
 
     function Balloon() {
       this.render = __bind(this.render, this);
+
+      this.moveToTop = __bind(this.moveToTop, this);
       return Balloon.__super__.constructor.apply(this, arguments);
     }
 
@@ -541,13 +440,64 @@
       var alreadyPositioned, pos,
         _this = this;
       Balloon.__super__.initialize.call(this);
-      this.model.on('change:pos', function() {
-        var pos;
-        pos = _this.model.get('pos');
-        _this.left = pos.left;
-        _this.top = pos.top;
-        _this.right = pos.left + _this.width;
-        return _this.bottom = pos.top + _this.height;
+      Object.defineProperty(this, 'pos', {
+        get: function() {
+          return _this.$el.position();
+        },
+        set: function(pos) {
+          return _this.$el.css({
+            left: pos.left + 'px',
+            top: pos.top + 'px'
+          });
+        }
+      });
+      Object.defineProperty(this, 'left', {
+        get: function() {
+          return _this.pos.left;
+        },
+        set: function(x) {
+          return _this.$el.css('left', x + 'px');
+        }
+      });
+      Object.defineProperty(this, 'top', {
+        get: function() {
+          return _this.pos.top;
+        },
+        set: function(y) {
+          return _this.$el.css('top', y + 'px');
+        }
+      });
+      Object.defineProperty(this, 'width', {
+        get: function() {
+          return _this.$el.outerWidth();
+        },
+        set: function(w) {
+          return _this.$el.css('width', w + 'px');
+        }
+      });
+      Object.defineProperty(this, 'height', {
+        get: function() {
+          return _this.$el.outerHeight();
+        },
+        set: function(h) {
+          return _this.$el.css('height', h + 'px');
+        }
+      });
+      Object.defineProperty(this, 'right', {
+        get: function() {
+          return _this.left + _this.width;
+        },
+        set: function(x) {
+          return _this.$el.css('left', (x - _this.width) + 'px');
+        }
+      });
+      Object.defineProperty(this, 'bottom', {
+        get: function() {
+          return _this.top + _this.height;
+        },
+        set: function(y) {
+          return _this.$el.css('top', (y - _this.height) + 'px');
+        }
       });
       this.model.on('change', function() {
         if (_this.wall != null) {
@@ -559,10 +509,7 @@
         this.$el.hide();
         if (this.model.has('pos')) {
           pos = this.model.get('pos');
-          this.$el.css({
-            left: pos.left + 'px',
-            top: pos.top + 'px'
-          });
+          this.pos = pos;
         } else {
           console.log("autopositioning", this);
           this.autoPosition();
@@ -577,17 +524,25 @@
       wallHeight = jQuery('#wall').height();
       left = Math.random() * (wallWidth - this.$el.outerWidth());
       top = Math.random() * (wallHeight - this.$el.outerHeight());
-      this.$el.css({
-        left: left + 'px',
-        top: top + 'px'
-      });
-      this.cachePositionAndBounds();
+      this.pos = {
+        left: left,
+        top: top
+      };
       return this.model.save({
         pos: {
           left: left,
           top: top
         }
       });
+    };
+
+    Balloon.prototype.moveToTop = function() {
+      var maxZ;
+      maxZ = _.max(jQuery('.balloon').map(function() {
+        return parseInt(jQuery(this).zIndex()) + 1;
+      }));
+      this.$el.zIndex(maxZ);
+      return this.model.set('z-index', maxZ);
     };
 
     Balloon.prototype.render = function() {
@@ -604,10 +559,10 @@
       }
       if (this.$el.is(':visible') && this.model.hasChanged('pos')) {
         pos = this.model.get('pos');
-        return this.$el.css({
-          left: pos.left + 'px',
-          top: pos.top + 'px'
-        });
+        this.pos = pos;
+      }
+      if (this.model.has('z-index')) {
+        return this.$el.zIndex(this.model.get('z-index'));
       }
     };
 
@@ -615,55 +570,25 @@
       var _this = this;
       this.$el.draggable({
         distance: 25,
-        containment: '#wall',
-        stack: '.balloon',
-        obstacle: ".balloon:not(#" + (this.$el.attr('id')) + ")"
+        containment: '#wall'
       }).css('position', 'absolute');
-      this.$el.on('drag', function(ev, ui) {
-        _this.wall.collideBalloon(_this);
-        return _this.model.moved = true;
-      }).on('dragstop', function(ev, ui) {
-        var bv, id, pos, _ref, _results;
+      this.$el.on('dragstart', function(ev, ui) {
+        return _this.moveToTop();
+      });
+      this.$el.on('dragstop', function(ev, ui) {
         _this.$el.addClass('just-dragged');
-        _this.model.save({
+        return _this.model.save({
           pos: ui.position
         }, {
           patch: true
         });
-        _ref = _this.wall.balloonViews;
-        _results = [];
-        for (id in _ref) {
-          bv = _ref[id];
-          if (bv === _this) {
-            continue;
-          }
-          if (bv.model.moved) {
-            pos = bv.model.get('pos');
-            console.log("" + id + ": saving changed pos", pos);
-            bv.model.save({
-              pos: pos
-            }, {
-              patch: true
-            });
-            _results.push(bv.model.moved = false);
-          } else {
-            _results.push(void 0);
-          }
+      });
+      this.$el.on('drag', function(ev, ui) {
+        if (_this.renderConnectors != null) {
+          return _this.renderConnectors();
         }
-        return _results;
       });
       return this.draggable = true;
-    };
-
-    Balloon.prototype.cachePositionAndBounds = function() {
-      var pos;
-      this.width = this.$el.outerWidth();
-      this.height = this.$el.outerHeight();
-      pos = this.$el.position();
-      this.left = pos.left;
-      this.top = pos.top;
-      this.right = pos.left + this.width;
-      return this.bottom = pos.top + this.height;
     };
 
     return Balloon;
@@ -701,8 +626,6 @@
 
       this.processContributionByType = __bind(this.processContributionByType, this);
 
-      this.makeDraggable = __bind(this.makeDraggable, this);
-
       this.setColorClass = __bind(this.setColorClass, this);
 
       this.id = __bind(this.id, this);
@@ -720,11 +643,13 @@
     ContributionBalloon.prototype.initialize = function() {
       var _this = this;
       ContributionBalloon.__super__.initialize.call(this);
-      return this.model.on('change:published', function() {
-        _this.cachePositionAndBounds();
+      this.model.on('change:published', function() {
         if (_this.model.get('published')) {
           return _this.$el.addClass('new');
         }
+      });
+      return this.model.on('change:tags', function() {
+        return _this.renderConnectors();
       });
     };
 
@@ -732,19 +657,12 @@
       'click': function(ev) {
         jQuery('.contribution').not("#" + this.model.id);
         if (this.$el.hasClass('just-dragged')) {
-          return this.$el.removeClass('just-dragged');
+          this.$el.removeClass('just-dragged');
         } else {
-          return this.$el.toggleClass('opened');
+          this.$el.toggleClass('opened');
         }
+        return this.moveToTop();
       }
-    };
-
-    ContributionBalloon.prototype.makeDraggable = function() {
-      var _this = this;
-      ContributionBalloon.__super__.makeDraggable.call(this);
-      return this.$el.on('drag', function(ev, ui) {
-        return _this.renderConnectors();
-      });
     };
 
     ContributionBalloon.prototype.processContributionByType = function() {
@@ -813,7 +731,7 @@
 
     ContributionBalloon.prototype.renderConnectors = function() {
       var connector, connectorId, connectorLength, connectorTransform, tag, tagId, tagView, x1, x2, y1, y2, _i, _len, _ref, _results;
-      if (!this.model.has('tags') || _.isEmpty(this.model.get('tags'))) {
+      if (!this.model.has('tags') || _.isEmpty(this.model.get('tags')) || !this.$el.is(':visible')) {
         return;
       }
       _ref = this.model.get('tags');
@@ -827,20 +745,22 @@
         }
         connectorId = this.model.id + "-" + tagId;
         connector = CK.Smartboard.View.findOrCreate(this.wall.$el, "#" + connectorId, "<div class='connector' id='" + connectorId + "'></div>");
-        x1 = this.left + this.width / 2;
-        y1 = this.top + this.height / 2;
-        x2 = tagView.left + tagView.width / 2;
-        y2 = tagView.top + tagView.height / 2;
+        x1 = this.left + (this.width / 2);
+        y1 = this.top + (this.height / 2);
+        x2 = tagView.left + (tagView.width / 2);
+        y2 = tagView.top + (tagView.height / 2);
         connectorLength = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
         connectorTransform = "rotate(" + (Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI) + "deg)";
-        _results.push(connector.css({
+        connector.css({
           'top': "" + y1 + "px",
           'left': "" + x1 + "px",
           'width': "" + connectorLength + "px",
           '-webkit-transform': connectorTransform,
           '-moz-transform': connectorTransform,
           'transform': connectorTransform
-        }));
+        });
+        connector.addClass("connects-" + this.model.id);
+        _results.push(connector.addClass("connects-" + tag.id));
       }
       return _results;
     };
@@ -910,8 +830,6 @@
 
       this.renderConnectors = __bind(this.renderConnectors, this);
 
-      this.makeDraggable = __bind(this.makeDraggable, this);
-
       this.setColorClass = __bind(this.setColorClass, this);
 
       this.id = __bind(this.id, this);
@@ -940,29 +858,19 @@
         var $el;
         $el = jQuery(ev.target);
         if ($el.hasClass('just-dragged')) {
-          return $el.removeClass('just-dragged');
+          $el.removeClass('just-dragged');
         } else {
-          return console.log('clicked tag..');
+          console.log('clicked tag..');
         }
+        return TagBalloon.moveToTop();
       }
-    };
-
-    TagBalloon.prototype.makeDraggable = function() {
-      var _this = this;
-      TagBalloon.__super__.makeDraggable.call(this);
-      return this.$el.on('drag', function(ev, ui) {
-        return _this.renderConnectors();
-      });
     };
 
     TagBalloon.prototype.renderConnectors = function() {
       var cv, taggedContributionViews, _i, _len, _results,
         _this = this;
       taggedContributionViews = _.filter(this.wall.balloonViews, function(bv) {
-        var _ref;
-        return bv.model instanceof CK.Model.Contribution && (_ref = _this.model.id, __indexOf.call(_.map(_.pluck(bv.model.get('tags'), 'id'), function(id) {
-          return id.toLowerCase();
-        }), _ref) >= 0);
+        return bv.model instanceof CK.Model.Contribution && bv.model.hasTag(_this.model);
       });
       _results = [];
       for (_i = 0, _len = taggedContributionViews.length; _i < _len; _i++) {
@@ -984,6 +892,7 @@
         this.$el.removeClass('pinned');
       }
       this.$el.show();
+      this.renderConnectors();
       return this;
     };
 
