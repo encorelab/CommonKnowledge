@@ -504,8 +504,7 @@ CK.Mobile = function() {
     jQuery('#bucket-tagging-btn-container .active').removeClass('active');
   };
 
-// CHECK THAT LOCK/UNLOCK STILL WORKS ON REFRESH - definitely still an issue there
-// redo the bucket tagging section so that it works for 4/5 max
+
 
 
   var proposalsList = null;       // getting late the night before
