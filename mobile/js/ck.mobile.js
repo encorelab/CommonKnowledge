@@ -86,17 +86,6 @@ CK.Mobile = function() {
   };
 
   app.updateRunState = function() {
-    // checking paused status
-    if (app.runState.get('paused') === true) {
-      console.log('Locking screen...');
-      jQuery('#lock-screen').removeClass('hide');
-      jQuery('.row').addClass('disabled');      
-    } else if (app.runState.get('paused') === false) {
-      console.log('Unlocking screen...');
-      jQuery('#lock-screen').addClass('hide');
-      jQuery('.row').removeClass('disabled');      
-    }
-
     // checking phase status
     app.hideWaitScreen();
     app.hideAll();
@@ -150,6 +139,17 @@ CK.Mobile = function() {
     } else {
       console.log("Unknown state...");
     }
+
+    // checking paused status
+    if (app.runState.get('paused') === true) {
+      console.log('Locking screen...');
+      jQuery('#lock-screen').removeClass('hide');
+      jQuery('.row').addClass('disabled');      
+    } else if (app.runState.get('paused') === false) {
+      console.log('Unlocking screen...');
+      jQuery('#lock-screen').addClass('hide');
+      jQuery('.row').removeClass('disabled');      
+    }    
   };
 
   app.updateUserState = function() {
