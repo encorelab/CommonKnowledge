@@ -36,6 +36,7 @@ CK.Mobile = function() {
   app.contributionToTagView = null;
   app.bucketedContribution = null;
   app.bucketTaggingView = null;
+  app.proposalTagListView = null;
 
   // Global vars - a lot of this stuff can go TODO
   app.synthesisFlag = false;
@@ -135,6 +136,24 @@ CK.Mobile = function() {
     } else if (p === 'exploration') {
 
     } else if (p === 'proposal') {
+      // PROPOSAL PHASE
+      console.log('Entering proposal phase...');
+      jQuery('.brand').text('Common Knowledge - Proposal');
+      // case: no previous proposalTagListView
+      if (app.proposalTagListView === null) {
+        app.proposalTagListView = new CK.Mobile.View.ProposalTagListView({
+          el: jQuery('#proposal-tag-list-screen'),
+          collection: app.tagList
+        });
+      // case: already have a proposalTagListView with attached model
+      } else {
+        // detatch that model and attach the current contrib model
+        if (typeof app.proposalTagListView.collection !== 'undefined' && app.proposalTagListView.collection !== null) {
+          app.proposalTagListView.stopListening(app.proposalTagListView.collection);
+        }
+        app.proposalTagListView.collection = app.tagList;
+      }
+      app.updateUserState();
 
     } else {
       console.log("Unknown state...");
@@ -154,29 +173,40 @@ CK.Mobile = function() {
 
   app.updateUserState = function() {
     console.log('Updating user state...');
-
-    // when in tagging phase (if the uses for this object are expanded, make this explicit with an if runState === tagging)
-    app.hideAll();
+    app.hideAll()
     app.hideWaitScreen();
-    var status = app.userState.get('tagging_status');
-    if (status === 'waiting') {
-      app.showWaitScreen();
-    } else if (status === 'assigned') {
-      jQuery('.brand').text('Common Knowledge - Tagging');
-      jQuery('#bucket-tagging-screen').removeClass('hide');
-      jQuery('#contribution-to-tag-screen').removeClass('hide');
-      app.contributionToTag(app.userState.get('contribution_to_tag'));
-    } else if (status === 'done') {
-      app.userState.set('tagging_status','done');         // going full retard here - but it works
-      app.userState.save()
-        .done(function() {
-          jQuery('.brand').text('Common Knowledge - Explore');
-          jQuery('#index-screen').removeClass('hide');
-          app.contributionListView.render();          
-        });
-    } else {
-      console.error('Unknown tagging status...');
+
+    if (app.runState.get('phase') === 'tagging') {
+      var status = app.userState.get('tagging_status');
+      if (status === 'waiting') {
+        app.showWaitScreen();
+      } else if (status === 'assigned') {
+        jQuery('.brand').text('Common Knowledge - Tagging');
+        jQuery('#bucket-tagging-screen').removeClass('hide');
+        jQuery('#contribution-to-tag-screen').removeClass('hide');
+        app.contributionToTag(app.userState.get('contribution_to_tag'));
+      } else if (status === 'done') {
+        app.userState.set('tagging_status','done');         // going full retard here - but it works
+        app.userState.save()
+          .done(function() {
+            jQuery('.brand').text('Common Knowledge - Explore');
+            jQuery('#index-screen').removeClass('hide');
+            app.contributionListView.render();          
+          });
+      } else {
+        console.error('Unknown tagging status...');
+      }
+    } else if (app.runState.get('phase') === 'proposal') {
+      if (!app.userState.get('tag_group') || app.userState.get('tag_group') === '') {
+        // if user still needs to choose a tag
+        jQuery('#proposal-tag-list-screen').removeClass('hide');
+        app.proposalTagListView.render();
+      } else {
+        // if user has already chosen a tag
+        jQuery('#proposal-screen').removeClass('hide');
+      }
     }
+
   };
 
   app.events = {
@@ -355,7 +385,7 @@ CK.Mobile = function() {
   app.saveContribution = function(view) {
     console.log("Submitting contribution...");
     Sail.app.contribution.wake(Sail.app.config.wakeful.url);
-    Sail.app.contribution.save()            //patch:true,    // does this want to stay patch?
+    Sail.app.contribution.save()            //patch:true,    // does this want to switch to patch?
       .done( function() {
         console.log("Contribution saved!");
 
@@ -380,7 +410,6 @@ CK.Mobile = function() {
   app.showDetails = function(contrib) {
     console.log('Creating a new Details...');
     var details = contrib;
-
     if (app.detailsView === null) {
       app.detailsView = new CK.Mobile.View.ContributionDetailsView({
         el: jQuery('#contribution-details'),
@@ -392,9 +421,7 @@ CK.Mobile = function() {
       }
       app.detailsView.model = details;
     }
-
     details.on('change', app.detailsView.render, app.detailsView);
-
     // have to call this manually because there are no change events later
     app.detailsView.render();
   };
@@ -415,7 +442,6 @@ CK.Mobile = function() {
       app.inputView.model = contrib;
     }
     app.inputView.$el.show('slide', {direction: 'up'});
-
     app.inputView.render();
   };
 
@@ -440,19 +466,12 @@ CK.Mobile = function() {
       app.inputView.model = app.buildOn;
     }
     app.inputView.$el.show('slide', {direction: 'up'});
-
     app.inputView.render();    
   };
 
   app.contributionToTag = function (contributionId) {
-
-
-
-    // create a new model using an existing ID (get data from backend)
-    //var contrib = new CK.Model.Contribution({_id: contributionId});
     app.bucketedContribution = Sail.app.contributionList.get(contributionId);
     app.bucketedContribution.wake(Sail.app.config.wakeful.url);
-  
     // check if view exists or not
     if (app.contributionToTagView === null) {
       // create the view, attach to DOM and hand in model
@@ -469,15 +488,8 @@ CK.Mobile = function() {
       // overwrite the model with the newly created model
       app.contributionToTagView.model = app.bucketedContribution;
     }
-
-    // if model changes or syncs render view
-    //contrib.on('change sync', app.contributionToTagView.render, app.contributionToTagView);
-    //contrib.fetch().done(function() {
-      //app.bucketedContribution = contrib;
-      //app.bucketedContribution.wake(Sail.app.config.wakeful.url);
     app.bucketTaggingView.render();
     app.contributionToTagView.render();
-    //});
   };
 
   app.saveBucketedContribution = function() {
@@ -492,17 +504,21 @@ CK.Mobile = function() {
         //console.log(jQuery(b).data('tag').get('name'));
       });
     }
-
     // save the bucketedContrib
     Sail.app.bucketedContribution.save();
-
     // set status to waiting
     Sail.app.userState.set('tagging_status','waiting');
     Sail.app.userState.save();
-
     // clear the fields (there's no real way to do this in the view without stepping on the render)
     jQuery('#bucket-tagging-btn-container .active').removeClass('active');
   };
+
+  app.chooseTagGroup = function(chosenTag, chosenTagId) {
+    console.log('User chooses tag...');
+    app.userState.set('tag_group',chosenTag);
+    app.userState.save();
+  };
+
 
 
 
@@ -694,6 +710,7 @@ CK.Mobile = function() {
     jQuery('#index-screen').addClass('hide');
     jQuery('#contribution-to-tag-screen').addClass('hide');
     jQuery('#bucket-tagging-screen').addClass('hide');
+    jQuery('#proposal-tag-list-screen').addClass('hide');
     jQuery('#proposal-screen').addClass('hide');
   };
 

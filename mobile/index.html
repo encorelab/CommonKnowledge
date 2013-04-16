@@ -149,8 +149,20 @@
             </div>            
         </div>
 
+        <!-- hidden until tablet hears event re moving to proposal -->
+        <div id="proposal-tag-list-screen" class="hide row">
+            <div id="proposal-tag-list" class="view-container">
+                <div class="container-header">
+                    <b>Choose your interest!</b>
+                </div>
+                <div id="proposal-tag-list-btn-container" class="tag-btn-group btn-group btn-group-vertical" data-toggle="buttons-checkbox">
+                    <!-- filled by self.TagListView, which needs the colors added TODO -->
+                </div>
+
+            </div>
+        </div>
+
         <div id="proposal-screen" class="row hide">
-            <!-- hidden until tablet hears event? -->
             <div id="proposal-contribution-list" class="span4 view-container bs-docs-sidebar">
                 <ul class="list nav nav-list bs-docs-sidenav affix-top scrollable">
                     <!-- filled by some View -->
@@ -177,11 +189,11 @@
                     </div>                 
                 </div>
 
-                <div class="btn-container">
+<!--                 <div class="btn-container">
                     <a id="group-btn" class="btn btn-primary">
                         Join Group
                     </a>
-                </div>
+                </div> -->
             </div>
             <div id="proposal-justification-container" class="span10 view-container">
                 <div id="proposal-headline-entry-container" class="control-group proposal-container">
@@ -224,6 +236,11 @@
         </div>
 
 
+
+
+
+
+
         <div id="grouping-screen" class="hide">
             <div id="grouping-header">Choose one other student to create a group</div> 
             <div id="grouping-btn-container" class="btn-group btn-group-vertical" data-toggle="buttons-radio">
@@ -239,7 +256,6 @@
                 </a>
             </div>
         </div>
-
 
         <div id="interpret-screen" class="row hide"> <!-- ** -->
             <div id="proposal-list" class="span4 view-container bs-docs-sidebar"> <!-- ** -->

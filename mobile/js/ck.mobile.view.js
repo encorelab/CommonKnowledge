@@ -420,7 +420,56 @@
         jQuery('#bucket-tagging-btn-container').append(noneButton);
       }
     }
+  });
 
+
+  /**
+    ProposalTagListView
+  **/
+  self.ProposalTagListView = Backbone.View.extend({
+    events: {
+      'click #proposal-tag-list-btn-container .tag-btn': function(ev) {
+        var chosenTagId = ev.currentTarget.id;
+        var chosenTag = jQuery('#'+chosenTagId).text();
+        var ok = confirm("Do you want to choose <"+ chosenTag + "> as your specialization?");
+        if (ok) {
+          Sail.app.chooseTagGroup(chosenTag, chosenTagId);
+        } else {
+          jQuery('#proposal-tag-list-btn-container .tag-btn').removeClass('active');
+        }
+      }
+    },
+
+    initialize: function () {
+
+    },
+
+    /**
+      Triggers full update of all dynamic elements in the list view
+    **/
+    render: function () {
+      var view = this;
+      console.log("rendering ProposalTagListView!");
+
+      // clear all buttons
+      // jQuery('.tag-btn').removeClass('active');
+
+      view.collection.each(function(tag) {
+        // don't show the N/A tag
+        if (tag.get('name') !== "N/A") {
+          var tagButton = jQuery('button#'+tag.id);
+          // length avoids duplicating (probably a better way to do this in backbone?)
+          //if (tagButton.length === 0 && tag.get('name') != "N/A") {
+          if (tagButton.length === 0) {
+            tagButton = jQuery('<button id='+tag.id+' type="button" class="btn tag-btn"></button>');
+            //tagButton = jQuery(tagButton);
+            jQuery('#proposal-tag-list .tag-btn-group').append(tagButton);
+          }
+
+          tagButton.text(tag.get('name'));
+        }
+      });
+    }
   });
 
 
