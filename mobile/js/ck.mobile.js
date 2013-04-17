@@ -37,6 +37,7 @@ CK.Mobile = function() {
   app.bucketedContribution = null;
   app.bucketTaggingView = null;
   app.proposalTagListView = null;
+  app.proposalListView = null;
 
   // Global vars - a lot of this stuff can go TODO
   app.synthesisFlag = false;
@@ -139,13 +140,14 @@ CK.Mobile = function() {
       // PROPOSAL PHASE
       console.log('Entering proposal phase...');
       jQuery('.brand').text('Common Knowledge - Proposal');
+      // CHOOSE TAG VIEW
       // case: no previous proposalTagListView
       if (app.proposalTagListView === null) {
         app.proposalTagListView = new CK.Mobile.View.ProposalTagListView({
           el: jQuery('#proposal-tag-list-screen'),
           collection: app.tagList
         });
-      // case: already have a proposalTagListView with attached model
+      // case: already have a proposalListView with attached model
       } else {
         // detatch that model and attach the current contrib model
         if (typeof app.proposalTagListView.collection !== 'undefined' && app.proposalTagListView.collection !== null) {
@@ -153,6 +155,19 @@ CK.Mobile = function() {
         }
         app.proposalTagListView.collection = app.tagList;
       }
+      // PROPOSAL VIEW
+      if (app.proposalListView === null) {
+        app.proposalListView = new CK.Mobile.View.ProposalListView({
+          el: jQuery('#proposal-list'),
+          collection: app.contributionList
+        });
+      } else {
+        if (typeof app.proposalListView.collection !== 'undefined' && app.proposalListView.collection !== null) {
+          app.proposalListView.stopListening(app.proposalListView.collection);
+        }
+        app.proposalListView.collection = app.contributionList;
+      }
+
       app.updateUserState();
 
     } else {
@@ -173,7 +188,7 @@ CK.Mobile = function() {
 
   app.updateUserState = function() {
     console.log('Updating user state...');
-    app.hideAll()
+    app.hideAll();
     app.hideWaitScreen();
 
     if (app.runState.get('phase') === 'tagging') {
@@ -186,7 +201,7 @@ CK.Mobile = function() {
         jQuery('#contribution-to-tag-screen').removeClass('hide');
         app.contributionToTag(app.userState.get('contribution_to_tag'));
       } else if (status === 'done') {
-        app.userState.set('tagging_status','done');         // going full retard here - but it works
+        app.userState.set('tagging_status','done');         // going full retard here - but it works to fix the issue with the agent (by effectively inserting a delay)
         app.userState.save()
           .done(function() {
             jQuery('.brand').text('Common Knowledge - Explore');
@@ -204,6 +219,7 @@ CK.Mobile = function() {
       } else {
         // if user has already chosen a tag
         jQuery('#proposal-screen').removeClass('hide');
+        app.proposalListView.render();
       }
     }
 
@@ -312,6 +328,7 @@ CK.Mobile = function() {
     app.contributionList.comparator = sorter;
     app.contributionList.on('add sync change', app.contributionListView.render, app.contributionListView);
     app.contributionList.sortBy(sorter);      // TODO - figure out why the sort doesn't happen before the first render
+    app.contributionListView.render();
     
     app.updateRunState();
   };
@@ -716,7 +733,7 @@ CK.Mobile = function() {
 
   app.autoSave = function(model, inputKey, inputValue, instantSave) {
     app.keyCount++;
-    console.log("saving stuff as we go at", app.keyCount);
+    //console.log("saving stuff as we go at", app.keyCount);
 
     if (model.kind === 'buildOn') {
       if (instantSave || app.keyCount > 9) {

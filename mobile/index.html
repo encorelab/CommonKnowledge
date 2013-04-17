@@ -162,17 +162,66 @@
             </div>
         </div>
 
-        <div id="proposal-screen" class="row hide">
+       <div id="proposal-screen" class="row hide">
+            <div id="proposal-list" class="span4 view-container bs-docs-sidebar">
+                <ul class="nav nav-list bs-docs-sidenav affix-top scrollable">
+                    <!-- filled by ProposalListView -->
+                </ul>
+            </div>
+
+            <div id="proposal-details" class="span4 view-container">
+                <div class="selected-proposal scrollable">
+                    <div class="proposal-headline field container-header" name="headline">
+
+                    </div>
+                    <div class="proposal-body field" name="content">
+
+                    </div>
+                    <div class="proposal-metadata">
+                        <span class="proposal-author field" name="author"> </span><span class="proposal-created-at field" name="created_at"></span>
+                    </div>
+                    <br />
+                    <div class="proposal-tags field" name="tags">
+                    </div>
+                    <div class="proposal-build-ons field" name="build_ons">
+                    </div>
+                </div>
+                <div id="like-btn-container" class="btn-container">
+                    Should we work on this?
+                    <a id="like-btn-on" class="hide">
+                        <img src="img/lightbulb_small_on.png" />
+                    </a>
+                    <a id="like-btn-off">
+                        <img src="img/lightbulb_small_off.png" />
+                    </a>                    
+                </div>
+            </div>   
+
+            <div id="proposal-input" class="span8 view-container">
+                <div class="container-header">
+                    Propose and Justify
+                </div>
+                <textarea class="field" id="proposal-entry" placeholder="Why should we proceed with this proposal? What further suggestions might you add to this proposal?"></textarea>
+
+                <div class="btn-container btn-group action-btn-group">
+                    <a id="share-interpretation-btn" class="btn btn-success">
+                        Share
+                    </a>
+                </div>
+            </div>
+        </div>
+
+
+
+<!--         <div id="proposal-screen" class="row hide">
             <div id="proposal-contribution-list" class="span4 view-container bs-docs-sidebar">
                 <ul class="list nav nav-list bs-docs-sidenav affix-top scrollable">
-                    <!-- filled by some View -->
                 </ul>
 
                 <div class="selected-note scrollable hide">
                     <a id="close-btn" class="btn btn-danger">
                         X
                     </a>
-                    <!-- filled by some View when note item clicked -->
                     <div class="note-headline field" name="headline">
                         These running shoes are awesome
                     </div>
@@ -186,14 +235,8 @@
                     </div>
                     <br />
                     <div class="note-build-ons field" name="build_ons">
-                    </div>                 
+                    </div>
                 </div>
-
-<!--                 <div class="btn-container">
-                    <a id="group-btn" class="btn btn-primary">
-                        Join Group
-                    </a>
-                </div> -->
             </div>
             <div id="proposal-justification-container" class="span10 view-container">
                 <div id="proposal-headline-entry-container" class="control-group proposal-container">
@@ -212,7 +255,6 @@
                         <label for="proposal-body-entry">
                             <b>Proposal: </b>
                         </label>
-                        <!-- maybe move prompts to a div above the textareas? -->
                         <textarea class="proposal-entry-field field disabled" id="proposal-body-entry" name="proposal" placeholder="What should be done about this? What should we consider next?" type=""></textarea>
                         <div class="btn-container btn-group action-btn-group">
                             <a id="share-proposal-body-btn" class="btn btn-success disabled">
@@ -233,79 +275,9 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
 
-
-
-
-
-
-
-        <div id="grouping-screen" class="hide">
-            <div id="grouping-header">Choose one other student to create a group</div> 
-            <div id="grouping-btn-container" class="btn-group btn-group-vertical" data-toggle="buttons-radio">
-                <!-- filled by GroupingView -->
-            </div>
-
-            <div class="btn-container">
-                <a id="create-group-btn" class="btn btn-primary">
-                    Create Group
-                </a>
-                <a id="close-group-btn" class="btn btn-danger">
-                    Close
-                </a>
-            </div>
-        </div>
-
-        <div id="interpret-screen" class="row hide"> <!-- ** -->
-            <div id="proposal-list" class="span4 view-container bs-docs-sidebar"> <!-- ** -->
-                <ul class="nav nav-list bs-docs-sidenav affix-top scrollable">
-                    <!-- filled by ProposalListView -->
-                </ul>
-            </div>
-
-            <div id="proposal-details" class="span4 view-container">
-                <div class="selected-proposal scrollable">
-                    <div class="proposal-headline field container-header" name="headline">
-
-                    </div>
-                    <div class="proposal-body field" name="content">
-
-                    </div>
-                    <div class="proposal-metadata">
-                        <span class="proposal-author field" name="author"> </span><span class="proposal-created-at field" name="created_at"></span>
-                    </div>
-                    <br />
-                    <div class="proposal-tags field" name="tags">
-                    </div> <!-- ** -->
-                    <div class="proposal-build-ons field" name="build_ons">
-                    </div>
-                </div>
-                <div id="like-btn-container" class="btn-container">
-                    Should we work on this?
-                    <a id="like-btn-on" class="hide">
-                        <img src="img/lightbulb_small_on.png" />
-                    </a>
-                    <a id="like-btn-off">
-                        <img src="img/lightbulb_small_off.png" />
-                    </a>                    
-                </div>
-            </div>   
-
-            <div id="interpretation-input" class="span8 view-container">
-                <div class="container-header">
-                    Interpret this!
-                </div>
-                    <textarea class="field" id="interpretation-entry" name="build_on" placeholder="Why should we proceed with this proposal? What further suggestions might you add to this proposal?"></textarea>
-
-                <div class="btn-container btn-group action-btn-group">
-                    <a id="share-interpretation-btn" class="btn btn-success">
-                        Share
-                    </a>
-                </div>
-            </div>
-        </div>        
+      
 
     </body>
-
 </html>
