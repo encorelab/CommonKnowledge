@@ -282,6 +282,7 @@ CK.Mobile = function() {
     app.contributionList.comparator = sorter;
     app.contributionList.on('add sync change', app.contributionListView.render, app.contributionListView);
     app.contributionList.sortBy(sorter);      // TODO - figure out why the sort doesn't happen before the first render
+    app.contributionListView.render();
     
     app.updateRunState();
   };

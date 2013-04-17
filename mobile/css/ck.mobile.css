@@ -31,7 +31,7 @@ input {
  	color: #333;
 }
 
-i {
+.icon-chevron-right {
 	float: right;
 }
 
@@ -258,7 +258,7 @@ i {
 }
 
 .selected-note .note-tags {
-	float: left;
+	margin-top: 30px;
 }
 
 #note-body-label {
@@ -299,10 +299,10 @@ i {
 
 #bucket-tagging-btn-container .tag-btn {
 	/* 304 width */
-	width: 144px;
+	width: 240px;
 	height: 40px;
 	font-size: 18px;
-	margin-left: 80px;
+	margin-left: 30px;
 	margin-top: 6%;	
 }
 

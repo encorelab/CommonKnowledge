@@ -133,7 +133,7 @@
         }
 
         // add the tags
-        var tagsEl = '<br /><div><i>';
+        var tagsEl = '<div><i>';
         _.each(view.model.get('tags'), function(t) {
           tagsEl += ' ';
           tagsEl += t.name;
@@ -143,12 +143,13 @@
         jQuery('#contribution-details .note-tags').append(tagsEl);
 
         // add the buildOns (if they are published)
-        var buildOnEl = '<hr /><div>';
+        var buildOnEl = '<div>';
         _.each(view.model.get('build_ons'), function(b) {
           if (b.published === true) {
+            buildOnEl += '<hr />';
             buildOnEl += b.content;
             buildOnEl += '<br /><span class="build-on-metadata">~' + b.author;
-            buildOnEl += ' (' + b.created_at.toLocaleDateString() + ' ' + b.created_at.toLocaleTimeString() + ')' +  '</span><hr />';            
+            buildOnEl += ' (' + b.created_at.toLocaleDateString() + ' ' + b.created_at.toLocaleTimeString() + ')' +  '</span><br />';            
           }
         });
         buildOnEl += '</div>';
