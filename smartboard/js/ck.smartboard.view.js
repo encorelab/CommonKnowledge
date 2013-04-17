@@ -266,7 +266,7 @@
 
     Wall.prototype.pause = function() {
       this.$el.find('#toggle-pause').addClass('paused').text('Resume');
-      if (this.mode !== 'evaluate') {
+      if (this.$el.data('phase') !== 'evaluate') {
         jQuery('body').addClass('paused');
         return this.changeWatermark("Paused");
       }
@@ -275,7 +275,7 @@
     Wall.prototype.unpause = function() {
       jQuery('body').removeClass('paused');
       this.$el.find('#toggle-pause').removeClass('paused').text('Pause');
-      return this.changeWatermark(this.mode || "brainstorm");
+      return this.changeWatermark(this.$el.data('phase') || "brainstorm");
     };
 
     Wall.prototype.changeWatermark = function(text) {
