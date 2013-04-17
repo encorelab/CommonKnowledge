@@ -172,7 +172,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                 .addClass('paused')
                 .text('Resume')
 
-        if @mode isnt 'evaluate'
+        if @$el.data('phase') isnt 'evaluate'
             jQuery('body').addClass('paused')
             @changeWatermark("Paused")
         
@@ -183,7 +183,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             .removeClass('paused')
             .text('Pause')
 
-        @changeWatermark(@mode || "brainstorm")
+        @changeWatermark(@$el.data('phase') || "brainstorm")
 
     changeWatermark: (text) =>
         jQuery('#watermark').fadeOut 800, ->
