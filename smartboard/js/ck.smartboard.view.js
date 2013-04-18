@@ -283,23 +283,23 @@
       if (phase !== this.$el.data('phase')) {
         switch (phase) {
           case 'tagging':
-            jQuery('body').removeClass('mode-brainstorm').addClass('mode-tagging').removeClass('mode-exploration').removeClass('mode-proposal').removeClass('mode-research_and_experiment');
+            jQuery('body').removeClass('mode-brainstorm').addClass('mode-tagging').removeClass('mode-exploration').removeClass('mode-propose').removeClass('mode-research_and_experiment');
             this.changeWatermark("tagging");
             break;
           case 'exploration':
-            jQuery('body').removeClass('mode-brainstorm').removeClass('mode-tagging').addClass('mode-exploration').removeClass('mode-proposal').removeClass('mode-research_and_experiment');
+            jQuery('body').removeClass('mode-brainstorm').removeClass('mode-tagging').addClass('mode-exploration').removeClass('mode-propose').removeClass('mode-research_and_experiment');
             this.changeWatermark("exploration");
             break;
-          case 'proposal':
-            jQuery('body').removeClass('mode-brainstorm').removeClass('mode-tagging').removeClass('mode-exploration').addClass('mode-proposal').removeClass('mode-research_and_experiment');
-            this.changeWatermark("proposal");
+          case 'propose':
+            jQuery('body').removeClass('mode-brainstorm').removeClass('mode-tagging').removeClass('mode-exploration').addClass('mode-propose').removeClass('mode-research_and_experiment');
+            this.changeWatermark("propose");
             break;
           case 'research_and_experiment':
-            jQuery('body').removeClass('mode-brainstorm').removeClass('mode-tagging').removeClass('mode-exploration').removeClass('mode-proposal').addClass('mode-research_and_experiment');
+            jQuery('body').removeClass('mode-brainstorm').removeClass('mode-tagging').removeClass('mode-exploration').removeClass('mode-propose').addClass('mode-research_and_experiment');
             this.changeWatermark("experiment");
             break;
           default:
-            jQuery('body').addClass('mode-brainstorm').removeClass('mode-tagging').removeClass('mode-exploration').removeClass('mode-proposal').removeClass('mode-research_and_experiment');
+            jQuery('body').addClass('mode-brainstorm').removeClass('mode-tagging').removeClass('mode-exploration').removeClass('mode-propose').removeClass('mode-research_and_experiment');
             this.changeWatermark("brainstorm");
         }
         this.$el.data('phase', phase);

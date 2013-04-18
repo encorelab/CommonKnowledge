@@ -184,7 +184,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                         .removeClass('mode-brainstorm')
                         .addClass('mode-tagging')
                         .removeClass('mode-exploration')
-                        .removeClass('mode-proposal')
+                        .removeClass('mode-propose')
                         .removeClass('mode-research_and_experiment')
                     @changeWatermark("tagging")
                 when 'exploration'
@@ -192,23 +192,23 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                         .removeClass('mode-brainstorm')
                         .removeClass('mode-tagging')
                         .addClass('mode-exploration')
-                        .removeClass('mode-proposal')
+                        .removeClass('mode-propose')
                         .removeClass('mode-research_and_experiment')
                     @changeWatermark("exploration")
-                when 'proposal'
+                when 'propose'
                     jQuery('body')
                         .removeClass('mode-brainstorm')
                         .removeClass('mode-tagging')
                         .removeClass('mode-exploration')
-                        .addClass('mode-proposal')
+                        .addClass('mode-propose')
                         .removeClass('mode-research_and_experiment')
-                    @changeWatermark("proposal")
+                    @changeWatermark("propose")
                 when 'research_and_experiment'
                     jQuery('body')
                         .removeClass('mode-brainstorm')
                         .removeClass('mode-tagging')
                         .removeClass('mode-exploration')
-                        .removeClass('mode-proposal')
+                        .removeClass('mode-propose')
                         .addClass('mode-research_and_experiment')
                     @changeWatermark("experiment")
                 else
@@ -216,7 +216,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                         .addClass('mode-brainstorm')
                         .removeClass('mode-tagging')
                         .removeClass('mode-exploration')
-                        .removeClass('mode-proposal')
+                        .removeClass('mode-propose')
                         .removeClass('mode-research_and_experiment')
                     @changeWatermark("brainstorm")
 
