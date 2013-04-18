@@ -628,7 +628,6 @@ class CK.Smartboard.View.TagBalloon extends CK.Smartboard.View.Balloon
             cv.renderConnectors()
 
     render: =>
-        console.log "rendering tag", this.el
         super()
 
         @$el.addClass('tag')

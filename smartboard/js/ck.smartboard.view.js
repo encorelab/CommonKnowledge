@@ -909,7 +909,6 @@
 
     TagBalloon.prototype.render = function() {
       var name;
-      console.log("rendering tag", this.el);
       TagBalloon.__super__.render.call(this);
       this.$el.addClass('tag');
       name = this.findOrCreate('.name', "<h3 class='name'></h3>");
