@@ -47,7 +47,7 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
                 @model.on 'wakeful:broadcast:received', => 
                     unless @$el.hasClass('glow') # don't glow if we're already glowing
                         @$el.addClass('glow')
-                        setTimeout(->
+                        setTimeout(=>
                                 @$el.removeClass('glow')
                             , 4001
                         )

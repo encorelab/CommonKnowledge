@@ -584,7 +584,7 @@
             if (!_this.$el.hasClass('glow')) {
               _this.$el.addClass('glow');
               return setTimeout(function() {
-                return this.$el.removeClass('glow');
+                return _this.$el.removeClass('glow');
               }, 4001);
             }
           });
