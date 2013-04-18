@@ -49,15 +49,17 @@
       Triggers full update of all dynamic elements in the list view
     **/
     render: function () {
-      if (this.collection.any(function(c) { return c.hasChanged('pos'); }) ) {
-        return;
-      }
-
       var createdAt;
       // clear out the list
-      jQuery('#contribution-list li').remove();
 
       Sail.app.contributionList.each(function(contrib) {
+        if (contrib.hasChanged() || jQuery('li#'+contrib.id).length === 0) {
+          // if this contrib has changed
+          jQuery('#contribution-list li#'+contrib.id).remove();
+        } else {
+          // else break out
+          return;
+        }
         if (contrib.get('published') === true) {
           var note = "<li id=" + contrib.id + " class='list-item'><a class='note'><span class='headline'></span>";
           note += "<br /><i class='icon-chevron-right'></i>";
