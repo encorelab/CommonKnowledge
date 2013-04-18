@@ -382,9 +382,6 @@ button {
   100% {
     opacity: 1.0; } }
 
-.mode-brainstorm #add-tag-container {
-  display: none !important; }
-
 #add-tag-container {
   position: fixed;
   bottom: 10px;
