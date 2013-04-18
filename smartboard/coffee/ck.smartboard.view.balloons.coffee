@@ -42,6 +42,10 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
         @model.on 'change:published', =>
             if @model.get('published')
                 @$el.addClass('new')
+                setTimeout(=>
+                        @$el.removeClass('new')
+                    , 1001
+                )
 
                 # highlight only on changes coming in from wakeful, not self changes
                 @model.on 'wakeful:broadcast:received', =>
