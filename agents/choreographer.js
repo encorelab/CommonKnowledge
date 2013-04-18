@@ -117,7 +117,7 @@ function retrieve_contribution_for_tagging (contribs) {
   // c) have not assigned_tagger or and empty string
   var contrib_to_tag = contribs.find(function(con) {
     var at = con.get('assigned_tagger');
-    if (con.get('tags').length < 1 && con.get('published') && (typeof at === 'undefined' || at === null || at === '')) {
+    if (con.has('tags') && con.get('tags').length < 1 && con.get('published') && (typeof at === 'undefined' || at === null || at === '')) {
       return con;
     }
   });
