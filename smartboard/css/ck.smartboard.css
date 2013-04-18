@@ -532,6 +532,36 @@ button {
   -moz-animation-iteration-count: 1;
   -moz-animation-timing-function: ease-out; }
 
+.balloon.glow {
+  -webkit-animation-name: glow;
+  -webkit-animation-duration: 2s;
+  -webkit-animation-iteration-count: 1;
+  -webkit-animation-timing-function: ease-out;
+  -moz-animation-name: glow;
+  -moz-animation-duration: 2s;
+  -moz-animation-iteration-count: 1;
+  -moz-animation-timing-function: ease-out; }
+
+@-webkit-keyframes glow {
+  0% {
+    box-shadow: #ffff44 0 0 10px 1px; }
+
+  50% {
+    box-shadow: #ffff44 0 0 0 1px; }
+
+  100% {
+    box-shadow: #ffff44 0 0 10px 1px; } }
+
+@-moz-keyframes glow {
+  0% {
+    box-shadow: #ffff44 0 0 10px 1px; }
+
+  50% {
+    box-shadow: #ffff44 0 0 0 1px; }
+
+  100% {
+    box-shadow: #ffff44 0 0 10px 1px; } }
+
 .source {
   position: absolute;
   width: 5px;

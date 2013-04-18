@@ -196,15 +196,93 @@
     };
 
     Wall.prototype.addBalloon = function(doc, view, balloonList) {
-      var bv;
+      var bv,
+        _this = this;
       bv = new view({
         model: doc
       });
       doc.wake(Sail.app.config.wakeful.url);
+      doc.on('wakeful:broadcast:received', function() {
+        if (!bv.$el.hasClass('glow')) {
+          bv.$el.addClass('glow');
+          return setTimeout(function() {
+            return bv.$el.removeClass('glow');
+          }, 4001);
+        }
+      });
+      bv.$el.css('visibility', 'hidden');
       bv.wall = this;
       bv.render();
       this.$el.append(bv.$el);
+      doc.on('change:pos', function() {
+        return bv.pos = doc.get('pos');
+      });
+      doc.on('change:z-index', function() {
+        return bv.$el.zIndex(doc.get('z-index'));
+      });
+      if (doc.has('pos')) {
+        bv.pos = doc.get('pos');
+      } else {
+        this.assignRandomPositionToBalloon(doc, bv);
+      }
+      if (doc.has('z-index')) {
+        bv.$el.zIndex(doc.get('z-index'));
+      }
+      this.makeBallonDraggable(doc, bv);
+      bv.$el.click(function() {
+        return _this.moveBallonToTop(doc, bv);
+      });
+      bv.render();
+      doc.save().done(function() {
+        return bv.$el.css('visibility', 'visible');
+      });
       return balloonList[doc.id] = bv;
+    };
+
+    Wall.prototype.assignRandomPositionToBalloon = function(doc, view) {
+      var left, top, wallHeight, wallWidth;
+      wallWidth = this.$el.width();
+      wallHeight = this.$el.height();
+      left = Math.random() * (wallWidth - view.$el.outerWidth());
+      top = Math.random() * (wallHeight - view.$el.outerHeight());
+      doc.set('pos', {
+        left: left,
+        top: top
+      });
+      return this.moveBallonToTop(doc, view);
+    };
+
+    Wall.prototype.moveBallonToTop = function(doc, view) {
+      var maxZ;
+      maxZ = _.max(this.$el.find('.balloon').map(function(el) {
+        return parseInt(jQuery(this).zIndex());
+      }));
+      maxZ++;
+      return doc.set('z-index', maxZ);
+    };
+
+    Wall.prototype.makeBallonDraggable = function(doc, view) {
+      var _this = this;
+      view.$el.draggable({
+        distance: 25,
+        containment: '#wall'
+      }).css('position', 'absolute');
+      view.$el.on('dragstop', function(ev, ui) {
+        view.$el.addClass('just-dragged');
+        return doc.save({
+          pos: ui.position
+        }, {
+          patch: true
+        });
+      });
+      view.$el.on('drag', function(ev, ui) {
+        if (view.renderConnectors != null) {
+          return view.renderConnectors();
+        }
+      });
+      return view.$el.on('dragstart', function(ev, ui) {
+        return _this.moveBallonToTop(doc, view);
+      });
     };
 
     Wall.prototype.render = function() {
@@ -442,14 +520,11 @@
 
     function Balloon() {
       this.render = __bind(this.render, this);
-
-      this.moveToTop = __bind(this.moveToTop, this);
       return Balloon.__super__.constructor.apply(this, arguments);
     }
 
     Balloon.prototype.initialize = function() {
-      var alreadyPositioned, pos,
-        _this = this;
+      var _this = this;
       Balloon.__super__.initialize.call(this);
       Object.defineProperty(this, 'pos', {
         get: function() {
@@ -510,57 +585,24 @@
           return _this.$el.css('top', (y - _this.height) + 'px');
         }
       });
-      this.model.on('change', function() {
+      return this.model.on('change', function() {
         if (_this.wall != null) {
           return _this.render();
         }
       });
-      alreadyPositioned = (this.$el.position().left != null) && this.$el.position().left > 0;
-      if ((this.model != null) && !alreadyPositioned) {
-        this.$el.hide();
-        if (this.model.has('pos')) {
-          pos = this.model.get('pos');
-          this.pos = pos;
-        } else {
-          console.log("autopositioning", this);
-          this.autoPosition();
-        }
-        return this.$el.show();
-      }
     };
 
-    Balloon.prototype.autoPosition = function() {
-      var left, top, wallHeight, wallWidth;
-      wallWidth = jQuery('#wall').width();
-      wallHeight = jQuery('#wall').height();
-      left = Math.random() * (wallWidth - this.$el.outerWidth());
-      top = Math.random() * (wallHeight - this.$el.outerHeight());
-      this.pos = {
-        left: left,
-        top: top
-      };
-      return this.model.save({
-        pos: {
-          left: left,
-          top: top
-        }
-      });
+    Balloon.prototype.isInDOM = function() {
+      return jQuery.contains(document.documentElement, this.el);
     };
 
-    Balloon.prototype.moveToTop = function() {
-      var maxZ;
-      maxZ = _.max(jQuery('.balloon').map(function() {
-        return parseInt(jQuery(this).zIndex()) + 1;
-      }));
-      this.$el.zIndex(maxZ);
-      return this.model.set('z-index', maxZ);
+    Balloon.prototype.isPositioned = function() {
+      var pos;
+      pos = this.pos;
+      return (pos.left != null) && pos.left > 0;
     };
 
     Balloon.prototype.render = function() {
-      var pos;
-      if (!this.draggable) {
-        this.makeDraggable();
-      }
       if (this.model.has('published')) {
         if (this.model.get('published')) {
           this.$el.removeClass('unpublished');
@@ -568,38 +610,12 @@
           this.$el.addClass('unpublished');
         }
       }
-      if (this.$el.is(':visible') && this.model.hasChanged('pos')) {
-        pos = this.model.get('pos');
-        this.pos = pos;
+      if (this.model.has('pos')) {
+        this.pos = this.model.get('pos');
       }
       if (this.model.has('z-index')) {
         return this.$el.zIndex(this.model.get('z-index'));
       }
-    };
-
-    Balloon.prototype.makeDraggable = function() {
-      var _this = this;
-      this.$el.draggable({
-        distance: 25,
-        containment: '#wall'
-      }).css('position', 'absolute');
-      this.$el.on('dragstart', function(ev, ui) {
-        return _this.moveToTop();
-      });
-      this.$el.on('dragstop', function(ev, ui) {
-        _this.$el.addClass('just-dragged');
-        return _this.model.save({
-          pos: ui.position
-        }, {
-          patch: true
-        });
-      });
-      this.$el.on('drag', function(ev, ui) {
-        if (_this.renderConnectors != null) {
-          return _this.renderConnectors();
-        }
-      });
-      return this.draggable = true;
     };
 
     return Balloon;
@@ -637,6 +653,8 @@
 
       this.processContributionByType = __bind(this.processContributionByType, this);
 
+      this.handleClick = __bind(this.handleClick, this);
+
       this.setColorClass = __bind(this.setColorClass, this);
 
       this.id = __bind(this.id, this);
@@ -665,14 +683,15 @@
     };
 
     ContributionBalloon.prototype.events = {
-      'click': function(ev) {
-        jQuery('.contribution').not("#" + this.model.id);
-        if (this.$el.hasClass('just-dragged')) {
-          this.$el.removeClass('just-dragged');
-        } else {
-          this.$el.toggleClass('opened');
-        }
-        return this.moveToTop();
+      'click': 'handleClick'
+    };
+
+    ContributionBalloon.prototype.handleClick = function() {
+      jQuery('.contribution').not("#" + this.model.id);
+      if (this.$el.hasClass('just-dragged')) {
+        return this.$el.removeClass('just-dragged');
+      } else {
+        return this.$el.toggleClass('opened');
       }
     };
 
@@ -832,7 +851,6 @@
   })(CK.Smartboard.View.Balloon);
 
   CK.Smartboard.View.TagBalloon = (function(_super) {
-    var _this = this;
 
     __extends(TagBalloon, _super);
 
@@ -865,15 +883,16 @@
     };
 
     TagBalloon.prototype.events = {
-      'click': function(ev) {
-        var $el;
-        $el = jQuery(ev.target);
-        if ($el.hasClass('just-dragged')) {
-          $el.removeClass('just-dragged');
-        } else {
-          console.log('clicked tag..');
-        }
-        return TagBalloon.moveToTop();
+      'click': 'handleClick'
+    };
+
+    TagBalloon.prototype.handleClick = function(ev) {
+      var $el;
+      $el = jQuery(ev.target);
+      if ($el.hasClass('just-dragged')) {
+        return $el.removeClass('just-dragged');
+      } else {
+        return console.log('clicked tag..');
       }
     };
 
@@ -893,6 +912,7 @@
 
     TagBalloon.prototype.render = function() {
       var name;
+      console.log("rendering tag", this.el);
       TagBalloon.__super__.render.call(this);
       this.$el.addClass('tag');
       name = this.findOrCreate('.name', "<h3 class='name'></h3>");
@@ -902,13 +922,12 @@
       } else {
         this.$el.removeClass('pinned');
       }
-      this.$el.show();
       this.renderConnectors();
       return this;
     };
 
     return TagBalloon;
 
-  }).call(this, CK.Smartboard.View.Balloon);
+  })(CK.Smartboard.View.Balloon);
 
 }).call(this);

@@ -100,13 +100,89 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
         doc.wake Sail.app.config.wakeful.url
         
         # highlight only on changes coming in from wakeful, not self changes
-        #doc.on 'wakeful:broadcast:received', -> bv.$el.effect('highlight')
+        doc.on 'wakeful:broadcast:received', -> 
+            unless bv.$el.hasClass('glow') # don't glow if we're already glowing
+                bv.$el.addClass('glow')
+                setTimeout(->
+                        bv.$el.removeClass('glow')
+                    , 4001
+                )
+
+        # hide until positioned (use visibility rather than display: 'none' to ensure we have dimensions for positioning)
+        bv.$el.css('visibility', 'hidden') 
 
         bv.wall = this
+
         bv.render()
         @$el.append bv.$el
 
+        doc.on 'change:pos', =>
+            bv.pos = doc.get('pos')
+        doc.on 'change:z-index', =>
+            bv.$el.zIndex doc.get('z-index')
+
+        if doc.has('pos')
+            bv.pos = doc.get('pos')
+        else
+            @assignRandomPositionToBalloon(doc, bv)
+
+        if doc.has('z-index')
+            bv.$el.zIndex(doc.get('z-index'))
+
+        @makeBallonDraggable(doc, bv)
+        bv.$el.click => @moveBallonToTop(doc, bv)
+
+        # balloon must be rendered and appended to DOM before it can be positioned
+        bv.render()
+
+        doc.save().done ->
+            bv.$el.css('visibility', 'visible')
+
         balloonList[doc.id] = bv
+
+            
+
+    assignRandomPositionToBalloon: (doc, view) ->
+        wallWidth = @$el.width()
+        wallHeight = @$el.height()
+
+        left = Math.random() * (wallWidth - view.$el.outerWidth())
+        top = Math.random() * (wallHeight - view.$el.outerHeight())
+
+        doc.set('pos', {left: left, top: top})
+
+        @moveBallonToTop doc, view
+        # 'z-index' is set on the model in @moveToTop()
+
+    moveBallonToTop: (doc, view) ->
+        maxZ = _.max @$el.find('.balloon').map (el) ->
+            parseInt(jQuery(this).zIndex())
+        maxZ++
+
+        doc.set 'z-index', maxZ
+
+        # this would move all connectors up too, but currently disabled
+        #jQuery(".connects-#{@model.id}").zIndex maxZ - 1
+
+    makeBallonDraggable: (doc, view) ->
+        view.$el
+            .draggable
+                distance: 25 # how far it needs to be moved before it's considered a drag
+                containment: '#wall'
+                #stack: '.balloon'
+            .css 'position', 'absolute' # draggable makes position relative, but we need absolute
+
+        view.$el.on 'dragstop', (ev, ui) =>
+            view.$el.addClass 'just-dragged' # prevent 'click' handlers from doing their thing
+
+            doc.save {pos: ui.position}, {patch: true}
+
+        view.$el.on 'drag', (ev, ui) =>
+            view.renderConnectors() if view.renderConnectors?
+
+        view.$el.on 'dragstart', (ev, ui) =>
+            @moveBallonToTop(doc, view)
+
 
     render: =>
         phase = @runState.get('phase')
