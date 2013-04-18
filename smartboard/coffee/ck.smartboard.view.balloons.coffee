@@ -39,6 +39,19 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
             set: (y) => @$el.css('top', (y - @height) + 'px')
 
 
+        @model.on 'change:published', =>
+            if @model.get('published')
+                @$el.addClass('new')
+
+                # highlight only on changes coming in from wakeful, not self changes
+                @model.on 'wakeful:broadcast:received', -> 
+                    unless @$el.hasClass('glow') # don't glow if we're already glowing
+                        @$el.addClass('glow')
+                        setTimeout(->
+                                @$el.removeClass('glow')
+                            , 4001
+                        )
+
         @model.on 'change', =>
             @render() if @wall? # don't try to render until we've been properly added (wtf indeed)
 
@@ -89,10 +102,6 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
 
     initialize: ->
         super()
-
-        @model.on 'change:published', =>
-            if @model.get('published')
-                @$el.addClass('new')
 
         @model.on 'change:tags', =>
             # for tagRel in @get('tags')
@@ -591,9 +600,6 @@ class CK.Smartboard.View.TagBalloon extends CK.Smartboard.View.Balloon
 
     initialize: ->
         super()
-
-        @model.on 'add',
-            @$el.addClass('new')
     
     setColorClass: (className) =>
         @$el.addClass(className)

@@ -202,14 +202,6 @@
         model: doc
       });
       doc.wake(Sail.app.config.wakeful.url);
-      doc.on('wakeful:broadcast:received', function() {
-        if (!bv.$el.hasClass('glow')) {
-          bv.$el.addClass('glow');
-          return setTimeout(function() {
-            return bv.$el.removeClass('glow');
-          }, 4001);
-        }
-      });
       bv.$el.css('visibility', 'hidden');
       bv.wall = this;
       bv.render();
@@ -585,6 +577,19 @@
           return _this.$el.css('top', (y - _this.height) + 'px');
         }
       });
+      this.model.on('change:published', function() {
+        if (_this.model.get('published')) {
+          _this.$el.addClass('new');
+          return _this.model.on('wakeful:broadcast:received', function() {
+            if (!this.$el.hasClass('glow')) {
+              this.$el.addClass('glow');
+              return setTimeout(function() {
+                return this.$el.removeClass('glow');
+              }, 4001);
+            }
+          });
+        }
+      });
       return this.model.on('change', function() {
         if (_this.wall != null) {
           return _this.render();
@@ -672,11 +677,6 @@
     ContributionBalloon.prototype.initialize = function() {
       var _this = this;
       ContributionBalloon.__super__.initialize.call(this);
-      this.model.on('change:published', function() {
-        if (_this.model.get('published')) {
-          return _this.$el.addClass('new');
-        }
-      });
       return this.model.on('change:tags', function() {
         return _this.renderConnectors();
       });
@@ -874,8 +874,7 @@
     };
 
     TagBalloon.prototype.initialize = function() {
-      TagBalloon.__super__.initialize.call(this);
-      return this.model.on('add', this.$el.addClass('new'));
+      return TagBalloon.__super__.initialize.call(this);
     };
 
     TagBalloon.prototype.setColorClass = function(className) {

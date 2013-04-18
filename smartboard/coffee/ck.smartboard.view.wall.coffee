@@ -98,15 +98,6 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             model: doc
 
         doc.wake Sail.app.config.wakeful.url
-        
-        # highlight only on changes coming in from wakeful, not self changes
-        doc.on 'wakeful:broadcast:received', -> 
-            unless bv.$el.hasClass('glow') # don't glow if we're already glowing
-                bv.$el.addClass('glow')
-                setTimeout(->
-                        bv.$el.removeClass('glow')
-                    , 4001
-                )
 
         # hide until positioned (use visibility rather than display: 'none' to ensure we have dimensions for positioning)
         bv.$el.css('visibility', 'hidden') 
