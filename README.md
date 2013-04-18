@@ -3,7 +3,7 @@
 In order to run Common Knowledge you need a server (we recommend Ubuntu 12.04 at this point) that is able
 to run the database (MongoDB),
 Rollcall (https://github.com/educoder/rollcall/wiki),
-a XMPP server (Prosody or Ejabberd), and
+~~a XMPP server (Prosody or Ejabberd),~~ and
 the REST interface for the database - Drowsy Dromedary (https://github.com/zuk/DrowsyDromedary).
 
 Drowsy Dromodary, Rollcall, and the Agents require Ruby 1.9.3 to be installed.
