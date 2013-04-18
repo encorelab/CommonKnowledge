@@ -100,7 +100,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
         doc.wake Sail.app.config.wakeful.url
 
         # hide until positioned (use visibility rather than display: 'none' to ensure we have dimensions for positioning)
-        bv.$el.css('visibility', 'hidden') 
+        bv.$el.css('visibility', 'hidden')
 
         bv.wall = this
 
