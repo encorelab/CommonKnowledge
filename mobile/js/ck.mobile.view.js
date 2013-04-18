@@ -132,7 +132,7 @@
         }
 
         // add the tags
-        var tagsEl = '<br /><div><i>';
+        var tagsEl = '<div><i>';
         _.each(view.model.get('tags'), function(t) {
           tagsEl += ' ';
           tagsEl += t.name;
@@ -145,6 +145,7 @@
         var buildOnEl = '<div>';
         _.each(view.model.get('build_ons'), function(b) {
           if (b.published === true) {
+            buildOnEl += '<hr />';
             buildOnEl += b.content;
             buildOnEl += '<hr /><span class="build-on-metadata">~' + b.author;
             buildOnEl += ' (' + b.created_at.toLocaleDateString() + ' ' + b.created_at.toLocaleTimeString() + ')' +  '</span><hr />';            
