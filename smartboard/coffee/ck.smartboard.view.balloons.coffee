@@ -66,12 +66,11 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
         pos.left? && pos.left > 0
 
 
-    render: =>
-        if @model.has('published')
-            if @model.get('published')
-                @$el.removeClass('unpublished')
-            else
-                @$el.addClass('unpublished')
+    render: =>    
+        if @model.get('published')
+            @$el.removeClass('unpublished')
+        else
+            @$el.addClass('unpublished')
 
         @pos = @model.get('pos') if @model.has('pos')
         @$el.zIndex( @model.get('z-index') ) if @model.has('z-index')

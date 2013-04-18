@@ -608,12 +608,10 @@
     };
 
     Balloon.prototype.render = function() {
-      if (this.model.has('published')) {
-        if (this.model.get('published')) {
-          this.$el.removeClass('unpublished');
-        } else {
-          this.$el.addClass('unpublished');
-        }
+      if (this.model.get('published')) {
+        this.$el.removeClass('unpublished');
+      } else {
+        this.$el.addClass('unpublished');
       }
       if (this.model.has('pos')) {
         this.pos = this.model.get('pos');
