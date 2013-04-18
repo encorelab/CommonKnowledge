@@ -44,7 +44,7 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
                 @$el.addClass('new')
 
                 # highlight only on changes coming in from wakeful, not self changes
-                @model.on 'wakeful:broadcast:received', -> 
+                @model.on 'wakeful:broadcast:received', => 
                     unless @$el.hasClass('glow') # don't glow if we're already glowing
                         @$el.addClass('glow')
                         setTimeout(->

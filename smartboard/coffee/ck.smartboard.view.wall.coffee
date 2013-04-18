@@ -181,29 +181,43 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             switch phase
                 when 'tagging'
                     jQuery('body')
-                        .removeClass('mode-synthesis')
+                        .removeClass('mode-brainstorm')
                         .addClass('mode-tagging')
+                        .removeClass('mode-exploration')
+                        .removeClass('mode-proposal')
+                        .removeClass('mode-research_and_experiment')
                     @changeWatermark("tagging")
-                when 'propose'
+                when 'exploration'
                     jQuery('body')
+                        .removeClass('mode-brainstorm')
                         .removeClass('mode-tagging')
-                        .addClass('mode-propose')
-                    @changeWatermark("propose")
-                when 'interpret'
+                        .addClass('mode-exploration')
+                        .removeClass('mode-proposal')
+                        .removeClass('mode-research_and_experiment')
+                    @changeWatermark("exploration")
+                when 'proposal'
                     jQuery('body')
-                        .removeClass('mode-propose')
-                        .removeClass('mode-evaluate')
-                        .addClass('mode-interpret')
-                    @changeWatermark("interpret")
-                when 'evaluate'
+                        .removeClass('mode-brainstorm')
+                        .removeClass('mode-tagging')
+                        .removeClass('mode-exploration')
+                        .addClass('mode-proposal')
+                        .removeClass('mode-research_and_experiment')
+                    @changeWatermark("proposal")
+                when 'research_and_experiment'
                     jQuery('body')
-                        .removeClass('mode-interpret')
-                        .addClass('mode-evaluate')
-                    @changeWatermark("evaluate")
+                        .removeClass('mode-brainstorm')
+                        .removeClass('mode-tagging')
+                        .removeClass('mode-exploration')
+                        .removeClass('mode-proposal')
+                        .addClass('mode-research_and_experiment')
+                    @changeWatermark("experiment")
                 else
                     jQuery('body')
+                        .addClass('mode-brainstorm')
                         .removeClass('mode-tagging')
-                        .removeClass('mode-synthesis')
+                        .removeClass('mode-exploration')
+                        .removeClass('mode-proposal')
+                        .removeClass('mode-research_and_experiment')
                     @changeWatermark("brainstorm")
 
             @$el.data('phase', phase)
