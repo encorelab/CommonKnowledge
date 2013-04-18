@@ -49,15 +49,17 @@
       Triggers full update of all dynamic elements in the list view
     **/
     render: function () {
-      if (this.collection.any(function(c) { return c.hasChanged('pos'); }) ) {
-        return;
-      }
-
       var createdAt;
       // clear out the list
-      jQuery('#contribution-list li').remove();
 
       Sail.app.contributionList.each(function(contrib) {
+        if (contrib.hasChanged() || jQuery('li#'+contrib.id).length === 0) {
+          // if this contrib has changed
+          jQuery('#contribution-list li#'+contrib.id).remove();
+        } else {
+          // else break out
+          return;
+        }
         if (contrib.get('published') === true) {
           var note = "<li id=" + contrib.id + " class='list-item'><a class='note'><span class='headline'></span>";
           note += "<br /><i class='icon-chevron-right'></i>";
@@ -130,7 +132,7 @@
         }
 
         // add the tags
-        var tagsEl = '<br /><div><i>';
+        var tagsEl = '<div><i>';
         _.each(view.model.get('tags'), function(t) {
           tagsEl += ' ';
           tagsEl += t.name;
@@ -143,6 +145,7 @@
         var buildOnEl = '<div>';
         _.each(view.model.get('build_ons'), function(b) {
           if (b.published === true) {
+            buildOnEl += '<hr />';
             buildOnEl += b.content;
             buildOnEl += '<hr /><span class="build-on-metadata">~' + b.author;
             buildOnEl += ' (' + b.created_at.toLocaleDateString() + ' ' + b.created_at.toLocaleTimeString() + ')' +  '</span><hr />';            

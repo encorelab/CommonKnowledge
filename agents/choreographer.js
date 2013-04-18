@@ -70,11 +70,11 @@ function assign_observation_for_tagging(user_state) {
     // mark contribution as assigned
     contrib_to_tag.set('assigned_tagger', user_state.get('entity'));
     console.log('Assign to user: ' + user_state.get('entity'));
-    contrib_to_tag.save().done(function () {
+    contrib_to_tag.save(null, {patch:true}).done(function () {
       // write contribution id to user state and set tagging_status to assigned
       user_state.set('contribution_to_tag', contrib_to_tag.id);
       user_state.set('tagging_status', 'assigned');
-      user_state.save().done(function (){
+      user_state.save(null, {patch:true}).done(function (){
         // unlocking this user
         doingStuffForUser[user_state.get('entity')] = false;
       });
@@ -83,7 +83,7 @@ function assign_observation_for_tagging(user_state) {
     // no contribution found so we must be done. Inform user
     console.log('No contribution found so we must be done. Inform user: ' + user_state.get('entity'));
     user_state.set('tagging_status', 'done');
-    user_state.save().done(function() {
+    user_state.save(null, {patch:true}).done(function() {
       // unlocking this user
       doingStuffForUser[user_state.get('entity')] = false;
     });
@@ -117,7 +117,7 @@ function retrieve_contribution_for_tagging (contribs) {
   // c) have not assigned_tagger or and empty string
   var contrib_to_tag = contribs.find(function(con) {
     var at = con.get('assigned_tagger');
-    if (con.get('tags').length < 1 && con.get('published') && (typeof at === 'undefined' || at === null || at === '')) {
+    if (con.has('tags') && con.get('tags').length < 1 && con.get('published') && (typeof at === 'undefined' || at === null || at === '')) {
       return con;
     }
   });

@@ -323,7 +323,11 @@ CK.Mobile = function() {
     }
     // sort the contributions by reverse created_at
     var sorter = function(contrib) {
-      return -contrib.get('created_at').getTime();
+      if (contrib.has('created_at')) {
+        return -contrib.get('created_at').getTime();
+      } else {
+        return 0; // this shouldn't happen, but just in case...
+      }
     };
     app.contributionList.comparator = sorter;
     app.contributionList.on('add sync change', app.contributionListView.render, app.contributionListView);

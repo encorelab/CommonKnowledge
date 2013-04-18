@@ -39,82 +39,41 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
             set: (y) => @$el.css('top', (y - @height) + 'px')
 
 
+        @model.on 'change:published', =>
+            if @model.get('published')
+                @$el.addClass('new')
+                setTimeout(=>
+                        @$el.removeClass('new')
+                    , 1001
+                )
+
+                # only bind this after published...
+                # highlight only on changes coming in from wakeful, not self changes
+                @model.on 'wakeful:broadcast:received', =>
+                    unless @$el.hasClass('glow') # don't glow if we're already glowing
+                        @$el.addClass('glow')
+                        setTimeout(=>
+                                @$el.removeClass('glow')
+                            , 4001
+                        )
+
         @model.on 'change', =>
             @render() if @wall? # don't try to render until we've been properly added (wtf indeed)
 
-        alreadyPositioned = @$el.position().left? && @$el.position().left > 0
 
-        if @model? and not alreadyPositioned
-            @$el.hide() # hide until positioned
-            if @model.has('pos')
-                pos = @model.get('pos')
-                @pos = pos
-            else
-                console.log("autopositioning", this)
-                @autoPosition()
+    # true if this balloon has been added to the DOM, false otherwise
+    isInDOM: ->
+        jQuery.contains(document.documentElement, @el)
 
-            @$el.show()
+    # true if this balloon has a position in the wall
+    isPositioned: ->
+        pos = @pos
+        pos.left? && pos.left > 0
 
-        
-
-    autoPosition: ->
-        wallWidth = jQuery('#wall').width()
-        wallHeight = jQuery('#wall').height()
-
-        left = Math.random() * (wallWidth - @$el.outerWidth())
-        top = Math.random() * (wallHeight - @$el.outerHeight())
-
-        @pos = {left: left, top: top}
-
-        @model.save(pos: {left: left, top: top})
-
-    moveToTop: =>
-        maxZ = _.max jQuery('.balloon').map ->
-            parseInt(jQuery(this).zIndex()) + 1
-        
-        @$el.zIndex maxZ
-
-        @model.set 'z-index', maxZ
-
-        # this would move all connectors up too, but currently disabled
-        #jQuery(".connects-#{@model.id}").zIndex maxZ - 1
 
     render: =>
-        @makeDraggable() if not @draggable
-
-        if @model.has('published')
-            if @model.get('published')
-                @$el.removeClass('unpublished')
-            else
-                @$el.addClass('unpublished')
-
-        if @$el.is(':visible') and @model.hasChanged('pos')
-            pos = @model.get('pos')
-            @pos = pos
-
-        if @model.has('z-index')
-            @$el.zIndex @model.get('z-index')
-
-    makeDraggable: ->
-        @$el
-            .draggable
-                distance: 25 # how far it needs to be moved before it's considered a drag
-                containment: '#wall'
-                #stack: '.balloon'
-            .css 'position', 'absolute' # draggable makes position relative, but we need absolute
-
-        @$el.on 'dragstart', (ev, ui) =>
-            @moveToTop()
-
-        @$el.on 'dragstop', (ev, ui) =>
-            @$el.addClass 'just-dragged' # prevent 'click' handlers from doing their thing
-
-            @model.save {pos: ui.position}, {patch: true}
-
-        @$el.on 'drag', (ev, ui) =>
-            @renderConnectors() if @renderConnectors?
-
-        @draggable = true
+        @pos = @model.get('pos') if @model.has('pos')
+        @$el.zIndex( @model.get('z-index') ) if @model.has('z-index')
 
 
 class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
@@ -143,10 +102,6 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
     initialize: ->
         super()
 
-        @model.on 'change:published', =>
-            if @model.get('published')
-                @$el.addClass('new')
-
         @model.on 'change:tags', =>
             # for tagRel in @get('tags')
             #     tagView = Sail.app.wall.ballonViews[tagRel.id]
@@ -157,15 +112,8 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
     events:
         # 'mousedown': (ev) -> @moveToTop()
 
-        'click': (ev) ->
-            jQuery('.contribution').not("##{@model.id}")
-
-            if @$el.hasClass('just-dragged')
-                @$el.removeClass('just-dragged')
-            else
-                @$el.toggleClass('opened')
-
-            @moveToTop()
+        'click': 'handleClick'
+            
                 
                 #@processContributionByType()
 
@@ -177,6 +125,14 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
     #     super()
     #     @$el.on 'drag', (ev, ui) =>
     #         @renderConnectors()
+
+    handleClick: =>
+        jQuery('.contribution').not("##{@model.id}")
+
+        if @$el.hasClass('just-dragged')
+            @$el.removeClass('just-dragged')
+        else
+            @$el.toggleClass('opened')
         
     processContributionByType: =>
         if (@ballonContributionType is @balloonContributionTypes.analysis)
@@ -221,6 +177,11 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
 
     render: =>
         super()
+
+        if @model.get('published')
+            @$el.removeClass('unpublished')
+        else
+            @$el.addClass('unpublished')
 
         @$el.addClass('contribution').addClass(@colorClass)
 
@@ -643,30 +604,26 @@ class CK.Smartboard.View.TagBalloon extends CK.Smartboard.View.Balloon
 
     initialize: ->
         super()
-
-        @model.on 'add',
-            @$el.addClass('new')
     
     setColorClass: (className) =>
         @$el.addClass(className)
 
     events:
-        # 'mousedown': (ev) -> @moveToTop()
 
-        'click': (ev) =>
-            $el = jQuery(ev.target)
-            if $el.hasClass('just-dragged')
-                $el.removeClass('just-dragged')
-            else
-                console.log('clicked tag..')
-                # do click handler stuff here...
-
-            @moveToTop()
+        'click': 'handleClick'
 
     # makeDraggable: =>
     #     super()
     #     @$el.on 'drag', (ev, ui) =>
     #         @renderConnectors()
+
+    handleClick: (ev) ->
+        $el = jQuery(ev.target)
+        if $el.hasClass('just-dragged')
+            $el.removeClass('just-dragged')
+        else
+            console.log('clicked tag..')
+            # do click handler stuff here...
 
     renderConnectors: =>
         taggedContributionViews = _.filter @wall.balloonViews, (bv) =>
@@ -688,8 +645,6 @@ class CK.Smartboard.View.TagBalloon extends CK.Smartboard.View.Balloon
             @$el.addClass('pinned')
         else
             @$el.removeClass('pinned')
-
-        @$el.show()
 
         @renderConnectors()
 
