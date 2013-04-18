@@ -67,11 +67,6 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
 
 
     render: =>    
-        if @model.get('published')
-            @$el.removeClass('unpublished')
-        else
-            @$el.addClass('unpublished')
-
         @pos = @model.get('pos') if @model.has('pos')
         @$el.zIndex( @model.get('z-index') ) if @model.has('z-index')
 
@@ -177,6 +172,11 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
 
     render: =>
         super()
+
+        if @model.get('published')
+            @$el.removeClass('unpublished')
+        else
+            @$el.addClass('unpublished')
 
         @$el.addClass('contribution').addClass(@colorClass)
 

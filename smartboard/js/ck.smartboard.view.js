@@ -608,11 +608,6 @@
     };
 
     Balloon.prototype.render = function() {
-      if (this.model.get('published')) {
-        this.$el.removeClass('unpublished');
-      } else {
-        this.$el.addClass('unpublished');
-      }
       if (this.model.has('pos')) {
         this.pos = this.model.get('pos');
       }
@@ -737,6 +732,11 @@
     ContributionBalloon.prototype.render = function() {
       var body, headline, meta, nodeHeader;
       ContributionBalloon.__super__.render.call(this);
+      if (this.model.get('published')) {
+        this.$el.removeClass('unpublished');
+      } else {
+        this.$el.addClass('unpublished');
+      }
       this.$el.addClass('contribution').addClass(this.colorClass);
       if (this.model.get('kind') === 'propose') {
         this.$el.addClass('synthesis');
