@@ -580,6 +580,9 @@
       this.model.on('change:published', function() {
         if (_this.model.get('published')) {
           _this.$el.addClass('new');
+          setTimeout(function() {
+            return _this.$el.removeClass('new');
+          }, 1001);
           return _this.model.on('wakeful:broadcast:received', function() {
             if (!_this.$el.hasClass('glow')) {
               _this.$el.addClass('glow');
