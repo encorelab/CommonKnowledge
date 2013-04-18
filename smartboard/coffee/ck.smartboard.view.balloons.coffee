@@ -47,6 +47,7 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
                     , 1001
                 )
 
+                # only bind this after published...
                 # highlight only on changes coming in from wakeful, not self changes
                 @model.on 'wakeful:broadcast:received', =>
                     unless @$el.hasClass('glow') # don't glow if we're already glowing
@@ -70,7 +71,7 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
         pos.left? && pos.left > 0
 
 
-    render: =>    
+    render: =>
         @pos = @model.get('pos') if @model.has('pos')
         @$el.zIndex( @model.get('z-index') ) if @model.has('z-index')
 
