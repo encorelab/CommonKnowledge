@@ -339,6 +339,7 @@ CK.Mobile = function() {
     app.contribution = new CK.Model.Contribution();
     // ensure that models inside the collection are wakeful
     app.contribution.wake(Sail.app.config.wakeful.url);
+    app.contribution.on('all',function() { console.log(arguments) });
 
     // case: no previous inputView
     if (app.inputView === null) {
