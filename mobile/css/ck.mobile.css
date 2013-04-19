@@ -283,7 +283,7 @@ input {
 	right: 22px;
 }
 
-#bucket-tagging-btn-container .tag-btn, #tag-submission-container .tag-btn, #proposal-tag-list .tag-btn, #grouping-screen .user-btn {
+#bucket-tagging-btn-container .tag-btn, #tag-submission-container .tag-btn, #interest-group-list .tag-btn, #grouping-screen .user-btn {
   	-webkit-border-radius: 4px 4px 4px 4px;
     -moz-border-radius: 4px 4px 4px 4px;
     border-radius: 4px 4px 4px 4px;		
@@ -298,7 +298,7 @@ input {
 	background-color: #FD1654;
 }
 
-#bucket-tagging-btn-container .tag-btn, #proposal-tag-list .tag-btn {
+#bucket-tagging-btn-container .tag-btn, #interest-group-list .tag-btn {
 	/* 304 width */
 	width: 240px;
 	height: 40px;
@@ -311,14 +311,14 @@ input {
 	margin: 5px;
 }
 
-#proposal-tag-list-screen {
+#choose-interest-group-screen {
 	position: absolute;
 	top: 90px;
 	left: 39%;
 	z-index: 999;
 }
 
-#proposal-tag-list {
+#interest-group-list {
 	width: 304px;
 	height: 325px;
 }

@@ -36,7 +36,7 @@ CK.Mobile = function() {
   app.contributionToTagView = null;
   app.bucketedContribution = null;
   app.bucketTaggingView = null;
-  app.proposalTagListView = null;
+  app.interestGroupListView = null;
   app.proposalListView = null;
 
   // Global vars - a lot of this stuff can go TODO
@@ -136,25 +136,11 @@ CK.Mobile = function() {
 
     } else if (p === 'exploration') {
 
-    } else if (p === 'proposal') {
+    } else if (p === 'propose') {
       // PROPOSAL PHASE
-      console.log('Entering proposal phase...');
-      jQuery('.brand').text('Common Knowledge - Proposal');
-      // CHOOSE TAG VIEW
-      // case: no previous proposalTagListView
-      if (app.proposalTagListView === null) {
-        app.proposalTagListView = new CK.Mobile.View.ProposalTagListView({
-          el: jQuery('#proposal-tag-list-screen'),
-          collection: app.tagList
-        });
-      // case: already have a proposalListView with attached model
-      } else {
-        // detatch that model and attach the current contrib model
-        if (typeof app.proposalTagListView.collection !== 'undefined' && app.proposalTagListView.collection !== null) {
-          app.proposalTagListView.stopListening(app.proposalTagListView.collection);
-        }
-        app.proposalTagListView.collection = app.tagList;
-      }
+      console.log('Entering propose phase...');
+      jQuery('.brand').text('Common Knowledge - Propose');
+
       // PROPOSAL VIEW
       if (app.proposalListView === null) {
         app.proposalListView = new CK.Mobile.View.ProposalListView({
@@ -193,7 +179,9 @@ CK.Mobile = function() {
 
     if (app.runState.get('phase') === 'tagging') {
       var status = app.userState.get('tagging_status');
-      if (status === 'waiting') {
+      if (status === 'waiting' || status === '') {
+        // app.userState.set('tagging_status','waiting');
+        // app.userState.save();
         app.showWaitScreen();
       } else if (status === 'assigned') {
         jQuery('.brand').text('Common Knowledge - Tagging');
@@ -211,16 +199,18 @@ CK.Mobile = function() {
       } else {
         console.error('Unknown tagging status...');
       }
-    } else if (app.runState.get('phase') === 'proposal') {
-      if (!app.userState.get('tag_group') || app.userState.get('tag_group') === '') {
-        // if user still needs to choose a tag
-        jQuery('#proposal-tag-list-screen').removeClass('hide');
-        app.proposalTagListView.render();
-      } else {
-        // if user has already chosen a tag
-        jQuery('#proposal-screen').removeClass('hide');
-        app.proposalListView.render();
-      }
+    } else if (app.runState.get('phase') === 'propose') {
+      jQuery('#choose-interest-group-screen').removeClass('hide');
+      app.interestGroupListView.render();
+      // if (!app.userState.get('tag_group') || app.userState.get('tag_group') === '') {
+      //   // if user still needs to choose a tag
+      //   jQuery('#choose-interest-group-screen').removeClass('hide');
+      //   app.interestGroupListView.render();
+      // } else {
+      //   // if user has already chosen a tag
+      //   jQuery('#proposal-screen').removeClass('hide');
+      //   app.proposalListView.render();
+      // }
     }
 
   };
@@ -313,6 +303,22 @@ CK.Mobile = function() {
     }
     //app.tagList.on('add sync', app.bucketTaggingView.render, app.bucketTaggingView);
 
+    // CHOOSE INTEREST GROUP VIEW
+    // case: no previous interestGroupListView
+    if (app.interestGroupListView === null) {
+      app.interestGroupListView = new CK.Mobile.View.InterestGroupListView({
+        el: jQuery('#choose-interest-group-screen'),
+        collection: app.tagList
+      });
+    // case: already have a interestGroupListView with attached model
+    } else {
+      // detatch that model and attach the current contrib model
+      if (typeof app.interestGroupListView.collection !== 'undefined' && app.interestGroupListView.collection !== null) {
+        app.interestGroupListView.stopListening(app.interestGroupListView.collection);
+      }
+      app.interestGroupListView.collection = app.tagList;
+    }    
+
     // CONTRIBUTIONS COLLECTION
     app.contributionList = CK.Model.awake.contributions;
    if (app.contributionListView === null) {
@@ -343,7 +349,7 @@ CK.Mobile = function() {
     app.contribution = new CK.Model.Contribution();
     // ensure that models inside the collection are wakeful
     app.contribution.wake(Sail.app.config.wakeful.url);
-    app.contribution.on('all',function() { console.log(arguments) });
+    app.contribution.on('all',function() { console.log(arguments); });
 
     // case: no previous inputView
     if (app.inputView === null) {
@@ -535,9 +541,9 @@ CK.Mobile = function() {
     jQuery('#bucket-tagging-btn-container .active').removeClass('active');
   };
 
-  app.chooseTagGroup = function(chosenTag, chosenTagId) {
-    console.log('User chooses tag...');
-    app.userState.set('tag_group',chosenTag);
+  app.chooseInterestGroup = function(chosenTagName) {
+    console.log('Interest group chosen...');
+    app.userState.set('tag_group',chosenTagName);
     app.userState.save();
   };
 
@@ -545,131 +551,131 @@ CK.Mobile = function() {
 
 
 
-  var proposalsList = null;       // getting late the night before
-  app.startProposal = function() {
-    app.hideWaitScreen();
-    // for list view
-    CK.setState(app.userData.account.login, {proposal: {}});     // do we need this?
-    console.log('creating ProposalListView');
+  // var proposalsList = null;       // getting late the night before
+  // app.startProposal = function() {
+  //   app.hideWaitScreen();
+  //   // for list view
+  //   CK.setState(app.userData.account.login, {proposal: {}});     // do we need this?
+  //   console.log('creating ProposalListView');
 
-    if (app.contributionList === null) {
-      app.contributionList = new CK.Model.Contributions();
-    }
+  //   if (app.contributionList === null) {
+  //     app.contributionList = new CK.Model.Contributions();
+  //   }
 
-    //app.contributionList.wake(app.config.wakeful.url);
-    app.contributionList.on('change', function(model) { console.log(model.changedAttributes()); });    
-    app.proposalListView = new CK.Mobile.View.ProposalListView({
-      el: jQuery('#proposal-contribution-list'),
-      collection: app.contributionList
-    });
-    app.contributionList.on('reset add', app.proposalListView.render, app.proposalListView);
-    var sort = ['created_at', 'DESC'];
-    app.contributionList.fetch({
-      data: { sort: JSON.stringify(sort) }
-    });
+  //   //app.contributionList.wake(app.config.wakeful.url);
+  //   app.contributionList.on('change', function(model) { console.log(model.changedAttributes()); });    
+  //   app.proposalListView = new CK.Mobile.View.ProposalListView({
+  //     el: jQuery('#proposal-contribution-list'),
+  //     collection: app.contributionList
+  //   });
+  //   app.contributionList.on('reset add', app.proposalListView.render, app.proposalListView);
+  //   var sort = ['created_at', 'DESC'];
+  //   app.contributionList.fetch({
+  //     data: { sort: JSON.stringify(sort) }
+  //   });
 
-    // for singular proposal
-    if (app.proposalInputView === null) {
-      app.proposalInputView = new CK.Mobile.View.ProposalInputView({
-        el: jQuery('#proposal-justification-container')
-      });
-    }
+  //   // for singular proposal
+  //   if (app.proposalInputView === null) {
+  //     app.proposalInputView = new CK.Mobile.View.ProposalInputView({
+  //       el: jQuery('#proposal-justification-container')
+  //     });
+  //   }
 
-    // for proposal collection
-    app.proposalsList = new CK.Model.Proposals();
-    app.proposalsList.wake(Sail.app.config.wakeful.url);
-    app.proposalsList.on('add', app.bindProposal);
-    app.proposalsList.on('reset', function(props) {
-      props.each(app.bindProposal);
-    });
-    app.proposalsList.fetch();
+  //   // for proposal collection
+  //   app.proposalsList = new CK.Model.Proposals();
+  //   app.proposalsList.wake(Sail.app.config.wakeful.url);
+  //   app.proposalsList.on('add', app.bindProposal);
+  //   app.proposalsList.on('reset', function(props) {
+  //     props.each(app.bindProposal);
+  //   });
+  //   app.proposalsList.fetch();
 
-    // for grouping view
-    var states = CK.Model.awake.states;
+  //   // for grouping view
+  //   var states = CK.Model.awake.states;
 
-    states.on('change', function(model) { console.log(model.changedAttributes()); });
+  //   states.on('change', function(model) { console.log(model.changedAttributes()); });
 
-    app.groupingView = new CK.Mobile.View.GroupingView({
-      el: jQuery('#grouping-screen'),
-      collection: states
-    });
-    states.on('reset add', app.groupingView.render, app.groupingView);
+  //   app.groupingView = new CK.Mobile.View.GroupingView({
+  //     el: jQuery('#grouping-screen'),
+  //     collection: states
+  //   });
+  //   states.on('reset add', app.groupingView.render, app.groupingView);
 
-    function fetchSuccess (m) {
-      console.log('fetched user states:', states);
-    }
-    function fetchError (err) {
-      console.warn('error fetching states');
-    }
+  //   function fetchSuccess (m) {
+  //     console.log('fetched user states:', states);
+  //   }
+  //   function fetchError (err) {
+  //     console.warn('error fetching states');
+  //   }
 
-    states.fetch({success: fetchSuccess, error: fetchError});       // this will no longer work with drowsy 0.2.0
-  };
+  //   states.fetch({success: fetchSuccess, error: fetchError});       // this will no longer work with drowsy 0.2.0
+  // };
 
-  app.newProposal = function(initiator, receiver, tagGroupName, tagGroupId) {
-    // for proposal entry view
-    var proposal = new CK.Model.Proposal();
-    proposal.wake(Sail.app.config.wakeful.url);
+  // app.newProposal = function(initiator, receiver, tagGroupName, tagGroupId) {
+  //   // for proposal entry view
+  //   var proposal = new CK.Model.Proposal();
+  //   proposal.wake(Sail.app.config.wakeful.url);
 
-    proposal.on('change', function(model) { console.log(model.changedAttributes()); });    
+  //   proposal.on('change', function(model) { console.log(model.changedAttributes()); });    
 
-    var groupName = initiator + '-' + receiver;
-    proposal.set('published', false);
-    proposal.set('headline_published', false);
-    proposal.set('proposal_published', false);
-    proposal.set('justification_published', false);
-    proposal.set('author', groupName);
-    proposal.set('initiator', initiator);
-    proposal.set('receiver', receiver);
-    proposal.set('tag_group_id', tagGroupId);
-    proposal.set('tag_group_name', tagGroupName);
+  //   var groupName = initiator + '-' + receiver;
+  //   proposal.set('published', false);
+  //   proposal.set('headline_published', false);
+  //   proposal.set('proposal_published', false);
+  //   proposal.set('justification_published', false);
+  //   proposal.set('author', groupName);
+  //   proposal.set('initiator', initiator);
+  //   proposal.set('receiver', receiver);
+  //   proposal.set('tag_group_id', tagGroupId);
+  //   proposal.set('tag_group_name', tagGroupName);
 
-    proposal.on('reset add', app.proposalInputView.render, app.proposalInputView);
+  //   proposal.on('reset add', app.proposalInputView.render, app.proposalInputView);
 
-    proposal.save();
-  };
+  //   proposal.save();
+  // };
 
-  app.bindProposal = function(prop) {
-    if (!prop.get('published') && (prop.get('initiator') === Sail.app.userData.account.login || prop.get('receiver') === Sail.app.userData.account.login)) {
-      // Something added
+  // app.bindProposal = function(prop) {
+  //   if (!prop.get('published') && (prop.get('initiator') === Sail.app.userData.account.login || prop.get('receiver') === Sail.app.userData.account.login)) {
+  //     // Something added
 
-      app.proposalInputView.initialRenderComplete = false;
-      app.proposalInputView.stopListening(app.proposalInputView.model);
+  //     app.proposalInputView.initialRenderComplete = false;
+  //     app.proposalInputView.stopListening(app.proposalInputView.model);
       
-      // this is really important - will be the model for how we listen to wakeful events, I think
-      prop.on('change:published', function() {
-        if (prop.get('published') === true) {
-          prop.off();
-          jQuery().toastmessage('showSuccessToast', "Proposal submitted");
-          jQuery('#group-btn').removeClass('disabled');
-          jQuery('#group-label-container').text("");
-        }
-      });
+  //     // this is really important - will be the model for how we listen to wakeful events, I think
+  //     prop.on('change:published', function() {
+  //       if (prop.get('published') === true) {
+  //         prop.off();
+  //         jQuery().toastmessage('showSuccessToast', "Proposal submitted");
+  //         jQuery('#group-btn').removeClass('disabled');
+  //         jQuery('#group-label-container').text("");
+  //       }
+  //     });
 
-      prop.wake(Sail.app.config.wakeful.url);
-      prop.on('change', app.proposalInputView.render, app.proposalInputView);
+  //     prop.wake(Sail.app.config.wakeful.url);
+  //     prop.on('change', app.proposalInputView.render, app.proposalInputView);
 
-      app.proposalInputView.model = prop;
-      app.proposalInputView.render();
-    }
-  };
+  //     app.proposalInputView.model = prop;
+  //     app.proposalInputView.render();
+  //   }
+  // };
 
 
-  app.checkProposalPublishState = function() {
-    if (app.proposalInputView.model.get('headline_published') === true && app.proposalInputView.model.get('proposal_published') && app.proposalInputView.model.get('justification_published') === true) {
-      console.log('setting proposal published state to true...');
-      app.proposalInputView.model.set('published', true);
-      app.proposalInputView.model.save();
-    } else {
-      app.proposalInputView.model.save();
-    }
-  };
+  // app.checkProposalPublishState = function() {
+  //   if (app.proposalInputView.model.get('headline_published') === true && app.proposalInputView.model.get('proposal_published') && app.proposalInputView.model.get('justification_published') === true) {
+  //     console.log('setting proposal published state to true...');
+  //     app.proposalInputView.model.set('published', true);
+  //     app.proposalInputView.model.save();
+  //   } else {
+  //     app.proposalInputView.model.save();
+  //   }
+  // };
 
-  app.createGroup = function(receiver, tagGroupName, tagGroupId) {
-    console.log('creating group...');
+  // app.createGroup = function(receiver, tagGroupName, tagGroupId) {
+  //   console.log('creating group...');
 
-    var initiator = app.userData.account.login;
-    app.newProposal(initiator, receiver, tagGroupName, tagGroupId);
-  };
+  //   var initiator = app.userData.account.login;
+  //   app.newProposal(initiator, receiver, tagGroupName, tagGroupId);
+  // };
 
   // app.startInterpretation = function() {
   //   console.log('creating InterpretationListView');
@@ -732,7 +738,7 @@ CK.Mobile = function() {
     jQuery('#index-screen').addClass('hide');
     jQuery('#contribution-to-tag-screen').addClass('hide');
     jQuery('#bucket-tagging-screen').addClass('hide');
-    jQuery('#proposal-tag-list-screen').addClass('hide');
+    jQuery('#choose-interest-group-screen').addClass('hide');
     jQuery('#proposal-screen').addClass('hide');
   };
 

@@ -142,7 +142,6 @@
         });
       },
       'click #go-propose': function(ev) {
-        return;
         return this.runState.save({
           phase: 'propose'
         });

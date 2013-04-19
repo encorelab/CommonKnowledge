@@ -424,24 +424,23 @@
 
 
   /**
-    ProposalTagListView
+    InterestGroupListView
   **/
-  self.ProposalTagListView = Backbone.View.extend({
+  self.InterestGroupListView = Backbone.View.extend({
     events: {
-      'click #proposal-tag-list-btn-container .tag-btn': function(ev) {
+      'click #interest-group-list-btn-container .tag-btn': function(ev) {
         var chosenTagId = ev.currentTarget.id;
         var chosenTag = jQuery('#'+chosenTagId).text();
         var ok = confirm("Do you want to choose <"+ chosenTag + "> as your specialization?");
         if (ok) {
-          Sail.app.chooseTagGroup(chosenTag, chosenTagId);
+          Sail.app.chooseInterestGroup(chosenTag);
+          Sail.app.hideAll();
+          jQuery('#proposal-screen').removeClass('hide');
+          Sail.app.proposalListView.render();
         } else {
-          jQuery('#proposal-tag-list-btn-container .tag-btn').removeClass('active');
+          jQuery('#interest-group-list-btn-container .tag-btn').removeClass('active');
         }
       }
-    },
-
-    initialize: function () {
-
     },
 
     /**
@@ -449,7 +448,7 @@
     **/
     render: function () {
       var view = this;
-      console.log("rendering ProposalTagListView!");
+      console.log("rendering InterestGroupListView!");
 
       // clear all buttons
       // jQuery('.tag-btn').removeClass('active');
@@ -463,7 +462,7 @@
           if (tagButton.length === 0) {
             tagButton = jQuery('<button id='+tag.id+' type="button" class="btn tag-btn"></button>');
             //tagButton = jQuery(tagButton);
-            jQuery('#proposal-tag-list .tag-btn-group').append(tagButton);
+            jQuery('#interest-group-list .tag-btn-group').append(tagButton);
           }
 
           tagButton.text(tag.get('name'));
@@ -503,13 +502,19 @@
       Triggers full update of all dynamic elements in the list view
     **/
     render: function () {
-      console.log("Rendering ProposalListView...");             // TODO: something is messed up here - probably with hasTag?
+      console.log("Rendering ProposalListView...");
       var createdAt;
-      // clear out the proposal-list
-      jQuery('#proposal-list li').remove();
 
       Sail.app.contributionList.each(function(contrib) {
-        if (contrib.get('published') === true && contrib.hasTag(Sail.app.userState.get('tag_group'))) {
+        // if (contrib.hasChanged() || jQuery('li#'+contrib.id).length === 0) {
+        //   // if this contrib has changed
+        //   jQuery('#proposal-list li#'+contrib.id).remove();
+        // } else {
+        //   // else break out
+        //   return;
+        // }              TODO - add me back?
+        var myTag = Sail.app.tagList.findWhere({'name':Sail.app.userState.get('tag_group')})
+        if (contrib.get('published') === true && contrib.hasTag(myTag)) {
           var note = "<li id=" + contrib.id + " class='list-item'><a class='note'><span class='headline'></span>";
           note += "<br /><i class='icon-chevron-right'></i>";
           note += "<span class='author'></span><span class='date'></span></a></li>";

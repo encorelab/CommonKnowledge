@@ -48,7 +48,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             @runState.save(phase: 'tagging')
 
         'click #go-propose': (ev) ->
-            return # temporarily disabled for April 8 run
+            #return # temporarily disabled for April 8 run
             @runState.save(phase: 'propose')
 
         'click #go-interpret': (ev) ->

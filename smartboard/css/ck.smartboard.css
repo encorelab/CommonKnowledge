@@ -26,7 +26,7 @@ body {
     body.mode-propose #go-tagging {
       opacity: 0.4; }
     body.mode-propose #go-propose {
-      opacity: 0.4; }
+      opacity: 1.0; }
     body.mode-propose #go-interpret {
       opacity: 1.0; }
   body.mode-interpret {
