@@ -82,19 +82,11 @@ img.balloon-note {
   min-height: 64px; }
 
 .contribution.balloon.whiteGradient {
-  background: white;
-  /* Old browsers */
-  background: -moz-linear-gradient(top, white 0%, #f1f1f1 50%, #e1e1e1 51%, #f6f6f6 100%);
+  background: -moz-linear-gradient(top, white 0%, whitesmoke 50%, #e0e0e0 51%, #f7f7f7 100%);
   /* FF3.6+ */
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, white), color-stop(50%, #f1f1f1), color-stop(51%, #e1e1e1), color-stop(100%, #f6f6f6));
-  /* Chrome,Safari4+ */
-  background: -webkit-linear-gradient(top, white 0%, #f1f1f1 50%, #e1e1e1 51%, #f6f6f6 100%);
+  background: -webkit-linear-gradient(top, white 0%, whitesmoke 50%, #e0e0e0 51%, #f7f7f7 100%);
   /* Chrome10+,Safari5.1+ */
-  background: -o-linear-gradient(top, white 0%, #f1f1f1 50%, #e1e1e1 51%, #f6f6f6 100%);
-  /* Opera 11.10+ */
-  background: -ms-linear-gradient(top, white 0%, #f1f1f1 50%, #e1e1e1 51%, #f6f6f6 100%);
-  /* IE10+ */
-  background: linear-gradient(to bottom, white 0%, #f1f1f1 50%, #e1e1e1 51%, #f6f6f6 100%);
+  background: linear-gradient(to bottom, white 0%, whitesmoke 50%, #e0e0e0 51%, #f7f7f7 100%);
   /* W3C */ }
 
 .contribution.balloon {
@@ -105,13 +97,7 @@ img.balloon-note {
   border-radius: 15px;
   background-color: transparent;
   overflow: hidden;
-  max-height: 95%;
-  -webkit-transition: width 0.5s ease 0;
-  -moz-transition: width 0.5s ease 0;
-  transition: width 0.5s ease 0;
-  -webkit-transition: height 0.5s ease 0;
-  -moz-transition: height 0.5s ease 0;
-  transition: height 0.5s ease 0; }
+  max-height: 95%; }
   .contribution.balloon .proposal {
     font-weight: bold;
     margin-top: 10px;
@@ -478,7 +464,13 @@ button {
 .balloon {
   -moz-user-select: none;
   -webkit-user-select: none;
-  user-select: none; }
+  user-select: none;
+  -webkit-box-shadow: rgba(0, 0, 0, 0.1) 4px 4px 4px;
+  -moz-box-shadow: rgba(0, 0, 0, 0.1) 4px 4px 4px;
+  box-shadow: rgba(0, 0, 0, 0.1) 4px 4px 4px;
+  -webkit-transition: height 0.5s, box-shadow 0.5s;
+  -moz-transition: height 0.5s, box-shadow 0.5s;
+  transition: height 0.5s, box-shadow 0.5s; }
 
 .balloon:hover {
   cursor: pointer;
@@ -493,7 +485,8 @@ button {
   cursor: move;
   cursor: -moz-grabbing;
   cursor: -webkit-grabbing;
-  cursor: grabbing; }
+  cursor: grabbing;
+  box-shadow: yellow 0px 0px 5px 5px; }
 
 .balloon.blurred {
   opacity: 0.15; }

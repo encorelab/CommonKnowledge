@@ -25,6 +25,9 @@ $tag-bubble-color-group3-to: #70ED11;
 $tag-bubble-color-group4-from: #f358d4;
 $tag-bubble-color-group4-to: #ED11C1;
 
+$contrib-bubble-base-color: #fff;
+$contrib-bubble-active-color: #ffe;
+
 $widget-background-color: #ffa100;
 $widget-accent-color: #c8271a;
 
@@ -165,14 +168,11 @@ img.balloon-note {
 }
 
 .contribution.balloon.whiteGradient {
-    background: rgb(255,255,255); /* Old browsers */
-    background: -moz-linear-gradient(top, rgba(255,255,255,1) 0%, rgba(241,241,241,1) 50%, rgba(225,225,225,1) 51%, rgba(246,246,246,1) 100%); /* FF3.6+ */
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,1)), color-stop(50%,rgba(241,241,241,1)), color-stop(51%,rgba(225,225,225,1)), color-stop(100%,rgba(246,246,246,1))); /* Chrome,Safari4+ */
-    background: -webkit-linear-gradient(top, rgba(255,255,255,1) 0%,rgba(241,241,241,1) 50%,rgba(225,225,225,1) 51%,rgba(246,246,246,1) 100%); /* Chrome10+,Safari5.1+ */
-    background: -o-linear-gradient(top, rgba(255,255,255,1) 0%,rgba(241,241,241,1) 50%,rgba(225,225,225,1) 51%,rgba(246,246,246,1) 100%); /* Opera 11.10+ */
-    background: -ms-linear-gradient(top, rgba(255,255,255,1) 0%,rgba(241,241,241,1) 50%,rgba(225,225,225,1) 51%,rgba(246,246,246,1) 100%); /* IE10+ */
-    background: linear-gradient(to bottom, rgba(255,255,255,1) 0%,rgba(241,241,241,1) 50%,rgba(225,225,225,1) 51%,rgba(246,246,246,1) 100%); /* W3C */
+    background: -moz-linear-gradient(top, $contrib-bubble-base-color 0%, darken($contrib-bubble-base-color, 4%) 50%, darken($contrib-bubble-base-color, 12%) 51%, darken($contrib-bubble-base-color, 3%) 100%); /* FF3.6+ */
+    background: -webkit-linear-gradient(top, $contrib-bubble-base-color 0%,darken($contrib-bubble-base-color, 4%) 50%,darken($contrib-bubble-base-color, 12%) 51%,darken($contrib-bubble-base-color, 3%) 100%); /* Chrome10+,Safari5.1+ */
+    background: linear-gradient(to bottom, $contrib-bubble-base-color 0%,darken($contrib-bubble-base-color, 4%) 50%,darken($contrib-bubble-base-color, 12%) 51%,darken($contrib-bubble-base-color, 3%) 100%); /* W3C */
 }
+
 
 .contribution.balloon {
     position: absolute;
@@ -219,7 +219,6 @@ img.balloon-note {
     max-height: 95%;
     // overflow-y: auto;
 
-    @include transition(0.5s, width);
 
     h3.headline {
         margin-top: 8px;
@@ -319,8 +318,6 @@ img.balloon-note {
     &.propose {
         background-color: rgba(255, 255, 0, 0.9);
     }
-
-    @include transition(0.5s, height);
 }
 
 .idea-counter-off {
@@ -681,6 +678,14 @@ button {
     -moz-user-select: none;
     -webkit-user-select: none;
     user-select: none;
+
+    -webkit-box-shadow: rgba(0,0,0,0.1) 4px 4px 4px;
+    -moz-box-shadow: rgba(0,0,0,0.1) 4px 4px 4px;
+    box-shadow: rgba(0,0,0,0.1) 4px 4px 4px;
+
+    -webkit-transition: height 0.5s, box-shadow 0.5s;
+    -moz-transition: height 0.5s, box-shadow 0.5s;
+    transition: height 0.5s, box-shadow 0.5s;
 }
 
 .balloon:hover {
@@ -699,6 +704,8 @@ button {
     cursor: -moz-grabbing;
     cursor: -webkit-grabbing;
     cursor: grabbing;
+
+    box-shadow: yellow 0px 0px 5px 5px
 }
 
 .balloon.blurred {
