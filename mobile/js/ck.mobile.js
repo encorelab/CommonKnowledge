@@ -319,7 +319,7 @@ CK.Mobile = function() {
 
     // CONTRIBUTIONS COLLECTION
     app.contributionList = CK.Model.awake.contributions;
-   if (app.contributionListView === null) {
+    if (app.contributionListView === null) {
       app.contributionListView = new CK.Mobile.View.ContributionListView({
         el: jQuery('#contribution-list'),
         collection: app.contributionList
