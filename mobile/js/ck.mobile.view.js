@@ -303,8 +303,6 @@
           }
         });        
       }
-
-
     }
   });
 
@@ -435,6 +433,7 @@
         if (ok) {
           Sail.app.chooseInterestGroup(chosenTag);
           Sail.app.hideAll();
+          jQuery('.brand').text('Common Knowledge - Specializing in ' + chosenTag);
           jQuery('#proposal-screen').removeClass('hide');
           Sail.app.proposalListView.render();
         } else {
@@ -490,7 +489,7 @@
         $target.children().first().addClass('selected');
         var proposalId = $target.attr('id');
 
-      //   // Sail.app.showProposalDetails(Sail.app.proposalList.get(proposalId));        
+        Sail.app.showProposalDetails(Sail.app.contributionList.get(proposalId));        
       }
     },
 
@@ -513,7 +512,7 @@
         //   // else break out
         //   return;
         // }              TODO - add me back?
-        var myTag = Sail.app.tagList.findWhere({'name':Sail.app.userState.get('tag_group')})
+        var myTag = Sail.app.tagList.findWhere( {'name':Sail.app.userState.get('tag_group')} );
         if (contrib.get('published') === true && contrib.hasTag(myTag)) {
           var note = "<li id=" + contrib.id + " class='list-item'><a class='note'><span class='headline'></span>";
           note += "<br /><i class='icon-chevron-right'></i>";
@@ -542,11 +541,70 @@
         }
       });
     }
-
   });
 
 
+  /**
+    ProposalDetailsView
+  **/
+  self.ProposalDetailsView = Backbone.View.extend({
+    events: {
 
+    },
+
+    initialize: function () {
+      console.log("Initializing ProposalDetailsView...");
+    },
+
+    /**
+      Triggers full update of all dynamic elements in the details view
+    **/
+    render: function () {
+      console.log("rendering ProposalDetailsView!");
+      var view = this;
+
+      jQuery('#proposal-details .field').text('');
+
+      // created_at will return undefined, so need to check it exists...
+      if (view.model && view.model.get('created_at')) {
+        jQuery('#proposal-details .note-headline').text(view.model.get('headline'));
+        jQuery('#proposal-details .note-body').text(view.model.get('content'));
+        jQuery('#proposal-details .note-author').text('~'+view.model.get('author'));
+
+        var createdAt = view.model.get('created_at');
+        if (createdAt) {
+          jQuery('#proposal-details .note-created-at').text(' (' + createdAt.toLocaleDateString() + ' ' + createdAt.toLocaleTimeString() + ')');
+        }
+
+        // add the tags
+        var tagsEl = '<div><i>';
+        _.each(view.model.get('tags'), function(t) {
+          tagsEl += ' ';
+          tagsEl += t.name;
+        });
+        tagsEl += '</i></div>';
+        tagsEl = jQuery(tagsEl);
+        jQuery('#proposal-details .note-tags').append(tagsEl);
+
+        // add the buildOns (if they are published)
+        var buildOnEl = '<div>';
+        _.each(view.model.get('build_ons'), function(b) {
+          if (b.published === true) {
+            buildOnEl += '<hr />';
+            buildOnEl += b.content;
+            buildOnEl += '<hr /><span class="build-on-metadata">~' + b.author;
+            buildOnEl += ' (' + b.created_at.toLocaleDateString() + ' ' + b.created_at.toLocaleTimeString() + ')' +  '</span><hr />';            
+          }
+        });
+        buildOnEl += '</div>';
+        buildOnEl = jQuery(buildOnEl);
+        jQuery('#proposal-details .note-build-ons').append(buildOnEl);
+
+      } else {
+        console.warn("ProposalDetailsView render skipped this contrib because created_at doesn't exist");
+      }
+    }
+  });
 
 
   // // WARNING: do not look directly at this code - it will make your eyes bleed

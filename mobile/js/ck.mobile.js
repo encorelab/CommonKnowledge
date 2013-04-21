@@ -22,7 +22,7 @@ CK.Mobile = function() {
   };
 
   app.runState = null;
-  app.userState = null;       // this might be more aptly named - currently only dealing with user tagging status
+  app.userState = null;
   app.userData = null;
   app.keyCount = 0;
   app.contribution = null;
@@ -38,14 +38,12 @@ CK.Mobile = function() {
   app.bucketTaggingView = null;
   app.interestGroupListView = null;
   app.proposalListView = null;
+  app.proposalDetailsView = null;
 
   // Global vars - a lot of this stuff can go TODO
   app.synthesisFlag = false;
   app.myTagGroup = null;
   app.proposalInputView = null;
-  // these are both used in Interpretation phase
-  app.proposalList = null;
-  app.interpretationListView = null;
 
   app.autoSaveTimer = window.setTimeout(function() { console.log("timer activated"); } ,10);
 
@@ -547,7 +545,33 @@ CK.Mobile = function() {
     app.userState.save();
   };
 
+  app.showProposalDetails = function(contrib) {
+    console.log('Creating a new Details...');
+    // if (contribType === 'brainstorm') {
 
+    // } else if (contribType === 'proposal') {
+
+    // } else {
+    //   console.error("Unknown contribution type...")
+    // }
+    var details = contrib;
+    if (app.proposalDetailsView === null) {
+      app.proposalDetailsView = new CK.Mobile.View.ProposalDetailsView({
+        el: jQuery('#proposal-details'),
+        model: details
+      });
+    } else {
+      if (typeof app.proposalDetailsView.model !== 'undefined' && app.proposalDetailsView.model !== null) {
+        app.proposalDetailsView.stopListening(app.proposalDetailsView.model);
+      }
+      app.proposalDetailsView.model = details;
+    }
+    details.on('change', app.proposalDetailsView.render, app.proposalDetailsView);
+    // have to call this manually because there are no change events later
+    app.proposalDetailsView.render();
+  };
+
+  
 
 
 
