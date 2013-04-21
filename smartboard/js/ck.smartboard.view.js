@@ -74,7 +74,8 @@
 (function() {
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   CK.Smartboard.View.Wall = (function(_super) {
 
@@ -83,6 +84,8 @@
     Wall.prototype.tagName = 'div';
 
     Wall.prototype.id = 'wall';
+
+    Wall.prototype.tagFilters = [];
 
     Wall.prototype.wordCloudShowable = true;
 
@@ -245,21 +248,24 @@
 
     Wall.prototype.moveBallonToTop = function(doc, view) {
       var maxZ;
-      maxZ = _.max(this.$el.find('.balloon').map(function(el) {
-        return parseInt(jQuery(this).zIndex());
-      }));
+      maxZ = this.maxBallonZ();
       maxZ++;
       return doc.set('z-index', maxZ);
+    };
+
+    Wall.prototype.maxBallonZ = function() {
+      return _.max(this.$el.find('.balloon').map(function(el) {
+        return parseInt(jQuery(this).zIndex());
+      }));
     };
 
     Wall.prototype.makeBallonDraggable = function(doc, view) {
       var _this = this;
       view.$el.draggable({
-        distance: 25,
+        distance: 30,
         containment: '#wall'
       }).css('position', 'absolute');
       view.$el.on('dragstop', function(ev, ui) {
-        view.$el.addClass('just-dragged');
         return doc.save({
           pos: ui.position
         }, {
@@ -274,6 +280,42 @@
       return view.$el.on('dragstart', function(ev, ui) {
         return _this.moveBallonToTop(doc, view);
       });
+    };
+
+    Wall.prototype.addTagFilter = function(tag) {
+      if (__indexOf.call(this.tagFilters, tag) < 0) {
+        this.tagFilters.push(tag);
+        return this.renderFiltered();
+      }
+    };
+
+    Wall.prototype.removeTagFilter = function(tag) {
+      this.tagFilters.splice(this.tagFilters.indexOf(tag), 1);
+      return this.renderFiltered();
+    };
+
+    Wall.prototype.renderFiltered = function(tag) {
+      var activeIds, maxZ, selector;
+      if (this.tagFilters.length === 0) {
+        return this.$el.find(".contribution, .connector").removeClass('blurred');
+      } else {
+        activeIds = (function() {
+          var _i, _len, _ref, _results;
+          _ref = this.tagFilters;
+          _results = [];
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            tag = _ref[_i];
+            _results.push(tag.id);
+          }
+          return _results;
+        }).call(this);
+        selector = ".tag-" + activeIds.join(", .tag-");
+        this.$el.find(".contribution:not(" + selector + ")").addClass('blurred');
+        this.$el.find(".connector:not(" + selector + ")").addClass('blurred');
+        maxZ = this.maxBallonZ();
+        this.$el.find(".contribution").filter("" + selector).removeClass('blurred').css('z-index', maxZ + 1);
+        return this.$el.find(".connector").filter("" + selector).removeClass('blurred');
+      }
     };
 
     Wall.prototype.render = function() {
@@ -678,16 +720,14 @@
     };
 
     ContributionBalloon.prototype.events = {
-      'click': 'handleClick'
+      'dblclick': 'handleClick'
     };
 
     ContributionBalloon.prototype.handleClick = function() {
-      jQuery('.contribution').not("#" + this.model.id);
-      if (this.$el.hasClass('just-dragged')) {
-        return this.$el.removeClass('just-dragged');
-      } else {
-        return this.$el.toggleClass('opened');
+      if (this.$el.hasClass('.ui-draggable-dragging')) {
+        return;
       }
+      return this.$el.toggleClass('opened');
     };
 
     ContributionBalloon.prototype.processContributionByType = function() {
@@ -754,6 +794,7 @@
       }
       meta = this.findOrCreate('.meta', "<div class='meta'><span class='author'></span></div>");
       meta.find('.author').text(this.model.get('author')).addClass("author-" + (this.model.get('author')));
+      this.renderTags();
       this.renderBuildons();
       this.renderConnectors();
       return this;
@@ -790,13 +831,14 @@
           'transform': connectorTransform
         });
         connector.addClass("connects-" + this.model.id);
-        _results.push(connector.addClass("connects-" + tag.id));
+        connector.addClass("connects-" + tag.id);
+        _results.push(connector.addClass("tag-" + tag.id));
       }
       return _results;
     };
 
     ContributionBalloon.prototype.renderTags = function() {
-      var tag, tagIds;
+      var tag, tagIds, tid, _i, _len;
       if (!this.model.has('tags')) {
         return;
       }
@@ -811,6 +853,10 @@
         return _results;
       }).call(this);
       this.$el.attr('data-tags', tagIds.join(" "));
+      for (_i = 0, _len = tagIds.length; _i < _len; _i++) {
+        tid = tagIds[_i];
+        this.$el.addClass("tag-" + tid);
+      }
       return this;
     };
 
@@ -887,11 +933,17 @@
 
     TagBalloon.prototype.handleClick = function(ev) {
       var $el;
-      $el = jQuery(ev.target);
-      if ($el.hasClass('just-dragged')) {
-        return $el.removeClass('just-dragged');
+      $el = this.$el;
+      if (this.$el.hasClass('.ui-draggable-dragging')) {
+        return;
+      }
+      console.log('clicked tag..');
+      if ($el.hasClass('active')) {
+        Sail.app.wall.removeTagFilter(this.model);
+        return $el.removeClass('active');
       } else {
-        return console.log('clicked tag..');
+        Sail.app.wall.addTagFilter(this.model);
+        return $el.addClass('active');
       }
     };
 

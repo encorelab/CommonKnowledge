@@ -91,7 +91,7 @@ img.balloon-note {
 
 .contribution.balloon {
   position: absolute;
-  width: 150px;
+  width: 170px;
   display: inline-block;
   min-height: 64px;
   border-radius: 15px;
@@ -180,6 +180,9 @@ img.balloon-note {
   .contribution.balloon.propose {
     background-color: rgba(255, 255, 0, 0.9); }
 
+.contribution.balloon.blurred {
+  opacity: 0.2; }
+
 .idea-counter-off {
   background-image: url("/smartboard/img/lightbulb_big_off.png");
   background-repeat: no-repeat;
@@ -266,7 +269,7 @@ img.balloon-note {
 
 .tag.balloon {
   position: absolute;
-  max-width: 150px;
+  max-width: 170px;
   border-radius: 1.5em;
   padding: 10px;
   border: 5px dotted black;
@@ -277,6 +280,9 @@ img.balloon-note {
     color: black; }
   .tag.balloon.pinned {
     border-style: solid; }
+  .tag.balloon.active {
+    border-style: solid;
+    background-color: #ffc766; }
 
 #tags-panel {
   position: fixed;
@@ -583,3 +589,5 @@ button {
   -moz-transform-origin: 0 0;
   transform-origin: 0 0;
   z-index: -1; }
+  .connector.blurred {
+    opacity: 0.2; }

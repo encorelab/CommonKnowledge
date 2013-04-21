@@ -1,6 +1,7 @@
 class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
     tagName: 'div'
     id: 'wall'
+    tagFilters: []
     wordCloudShowable: true
 
     events:
@@ -130,7 +131,6 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             bv.$el.css('visibility', 'visible')
 
         balloonList[doc.id] = bv
-
             
 
     assignRandomPositionToBalloon: (doc, view) ->
@@ -146,8 +146,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
         # 'z-index' is set on the model in @moveToTop()
 
     moveBallonToTop: (doc, view) ->
-        maxZ = _.max @$el.find('.balloon').map (el) ->
-            parseInt(jQuery(this).zIndex())
+        maxZ = @maxBallonZ()
         maxZ++
 
         doc.set 'z-index', maxZ
@@ -155,16 +154,21 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
         # this would move all connectors up too, but currently disabled
         #jQuery(".connects-#{@model.id}").zIndex maxZ - 1
 
+    maxBallonZ: ->
+        _.max @$el.find('.balloon').map (el) ->
+            parseInt(jQuery(this).zIndex())
+
     makeBallonDraggable: (doc, view) ->
         view.$el
             .draggable
-                distance: 25 # how far it needs to be moved before it's considered a drag
+                distance: 30 # how far it needs to be moved before it's considered a drag rather than a click
                 containment: '#wall'
                 #stack: '.balloon'
             .css 'position', 'absolute' # draggable makes position relative, but we need absolute
 
         view.$el.on 'dragstop', (ev, ui) =>
-            view.$el.addClass 'just-dragged' # prevent 'click' handlers from doing their thing
+            # don't need this anymore?
+            # view.$el.addClass 'just-dragged' # prevent 'click' handlers from doing their thing
 
             doc.save {pos: ui.position}, {patch: true}
 
@@ -174,6 +178,33 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
         view.$el.on 'dragstart', (ev, ui) =>
             @moveBallonToTop(doc, view)
 
+
+    addTagFilter: (tag) ->
+        unless tag in @tagFilters
+            @tagFilters.push(tag)
+            @renderFiltered()
+
+    removeTagFilter: (tag) ->
+        @tagFilters.splice(@tagFilters.indexOf(tag), 1)
+        @renderFiltered()
+
+    # blurs/unblurs contribution balloons based on the current contents of @tagFilters 
+    renderFiltered: (tag) ->
+        if @tagFilters.length is 0
+            @$el.find(".contribution, .connector").removeClass('blurred')
+        else
+            activeIds = (tag.id for tag in @tagFilters)
+            selector = ".tag-"+activeIds.join(", .tag-")
+
+            @$el.find(".contribution:not(#{selector})").addClass('blurred')
+            @$el.find(".connector:not(#{selector})").addClass('blurred')
+
+            maxZ = @maxBallonZ()
+            @$el.find(".contribution").filter("#{selector}")
+                .removeClass('blurred')
+                .css('z-index', maxZ+1) # NOTE: currently we don't persist this z-index change, since it's only temporary
+            @$el.find(".connector").filter("#{selector}")
+                .removeClass('blurred')
 
     render: =>
         phase = @runState.get('phase')

@@ -112,7 +112,7 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
     events:
         # 'mousedown': (ev) -> @moveToTop()
 
-        'click': 'handleClick'
+        'dblclick': 'handleClick'
             
                 
                 #@processContributionByType()
@@ -127,12 +127,12 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
     #         @renderConnectors()
 
     handleClick: =>
-        jQuery('.contribution').not("##{@model.id}")
+        #jQuery('.contribution').not("##{@model.id}")
 
-        if @$el.hasClass('just-dragged')
-            @$el.removeClass('just-dragged')
-        else
-            @$el.toggleClass('opened')
+        if @$el.hasClass('.ui-draggable-dragging')
+            return # prevent unwanted click action while dragging
+
+        @$el.toggleClass('opened')
         
     processContributionByType: =>
         if (@ballonContributionType is @balloonContributionTypes.analysis)
@@ -210,7 +210,7 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
             .text(@model.get('author'))
             .addClass("author-#{@model.get('author')}")
 
-        # @renderTags()
+        @renderTags()
         @renderBuildons()
         @renderConnectors()
         #@processContributionByType()
@@ -255,6 +255,7 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
 
             connector.addClass "connects-#{@model.id}"
             connector.addClass "connects-#{tag.id}"
+            connector.addClass "tag-#{tag.id}" # used for Wall's @tagFilters
 
     renderTags: =>
         # tagsContainer = @findOrCreate '.tags',
@@ -279,7 +280,11 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
 
         @$el.attr('data-tags', tagIds.join(" "))
 
-        return @ # return this for chaining
+        for tid in tagIds
+            @$el.addClass("tag-#{tid}")
+        #TODO: remove removed tags
+
+        return this # return this for chaining
             
 
     renderBuildons: =>
@@ -618,12 +623,20 @@ class CK.Smartboard.View.TagBalloon extends CK.Smartboard.View.Balloon
     #         @renderConnectors()
 
     handleClick: (ev) ->
-        $el = jQuery(ev.target)
-        if $el.hasClass('just-dragged')
-            $el.removeClass('just-dragged')
+        #$el = jQuery(ev.target)
+        $el = @$el
+
+        if @$el.hasClass('.ui-draggable-dragging')
+            return # prevent unwanted click action while dragging
+
+        console.log('clicked tag..')
+        if $el.hasClass('active')
+            Sail.app.wall.removeTagFilter(@model)
+            $el.removeClass('active')
         else
-            console.log('clicked tag..')
-            # do click handler stuff here...
+            Sail.app.wall.addTagFilter(@model)
+            $el.addClass('active')
+
 
     renderConnectors: =>
         taggedContributionViews = _.filter @wall.balloonViews, (bv) =>
