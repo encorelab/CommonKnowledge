@@ -532,7 +532,7 @@ CK.Mobile = function() {
       });
     }
     // save the bucketedContrib
-    Sail.app.bucketedContribution.save();
+    Sail.app.bucketedContribution.save(null, {patch:true});
     // set status to waiting
     Sail.app.userState.set('tagging_status','waiting');
     Sail.app.userState.save();
