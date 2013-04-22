@@ -153,6 +153,7 @@ CK.Mobile = function() {
       }
 
       app.updateUserState();
+      app.interestGroupListView.render();
 
     } else {
       console.log("Unknown state...");
@@ -199,7 +200,7 @@ CK.Mobile = function() {
       }
     } else if (app.runState.get('phase') === 'propose') {
       jQuery('#choose-interest-group-screen').removeClass('hide');
-      app.interestGroupListView.render();
+      
       // if (!app.userState.get('tag_group') || app.userState.get('tag_group') === '') {
       //   // if user still needs to choose a tag
       //   jQuery('#choose-interest-group-screen').removeClass('hide');
