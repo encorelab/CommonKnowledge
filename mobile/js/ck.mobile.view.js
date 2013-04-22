@@ -147,8 +147,8 @@
           if (b.published === true) {
             buildOnEl += '<hr />';
             buildOnEl += b.content;
-            buildOnEl += '<hr /><span class="build-on-metadata">~' + b.author;
-            buildOnEl += ' (' + b.created_at.toLocaleDateString() + ' ' + b.created_at.toLocaleTimeString() + ')' +  '</span><hr />';            
+            buildOnEl += '<br /><span class="build-on-metadata">~' + b.author;
+            buildOnEl += ' (' + b.created_at.toLocaleDateString() + ' ' + b.created_at.toLocaleTimeString() + ')' +  '</span>';            
           }
         });
         buildOnEl += '</div>';
@@ -345,7 +345,7 @@
           if (b.published === true) {
             buildOnEl += b.content;
             buildOnEl += '<br /><span class="build-on-metadata">~' + b.author;
-            buildOnEl += ' (' + b.created_at.toLocaleDateString() + ' ' + b.created_at.toLocaleTimeString() + ')' +  '</span><hr />';            
+            buildOnEl += ' (' + b.created_at.toLocaleDateString() + ' ' + b.created_at.toLocaleTimeString() + ')' +  '</span>';            
           }
         });
 
@@ -455,11 +455,11 @@
       view.collection.each(function(tag) {
         // don't show the N/A tag
         if (tag.get('name') !== "N/A") {
-          var tagButton = jQuery('button#'+tag.id);
+          var tagButton = jQuery('button#proposal'+tag.id);
           // length avoids duplicating (probably a better way to do this in backbone?)
           //if (tagButton.length === 0 && tag.get('name') != "N/A") {
           if (tagButton.length === 0) {
-            tagButton = jQuery('<button id='+tag.id+' type="button" class="btn tag-btn"></button>');
+            tagButton = jQuery('<button id="proposal'+tag.id+'" type="button" class="btn tag-btn"></button>');
             //tagButton = jQuery(tagButton);
             jQuery('#interest-group-list .tag-btn-group').append(tagButton);
           }
@@ -477,7 +477,7 @@
   self.ProposalListView = Backbone.View.extend({
     events: {
       'click .list-item': function (ev) {
-        jQuery('#proposal-list .proposal').removeClass('selected');
+        jQuery('#proposal-list .note').removeClass('selected');
 
         // The problem here was that ev.target referes to a differently deep nested element 
         var $target = jQuery(ev.target);
@@ -511,7 +511,7 @@
         // } else {
         //   // else break out
         //   return;
-        // }              TODO - add me back?
+        // }
         var myTag = Sail.app.tagList.findWhere( {'name':Sail.app.userState.get('tag_group')} );
         if (contrib.get('published') === true && contrib.hasTag(myTag)) {
           var note = "<li id=" + contrib.id + " class='list-item'><a class='note'><span class='headline'></span>";
@@ -592,8 +592,8 @@
           if (b.published === true) {
             buildOnEl += '<hr />';
             buildOnEl += b.content;
-            buildOnEl += '<hr /><span class="build-on-metadata">~' + b.author;
-            buildOnEl += ' (' + b.created_at.toLocaleDateString() + ' ' + b.created_at.toLocaleTimeString() + ')' +  '</span><hr />';            
+            buildOnEl += '<br /><span class="build-on-metadata">~' + b.author;
+            buildOnEl += ' (' + b.created_at.toLocaleDateString() + ' ' + b.created_at.toLocaleTimeString() + ')' +  '</span>';            
           }
         });
         buildOnEl += '</div>';
