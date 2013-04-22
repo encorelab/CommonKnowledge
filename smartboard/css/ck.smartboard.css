@@ -16,19 +16,24 @@ body {
   body.mode-tagging {
     background-color: #51ba34; }
     body.mode-tagging #go-tagging {
-      opacity: 0.4; }
+      opacity: 0.4;
+      pointer-events: none; }
     body.mode-tagging #go-propose {
       opacity: 1.0; }
     body.mode-tagging #go-interpret {
-      opacity: 0.4; }
+      opacity: 0.4;
+      pointer-events: none; }
   body.mode-propose {
     background-color: #34ba70; }
     body.mode-propose #go-tagging {
-      opacity: 0.4; }
+      opacity: 0.4;
+      pointer-events: none; }
     body.mode-propose #go-propose {
-      opacity: 1.0; }
+      opacity: 0.4;
+      pointer-events: none; }
     body.mode-propose #go-interpret {
-      opacity: 1.0; }
+      opacity: 0.4;
+      pointer-events: none; }
   body.mode-interpret {
     background-color: #34bab3; }
     body.mode-interpret #go-tagging {

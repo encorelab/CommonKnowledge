@@ -345,9 +345,6 @@
         }
         this.$el.data('phase', phase);
       }
-      jQuery("#go-propose, #go-interpret").css({
-        opacity: 0.4
-      });
       if (this.tags.length >= 4) {
         jQuery("#add-tag-opener").css({
           opacity: 0.4

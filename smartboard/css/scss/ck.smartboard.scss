@@ -64,6 +64,7 @@ body {
 
         #go-tagging {
             opacity: 0.4;
+            pointer-events: none;
         }
 
         #go-propose {
@@ -72,6 +73,7 @@ body {
 
         #go-interpret {
             opacity: 0.4;
+            pointer-events: none;
         }
     }
 
@@ -80,14 +82,17 @@ body {
 
         #go-tagging {
             opacity: 0.4;
+            pointer-events: none;
         }
 
         #go-propose {
-            opacity: 1.0;
+            opacity: 0.4;
+            pointer-events: none;
         }
 
         #go-interpret {
-            opacity: 1.0;
+            opacity: 0.4;
+            pointer-events: none;
         }
     }
 

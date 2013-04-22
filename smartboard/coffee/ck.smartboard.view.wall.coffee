@@ -253,10 +253,6 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
 
             @$el.data('phase', phase)
 
-        # temporarily disabled for April 8 run
-        jQuery("#go-propose, #go-interpret").css
-            opacity: 0.4
-
         if (@tags.length >= 4)
             jQuery("#add-tag-opener").css
                 opacity: 0.4
