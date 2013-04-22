@@ -527,15 +527,17 @@ CK.Mobile = function() {
     } else {
       _.each(jQuery('#bucket-tagging-btn-container .active'), function(b) {
         // TODO: do we still have a concept of tagger? Does addTag not do that? So manually?
-        Sail.app.bucketedContribution.addTag(jQuery(b).data('tag'));          // tag object is embedded in the button
+        app.bucketedContribution.addTag(jQuery(b).data('tag'));          // tag object is embedded in the button
         //console.log(jQuery(b).data('tag').get('name'));
       });
     }
+    // re-add the assigned_tagger (since it's not in bucketedContribution)
+    app.bucketedContribution.set('assigned_tagger',app.userData.account.login);
     // save the bucketedContrib
-    Sail.app.bucketedContribution.save(null, {patch:true});
+    app.bucketedContribution.save();     //null, {patch:true}
     // set status to waiting
-    Sail.app.userState.set('tagging_status','waiting');
-    Sail.app.userState.save();
+    app.userState.set('tagging_status','waiting');
+    app.userState.save();
     // clear the fields (there's no real way to do this in the view without stepping on the render)
     jQuery('#bucket-tagging-btn-container .active').removeClass('active');
   };

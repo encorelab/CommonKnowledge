@@ -147,8 +147,8 @@
           if (b.published === true) {
             buildOnEl += '<hr />';
             buildOnEl += b.content;
-            buildOnEl += '<hr /><span class="build-on-metadata">~' + b.author;
-            buildOnEl += ' (' + b.created_at.toLocaleDateString() + ' ' + b.created_at.toLocaleTimeString() + ')' +  '</span><hr />';            
+            buildOnEl += '<br /><span class="build-on-metadata">~' + b.author;
+            buildOnEl += ' (' + b.created_at.toLocaleDateString() + ' ' + b.created_at.toLocaleTimeString() + ')' +  '</span>';            
           }
         });
         buildOnEl += '</div>';
@@ -345,7 +345,7 @@
           if (b.published === true) {
             buildOnEl += b.content;
             buildOnEl += '<br /><span class="build-on-metadata">~' + b.author;
-            buildOnEl += ' (' + b.created_at.toLocaleDateString() + ' ' + b.created_at.toLocaleTimeString() + ')' +  '</span><hr />';            
+            buildOnEl += ' (' + b.created_at.toLocaleDateString() + ' ' + b.created_at.toLocaleTimeString() + ')' +  '</span>';            
           }
         });
 
