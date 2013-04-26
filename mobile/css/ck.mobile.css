@@ -121,6 +121,8 @@ input {
 	margin-bottom: 15px;
 	background-color: #CDCBD4;
 	text-align: center;
+	overflow-y: auto;
+	font-weight: bold;
 }
 
 #lock-screen, #wait-screen {
@@ -132,19 +134,6 @@ input {
 	left: 0;
 	top: 0;
 	overflow: hidden;
-}
-
-#grouping-screen {
-	height: 400px;
-	width: 300px;
-	position: absolute;
-	top: 50%;
-	margin-top: -200px;	
-	left: 50%;
-	margin-left: -150px;
-	background-color: black;
-	text-align: center;
-	border-radius: 8px 8px 8px 8px;	
 }
 
 #contribution-details, #proposal-details {
@@ -184,24 +173,10 @@ input {
 	margin: 5px 10px 10px 5px;
 }
 
-.proposal-container {
-	padding: 5px 0 5px 5px;
-	background-color: #ddd;
-	border-radius: 7px;
-}
-
 #proposal-body-entry-container {
 	margin-left: 0;
 }
 
-#justification-body-entry-container {
-	margin-left: 10px;
-}
-
-#interpretation-entry {
-	width: 97.5%;
-	height: 250px;
-}
 
 /******* elements *******/
 
@@ -250,8 +225,13 @@ input {
 
 .selected-note .note-headline {
 	font-size: 18px;
-	font-weight: bold;
 	margin-bottom: 5px;
+}
+
+#proposal-details .selected-note .note-headline {					/* overwritting to line things up in proposal */
+	margin-left: -15px;
+	margin-right: -15px;
+	margin-top: -7px;
 }
 
 .selected-note .note-metadata, .selected-note .build-on-metadata {
@@ -323,36 +303,35 @@ input {
 	height: 325px;
 }
 
-
-
-
-.proposal-entry-field {
-	width: 75%;
+#proposal-justifaction-header {
+	font-size: 18px;
+	font-weight: bold;
 }
 
-#body-container .proposal-entry-field {
-	height: 220px;
+#proposal-justification-input .text-entry {
+	width: 97.5%;
+	height: 117px;
+	margin-bottom: 10px;
 }
 
-#close-btn {
-	float: right;
+#proposal-justification-input #proposal-headline-entry {
+	width: 50%;
+	height: 22px;
 }
 
-#grouping-header {
-	margin-top: 10px;
-	color: white;
+/* for the research/experiment buttons */
+#proposal-justification-input #proposal-type-btn-container {
+	display: inline;
 }
 
-#grouping-btn-container .user-btn {
-	margin-top: 10px;
+#proposal-justification-input .proposal-type-btn {
+	width: 102px;
 }
 
-#grouping-btn-container .user-btn.active {
-	background: grey;
-}
-
-#create-group-btn {
-	margin-right: 112px;				/* TODO - fixme, this */
+/* for the share button */
+#proposal-justification-input .btn-container {
+	bottom: 284px;
+	right: 7px;
 }
 
 

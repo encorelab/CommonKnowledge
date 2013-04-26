@@ -38,12 +38,9 @@ CK.Mobile = function() {
   app.bucketTaggingView = null;
   app.interestGroupListView = null;
   app.proposalListView = null;
-  app.proposalDetailsView = null;
-
-  // Global vars - a lot of this stuff can go TODO
-  app.synthesisFlag = false;
-  app.myTagGroup = null;
+  app.proposal = null;
   app.proposalInputView = null;
+  app.proposalDetailsView = null;
 
   app.autoSaveTimer = window.setTimeout(function() { console.log("timer activated"); } ,10);
 
@@ -548,6 +545,73 @@ CK.Mobile = function() {
     app.userState.save();
   };
 
+  app.createNewProposal = function() {
+    console.log("Creating a new proposal note...");
+
+    app.proposal = new CK.Model.Proposal();
+    // ensure that models inside the collection are wakeful
+    app.proposal.wake(Sail.app.config.wakeful.url);
+    app.proposal.on('all',function() { console.log(arguments); });
+
+    // case: no previous proposalInputView
+    if (app.proposalInputView === null) {
+      app.proposalInputView = new CK.Mobile.View.ProposalInputView({
+        el: jQuery('#proposal-justification-input'),
+        model: app.proposal
+      });
+    // case: already have an proposalInputView with attached model
+    } else {
+      // detatch that model and attach the current contrib model
+      if (typeof app.proposalInputView.model !== 'undefined' && app.proposalInputView.model !== null) {
+        app.proposalInputView.stopListening(app.proposalInputView.model);
+      }
+      app.proposalInputView.model = app.proposal;
+    }
+
+    app.proposalInputView.$el.show('slide', {direction: 'up'});
+
+    var d = new Date();
+    var myTag = Sail.app.tagList.find(function(t) { return t.get('name') === app.userState.get('tag_group') });      // TODO: abstract this?
+    app.proposal.set('created_at',d);
+    app.proposal.set('author', app.userData.account.login);             // change this to some kind of 'team' authorship?
+    app.proposal.set('published', false);
+    app.proposal.set('headline','');
+    app.proposal.set('proposal','');
+    app.proposal.set('justification','');
+    app.proposal.set('votes',0);
+    app.proposal.set('type',null);
+    app.proposal.set('tag_group_id',myTag.id);
+    app.proposal.set('tag_group_name',myTag.get('name'));
+
+    app.proposal.save();
+    app.proposalInputView.render();
+  };  
+
+  app.saveProposal = function(view) {
+    console.log("Submitting proposal...");
+    Sail.app.proposal.wake(Sail.app.config.wakeful.url);      // just in case
+    Sail.app.proposal.save()            //patch:true,    // does this want to switch to patch?
+      .done( function() {
+        console.log("Proposal saved!");
+
+        jQuery('#proposal-justification-input').hide('slide', {direction: 'up'});
+        jQuery().toastmessage('showSuccessToast', "Proposal submitted");
+
+        // I think we need to lock the fields again and force the student to use the new note/build on button
+        // jQuery('#note-body-entry').addClass('disabled');
+        // jQuery('#note-headline-entry').addClass('disabled');
+
+        // clear the old proposal plus ui fields
+        view.stopListening(Sail.app.proposal);
+        // clear fields
+        view.$el.find(".field").val(null);
+        jQuery('#proposal-type-btn-container .btn').removeClass('active');
+      })
+      .fail( function() {
+        console.log('Error submitting');
+      });
+  };
+
   app.showProposalDetails = function(contrib) {
     console.log('Creating a new Details...');
     // if (contribType === 'brainstorm') {
@@ -767,6 +831,7 @@ CK.Mobile = function() {
     jQuery('#bucket-tagging-screen').addClass('hide');
     jQuery('#choose-interest-group-screen').addClass('hide');
     jQuery('#proposal-screen').addClass('hide');
+    jQuery('#proposal-justification-input').addClass('hide');
   };
 
   app.autoSave = function(model, inputKey, inputValue, instantSave) {
