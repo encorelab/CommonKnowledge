@@ -421,7 +421,7 @@
         _this = this;
       words = [];
       return this.gatherWordsForCloud(words, function(gatheredWords) {
-        var count, fade, filteredWords, h, maxCount, maxSize, w, word, wordCloud, wordCount, wordHash, _i, _len, _ref;
+        var count, fade, filteredWords, h, maxCount, maxSize, w, word, wordCloud, wordCount, wordHash, zIndex, _i, _len, _ref;
         words = gatheredWords;
         filteredWords = _this.filterWords(words);
         console.log(filteredWords);
@@ -434,8 +434,8 @@
           wordCount[w]++;
         }
         maxSize = 70;
-        maxCount = _.max(wordCount, function(count, word) {
-          return count;
+        maxCount = _.max(_.pairs(wordCount), function(wc) {
+          return wc[1];
         });
         console.log(maxCount, wordCount);
         wordHash = (function() {
@@ -445,7 +445,7 @@
             count = wordCount[word];
             h = {
               text: word,
-              size: Math.pow(count / maxCount, 0.5) * maxSize
+              size: Math.pow(count / maxCount[1], 0.5) * maxSize
             };
             console.log(word, count, h);
             _results.push(h);
@@ -454,7 +454,9 @@
         })();
         _this.generate(wordHash);
         wordCloud = jQuery('#word-cloud');
+        zIndex = _this.maxBallonZ() + 1;
         wordCloud.addClass('visible');
+        wordCloud.css('z-index', zIndex);
         fade = jQuery('#fade');
         return fade.addClass('visible');
       });
@@ -470,9 +472,11 @@
       return this.contributions.fetch({
         success: function(collection, response) {
           _.each(collection.models, function(c) {
-            console.log(c.get('headline'), c.get('content'));
-            text += c.get('headline') + ' ';
-            return text += c.get('content') + ' ';
+            if (c.get('published')) {
+              console.log(c.get('headline'), c.get('content'));
+              text += c.get('headline') + ' ';
+              return text += c.get('content') + ' ';
+            }
           });
           _.each(text.split(wordSeparators), function(word) {
             word = word.replace(punctuation, "");
@@ -484,14 +488,17 @@
     };
 
     WordCloud.prototype.filterWords = function(wordsToFilter) {
-      var discard, filteredWords, htmlTags, stopWords;
+      var discard, filteredWords, filteredWords2, htmlTags, stopWords;
       stopWords = /^(i|me|my|myself|we|us|our|ours|ourselves|you|your|yours|yourself|yourselves|he|him|his|himself|she|her|hers|herself|it|its|itself|they|them|their|theirs|themselves|what|which|who|whom|whose|this|that|these|those|am|is|are|was|were|be|been|being|have|has|had|having|do|does|did|doing|will|would|should|can|could|ought|i'm|you're|he's|she's|it's|we're|they're|i've|you've|we've|they've|i'd|you'd|he'd|she'd|we'd|they'd|i'll|you'll|he'll|she'll|we'll|they'll|isn't|aren't|wasn't|weren't|hasn't|haven't|hadn't|doesn't|don't|didn't|won't|wouldn't|shan't|shouldn't|can't|cannot|couldn't|mustn't|let's|that's|who's|what's|here's|there's|when's|where's|why's|how's|a|an|the|and|but|if|or|because|as|until|while|of|at|by|for|with|about|against|between|into|through|during|before|after|above|below|to|from|up|upon|down|in|out|on|off|over|under|again|further|then|once|here|there|when|where|why|how|all|any|both|each|few|more|most|other|some|such|no|nor|not|only|own|same|so|than|too|very|say|says|said|shall|sd|sdf|fuck|shit|poo|pooped|boop|boops|asshole|undefined)$/i;
       discard = /^(@|https?:)/;
       htmlTags = /(<[^>]*?>|<script.*?<\/script>|<style.*?<\/style>|<head.*?><\/head>)/g;
       filteredWords = _.filter(wordsToFilter, function(w) {
         return !(stopWords.test(w));
       });
-      return filteredWords;
+      filteredWords2 = _.filter(filteredWords, function(w) {
+        return w !== "";
+      });
+      return filteredWords2;
     };
 
     WordCloud.prototype.hide = function() {
@@ -531,6 +538,12 @@
       wordCloudObject = jQuery('#show-word-cloud');
       wordCloudObject.text('Hide Word Cloud');
       return wordCloudObject.removeClass('disabled');
+    };
+
+    WordCloud.prototype.maxBallonZ = function() {
+      return _.max(jQuery("*").map(function(el) {
+        return parseInt(jQuery(this).zIndex());
+      }));
     };
 
     return WordCloud;

@@ -95,25 +95,27 @@ CK.Mobile = function() {
       jQuery('#index-screen').removeClass('hide');
       app.contributionListView.render();
 
-      // restoring unfinished contribs/buildons
-      // will return the first unfinished contrib it finds
-      var unfinishedContrib = _.find(app.contributionList.models, function(contrib) {
-        return contrib.get('author') === app.userData.account.login && contrib.get('published') === false && (contrib.get('content') || contrib.get('headline'));
-      });
-      var unfinishedBuildOn = _.find(app.contributionList.models, function(contrib) {
-        return _.find(contrib.get('build_ons'), function(b) {
-          return b.author === app.userData.account.login && b.published === false && b.content !== "";
-        });
-      });
+      app.tryRestoreUnfinishedWork();
 
-      // if there are both unfinished contribs and unfinished buildons, contrib wins (right?)
-      if (unfinishedContrib) {
-        console.log('Unfinished Contribution found...');
-        app.restoreUnfinishedNote(unfinishedContrib);
-      } else if (unfinishedBuildOn) {
-        console.log('Unfinished BuildOn found...');
-        app.restoreUnfinishedBuildOn(unfinishedBuildOn);
-      }
+      // // restoring unfinished contribs/buildons
+      // // will return the first unfinished contrib it finds
+      // var unfinishedContrib = _.find(app.contributionList.models, function(contrib) {
+      //   return contrib.get('author') === app.userData.account.login && contrib.get('published') === false && (contrib.get('content') || contrib.get('headline'));
+      // });
+      // var unfinishedBuildOn = _.find(app.contributionList.models, function(contrib) {
+      //   return _.find(contrib.get('build_ons'), function(b) {
+      //     return b.author === app.userData.account.login && b.published === false && b.content !== "";
+      //   });
+      // });
+
+      // // if there are both unfinished contribs and unfinished buildons, contrib wins (right?)
+      // if (unfinishedContrib) {
+      //   console.log('Unfinished Contribution found...');
+      //   app.restoreUnfinishedNote(unfinishedContrib);
+      // } else if (unfinishedBuildOn) {
+      //   console.log('Unfinished BuildOn found...');
+      //   app.restoreUnfinishedBuildOn(unfinishedBuildOn);
+      // }
 
     } else if (p === 'tagging') {
       // TAGGING PHASE
@@ -129,6 +131,8 @@ CK.Mobile = function() {
       }
       app.updateUserState();
       app.bucketTaggingView.render();
+
+      app.tryRestoreUnfinishedWork();
 
     } else if (p === 'exploration') {
 
@@ -452,6 +456,28 @@ CK.Mobile = function() {
     app.detailsView.render();
   };
 
+  app.tryRestoreUnfinishedWork = function() {
+    // restoring unfinished contribs/buildons
+    // will return the first unfinished contrib it finds
+    var unfinishedContrib = _.find(app.contributionList.models, function(contrib) {
+      return contrib.get('author') === app.userData.account.login && contrib.get('published') === false && (contrib.get('content') || contrib.get('headline'));
+    });
+    var unfinishedBuildOn = _.find(app.contributionList.models, function(contrib) {
+      return _.find(contrib.get('build_ons'), function(b) {
+        return b.author === app.userData.account.login && b.published === false && b.content !== "";
+      });
+    });
+
+    // if there are both unfinished contribs and unfinished buildons, contrib wins (right?)
+    if (unfinishedContrib) {
+      console.log('Unfinished Contribution found...');
+      app.restoreUnfinishedNote(unfinishedContrib);
+    } else if (unfinishedBuildOn) {
+      console.log('Unfinished BuildOn found...');
+      app.restoreUnfinishedBuildOn(unfinishedBuildOn);
+    }
+  };
+
   app.restoreUnfinishedNote = function(contrib) {
     console.log("Restoring Contribution");
     app.contribution = contrib;
@@ -492,7 +518,13 @@ CK.Mobile = function() {
       app.inputView.model = app.buildOn;
     }
     app.inputView.$el.show('slide', {direction: 'up'});
-    app.inputView.render();    
+    app.inputView.render();
+
+    // we should also show the original contribution that the restored buildon belongs to
+    // DetailsView
+    Sail.app.showDetails(contrib);
+    // preparing for buildOns, if clicked
+    Sail.app.contribution = contrib;
   };
 
   app.contributionToTag = function (contributionId) {

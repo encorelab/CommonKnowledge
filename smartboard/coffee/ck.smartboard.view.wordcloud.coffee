@@ -10,7 +10,7 @@ class CK.Smartboard.View.WordCloud extends CK.Smartboard.View.Base
             filteredWords = @filterWords (words)
             console.log filteredWords
 
-            # count the occurance of each word and create a has with word and count {word1: 3}
+            # count the occurance of each word and create a hash with word and count {word1: 3}
             wordCount = {}
             for w in filteredWords
                 wordCount[w] ?= 0
@@ -18,10 +18,11 @@ class CK.Smartboard.View.WordCloud extends CK.Smartboard.View.Base
 
             # Now some math to calculate the size of a word depending on it's occurance (count)
             maxSize = 70
-            maxCount = _.max wordCount, (count,word) -> count
+            # maxCount = _.max wordCount, (count,word) -> count
+            maxCount = _.max(_.pairs(wordCount), (wc) -> wc[1])
             console.log maxCount, wordCount
             wordHash = for word,count of wordCount
-                h = {text: word, size: Math.pow(count / maxCount, 0.5) * maxSize}
+                h = {text: word, size: Math.pow(count / maxCount[1], 0.5) * maxSize}
                 console.log word,count,h
                 h
                 
@@ -29,7 +30,10 @@ class CK.Smartboard.View.WordCloud extends CK.Smartboard.View.Base
             @generate(wordHash)
             # make the object holding the word-cloud and the overlay visible
             wordCloud = jQuery('#word-cloud')
+            # add z-index greater than bubbles
+            zIndex = @maxBallonZ() + 1
             wordCloud.addClass('visible')
+            wordCloud.css('z-index', zIndex)
             fade = jQuery('#fade')
             fade.addClass('visible')
 
@@ -41,9 +45,10 @@ class CK.Smartboard.View.WordCloud extends CK.Smartboard.View.Base
         @contributions = new CK.Model.Contributions()
         @contributions.fetch success: (collection, response) =>
             _.each collection.models, (c) ->
-                console.log c.get('headline'), c.get('content')
-                text += c.get('headline') + ' '
-                text += c.get('content') + ' '
+                if c.get('published')
+                    console.log c.get('headline'), c.get('content')
+                    text += c.get('headline') + ' '
+                    text += c.get('content') + ' '
             _.each text.split(wordSeparators), (word) ->
                 word = word.replace(punctuation, "")
                 wordsToReturn.push(word)
@@ -57,7 +62,10 @@ class CK.Smartboard.View.WordCloud extends CK.Smartboard.View.Base
         discard = /^(@|https?:)/
         htmlTags = /(<[^>]*?>|<script.*?<\/script>|<style.*?<\/style>|<head.*?><\/head>)/g
         filteredWords = _.filter wordsToFilter, (w) -> not (stopWords.test(w))
-        return filteredWords
+        filteredWords2 = _.filter(filteredWords, (w) ->
+            w isnt ""
+        )
+        return filteredWords2
 
 
     hide: =>
@@ -111,3 +119,8 @@ class CK.Smartboard.View.WordCloud extends CK.Smartboard.View.Base
         wordCloudObject = jQuery('#show-word-cloud')
         wordCloudObject.text('Hide Word Cloud')
         wordCloudObject.removeClass('disabled')
+
+    maxBallonZ: ->
+        _.max jQuery("*").map((el) ->
+            parseInt jQuery(this).zIndex()
+        )
