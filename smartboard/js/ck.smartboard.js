@@ -73,7 +73,7 @@
     };
 
     Smartboard.prototype.getColorTagClassName = function() {
-      this.tagCount = this.tags.length;
+      this.tagCount = this.tags.length + 1;
       if (this.tagCount > 4) {
         console.warn('Adding more tags then you have tag classes');
       }
@@ -81,17 +81,15 @@
     };
 
     Smartboard.prototype.createNewTag = function(name) {
-      var colorClassName, tag;
+      var tag;
       if (this.tags.length < 4) {
         tag = new CK.Model.Tag({
           name: name,
+          colorClassName: this.getColorTagClassName(),
           created_at: new Date()
         });
         tag.wake(this.config.wakeful.url);
-        this.tags.add(tag);
-        colorClassName = this.getColorTagClassName();
-        tag.set('colorClass', colorClassName);
-        return tag.save();
+        return this.tags.add(tag);
       } else {
         return console.warn('Adding more than 4 tags is leading to problems. Button should be disabled ...');
       }
