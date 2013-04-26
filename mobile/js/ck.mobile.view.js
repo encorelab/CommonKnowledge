@@ -447,7 +447,7 @@
     **/
     render: function () {
       var view = this;
-      console.log("rendering InterestGroupListView!");
+      console.log("Rendering InterestGroupListView!");
 
       // clear all buttons
       // jQuery('.tag-btn').removeClass('active');
@@ -587,7 +587,22 @@
   **/
   self.ProposalDetailsView = Backbone.View.extend({
     events: {
-
+      'click #like-btn-off': function(ev) {
+        var voteCount = this.model.get('votes');
+        voteCount++;
+        this.model.set('votes',voteCount);
+        this.model.save();
+        jQuery('#like-btn-off').addClass('hide');
+        jQuery('#like-btn-on').removeClass('hide');
+      },
+      'click #like-btn-on': function(ev) {
+        var voteCount = this.model.get('votes');
+        voteCount--;
+        this.model.set('votes',voteCount);
+        this.model.save();        // these almost certainly should be patches, right?   TODO!!!
+        jQuery('#like-btn-on').addClass('hide');
+        jQuery('#like-btn-off').removeClass('hide');
+      }
     },
 
     initialize: function () {
@@ -605,13 +620,14 @@
         // set up the tags element
         var tagsEl = '<div><i>';
         // not sure if this is the best way to the model - could also check to see some unique keys that the model contains (ie justification)
-        if (view.model.constructor.name === 'Proposal') {
+        if (view.model instanceof CK.Model.Proposal) {
           jQuery('#proposal-details .note-proposal').html('<b>Proposal: </b>'+view.model.get('proposal'));
           jQuery('#proposal-details .note-justification').html('<b>Justification: </b>'+view.model.get('justification'));
           // tags
           tagsEl += view.model.get('tag_group_name');
+          jQuery('#like-btn-container').removeClass('hide');
 
-        } else if (view.model.constructor.name === 'Contribution') {
+        } else if (view.model instanceof CK.Model.Contribution) {
           jQuery('#proposal-details .note-content').text(view.model.get('content'));
           // buildOns
           var buildOnEl = '<div>';
@@ -631,6 +647,7 @@
             tagsEl += ' ';
             tagsEl += t.name;
           });
+          jQuery('#like-btn-container').addClass('hide');
         } else {
           console.error('Unknown type of view.model in ProposalDetailsView');
         }
