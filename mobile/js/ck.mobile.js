@@ -456,77 +456,6 @@ CK.Mobile = function() {
     app.detailsView.render();
   };
 
-  app.tryRestoreUnfinishedWork = function() {
-    // restoring unfinished contribs/buildons
-    // will return the first unfinished contrib it finds
-    var unfinishedContrib = _.find(app.contributionList.models, function(contrib) {
-      return contrib.get('author') === app.userData.account.login && contrib.get('published') === false && (contrib.get('content') || contrib.get('headline'));
-    });
-    var unfinishedBuildOn = _.find(app.contributionList.models, function(contrib) {
-      return _.find(contrib.get('build_ons'), function(b) {
-        return b.author === app.userData.account.login && b.published === false && b.content !== "";
-      });
-    });
-
-    // if there are both unfinished contribs and unfinished buildons, contrib wins (right?)
-    if (unfinishedContrib) {
-      console.log('Unfinished Contribution found...');
-      app.restoreUnfinishedNote(unfinishedContrib);
-    } else if (unfinishedBuildOn) {
-      console.log('Unfinished BuildOn found...');
-      app.restoreUnfinishedBuildOn(unfinishedBuildOn);
-    }
-  };
-
-  app.restoreUnfinishedNote = function(contrib) {
-    console.log("Restoring Contribution");
-    app.contribution = contrib;
-    app.contribution.set('tags',[]);            // remove all tags to sync up with UI (cheap and easy, but probably not ideal)
-    if (app.inputView === null) {
-      app.inputView = new CK.Mobile.View.ContributionInputView({
-        el: jQuery('#contribution-input'),
-        model: contrib
-      });
-    } else {
-      if (typeof app.inputView.model !== 'undefined' && app.inputView.model !== null) {
-        app.inputView.stopListening(app.inputView.model);
-      }
-      app.inputView.model = contrib;
-    }
-    app.inputView.$el.show('slide', {direction: 'up'});
-    app.inputView.render();
-  };
-
-  app.restoreUnfinishedBuildOn = function(contrib) {
-    console.log("Restoring BuildOn");
-    app.contribution = contrib;
-    // gawd, we need a getMyBuildOn helper TODO
-    var buildOnArray = app.contribution.get('build_ons');
-    app.buildOn = _.find(buildOnArray, function(b) {
-      return b.author === app.userData.account.login && b.published === false;
-    });
-
-    if (app.inputView === null) {
-      app.inputView = new CK.Mobile.View.ContributionInputView({
-        el: jQuery('#contribution-input'),
-        model: app.buildOn
-      });
-    } else {
-      if (typeof app.inputView.model !== 'undefined' && app.inputView.model !== null) {
-        app.inputView.stopListening(app.inputView.model);
-      }
-      app.inputView.model = app.buildOn;
-    }
-    app.inputView.$el.show('slide', {direction: 'up'});
-    app.inputView.render();
-
-    // we should also show the original contribution that the restored buildon belongs to
-    // DetailsView
-    Sail.app.showDetails(contrib);
-    // preparing for buildOns, if clicked
-    Sail.app.contribution = contrib;
-  };
-
   app.contributionToTag = function (contributionId) {
     app.bucketedContribution = Sail.app.contributionList.get(contributionId);
     app.bucketedContribution.wake(Sail.app.config.wakeful.url);
@@ -843,6 +772,77 @@ CK.Mobile = function() {
 
 
   // ******** HELPER FUNCTIONS ********* //
+
+  app.tryRestoreUnfinishedWork = function() {
+    // restoring unfinished contribs/buildons
+    // will return the first unfinished contrib it finds
+    var unfinishedContrib = _.find(app.contributionList.models, function(contrib) {
+      return contrib.get('author') === app.userData.account.login && contrib.get('published') === false && (contrib.get('content') || contrib.get('headline'));
+    });
+    var unfinishedBuildOn = _.find(app.contributionList.models, function(contrib) {
+      return _.find(contrib.get('build_ons'), function(b) {
+        return b.author === app.userData.account.login && b.published === false && b.content !== "";
+      });
+    });
+
+    // if there are both unfinished contribs and unfinished buildons, contrib wins (right?)
+    if (unfinishedContrib) {
+      console.log('Unfinished Contribution found...');
+      app.restoreUnfinishedNote(unfinishedContrib);
+    } else if (unfinishedBuildOn) {
+      console.log('Unfinished BuildOn found...');
+      app.restoreUnfinishedBuildOn(unfinishedBuildOn);
+    }
+  };
+
+  app.restoreUnfinishedNote = function(contrib) {
+    console.log("Restoring Contribution");
+    app.contribution = contrib;
+    app.contribution.set('tags',[]);            // remove all tags to sync up with UI (cheap and easy, but probably not ideal)
+    if (app.inputView === null) {
+      app.inputView = new CK.Mobile.View.ContributionInputView({
+        el: jQuery('#contribution-input'),
+        model: contrib
+      });
+    } else {
+      if (typeof app.inputView.model !== 'undefined' && app.inputView.model !== null) {
+        app.inputView.stopListening(app.inputView.model);
+      }
+      app.inputView.model = contrib;
+    }
+    app.inputView.$el.show('slide', {direction: 'up'});
+    app.inputView.render();
+  };
+
+  app.restoreUnfinishedBuildOn = function(contrib) {
+    console.log("Restoring BuildOn");
+    app.contribution = contrib;
+    // gawd, we need a getMyBuildOn helper TODO
+    var buildOnArray = app.contribution.get('build_ons');
+    app.buildOn = _.find(buildOnArray, function(b) {
+      return b.author === app.userData.account.login && b.published === false;
+    });
+
+    if (app.inputView === null) {
+      app.inputView = new CK.Mobile.View.ContributionInputView({
+        el: jQuery('#contribution-input'),
+        model: app.buildOn
+      });
+    } else {
+      if (typeof app.inputView.model !== 'undefined' && app.inputView.model !== null) {
+        app.inputView.stopListening(app.inputView.model);
+      }
+      app.inputView.model = app.buildOn;
+    }
+    app.inputView.$el.show('slide', {direction: 'up'});
+    app.inputView.render();
+
+    // we should also show the original contribution that the restored buildon belongs to
+    // DetailsView
+    Sail.app.showDetails(contrib);
+    // preparing for buildOns, if clicked
+    Sail.app.contribution = contrib;
+  };
 
   app.showWaitScreen = function() {
     console.log("Showing wait screen...");
