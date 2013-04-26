@@ -37,6 +37,7 @@ CK.Mobile = function() {
   app.bucketedContribution = null;
   app.bucketTaggingView = null;
   app.interestGroupListView = null;
+  app.proposalList = null;
   app.proposalListView = null;
   app.proposal = null;
   app.proposalInputView = null;
@@ -137,16 +138,17 @@ CK.Mobile = function() {
       jQuery('.brand').text('Common Knowledge - Propose');
 
       // PROPOSAL VIEW
+      app.proposalList = CK.Model.awake.proposals;
       if (app.proposalListView === null) {
         app.proposalListView = new CK.Mobile.View.ProposalListView({
           el: jQuery('#proposal-list'),
-          collection: app.contributionList
+          collection: app.proposalList
         });
       } else {
         if (typeof app.proposalListView.collection !== 'undefined' && app.proposalListView.collection !== null) {
           app.proposalListView.stopListening(app.proposalListView.collection);
         }
-        app.proposalListView.collection = app.contributionList;
+        app.proposalListView.collection = app.proposalList;
       }
 
       app.updateUserState();
@@ -313,7 +315,7 @@ CK.Mobile = function() {
         app.interestGroupListView.stopListening(app.interestGroupListView.collection);
       }
       app.interestGroupListView.collection = app.tagList;
-    }    
+    }
 
     // CONTRIBUTIONS COLLECTION
     app.contributionList = CK.Model.awake.contributions;
@@ -571,7 +573,7 @@ CK.Mobile = function() {
     app.proposalInputView.$el.show('slide', {direction: 'up'});
 
     var d = new Date();
-    var myTag = Sail.app.tagList.find(function(t) { return t.get('name') === app.userState.get('tag_group') });      // TODO: abstract this?
+    var myTag = Sail.app.tagList.findWhere( {'name':Sail.app.userState.get('tag_group')} );       // TODO: abstract this?
     app.proposal.set('created_at',d);
     app.proposal.set('author', app.userData.account.login);             // change this to some kind of 'team' authorship?
     app.proposal.set('published', false);

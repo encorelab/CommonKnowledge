@@ -509,6 +509,7 @@
       console.log("Rendering ProposalListView...");
       var createdAt;
 
+      // add the contribs to the list - note that this will never change, so rendering once will be enough (and therefore this view is not hooked to the contributionList collection)
       Sail.app.contributionList.each(function(contrib) {
         // if (contrib.hasChanged() || jQuery('li#'+contrib.id).length === 0) {
         //   // if this contrib has changed
@@ -545,6 +546,12 @@
           }
         }
       });
+
+    // add the proposals to the list
+    Sail.app.proposalList.each(function(prop) {
+      console.log('yup, these exist',prop);
+    });
+
     }
   });
 
@@ -652,7 +659,7 @@
       // avoid weird entries showing up in the model
       window.clearTimeout(Sail.app.autoSaveTimer);
 
-      if (!Sail.app.proposal.get('type') || jQuery('#proposal-headline-entry').val() == '' || jQuery('#proposal-entry').val() == '' || jQuery('#justification-entry').val() == '') {
+      if (!Sail.app.proposal.get('type') || jQuery('#proposal-headline-entry').val() === '' || jQuery('#proposal-entry').val() === '' || jQuery('#justification-entry').val() === '') {
         jQuery().toastmessage('showErrorToast', "Please fill all fields and choose whether this is a proposal for research or experiment");
       } else {
         Sail.app.proposal.set('headline',jQuery('#proposal-headline-entry').val());
