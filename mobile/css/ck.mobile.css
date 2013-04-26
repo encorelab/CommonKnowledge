@@ -194,28 +194,28 @@ input {
 	padding-bottom: 10px;
 }
 
-.selected {
-	background-color: pink !important;						/* needs to be important to win out over the other colors in the note list */
-}
-
 .own-color {
 	background-color: #F0ED69;
 }
 
 .group1-color {
-	background-color: #7B69F0;
+	background-color: #7B69F0 !important;
 }
 
 .group2-color {
-	background-color: #FA9405;
+	background-color: #FA9405 !important;
 }
 	
 .group3-color {
-	background-color: #70ED11;
+	background-color: #70ED11 !important;
 }
 
 .group4-color {
-	background-color: #ED11C1;
+	background-color: #ED11C1 !important;
+}
+
+.selected {
+	background-color: pink !important;						/* needs to be important and last to win out over the other colors in the note list */
 }
 
 .selected-note {

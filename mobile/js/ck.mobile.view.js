@@ -457,10 +457,10 @@
         if (tag.get('name') !== "N/A") {
           var tagButton = jQuery('button#proposal'+tag.id);
           // length avoids duplicating (probably a better way to do this in backbone?)
-          //if (tagButton.length === 0 && tag.get('name') != "N/A") {
           if (tagButton.length === 0) {
             tagButton = jQuery('<button id="proposal'+tag.id+'" type="button" class="btn tag-btn"></button>');
-            //tagButton = jQuery(tagButton);
+            tagButton.addClass(tag.get('colorClass'));
+
             jQuery('#interest-group-list .tag-btn-group').append(tagButton);
           }
 
@@ -477,19 +477,21 @@
   self.ProposalListView = Backbone.View.extend({
     events: {
       'click .list-item': function(ev) {
+        // remove background colors, then adding the correct one
         jQuery('#proposal-list .note').removeClass('selected');
-
-        // The problem here was that ev.target referes to a differently deep nested element 
         var $target = jQuery(ev.target);
         if (!$target.is('.list-item')) {
            $target = $target.parents('.list-item').first();
         }
-
-        // Removing background colors, then adding the correct one
         $target.children().first().addClass('selected');
-        var proposalId = $target.attr('id');
+        var contribId = $target.attr('id');
 
-        Sail.app.showProposalDetails(Sail.app.contributionList.get(proposalId));        
+        // pass the contrib from the appropriate collection
+        if ($target.hasClass('brainstorm-item')) {
+          Sail.app.showProposalDetails(Sail.app.contributionList.get(contribId));
+        } else {
+          Sail.app.showProposalDetails(Sail.app.proposalList.get(contribId));
+        }
       },
 
       'click #new-proposal-btn': function(ev) {
@@ -508,8 +510,10 @@
     render: function () {
       console.log("Rendering ProposalListView...");
       var createdAt;
+      var myTag = Sail.app.tagList.findWhere( {'name':Sail.app.userState.get('tag_group')} );
 
       // add the contribs to the list - note that this will never change, so rendering once will be enough (and therefore this view is not hooked to the contributionList collection)
+      // BUT - what about board changes? TODO
       Sail.app.contributionList.each(function(contrib) {
         // if (contrib.hasChanged() || jQuery('li#'+contrib.id).length === 0) {
         //   // if this contrib has changed
@@ -518,16 +522,15 @@
         //   // else break out
         //   return;
         // }
-        var myTag = Sail.app.tagList.findWhere( {'name':Sail.app.userState.get('tag_group')} );
         if (contrib.get('published') === true && contrib.hasTag(myTag)) {
-          var note = "<li id=" + contrib.id + " class='list-item'><a class='note'><span class='headline'></span>";
+          var note = "<li id=" + contrib.id + " class='list-item brainstorm-item'><a class='note'><span class='headline'></span>";
           note += "<br /><i class='icon-chevron-right'></i>";
           note += "<span class='author'></span><span class='date'></span></a></li>";
           note = jQuery(note);
 
           jQuery('#proposal-list .nav-list').append(note);
 
-          note.find('.headline').text(contrib.get('headline'));
+          note.find('.headline').text('Brainstorm - '+contrib.get('headline'));
 
           // functions toLocaleDateString() and toLocaleTimeString() are only defined if created_at is a Date object
           createdAt = contrib.get('created_at');
@@ -535,7 +538,7 @@
             note.find('.date').text(' (' + createdAt.toLocaleDateString() + ' ' + createdAt.toLocaleTimeString() + ')');
           }
 
-          note.find('.author').text(contrib.get('author'));               
+          note.find('.author').text(contrib.get('author'));
 
           var buildOnArray = contrib.get('build_ons');
           var myBuildOn = _.find(buildOnArray, function(b) {
@@ -547,10 +550,33 @@
         }
       });
 
-    // add the proposals to the list
-    Sail.app.proposalList.each(function(prop) {
-      console.log('yup, these exist',prop);
-    });
+      // add the proposals to the list
+      Sail.app.proposalList.each(function(prop) {
+        // think about sorting these?
+        if (prop.get('published') === true) {
+          var note = "<li id=" + prop.id + " class='list-item proposal-item'><a class='note'><span class='headline'></span>";
+          note += "<br /><i class='icon-chevron-right'></i>";
+          note += "<span class='author'></span><span class='date'></span></a></li>";
+          note = jQuery(note);
+
+          jQuery('#proposal-list .nav-list').append(note);
+
+          note.find('.headline').text('Proposal - '+prop.get('headline'));
+
+          // functions toLocaleDateString() and toLocaleTimeString() are only defined if created_at is a Date object
+          createdAt = prop.get('created_at');
+          if (createdAt) {
+            note.find('.date').text(' (' + createdAt.toLocaleDateString() + ' ' + createdAt.toLocaleTimeString() + ')');
+          }
+
+          note.find('.author').text(prop.get('author'));
+
+          // add the correct colors based on tag_name
+          //var propTagName = prop.get('tag_group_name');
+          var propTag = Sail.app.tagList.findWhere( {'name':prop.get('tag_group_name')} );
+          note.children().first().addClass(propTag.get('colorClass'));
+        }
+      });
 
     }
   });
@@ -568,9 +594,6 @@
       console.log("Initializing ProposalDetailsView...");
     },
 
-    /**
-      Triggers full update of all dynamic elements in the details view
-    **/
     render: function () {
       console.log("rendering ProposalDetailsView!");
       var view = this;
@@ -579,38 +602,49 @@
 
       // created_at will return undefined, so need to check it exists...
       if (view.model && view.model.get('created_at')) {
-        jQuery('#proposal-details .note-headline').text(view.model.get('headline'));
-        jQuery('#proposal-details .note-body').text(view.model.get('content'));
-        jQuery('#proposal-details .note-author').text('~'+view.model.get('author'));
+        // set up the tags element
+        var tagsEl = '<div><i>';
+        // not sure if this is the best way to the model - could also check to see some unique keys that the model contains (ie justification)
+        if (view.model.constructor.name === 'Proposal') {
+          jQuery('#proposal-details .note-proposal').html('<b>Proposal: </b>'+view.model.get('proposal'));
+          jQuery('#proposal-details .note-justification').html('<b>Justification: </b>'+view.model.get('justification'));
+          // tags
+          tagsEl += view.model.get('tag_group_name');
 
+        } else if (view.model.constructor.name === 'Contribution') {
+          jQuery('#proposal-details .note-content').text(view.model.get('content'));
+          // buildOns
+          var buildOnEl = '<div>';
+          _.each(view.model.get('build_ons'), function(b) {
+            if (b.published === true) {
+              buildOnEl += '<hr />';
+              buildOnEl += b.content;
+              buildOnEl += '<br /><span class="build-on-metadata">~' + b.author;
+              buildOnEl += ' (' + b.created_at.toLocaleDateString() + ' ' + b.created_at.toLocaleTimeString() + ')' +  '</span>';            
+            }
+          });
+          buildOnEl += '</div>';
+          buildOnEl = jQuery(buildOnEl);
+          jQuery('#proposal-details .note-build-ons').append(buildOnEl);
+          // tags
+          _.each(view.model.get('tags'), function(t) {
+            tagsEl += ' ';
+            tagsEl += t.name;
+          });
+        } else {
+          console.error('Unknown type of view.model in ProposalDetailsView');
+        }
+
+        // for both Contribution model and Proposal model
+        jQuery('#proposal-details .note-headline').text(view.model.get('headline'));
+        jQuery('#proposal-details .note-author').text('~'+view.model.get('author'));
         var createdAt = view.model.get('created_at');
         if (createdAt) {
           jQuery('#proposal-details .note-created-at').text(' (' + createdAt.toLocaleDateString() + ' ' + createdAt.toLocaleTimeString() + ')');
         }
-
-        // add the tags
-        var tagsEl = '<div><i>';
-        _.each(view.model.get('tags'), function(t) {
-          tagsEl += ' ';
-          tagsEl += t.name;
-        });
         tagsEl += '</i></div>';
         tagsEl = jQuery(tagsEl);
         jQuery('#proposal-details .note-tags').append(tagsEl);
-
-        // add the buildOns (if they are published)
-        var buildOnEl = '<div>';
-        _.each(view.model.get('build_ons'), function(b) {
-          if (b.published === true) {
-            buildOnEl += '<hr />';
-            buildOnEl += b.content;
-            buildOnEl += '<br /><span class="build-on-metadata">~' + b.author;
-            buildOnEl += ' (' + b.created_at.toLocaleDateString() + ' ' + b.created_at.toLocaleTimeString() + ')' +  '</span>';            
-          }
-        });
-        buildOnEl += '</div>';
-        buildOnEl = jQuery(buildOnEl);
-        jQuery('#proposal-details .note-build-ons').append(buildOnEl);
 
       } else {
         console.warn("ProposalDetailsView render skipped this contrib because created_at doesn't exist");
