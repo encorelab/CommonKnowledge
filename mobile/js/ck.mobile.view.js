@@ -455,10 +455,10 @@
       view.collection.each(function(tag) {
         // don't show the N/A tag
         if (tag.get('name') !== "N/A") {
-          var tagButton = jQuery('button#proposal'+tag.id);
+          var tagButton = jQuery('button#tagGroup'+tag.id);
           // length avoids duplicating (probably a better way to do this in backbone?)
           if (tagButton.length === 0) {
-            tagButton = jQuery('<button id="proposal'+tag.id+'" type="button" class="btn tag-btn"></button>');
+            tagButton = jQuery('<button id="tagGroup'+tag.id+'" type="button" class="btn tag-btn"></button>');
             tagButton.addClass(tag.get('colorClass'));
 
             jQuery('#interest-group-list .tag-btn-group').append(tagButton);
@@ -484,7 +484,7 @@
            $target = $target.parents('.list-item').first();
         }
         $target.children().first().addClass('selected');
-        var contribId = $target.attr('id');
+        var contribId = $target.attr('data');
 
         // pass the contrib from the appropriate collection
         if ($target.hasClass('brainstorm-item')) {
@@ -515,15 +515,15 @@
       // add the contribs to the list - note that this will never change, so rendering once will be enough (and therefore this view is not hooked to the contributionList collection)
       // BUT - what about board changes? TODO
       Sail.app.contributionList.each(function(contrib) {
-        // if (contrib.hasChanged() || jQuery('li#'+contrib.id).length === 0) {
-        //   // if this contrib has changed
-        //   jQuery('#proposal-list li#'+contrib.id).remove();
-        // } else {
-        //   // else break out
-        //   return;
-        // }
+        if (contrib.hasChanged() || jQuery('li#contribution'+contrib.id).length === 0) {
+          // if this contrib has changed
+          jQuery('#proposal-list li#contribution'+contrib.id).remove();
+        } else {
+          // else break out
+          return;
+        }
         if (contrib.get('published') === true && contrib.hasTag(myTag)) {
-          var note = "<li id=" + contrib.id + " class='list-item brainstorm-item'><a class='note'><span class='headline'></span>";
+          var note = "<li id='contribution" + contrib.id + "' class='list-item brainstorm-item' data='" + contrib.id + "'><a class='note'><span class='headline'></span>";
           note += "<br /><i class='icon-chevron-right'></i>";
           note += "<span class='author'></span><span class='date'></span></a></li>";
           note = jQuery(note);
@@ -552,9 +552,15 @@
 
       // add the proposals to the list
       Sail.app.proposalList.each(function(prop) {
-        // think about sorting these?
+        if (prop.hasChanged() || jQuery('li#proposal'+prop.id).length === 0) {
+          // if this prop has changed
+          jQuery('#proposal-list li#proposal'+prop.id).remove();
+        } else {
+          // else break out
+          return;
+        }
         if (prop.get('published') === true) {
-          var note = "<li id=" + prop.id + " class='list-item proposal-item'><a class='note'><span class='headline'></span>";
+          var note = "<li id='proposal" + prop.id + "' class='list-item proposal-item' data='" + prop.id + "'><a class='note'><span class='headline'></span>";
           note += "<br /><i class='icon-chevron-right'></i>";
           note += "<span class='author'></span><span class='date'></span></a></li>";
           note = jQuery(note);
@@ -588,18 +594,19 @@
   self.ProposalDetailsView = Backbone.View.extend({
     events: {
       'click #like-btn-off': function(ev) {
-        var voteCount = this.model.get('votes');
-        voteCount++;
-        this.model.set('votes',voteCount);
+        // vote
+        var votesArray = this.model.get('votes');
+        //votesArray.push(Sail.app.userData.account.login);
         this.model.save();
         jQuery('#like-btn-off').addClass('hide');
         jQuery('#like-btn-on').removeClass('hide');
       },
       'click #like-btn-on': function(ev) {
-        var voteCount = this.model.get('votes');
-        voteCount--;
-        this.model.set('votes',voteCount);
-        this.model.save();        // these almost certainly should be patches, right?   TODO!!!
+        // unvote
+        var votesArray = this.model.get('votes');
+        //votesArray = _.without(votesArray, Sail.app.userData.account.login);
+        this.model.set('votes',votesArray);        
+        this.model.save();        // these almost certainly should be patches, right?   TODO
         jQuery('#like-btn-on').addClass('hide');
         jQuery('#like-btn-off').removeClass('hide');
       }
@@ -613,13 +620,13 @@
       console.log("rendering ProposalDetailsView!");
       var view = this;
 
-      jQuery('#proposal-details .field').text('');
+      // clear everything
+      jQuery('#proposal-details .field').text('');  
 
       // created_at will return undefined, so need to check it exists...
       if (view.model && view.model.get('created_at')) {
         // set up the tags element
         var tagsEl = '<div><i>';
-        // not sure if this is the best way to the model - could also check to see some unique keys that the model contains (ie justification)
         if (view.model instanceof CK.Model.Proposal) {
           jQuery('#proposal-details .note-proposal').html('<b>Proposal: </b>'+view.model.get('proposal'));
           jQuery('#proposal-details .note-justification').html('<b>Justification: </b>'+view.model.get('justification'));
@@ -666,6 +673,17 @@
       } else {
         console.warn("ProposalDetailsView render skipped this contrib because created_at doesn't exist");
       }
+
+      // voting buttons
+      var votesArray = this.model.get('votes');
+      if (_.contains(votesArray, Sail.app.userData.account.login)) {
+        jQuery('#like-btn-off').addClass('hide');
+        jQuery('#like-btn-on').removeClass('hide');
+      } else {
+        jQuery('#like-btn-on').addClass('hide');
+        jQuery('#like-btn-off').removeClass('hide');
+      }
+
     }
   });
 
@@ -729,6 +747,9 @@
       console.log("rendering ProposalInputView...");
 
       // we all need to have a serious talk about Backbone renders. I feel like I have to fight them constantly...
+      jQuery('#proposal-headline-entry').val(Sail.app.proposal.get('headline'));
+      jQuery('#proposal-entry').val(Sail.app.proposal.get('proposal'));
+      jQuery('#justification-entry').val(Sail.app.proposal.get('justification'));
     }
   });
 

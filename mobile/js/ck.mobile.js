@@ -95,7 +95,7 @@ CK.Mobile = function() {
       jQuery('#index-screen').removeClass('hide');
       app.contributionListView.render();
 
-      app.tryRestoreUnfinishedWork();
+      app.tryRestoreUnfinishedContribution();
 
       // // restoring unfinished contribs/buildons
       // // will return the first unfinished contrib it finds
@@ -132,9 +132,7 @@ CK.Mobile = function() {
       app.updateUserState();
       app.bucketTaggingView.render();
 
-      app.tryRestoreUnfinishedWork();
-
-    } else if (p === 'exploration') {
+      app.tryRestoreUnfinishedContribution();
 
     } else if (p === 'propose') {
       // PROPOSAL PHASE
@@ -155,7 +153,18 @@ CK.Mobile = function() {
         app.proposalListView.collection = app.proposalList;
       }
 
+      var sorter = function(prop) {
+        if (prop.has('created_at')) {
+          return -prop.get('created_at').getTime();
+        } else {
+          return 0;
+        }
+      };
+      app.proposalList.comparator = sorter;
+      app.proposalList.on('add sync change', app.proposalListView.render, app.proposalListView);
+
       app.updateUserState();
+      // restoring unfinished props is done from chooseInterestGroup
       app.interestGroupListView.render();
 
     } else {
@@ -505,7 +514,9 @@ CK.Mobile = function() {
   app.chooseInterestGroup = function(chosenTagName) {
     console.log('Interest group chosen...');
     app.userState.set('tag_group',chosenTagName);
-    app.userState.save();
+    app.userState.save().done(function() {
+      app.tryRestoreUnfinishedProposal(chosenTagName);
+    });
   };
 
   app.createNewProposal = function() {
@@ -514,7 +525,7 @@ CK.Mobile = function() {
     app.proposal = new CK.Model.Proposal();
     // ensure that models inside the collection are wakeful
     app.proposal.wake(Sail.app.config.wakeful.url);
-    app.proposal.on('all',function() { console.log(arguments); });
+    // app.proposal.on('all',function() { console.log(arguments); });
 
     // case: no previous proposalInputView
     if (app.proposalInputView === null) {
@@ -541,7 +552,7 @@ CK.Mobile = function() {
     app.proposal.set('headline','');
     app.proposal.set('proposal','');
     app.proposal.set('justification','');
-    app.proposal.set('votes',0);
+    app.proposal.set('votes',[]);
     app.proposal.set('type',null);
     app.proposal.set('tag_group_id',myTag.id);
     app.proposal.set('tag_group_name',myTag.get('name'));
@@ -575,9 +586,9 @@ CK.Mobile = function() {
       });
   };
 
-  app.showProposalDetails = function(contrib) {
+  app.showProposalDetails = function(note) {
     console.log('Creating a new proposal details...');
-    var details = contrib;
+    var details = note;
     if (app.proposalDetailsView === null) {
       app.proposalDetailsView = new CK.Mobile.View.ProposalDetailsView({
         el: jQuery('#proposal-details'),
@@ -589,25 +600,14 @@ CK.Mobile = function() {
       }
       app.proposalDetailsView.model = details;
     }
+    details.wake(Sail.app.config.wakeful.url);
     app.proposalDetailsView.render();
   };
 
 
-  // app.toggleVote = function() {
-  //   // set the vote (or whatever) field in the object
-  //   if (jQuery('#like-btn-on').hasClass('hide')) {
-  //     jQuery('#like-btn-on').removeClass('hide');
-  //     jQuery('#like-btn-off').addClass('hide');
-  //   } else {
-  //     jQuery('#like-btn-on').addClass('hide');
-  //     jQuery('#like-btn-off').removeClass('hide');
-  //   }
-  // };
-
-
   // ******** HELPER FUNCTIONS ********* //
 
-  app.tryRestoreUnfinishedWork = function() {
+  app.tryRestoreUnfinishedContribution = function() {
     // restoring unfinished contribs/buildons
     // will return the first unfinished contrib it finds
     var unfinishedContrib = _.find(app.contributionList.models, function(contrib) {
@@ -676,6 +676,32 @@ CK.Mobile = function() {
     Sail.app.showDetails(contrib);
     // preparing for buildOns, if clicked
     Sail.app.contribution = contrib;
+  };
+
+  app.tryRestoreUnfinishedProposal = function(tagName) {
+    var unfinishedProp = _.find(app.proposalList.models, function(prop) {
+      return prop.get('author') === app.userData.account.login && prop.get('published') === false && prop.get('tag_group_name') === tagName && (prop.get('proposal') || prop.get('justification'));
+    });
+
+    if (unfinishedProp) {
+      console.log("Restoring Proposal");
+      app.proposal = unfinishedProp;
+
+      if (app.proposalInputView === null) {
+        app.proposalInputView = new CK.Mobile.View.ProposalInputView({
+          el: jQuery('#proposal-justification-input'),
+          model: app.proposal
+        });
+      } else {
+        if (typeof app.proposalInputView.model !== 'undefined' && app.proposalInputView.model !== null) {
+          app.proposalInputView.stopListening(app.proposalInputView.model);
+        }
+        app.proposalInputView.model = app.proposal;
+      }
+      app.proposal.set('type','');                  // again, not ideal, but easy and cheap
+      app.proposalInputView.$el.show('slide', {direction: 'up'});
+      app.proposalInputView.render();
+    }
   };
 
   app.showWaitScreen = function() {
