@@ -164,7 +164,7 @@ CK.Mobile = function() {
       app.proposalList.on('add sync change', app.proposalListView.render, app.proposalListView);
 
       app.updateUserState();
-      // restoring unfinished props is done from chooseInterestGroup
+      // restoring unfinished props is done from chooseInterestGroup()
       app.interestGroupListView.render();
 
     } else {
@@ -545,7 +545,12 @@ CK.Mobile = function() {
     app.proposalInputView.$el.show('slide', {direction: 'up'});
 
     var d = new Date();
-    var myTag = Sail.app.tagList.findWhere( {'name':Sail.app.userState.get('tag_group')} );       // TODO: abstract this?
+    var myTag = Sail.app.tagList.findWhere( {'name':Sail.app.userState.get('tag_group')} );
+    var myTagObj = {
+      "id":myTag.id,
+      "name":myTag.get('name'),
+      "colorClass":myTag.get('colorClass')
+    };
     app.proposal.set('created_at',d);
     app.proposal.set('author', app.userData.account.login);             // change this to some kind of 'team' authorship?
     app.proposal.set('published', false);
@@ -554,8 +559,10 @@ CK.Mobile = function() {
     app.proposal.set('justification','');
     app.proposal.set('votes',[]);
     app.proposal.set('type',null);
-    app.proposal.set('tag_group_id',myTag.id);
-    app.proposal.set('tag_group_name',myTag.get('name'));
+    app.proposal.set('tag',myTagObj);
+
+    //app.proposal.set('tag_group_id',myTag.id);
+    //app.proposal.set('tag_group_name',myTag.get('name'));
 
     app.proposal.save();
     app.proposalInputView.render();
@@ -680,7 +687,7 @@ CK.Mobile = function() {
 
   app.tryRestoreUnfinishedProposal = function(tagName) {
     var unfinishedProp = _.find(app.proposalList.models, function(prop) {
-      return prop.get('author') === app.userData.account.login && prop.get('published') === false && prop.get('tag_group_name') === tagName && (prop.get('proposal') || prop.get('justification'));
+      return prop.get('author') === app.userData.account.login && prop.get('published') === false && prop.get('tag').name === tagName && (prop.get('proposal') || prop.get('justification'));
     });
 
     if (unfinishedProp) {

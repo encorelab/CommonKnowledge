@@ -579,7 +579,7 @@
 
           // add the correct colors based on tag_name
           //var propTagName = prop.get('tag_group_name');
-          var propTag = Sail.app.tagList.findWhere( {'name':prop.get('tag_group_name')} );
+          var propTag = Sail.app.tagList.findWhere( {'name':prop.get('tag').name} );
           note.children().first().addClass(propTag.get('colorClass'));
         }
       });
@@ -631,7 +631,7 @@
           jQuery('#proposal-details .note-proposal').html('<b>Proposal: </b>'+view.model.get('proposal'));
           jQuery('#proposal-details .note-justification').html('<b>Justification: </b>'+view.model.get('justification'));
           // tags
-          tagsEl += view.model.get('tag_group_name');
+          tagsEl += view.model.get('tag').name;
           jQuery('#like-btn-container').removeClass('hide');
 
         } else if (view.model instanceof CK.Model.Contribution) {
