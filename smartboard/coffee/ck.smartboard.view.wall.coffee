@@ -188,7 +188,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
         @tagFilters.splice(@tagFilters.indexOf(tag), 1)
         @renderFiltered()
 
-    # blurs/unblurs contribution balloons based on the current contents of @tagFilters 
+    # blurs/unblurs contribution balloons based on the current contents of @tagFilters
     renderFiltered: (tag) ->
         if @tagFilters.length is 0
             @$el.find(".contribution, .connector").removeClass('blurred')

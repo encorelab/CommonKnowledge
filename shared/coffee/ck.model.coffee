@@ -81,7 +81,7 @@ class CK.Model
                     return this
 
                 tagRel =
-                    id: tag.id
+                    id: tag.id.toLowerCase()
                     name: tag.get('name')
                     tagger: tagger
                     tagged_at: new Date()
@@ -102,7 +102,7 @@ class CK.Model
 
             hasTag: (tag, tagger) =>
                 _.any @get('tags'), (t) =>
-                    t.id is tag.id and
+                    t.id.toLowerCase() is tag.id and
                         (not tagger? || t.tagger is tagger)
 
 

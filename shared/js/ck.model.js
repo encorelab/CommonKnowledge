@@ -107,7 +107,7 @@
             return this;
           }
           tagRel = {
-            id: tag.id,
+            id: tag.id.toLowerCase(),
             name: tag.get('name'),
             tagger: tagger,
             tagged_at: new Date()
@@ -129,7 +129,7 @@
         Contribution.prototype.hasTag = function(tag, tagger) {
           var _this = this;
           return _.any(this.get('tags'), function(t) {
-            return t.id === tag.id && (!(tagger != null) || t.tagger === tagger);
+            return t.id.toLowerCase() === tag.id && (!(tagger != null) || t.tagger === tagger);
           });
         };
 
