@@ -319,7 +319,8 @@
     };
 
     Wall.prototype.render = function() {
-      var paused, phase;
+      var paused, phase,
+        _this = this;
       phase = this.runState.get('phase');
       if (phase !== this.$el.data('phase')) {
         switch (phase) {
@@ -334,10 +335,16 @@
           case 'propose':
             jQuery('body').removeClass('mode-brainstorm').removeClass('mode-tagging').removeClass('mode-exploration').addClass('mode-propose').removeClass('mode-research_and_experiment');
             this.changeWatermark("propose");
+            setTimeout((function() {
+              return _this.$el.find('.contribution, .contribution-connector').remove();
+            }), 1100);
             break;
           case 'research_and_experiment':
             jQuery('body').removeClass('mode-brainstorm').removeClass('mode-tagging').removeClass('mode-exploration').removeClass('mode-propose').addClass('mode-research_and_experiment');
             this.changeWatermark("experiment");
+            setTimeout((function() {
+              return _this.$el.find('.contribution, .contribution-connector').remove();
+            }), 1100);
             break;
           default:
             jQuery('body').addClass('mode-brainstorm').removeClass('mode-tagging').removeClass('mode-exploration').removeClass('mode-propose').removeClass('mode-research_and_experiment');
@@ -811,12 +818,11 @@
     };
 
     ContributionBalloon.prototype.renderConnectors = function() {
-      var connector, connectorId, connectorLength, connectorTransform, tag, tagId, tagView, x1, x2, y1, y2, _i, _len, _ref, _results;
+      var connector, connectorId, connectorLength, connectorTransform, tag, tagId, tagView, x1, x2, y1, y2, _i, _len, _ref;
       if (!this.model.has('tags') || _.isEmpty(this.model.get('tags')) || !this.$el.is(':visible')) {
         return;
       }
       _ref = this.model.get('tags');
-      _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         tag = _ref[_i];
         tagId = tag.id.toLowerCase();
@@ -825,7 +831,7 @@
           continue;
         }
         connectorId = this.model.id + "-" + tagId;
-        connector = CK.Smartboard.View.findOrCreate(this.wall.$el, "#" + connectorId, "<div class='connector' id='" + connectorId + "'></div>");
+        connector = CK.Smartboard.View.findOrCreate(this.wall.$el, "#" + connectorId, "<div class='connector contribution-connector' id='" + connectorId + "'></div>");
         x1 = this.left + (this.width / 2);
         y1 = this.top + (this.height / 2);
         x2 = tagView.left + (tagView.width / 2);
@@ -842,9 +848,9 @@
         });
         connector.addClass("connects-" + this.model.id);
         connector.addClass("connects-" + tag.id);
-        _results.push(connector.addClass("tag-" + tag.id));
+        connector.addClass("tag-" + tag.id);
+        return connector;
       }
-      return _results;
     };
 
     ContributionBalloon.prototype.renderTags = function() {

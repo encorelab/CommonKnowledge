@@ -34,6 +34,10 @@ body {
     body.mode-propose #go-interpret {
       opacity: 0.4;
       pointer-events: none; }
+    body.mode-propose #show-word-cloud {
+      display: none; }
+    body.mode-propose .contribution, body.mode-propose .contribution-connector {
+      opacity: 0; }
   body.mode-interpret {
     background-color: #34bab3; }
     body.mode-interpret #go-tagging {
@@ -42,6 +46,10 @@ body {
       opacity: 0.4; }
     body.mode-interpret #go-interpret {
       opacity: 0.4; }
+    body.mode-interpret #show-word-cloud {
+      display: none; }
+    body.mode-interpret .contribution, body.mode-interpret .contribution-connector {
+      opacity: 0; }
   body.mode-evaluate {
     background-color: #c0b7ca; }
     body.mode-evaluate #go-tagging {
@@ -50,6 +58,10 @@ body {
       opacity: 0.4; }
     body.mode-evaluate #go-interpret {
       opacity: 0.4; }
+    body.mode-evaluate #show-word-cloud {
+      display: none; }
+    body.mode-evaluate .contribution, body.mode-evaluate .contribution-connector {
+      opacity: 0; }
   body.paused {
     background-color: #aaa; }
 
@@ -479,9 +491,9 @@ button {
   -webkit-box-shadow: rgba(0, 0, 0, 0.1) 4px 4px 4px;
   -moz-box-shadow: rgba(0, 0, 0, 0.1) 4px 4px 4px;
   box-shadow: rgba(0, 0, 0, 0.1) 4px 4px 4px;
-  -webkit-transition: height 0.5s, box-shadow 0.5s;
-  -moz-transition: height 0.5s, box-shadow 0.5s;
-  transition: height 0.5s, box-shadow 0.5s; }
+  -webkit-transition: height 0.5s, box-shadow 0.5s, opacity 1s;
+  -moz-transition: height 0.5s, box-shadow 0.5s, opacity 1s;
+  transition: height 0.5s, box-shadow 0.5s, opacity 1s; }
 
 .balloon:hover {
   cursor: pointer;
@@ -593,6 +605,9 @@ button {
   -webkit-transform-origin: 0 0;
   -moz-transform-origin: 0 0;
   transform-origin: 0 0;
-  z-index: -1; }
+  z-index: -1;
+  -webkit-transition: opacity 1s;
+  -moz-transition: opacity 1s;
+  transition: opacity 1s; }
   .connector.blurred {
     opacity: 0.2; }

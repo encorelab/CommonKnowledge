@@ -234,6 +234,8 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                         .addClass('mode-propose')
                         .removeClass('mode-research_and_experiment')
                     @changeWatermark("propose")
+                    setTimeout (=> @$el.find('.contribution, .contribution-connector').remove() ),
+                        1100 # let the fadeout animation complete
                 when 'research_and_experiment'
                     jQuery('body')
                         .removeClass('mode-brainstorm')
@@ -242,6 +244,8 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                         .removeClass('mode-propose')
                         .addClass('mode-research_and_experiment')
                     @changeWatermark("experiment")
+                    setTimeout (=> @$el.find('.contribution, .contribution-connector').remove() ),
+                        1100 # let the fadeout animation complete
                 else
                     jQuery('body')
                         .addClass('mode-brainstorm')

@@ -94,6 +94,14 @@ body {
             opacity: 0.4;
             pointer-events: none;
         }
+
+        #show-word-cloud {
+            display: none;
+        }
+
+        .contribution, .contribution-connector {
+            opacity: 0;
+        }
     }
 
      &.mode-interpret {
@@ -110,6 +118,14 @@ body {
         #go-interpret {
             opacity: 0.4;
         }
+
+        #show-word-cloud {
+            display: none;
+        }
+
+        .contribution, .contribution-connector {
+            opacity: 0;
+        }
     }
 
     &.mode-evaluate {
@@ -125,6 +141,14 @@ body {
 
         #go-interpret {
             opacity: 0.4;
+        }
+
+        #show-word-cloud {
+            display: none;
+        }
+
+        .contribution, .contribution-connector {
+            opacity: 0;
         }
     }
 
@@ -697,9 +721,9 @@ button {
     -moz-box-shadow: rgba(0,0,0,0.1) 4px 4px 4px;
     box-shadow: rgba(0,0,0,0.1) 4px 4px 4px;
 
-    -webkit-transition: height 0.5s, box-shadow 0.5s;
-    -moz-transition: height 0.5s, box-shadow 0.5s;
-    transition: height 0.5s, box-shadow 0.5s;
+    -webkit-transition: height 0.5s, box-shadow 0.5s, opacity 1s;
+    -moz-transition: height 0.5s, box-shadow 0.5s, opacity 1s;
+    transition: height 0.5s, box-shadow 0.5s, opacity 1s;
 }
 
 .balloon:hover {
@@ -819,6 +843,10 @@ button {
     -moz-transform-origin: 0 0;
     transform-origin: 0 0;
     z-index: -1;
+
+    -webkit-transition: opacity 1s;
+    -moz-transition: opacity 1s;
+    transition: opacity 1s;
 
     &.blurred {
         opacity: 0.2;

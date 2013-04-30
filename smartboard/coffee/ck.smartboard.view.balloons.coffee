@@ -233,7 +233,7 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
             connectorId = @model.id + "-" + tagId
 
             connector = CK.Smartboard.View.findOrCreate @wall.$el, "##{connectorId}",
-                "<div class='connector' id='#{connectorId}'></div>"
+                "<div class='connector contribution-connector' id='#{connectorId}'></div>"
 
             x1 = @left + (@width/2)
             y1 = @top + (@height/2)
@@ -256,6 +256,8 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
             connector.addClass "connects-#{@model.id}"
             connector.addClass "connects-#{tag.id}"
             connector.addClass "tag-#{tag.id}" # used for Wall's @tagFilters
+
+            return connector # for additional manipulation in subclasses
 
     renderTags: =>
         # tagsContainer = @findOrCreate '.tags',
