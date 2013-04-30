@@ -308,24 +308,22 @@ input {
 	font-weight: bold;
 }
 
-/*#like-btn-container {
+#like-btn-container {
 	position: absolute;
-	bottom: 3px;
-	right: 10px;
+	bottom: 11px;
+	right: 37px;
 }
 
 .like-btn {
 	position: absolute;
-	bottom: 3px;
-	right: 3px;
+	bottom: 5px;
+	right: 5px;
 }
 
 #like-btn-on {
-	position: absolute;
-	bottom: 5px;
+	bottom: 7px;
 }
-le sigh
-*/
+
 #proposal-justification-input .text-entry {
 	width: 97.5%;
 	height: 117px;
