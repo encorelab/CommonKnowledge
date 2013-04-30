@@ -561,12 +561,9 @@ CK.Mobile = function() {
     app.proposal.set('type',null);
     app.proposal.set('tag',myTagObj);
 
-    //app.proposal.set('tag_group_id',myTag.id);
-    //app.proposal.set('tag_group_name',myTag.get('name'));
-
     app.proposal.save();
     app.proposalInputView.render();
-  };  
+  };
 
   app.saveProposal = function(view) {
     console.log("Submitting proposal...");

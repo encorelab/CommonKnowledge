@@ -596,7 +596,7 @@
       'click #like-btn-off': function(ev) {
         // vote
         var votesArray = this.model.get('votes');
-        //votesArray.push(Sail.app.userData.account.login);
+        votesArray.push(Sail.app.userData.account.login);
         this.model.save();
         jQuery('#like-btn-off').addClass('hide');
         jQuery('#like-btn-on').removeClass('hide');
@@ -604,7 +604,7 @@
       'click #like-btn-on': function(ev) {
         // unvote
         var votesArray = this.model.get('votes');
-        //votesArray = _.without(votesArray, Sail.app.userData.account.login);
+        votesArray = _.without(votesArray, Sail.app.userData.account.login);
         this.model.set('votes',votesArray);        
         this.model.save();        // these almost certainly should be patches, right?   TODO
         jQuery('#like-btn-on').addClass('hide');

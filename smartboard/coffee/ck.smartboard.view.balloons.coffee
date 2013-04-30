@@ -654,8 +654,8 @@ class CK.Smartboard.View.TagBalloon extends CK.Smartboard.View.Balloon
             "<h3 class='name'></h3>"
         name.text @model.get('name')
 
-        if @model.has('colorClassName')
-            @setColorClass(@model.get('colorClassName'))
+        if @model.has('colorClass')
+            @setColorClass(@model.get('colorClass'))
 
         if @model.get('pinned')
             @$el.addClass('pinned')

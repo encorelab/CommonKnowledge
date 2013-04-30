@@ -977,8 +977,8 @@
       this.$el.addClass('tag');
       name = this.findOrCreate('.name', "<h3 class='name'></h3>");
       name.text(this.model.get('name'));
-      if (this.model.has('colorClassName')) {
-        this.setColorClass(this.model.get('colorClassName'));
+      if (this.model.has('colorClass')) {
+        this.setColorClass(this.model.get('colorClass'));
       }
       if (this.model.get('pinned')) {
         this.$el.addClass('pinned');
