@@ -63,8 +63,7 @@ class CK.Model
 
     @defineModelClasses: ->
 
-        class @Contribution extends @db.Document('contributions')
-            
+        class TaggableMixin
             addTag: (tag, tagger) =>
                 unless tag instanceof CK.Model.Tag
                     console.error("Cannot addTag ", tag ," because it is not a CK.Model.Tag instance!")
@@ -80,18 +79,14 @@ class CK.Model
                     console.warn("Cannot addTag ", tag ," to contribution ", @ , " because it already has this tag.")
                     return this
 
-                tagRel =
-                    id: tag.id.toLowerCase()
-                    name: tag.get('name')
-                    tagger: tagger
-                    tagged_at: new Date()
+                tagRel = tagRel(tag)
 
 
                 existingTagRelationships.push(tagRel)
 
                 @set 'tags', existingTagRelationships
 
-                return @
+                return this
 
             removeTag: (tag, tagger) =>
                 reducedTags = _.reject @get('tags'), (t) =>
@@ -100,51 +95,33 @@ class CK.Model
 
                 @set('tags', reducedTags)
 
+                return this
+
             hasTag: (tag, tagger) =>
                 _.any @get('tags'), (t) =>
                     t.id.toLowerCase() is tag.id and
                         (not tagger? || t.tagger is tagger)
 
+        class @Contribution extends @db.Document('contributions')
+            _.extend(@prototype, TaggableMixin.prototype)
+
+            tagRel: (tag) ->
+                return {
+                    id: tag.id.toLowerCase()
+                    name: tag.get('name')
+                    tagger: tagger
+                    tagged_at: new Date()
+                }
 
         class @Proposal extends @db.Document('proposals')
-                    
-            addTag: (tag) =>
-                unless tag instanceof CK.Model.Tag
-                    console.error("Cannot addTag ", tag ," because it is not a CK.Model.Tag instance!")
-                    throw "Invalid tag (doesn't exist)"
+            _.extend(@prototype, TaggableMixin.prototype)
 
-                unless tag.id
-                    console.error("Cannot addTag ", tag ," to contribution ", @ ," because it doesn't have an id!")
-                    throw "Invalid tag (no id)"
-
-                existingTagID = @get('tag_group_id') || null
-
-                if existingTagID is tag.id
-                    console.warn("Cannot addTag ", tag ," to contribution ", @ , " because it already has this tag.")
-                    return @
-
-
-                @set 'tag_group_name', tag.name
-                @set 'tag_group_id', tag.id
-
-                return @
-
-            removeTag: (tag) =>
-                tagID = @get('tag_group_id')
-                tagName = @get('tag_group_name')
-               
-
-                if tagID is tag.id || tagName is tag.name
-                    @set('tag_group_id', null)
-                    @set('tag_group_name', null)
-
-            hasTag: (tag) =>
-                tagID = @get('tag_group_id')
-                if tag.id is tagID
-                    true
-                else
-                    false
-                
+            tagRel: (tag) ->
+                return {
+                    id: tag.id.toLowerCase()
+                    name: tag.get('name')
+                    colorClass: tag.get('colorClass')
+                }
 
         class @Contributions extends @db.Collection('contributions')
             model: CK.Model.Contribution

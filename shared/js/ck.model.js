@@ -75,20 +75,19 @@
     };
 
     Model.defineModelClasses = function() {
-      this.Contribution = (function(_super) {
+      var TaggableMixin;
+      TaggableMixin = (function() {
 
-        __extends(Contribution, _super);
-
-        function Contribution() {
+        function TaggableMixin() {
           this.hasTag = __bind(this.hasTag, this);
 
           this.removeTag = __bind(this.removeTag, this);
 
           this.addTag = __bind(this.addTag, this);
-          return Contribution.__super__.constructor.apply(this, arguments);
+
         }
 
-        Contribution.prototype.addTag = function(tag, tagger) {
+        TaggableMixin.prototype.addTag = function(tag, tagger) {
           var existingTagRelationships, tagRel,
             _this = this;
           if (!(tag instanceof CK.Model.Tag)) {
@@ -106,31 +105,49 @@
             console.warn("Cannot addTag ", tag, " to contribution ", this, " because it already has this tag.");
             return this;
           }
-          tagRel = {
-            id: tag.id.toLowerCase(),
-            name: tag.get('name'),
-            tagger: tagger,
-            tagged_at: new Date()
-          };
+          tagRel = tagRel(tag);
           existingTagRelationships.push(tagRel);
           this.set('tags', existingTagRelationships);
           return this;
         };
 
-        Contribution.prototype.removeTag = function(tag, tagger) {
+        TaggableMixin.prototype.removeTag = function(tag, tagger) {
           var reducedTags,
             _this = this;
           reducedTags = _.reject(this.get('tags'), function(t) {
             return (t.id === tag.id || t.name === tag.get('name')) && (!(tagger != null) || t.tagger === tagger);
           });
-          return this.set('tags', reducedTags);
+          this.set('tags', reducedTags);
+          return this;
         };
 
-        Contribution.prototype.hasTag = function(tag, tagger) {
+        TaggableMixin.prototype.hasTag = function(tag, tagger) {
           var _this = this;
           return _.any(this.get('tags'), function(t) {
             return t.id.toLowerCase() === tag.id && (!(tagger != null) || t.tagger === tagger);
           });
+        };
+
+        return TaggableMixin;
+
+      })();
+      this.Contribution = (function(_super) {
+
+        __extends(Contribution, _super);
+
+        function Contribution() {
+          return Contribution.__super__.constructor.apply(this, arguments);
+        }
+
+        _.extend(Contribution.prototype, TaggableMixin.prototype);
+
+        Contribution.prototype.tagRel = function(tag) {
+          return {
+            id: tag.id.toLowerCase(),
+            name: tag.get('name'),
+            tagger: tagger,
+            tagged_at: new Date()
+          };
         };
 
         return Contribution;
@@ -141,52 +158,17 @@
         __extends(Proposal, _super);
 
         function Proposal() {
-          this.hasTag = __bind(this.hasTag, this);
-
-          this.removeTag = __bind(this.removeTag, this);
-
-          this.addTag = __bind(this.addTag, this);
           return Proposal.__super__.constructor.apply(this, arguments);
         }
 
-        Proposal.prototype.addTag = function(tag) {
-          var existingTagID;
-          if (!(tag instanceof CK.Model.Tag)) {
-            console.error("Cannot addTag ", tag, " because it is not a CK.Model.Tag instance!");
-            throw "Invalid tag (doesn't exist)";
-          }
-          if (!tag.id) {
-            console.error("Cannot addTag ", tag, " to contribution ", this, " because it doesn't have an id!");
-            throw "Invalid tag (no id)";
-          }
-          existingTagID = this.get('tag_group_id') || null;
-          if (existingTagID === tag.id) {
-            console.warn("Cannot addTag ", tag, " to contribution ", this, " because it already has this tag.");
-            return this;
-          }
-          this.set('tag_group_name', tag.name);
-          this.set('tag_group_id', tag.id);
-          return this;
-        };
+        _.extend(Proposal.prototype, TaggableMixin.prototype);
 
-        Proposal.prototype.removeTag = function(tag) {
-          var tagID, tagName;
-          tagID = this.get('tag_group_id');
-          tagName = this.get('tag_group_name');
-          if (tagID === tag.id || tagName === tag.name) {
-            this.set('tag_group_id', null);
-            return this.set('tag_group_name', null);
-          }
-        };
-
-        Proposal.prototype.hasTag = function(tag) {
-          var tagID;
-          tagID = this.get('tag_group_id');
-          if (tag.id === tagID) {
-            return true;
-          } else {
-            return false;
-          }
+        Proposal.prototype.tagRel = function(tag) {
+          return {
+            id: tag.id.toLowerCase(),
+            name: tag.get('name'),
+            colorClass: tag.get('colorClass')
+          };
         };
 
         return Proposal;
