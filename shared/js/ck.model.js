@@ -105,7 +105,7 @@
             console.warn("Cannot addTag ", tag, " to contribution ", this, " because it already has this tag.");
             return this;
           }
-          tagRel = tagRel(tag);
+          tagRel = this.tagRel(tag);
           existingTagRelationships.push(tagRel);
           this.set('tags', existingTagRelationships);
           return this;

@@ -79,7 +79,7 @@ class CK.Model
                     console.warn("Cannot addTag ", tag ," to contribution ", @ , " because it already has this tag.")
                     return this
 
-                tagRel = tagRel(tag)
+                tagRel = @tagRel tag
 
 
                 existingTagRelationships.push(tagRel)
