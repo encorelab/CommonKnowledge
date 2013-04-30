@@ -531,13 +531,10 @@
           jQuery('#proposal-list .nav-list').append(note);
 
           note.find('.headline').text('Brainstorm - '+contrib.get('headline'));
-
-          // functions toLocaleDateString() and toLocaleTimeString() are only defined if created_at is a Date object
           createdAt = contrib.get('created_at');
           if (createdAt) {
             note.find('.date').text(' (' + createdAt.toLocaleDateString() + ' ' + createdAt.toLocaleTimeString() + ')');
           }
-
           note.find('.author').text(contrib.get('author'));
 
           var buildOnArray = contrib.get('build_ons');
@@ -568,17 +565,13 @@
           jQuery('#proposal-list .nav-list').append(note);
 
           note.find('.headline').text('Proposal - '+prop.get('headline'));
-
-          // functions toLocaleDateString() and toLocaleTimeString() are only defined if created_at is a Date object
           createdAt = prop.get('created_at');
           if (createdAt) {
             note.find('.date').text(' (' + createdAt.toLocaleDateString() + ' ' + createdAt.toLocaleTimeString() + ')');
           }
-
           note.find('.author').text(prop.get('author'));
 
           // add the correct colors based on tag_name
-          //var propTagName = prop.get('tag_group_name');
           var propTag = Sail.app.tagList.findWhere( {'name':prop.get('tag').name} );
           note.children().first().addClass(propTag.get('colorClass'));
         }
@@ -597,18 +590,21 @@
         // vote
         var votesArray = this.model.get('votes');
         votesArray.push(Sail.app.userData.account.login);
-        this.model.save();
-        jQuery('#like-btn-off').addClass('hide');
-        jQuery('#like-btn-on').removeClass('hide');
+        this.model.save(null,{patch:true}).done(function() {
+          jQuery('#like-btn-off').addClass('hide');
+          jQuery('#like-btn-on').removeClass('hide');
+        });
+
       },
       'click #like-btn-on': function(ev) {
         // unvote
         var votesArray = this.model.get('votes');
         votesArray = _.without(votesArray, Sail.app.userData.account.login);
         this.model.set('votes',votesArray);        
-        this.model.save();        // these almost certainly should be patches, right?   TODO
-        jQuery('#like-btn-on').addClass('hide');
-        jQuery('#like-btn-off').removeClass('hide');
+        this.model.save(null,{patch:true}).done(function() {
+          jQuery('#like-btn-on').addClass('hide');
+          jQuery('#like-btn-off').removeClass('hide');
+        });
       }
     },
 
