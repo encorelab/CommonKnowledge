@@ -85,7 +85,7 @@
       if (this.tags.length < 4) {
         tag = new CK.Model.Tag({
           name: name,
-          colorClassName: this.getColorTagClassName(),
+          colorClass: this.getColorTagClassName(),
           created_at: new Date()
         });
         tag.wake(this.config.wakeful.url);
