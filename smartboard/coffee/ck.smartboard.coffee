@@ -94,10 +94,15 @@ class CK.Smartboard extends Sail.App
         authenticated: (ev) ->
             console.log "Authenticated..."
 
+            jQuery('#auth-indicator .nickname').text(@run.name)
+
             CK.Model.init(@config.drowsy.url, @run.name).done =>
                 Wakeful.loadFayeClient(@config.wakeful.url).done =>
                     CK.Model.initWakefulCollections(@config.wakeful.url).done =>
                         @setupModel()
+
+        unauthenticated: (ev) ->
+            document.location.reload()
 
 
         'ui.initialized': (ev) ->

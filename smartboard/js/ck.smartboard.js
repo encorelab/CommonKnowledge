@@ -132,6 +132,7 @@
       authenticated: function(ev) {
         var _this = this;
         console.log("Authenticated...");
+        jQuery('#auth-indicator .nickname').text(this.run.name);
         return CK.Model.init(this.config.drowsy.url, this.run.name).done(function() {
           return Wakeful.loadFayeClient(_this.config.wakeful.url).done(function() {
             return CK.Model.initWakefulCollections(_this.config.wakeful.url).done(function() {
@@ -139,6 +140,9 @@
             });
           });
         });
+      },
+      unauthenticated: function(ev) {
+        return document.location.reload();
       },
       'ui.initialized': function(ev) {
         return console.log("UI initialized...");
