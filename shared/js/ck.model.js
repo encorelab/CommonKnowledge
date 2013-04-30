@@ -161,14 +161,12 @@
           return Proposal.__super__.constructor.apply(this, arguments);
         }
 
-        _.extend(Proposal.prototype, TaggableMixin.prototype);
-
-        Proposal.prototype.tagRel = function(tag) {
-          return {
+        Proposal.prototype.setTag = function(tag) {
+          return this.set('tag', {
             id: tag.id.toLowerCase(),
             name: tag.get('name'),
             colorClass: tag.get('colorClass')
-          };
+          });
         };
 
         return Proposal;

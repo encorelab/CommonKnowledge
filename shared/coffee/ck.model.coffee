@@ -114,14 +114,11 @@ class CK.Model
                 }
 
         class @Proposal extends @db.Document('proposals')
-            _.extend(@prototype, TaggableMixin.prototype)
-
-            tagRel: (tag) ->
-                return {
+            setTag: (tag) ->
+                @set 'tag',
                     id: tag.id.toLowerCase()
                     name: tag.get('name')
                     colorClass: tag.get('colorClass')
-                }
 
         class @Contributions extends @db.Collection('contributions')
             model: CK.Model.Contribution
