@@ -172,6 +172,7 @@
       this.runState = options.runState;
       this.tags = options.tags;
       this.contributions = options.contributions;
+      this.proposals = options.proposals;
       Wall.__super__.constructor.call(this, options);
     }
 
@@ -185,6 +186,12 @@
       });
       this.contributions.each(function(c) {
         return _this.addBalloon(c, CK.Smartboard.View.ContributionBalloon, _this.balloonViews);
+      });
+      this.proposals.on('add', function(p) {
+        return _this.addBalloon(p, CK.Smartboard.View.ProposalBalloon, _this.balloonViews);
+      });
+      this.proposals.each(function(p) {
+        return _this.addBalloon(p, CK.Smartboard.View.ProposalBalloon, _this.balloonViews);
       });
       this.tags.on('add', function(t) {
         return _this.addBalloon(t, CK.Smartboard.View.TagBalloon, _this.balloonViews);
@@ -297,7 +304,7 @@
     Wall.prototype.renderFiltered = function(tag) {
       var activeIds, maxZ, selector;
       if (this.tagFilters.length === 0) {
-        return this.$el.find(".contribution, .connector").removeClass('blurred');
+        return this.$el.find(".content, .connector").removeClass('blurred');
       } else {
         activeIds = (function() {
           var _i, _len, _ref, _results;
@@ -310,10 +317,10 @@
           return _results;
         }).call(this);
         selector = ".tag-" + activeIds.join(", .tag-");
-        this.$el.find(".contribution:not(" + selector + ")").addClass('blurred');
+        this.$el.find(".content:not(" + selector + ")").addClass('blurred');
         this.$el.find(".connector:not(" + selector + ")").addClass('blurred');
         maxZ = this.maxBallonZ();
-        this.$el.find(".contribution").filter("" + selector).removeClass('blurred').css('z-index', maxZ + 1);
+        this.$el.find(".content").filter("" + selector).removeClass('blurred').css('z-index', maxZ + 1);
         return this.$el.find(".connector").filter("" + selector).removeClass('blurred');
       }
     };
@@ -668,6 +675,35 @@
       return (pos.left != null) && pos.left > 0;
     };
 
+    Balloon.prototype.renderConnector = function(toTag) {
+      var connector, connectorId, connectorLength, connectorTransform, tagId, tagView, x1, x2, y1, y2;
+      tagId = toTag.id.toLowerCase();
+      tagView = this.wall.balloonViews[tagId];
+      if (tagView == null) {
+        return;
+      }
+      connectorId = this.model.id + "-" + tagId;
+      connector = CK.Smartboard.View.findOrCreate(this.wall.$el, "#" + connectorId, "<div class='connector " + this.BALLOON_TYPE + "-connector' id='" + connectorId + "'></div>");
+      x1 = this.left + (this.width / 2);
+      y1 = this.top + (this.height / 2);
+      x2 = tagView.left + (tagView.width / 2);
+      y2 = tagView.top + (tagView.height / 2);
+      connectorLength = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+      connectorTransform = "rotate(" + (Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI) + "deg)";
+      connector.css({
+        'top': "" + y1 + "px",
+        'left': "" + x1 + "px",
+        'width': "" + connectorLength + "px",
+        '-webkit-transform': connectorTransform,
+        '-moz-transform': connectorTransform,
+        'transform': connectorTransform
+      });
+      connector.addClass("connects-" + this.model.id);
+      connector.addClass("connects-" + tagId);
+      connector.addClass("tag-" + tagId);
+      return connector;
+    };
+
     Balloon.prototype.render = function() {
       if (this.model.has('pos')) {
         this.pos = this.model.get('pos');
@@ -681,202 +717,61 @@
 
   })(CK.Smartboard.View.Base);
 
-  CK.Smartboard.View.ContributionBalloon = (function(_super) {
+  CK.Smartboard.View.ContentBalloon = (function(_super) {
 
-    __extends(ContributionBalloon, _super);
+    __extends(ContentBalloon, _super);
 
-    ContributionBalloon.prototype.tagName = 'article';
+    ContentBalloon.prototype.tagName = 'article content';
 
-    ContributionBalloon.prototype.className = 'contribution balloon';
-
-    ContributionBalloon.prototype.id = function() {
+    ContentBalloon.prototype.id = function() {
       return this.domID();
     };
 
-    ContributionBalloon.prototype.setColorClass = function(colorClass) {
-      return this.colorClass = colorClass;
-    };
-
-    function ContributionBalloon(options) {
+    function ContentBalloon(options) {
       this.renderBuildons = __bind(this.renderBuildons, this);
-
-      this.renderTags = __bind(this.renderTags, this);
-
-      this.renderConnectors = __bind(this.renderConnectors, this);
 
       this.render = __bind(this.render, this);
 
-      this.toggleAnalysis = __bind(this.toggleAnalysis, this);
-
-      this.resetView = __bind(this.resetView, this);
-
-      this.processContributionByType = __bind(this.processContributionByType, this);
-
       this.handleClick = __bind(this.handleClick, this);
 
-      this.setColorClass = __bind(this.setColorClass, this);
-
       this.id = __bind(this.id, this);
-      ContributionBalloon.__super__.constructor.call(this, options);
-      this.balloonContributionTypes = {
-        "default": 'default',
-        analysis: 'analysis',
-        propose: 'propose',
-        interpret: 'interpret'
-      };
-      this.ballonContributionType = this.balloonContributionTypes["default"];
-      this.colorClass = "whiteGradient";
+      ContentBalloon.__super__.constructor.call(this, options);
     }
 
-    ContributionBalloon.prototype.initialize = function() {
-      var _this = this;
-      ContributionBalloon.__super__.initialize.call(this);
-      return this.model.on('change:tags', function() {
-        return _this.renderConnectors();
-      });
+    ContentBalloon.prototype.initialize = function() {
+      return ContentBalloon.__super__.initialize.call(this);
     };
 
-    ContributionBalloon.prototype.events = {
+    ContentBalloon.prototype.events = {
       'dblclick': 'handleClick'
     };
 
-    ContributionBalloon.prototype.handleClick = function() {
+    ContentBalloon.prototype.handleClick = function() {
       if (this.$el.hasClass('.ui-draggable-dragging')) {
         return;
       }
       return this.$el.toggleClass('opened');
     };
 
-    ContributionBalloon.prototype.processContributionByType = function() {
-      if (this.ballonContributionType === this.balloonContributionTypes.analysis) {
-        return this.toggleAnalysis();
-      }
-    };
-
-    ContributionBalloon.prototype.resetView = function() {
-      var balloonID, balloonObj;
-      balloonObj = jQuery(this.$el);
-      balloonID = balloonObj.attr('id');
-      if (this.ballonContributionType === this.balloonContributionTypes["default"]) {
-        balloonObj.addClass(this.colorClass);
-        return;
-      }
-      console.log('Reset Proposal Views');
-      balloonObj.removeClass('opened').removeClass(this.colorClass);
-      jQuery('#' + balloonID + ' .headline').hide();
-      jQuery('#' + balloonID + ' .body').hide();
-      jQuery('#' + balloonID + ' .meta').hide();
-      return jQuery('#' + balloonID + ' img.balloon-note').fadeIn('fast');
-    };
-
-    ContributionBalloon.prototype.toggleAnalysis = function() {
-      var balloonID, balloonObj;
-      console.log('Toggle Analysis');
-      balloonObj = jQuery(this.$el);
-      balloonObj.toggleClass('balloon-note').toggleClass(this.colorClass);
-      balloonID = balloonObj.attr('id');
-      if (this.$el.hasClass('opened')) {
-        jQuery('#' + balloonID + ' img.balloon-note').hide();
-        jQuery('#' + balloonID + ' .headline').fadeIn('fast');
-        jQuery('#' + balloonID + ' .body').fadeIn('fast');
-        return jQuery('#' + balloonID + ' .meta').fadeIn('fast');
-      } else {
-        jQuery('#' + balloonID + ' .headline').hide();
-        jQuery('#' + balloonID + ' .body').hide();
-        jQuery('#' + balloonID + ' .meta').hide();
-        return jQuery('#' + balloonID + ' img.balloon-note').fadeIn('fast');
-      }
-    };
-
-    ContributionBalloon.prototype.render = function() {
-      var body, headline, meta, nodeHeader;
-      ContributionBalloon.__super__.render.call(this);
+    ContentBalloon.prototype.render = function() {
+      var headline, meta;
+      ContentBalloon.__super__.render.call(this);
       if (this.model.get('published')) {
         this.$el.removeClass('unpublished');
       } else {
         this.$el.addClass('unpublished');
       }
-      this.$el.addClass('contribution').addClass(this.colorClass);
-      if (this.model.get('kind') === 'propose') {
-        this.$el.addClass('synthesis');
-      }
-      nodeHeader = this.findOrCreate('.balloon-note', '<img style="display: none;" class="balloon-note" src="/smartboard/img/notes_large.png" alt="Note">');
+      this.$el.addClass('content');
       headline = this.findOrCreate('.headline', "<h3 class='headline'></h3>");
       headline.text(this.model.get('headline'));
-      body = this.findOrCreate('.body', "<div class='body'></div>");
-      if (this.model.get('content_type') === 'text') {
-        body.text(this.model.get('content'));
-      } else {
-        body.text(this.model.get('content'));
-      }
+      this.body = this.findOrCreate('.body', "<div class='body'></div>");
       meta = this.findOrCreate('.meta', "<div class='meta'><span class='author'></span></div>");
       meta.find('.author').text(this.model.get('author')).addClass("author-" + (this.model.get('author')));
-      this.renderTags();
       this.renderBuildons();
-      this.renderConnectors();
       return this;
     };
 
-    ContributionBalloon.prototype.renderConnectors = function() {
-      var connector, connectorId, connectorLength, connectorTransform, tag, tagId, tagView, x1, x2, y1, y2, _i, _len, _ref;
-      if (!this.model.has('tags') || _.isEmpty(this.model.get('tags')) || !this.$el.is(':visible')) {
-        return;
-      }
-      _ref = this.model.get('tags');
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        tag = _ref[_i];
-        tagId = tag.id.toLowerCase();
-        tagView = this.wall.balloonViews[tagId];
-        if (tagView == null) {
-          continue;
-        }
-        connectorId = this.model.id + "-" + tagId;
-        connector = CK.Smartboard.View.findOrCreate(this.wall.$el, "#" + connectorId, "<div class='connector contribution-connector' id='" + connectorId + "'></div>");
-        x1 = this.left + (this.width / 2);
-        y1 = this.top + (this.height / 2);
-        x2 = tagView.left + (tagView.width / 2);
-        y2 = tagView.top + (tagView.height / 2);
-        connectorLength = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-        connectorTransform = "rotate(" + (Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI) + "deg)";
-        connector.css({
-          'top': "" + y1 + "px",
-          'left': "" + x1 + "px",
-          'width': "" + connectorLength + "px",
-          '-webkit-transform': connectorTransform,
-          '-moz-transform': connectorTransform,
-          'transform': connectorTransform
-        });
-        connector.addClass("connects-" + this.model.id);
-        connector.addClass("connects-" + tag.id);
-        connector.addClass("tag-" + tag.id);
-        return connector;
-      }
-    };
-
-    ContributionBalloon.prototype.renderTags = function() {
-      var tag, tagIds, tid, _i, _len;
-      if (!this.model.has('tags')) {
-        return;
-      }
-      tagIds = (function() {
-        var _i, _len, _ref, _results;
-        _ref = this.model.get('tags');
-        _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          tag = _ref[_i];
-          _results.push(tag.id);
-        }
-        return _results;
-      }).call(this);
-      this.$el.attr('data-tags', tagIds.join(" "));
-      for (_i = 0, _len = tagIds.length; _i < _len; _i++) {
-        tid = tagIds[_i];
-        this.$el.addClass("tag-" + tid);
-      }
-      return this;
-    };
-
-    ContributionBalloon.prototype.renderBuildons = function() {
+    ContentBalloon.prototype.renderBuildons = function() {
       var $b, b, buildons, changed, container, counter, _i, _len, _results;
       if (!this.model.has('build_ons')) {
         return;
@@ -908,9 +803,115 @@
       return _results;
     };
 
-    return ContributionBalloon;
+    return ContentBalloon;
 
   })(CK.Smartboard.View.Balloon);
+
+  CK.Smartboard.View.ContributionBalloon = (function(_super) {
+
+    __extends(ContributionBalloon, _super);
+
+    function ContributionBalloon() {
+      this.renderTags = __bind(this.renderTags, this);
+
+      this.renderConnectors = __bind(this.renderConnectors, this);
+      return ContributionBalloon.__super__.constructor.apply(this, arguments);
+    }
+
+    ContributionBalloon.prototype.BALLOON_TYPE = 'contribution';
+
+    ContributionBalloon.prototype.className = 'contribution balloon';
+
+    ContributionBalloon.prototype.initiaialize = function() {
+      var _this = this;
+      return this.model.on('change:tags', function() {
+        return _this.renderConnectors();
+      });
+    };
+
+    ContributionBalloon.prototype.render = function() {
+      ContributionBalloon.__super__.render.call(this);
+      this.renderConnectors();
+      this.renderTags();
+      this.$el.addClass('contribution');
+      return this.body.text(this.model.get('content'));
+    };
+
+    ContributionBalloon.prototype.renderConnectors = function() {
+      var tag, _i, _len, _ref, _results;
+      if (!this.model.has('tags') || _.isEmpty(this.model.get('tags')) || !this.$el.is(':visible')) {
+        return;
+      }
+      _ref = this.model.get('tags');
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        tag = _ref[_i];
+        _results.push(this.renderConnector(tag));
+      }
+      return _results;
+    };
+
+    ContributionBalloon.prototype.renderTags = function() {
+      var tag, tagIds, tid, _i, _len;
+      if (!this.model.has('tags')) {
+        return;
+      }
+      tagIds = (function() {
+        var _i, _len, _ref, _results;
+        _ref = this.model.get('tags');
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          tag = _ref[_i];
+          _results.push(tag.id);
+        }
+        return _results;
+      }).call(this);
+      this.$el.attr('data-tags', tagIds.join(" "));
+      for (_i = 0, _len = tagIds.length; _i < _len; _i++) {
+        tid = tagIds[_i];
+        this.$el.addClass("tag-" + tid);
+      }
+      return this;
+    };
+
+    return ContributionBalloon;
+
+  })(CK.Smartboard.View.ContentBalloon);
+
+  CK.Smartboard.View.ProposalBalloon = (function(_super) {
+
+    __extends(ProposalBalloon, _super);
+
+    function ProposalBalloon() {
+      return ProposalBalloon.__super__.constructor.apply(this, arguments);
+    }
+
+    ProposalBalloon.prototype.className = 'proposal balloon';
+
+    ProposalBalloon.prototype.BALLOON_TYPE = 'proposal';
+
+    ProposalBalloon.prototype.render = function() {
+      var tag;
+      ProposalBalloon.__super__.render.call(this);
+      this.renderConnectors();
+      this.$el.addClass('proposal');
+      if (this.model.has('tag')) {
+        tag = this.model.get('tag');
+        this.$el.addClass(tag.colorClass);
+        this.$el.addClass("tag-" + tag.id);
+      }
+      return this.body.text(this.model.get('justification'));
+    };
+
+    ProposalBalloon.prototype.renderConnectors = function() {
+      if (this.model.has('tag')) {
+        return this.renderConnector(this.model.get('tag'));
+      }
+    };
+
+    return ProposalBalloon;
+
+  })(CK.Smartboard.View.ContentBalloon);
 
   CK.Smartboard.View.TagBalloon = (function(_super) {
 
@@ -930,6 +931,8 @@
     TagBalloon.prototype.tagName = 'div';
 
     TagBalloon.prototype.className = 'tag balloon';
+
+    TagBalloon.prototype.BALLOON_TYPE = 'contribution';
 
     TagBalloon.prototype.id = function() {
       return this.domID();
@@ -967,7 +970,12 @@
       var cv, taggedContributionViews, _i, _len, _results,
         _this = this;
       taggedContributionViews = _.filter(this.wall.balloonViews, function(bv) {
-        return bv.model instanceof CK.Model.Contribution && bv.model.hasTag(_this.model);
+        switch (false) {
+          case !(bv.model instanceof CK.Model.Contribution):
+            return bv.$el.is(':visible') && bv.model.hasTag(_this.model);
+          case !(bv.model instanceof CK.Model.Proposal):
+            return bv.$el.is(':visible') && bv.model.has('tag') && bv.model.get('tag').id === _this.model.id;
+        }
       });
       _results = [];
       for (_i = 0, _len = taggedContributionViews.length; _i < _len; _i++) {

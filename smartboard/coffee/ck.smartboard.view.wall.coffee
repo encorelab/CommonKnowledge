@@ -60,6 +60,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
         @runState = options.runState
         @tags = options.tags
         @contributions = options.contributions
+        @proposals = options.proposals
         super(options)
 
     initialize: ->
@@ -73,6 +74,11 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             @addBalloon c, CK.Smartboard.View.ContributionBalloon, @balloonViews
         @contributions.each (c) =>
             @addBalloon c, CK.Smartboard.View.ContributionBalloon, @balloonViews
+
+        @proposals.on 'add', (p) =>
+            @addBalloon p, CK.Smartboard.View.ProposalBalloon, @balloonViews
+        @proposals.each (p) =>
+            @addBalloon p, CK.Smartboard.View.ProposalBalloon, @balloonViews
 
         @tags.on 'add', (t) =>
             @addBalloon t, CK.Smartboard.View.TagBalloon, @balloonViews
@@ -191,16 +197,16 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
     # blurs/unblurs contribution balloons based on the current contents of @tagFilters
     renderFiltered: (tag) ->
         if @tagFilters.length is 0
-            @$el.find(".contribution, .connector").removeClass('blurred')
+            @$el.find(".content, .connector").removeClass('blurred')
         else
             activeIds = (tag.id for tag in @tagFilters)
             selector = ".tag-"+activeIds.join(", .tag-")
 
-            @$el.find(".contribution:not(#{selector})").addClass('blurred')
+            @$el.find(".content:not(#{selector})").addClass('blurred')
             @$el.find(".connector:not(#{selector})").addClass('blurred')
 
             maxZ = @maxBallonZ()
-            @$el.find(".contribution").filter("#{selector}")
+            @$el.find(".content").filter("#{selector}")
                 .removeClass('blurred')
                 .css('z-index', maxZ+1) # NOTE: currently we don't persist this z-index change, since it's only temporary
             @$el.find(".connector").filter("#{selector}")

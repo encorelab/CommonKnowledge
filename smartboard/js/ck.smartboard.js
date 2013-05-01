@@ -156,7 +156,8 @@
           el: jQuery('#wall'),
           runState: this.runState,
           tags: this.tags,
-          contributions: this.contributions
+          contributions: this.contributions,
+          proposals: this.proposals
         });
         return this.wall.render();
       }
