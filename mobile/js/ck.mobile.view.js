@@ -179,7 +179,7 @@
         // case: select a tag
         } else {
           jQuery(jqButtonSelector).addClass('active');
-          Sail.app.contribution.addTag(tag);
+          Sail.app.contribution.addTag(tag, Sail.app.userData.account.login);
           // add tagger, other?  ie tag.set('tagger',Sail.app.userData.account.login);
         }
 
