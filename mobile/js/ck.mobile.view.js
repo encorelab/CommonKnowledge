@@ -549,33 +549,74 @@
 
       // add the proposals to the list
       Sail.app.proposalList.each(function(prop) {
-        if (prop.hasChanged() || jQuery('li#proposal'+prop.id).length === 0) {
-          // if this prop has changed
-          jQuery('#proposal-list li#proposal'+prop.id).remove();
-        } else {
-          // else break out
-          return;
-        }
         if (prop.get('published') === true) {
-          var note = "<li id='proposal" + prop.id + "' class='list-item proposal-item' data='" + prop.id + "'><a class='note'><span class='headline'></span>";
-          note += "<br /><i class='icon-chevron-right'></i>";
-          note += "<span class='author'></span><span class='date'></span></a></li>";
-          note = jQuery(note);
+          if (jQuery('li#proposal'+prop.id).length === 0) {
+            // if this prop doesn't exist, add it
+            var note = "<li id='proposal" + prop.id + "' class='list-item proposal-item' data='" + prop.id + "'><a class='note'><span class='headline'></span>";
+            note += "<br /><i class='icon-chevron-right'></i>";
+            note += "<span class='author'></span><span class='date'></span></a></li>";
+            note = jQuery(note);
+            jQuery('#proposal-list .nav-list').append(note);
+            note.find('.headline').text('Proposal - '+prop.get('headline'));
+            createdAt = prop.get('created_at');
+            if (createdAt) {
+              note.find('.date').text(' (' + createdAt.toLocaleDateString() + ' ' + createdAt.toLocaleTimeString() + ')');
+            }
+            note.find('.author').text(prop.get('author'));
+            // add the correct colors based on tag_name
+            var propTag = Sail.app.tagList.findWhere( {'name':prop.get('tag').name} );
+            note.children().first().addClass(propTag.get('colorClass'));            
 
-          jQuery('#proposal-list .nav-list').append(note);
+          } else if (prop.hasChanged()) {
+            // if this prop has changed, clear the li and add new info
+            var liEl = jQuery('#proposal'+prop.id);
+            //liEl.html('');
+            liEl.find('.headline').text('Proposal - '+prop.get('headline'));
+            createdAt = prop.get('created_at');
+            if (createdAt) {
+              liEl.find('.date').text(' (' + createdAt.toLocaleDateString() + ' ' + createdAt.toLocaleTimeString() + ')');
+            }
+            liEl.find('.author').text(prop.get('author'));
+            // add the correct colors based on tag_name
+            var propTag = Sail.app.tagList.findWhere( {'name':prop.get('tag').name} );
+            liEl.children().first().addClass(propTag.get('colorClass')); 
 
-          note.find('.headline').text('Proposal - '+prop.get('headline'));
-          createdAt = prop.get('created_at');
-          if (createdAt) {
-            note.find('.date').text(' (' + createdAt.toLocaleDateString() + ' ' + createdAt.toLocaleTimeString() + ')');
+          } else {
+            // else break out
+            return;
           }
-          note.find('.author').text(prop.get('author'));
-
-          // add the correct colors based on tag_name
-          var propTag = Sail.app.tagList.findWhere( {'name':prop.get('tag').name} );
-          note.children().first().addClass(propTag.get('colorClass'));
         }
       });
+
+      // // add the proposals to the list
+      // Sail.app.proposalList.each(function(prop) {
+      //   if (prop.hasChanged() || jQuery('li#proposal'+prop.id).length === 0) {
+      //     // if this prop has changed
+      //     jQuery('#proposal-list li#proposal'+prop.id).remove();
+      //   } else {
+      //     // else break out
+      //     return;
+      //   }
+      //   if (prop.get('published') === true) {
+      //     var note = "<li id='proposal" + prop.id + "' class='list-item proposal-item' data='" + prop.id + "'><a class='note'><span class='headline'></span>";
+      //     note += "<br /><i class='icon-chevron-right'></i>";
+      //     note += "<span class='author'></span><span class='date'></span></a></li>";
+      //     note = jQuery(note);
+
+      //     jQuery('#proposal-list .nav-list').append(note);
+
+      //     note.find('.headline').text('Proposal - '+prop.get('headline'));
+      //     createdAt = prop.get('created_at');
+      //     if (createdAt) {
+      //       note.find('.date').text(' (' + createdAt.toLocaleDateString() + ' ' + createdAt.toLocaleTimeString() + ')');
+      //     }
+      //     note.find('.author').text(prop.get('author'));
+
+      //     // add the correct colors based on tag_name
+      //     var propTag = Sail.app.tagList.findWhere( {'name':prop.get('tag').name} );
+      //     note.children().first().addClass(propTag.get('colorClass'));
+      //   }
+      // });
 
     }
   });
