@@ -468,8 +468,7 @@ CK.Mobile = function() {
       console.log("No tags to add");
     } else {
       _.each(jQuery('#bucket-tagging-btn-container .active'), function(b) {
-        // TODO: do we still have a concept of tagger? Does addTag not do that? So manually?
-        app.bucketedContribution.addTag(jQuery(b).data('tag'));          // tag object is embedded in the button
+        app.bucketedContribution.addTag(jQuery(b).data('tag'), app.userData.account.login);          // tag object is embedded in the button
         //console.log(jQuery(b).data('tag').get('name'));
       });
     }
