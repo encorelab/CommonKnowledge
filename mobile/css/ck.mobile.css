@@ -308,20 +308,9 @@ input {
 	font-weight: bold;
 }
 
-#like-btn-title {
-	position: absolute;
-	bottom: 11px;
-	right: 37px;
-}
-
-.like-btn {
-	position: absolute;
-	bottom: 5px;
-	right: 5px;
-}
-
-#like-btn-on {
-	bottom: 7px;
+#proposal-list .nav-list > li > a {
+	color: black;
+	text-shadow: none;
 }
 
 #proposal-justification-input .text-entry {
@@ -348,6 +337,22 @@ input {
 #proposal-justification-input .btn-container {
 	bottom: 284px;
 	right: 7px;
+}
+
+#like-btn-title {
+	position: absolute;
+	bottom: 11px;
+	right: 37px;
+}
+
+.like-btn {
+	position: absolute;
+	bottom: 5px;
+	right: 5px;
+}
+
+#like-btn-on {
+	bottom: 7px;
 }
 
 

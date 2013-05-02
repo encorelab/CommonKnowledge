@@ -97,26 +97,6 @@ CK.Mobile = function() {
 
       app.tryRestoreUnfinishedContribution();
 
-      // // restoring unfinished contribs/buildons
-      // // will return the first unfinished contrib it finds
-      // var unfinishedContrib = _.find(app.contributionList.models, function(contrib) {
-      //   return contrib.get('author') === app.userData.account.login && contrib.get('published') === false && (contrib.get('content') || contrib.get('headline'));
-      // });
-      // var unfinishedBuildOn = _.find(app.contributionList.models, function(contrib) {
-      //   return _.find(contrib.get('build_ons'), function(b) {
-      //     return b.author === app.userData.account.login && b.published === false && b.content !== "";
-      //   });
-      // });
-
-      // // if there are both unfinished contribs and unfinished buildons, contrib wins (right?)
-      // if (unfinishedContrib) {
-      //   console.log('Unfinished Contribution found...');
-      //   app.restoreUnfinishedNote(unfinishedContrib);
-      // } else if (unfinishedBuildOn) {
-      //   console.log('Unfinished BuildOn found...');
-      //   app.restoreUnfinishedBuildOn(unfinishedBuildOn);
-      // }
-
     } else if (p === 'tagging') {
       // TAGGING PHASE
       console.log('Entering tagging phase...');
@@ -162,10 +142,11 @@ CK.Mobile = function() {
       };
       app.proposalList.comparator = sorter;
       app.proposalList.on('add sync change', app.proposalListView.render, app.proposalListView);
-
-      app.updateUserState();
+      app.proposalList.sortBy(sorter);
       // restoring unfinished props is done from chooseInterestGroup()
       app.interestGroupListView.render();
+
+      app.updateUserState();
 
     } else {
       console.log("Unknown state...");
@@ -212,16 +193,7 @@ CK.Mobile = function() {
       }
     } else if (app.runState.get('phase') === 'propose') {
       jQuery('#choose-interest-group-screen').removeClass('hide');
-      
-      // if (!app.userState.get('tag_group') || app.userState.get('tag_group') === '') {
-      //   // if user still needs to choose a tag
-      //   jQuery('#choose-interest-group-screen').removeClass('hide');
-      //   app.interestGroupListView.render();
-      // } else {
-      //   // if user has already chosen a tag
-      //   jQuery('#proposal-screen').removeClass('hide');
-      //   app.proposalListView.render();
-      // }
+
     }
 
   };
@@ -495,8 +467,7 @@ CK.Mobile = function() {
       console.log("No tags to add");
     } else {
       _.each(jQuery('#bucket-tagging-btn-container .active'), function(b) {
-        // TODO: do we still have a concept of tagger? Does addTag not do that? So manually?
-        app.bucketedContribution.addTag(jQuery(b).data('tag'));          // tag object is embedded in the button
+        app.bucketedContribution.addTag(jQuery(b).data('tag'), app.userData.account.login);          // tag object is embedded in the button
         //console.log(jQuery(b).data('tag').get('name'));
       });
     }
@@ -546,11 +517,11 @@ CK.Mobile = function() {
 
     var d = new Date();
     var myTag = Sail.app.tagList.findWhere( {'name':Sail.app.userState.get('tag_group')} );
-    var myTagObj = {
-      "id":myTag.id,
-      "name":myTag.get('name'),
-      "colorClass":myTag.get('colorClass')
-    };
+    // var myTagObj = {
+    //   "id":myTag.id,
+    //   "name":myTag.get('name'),
+    //   "colorClass":myTag.get('colorClass')
+    // };
     app.proposal.set('created_at',d);
     app.proposal.set('author', app.userData.account.login);             // change this to some kind of 'team' authorship?
     app.proposal.set('published', false);
@@ -559,7 +530,7 @@ CK.Mobile = function() {
     app.proposal.set('justification','');
     app.proposal.set('votes',[]);
     app.proposal.set('type',null);
-    app.proposal.set('tag',myTagObj);
+    app.proposal.setTag(myTag);
 
     app.proposal.save();
     app.proposalInputView.render();
