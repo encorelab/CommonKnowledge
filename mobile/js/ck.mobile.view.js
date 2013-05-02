@@ -175,7 +175,7 @@
         // case: unselect a tag
         if (Sail.app.contribution.hasTag(tag)) {
           jQuery(jqButtonSelector).removeClass('active'); 
-          Sail.app.contribution.removeTag(tag);
+          Sail.app.contribution.removeTag(tag, Sail.app.userData.account.login);
         // case: select a tag
         } else {
           jQuery(jqButtonSelector).addClass('active');
