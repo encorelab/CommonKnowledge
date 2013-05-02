@@ -79,7 +79,7 @@ class CK.Model
                     console.warn("Cannot addTag ", tag ," to contribution ", @ , " because it already has this tag.")
                     return this
 
-                tagRel = @tagRel tag
+                tagRel = @tagRel tag, tagger
 
 
                 existingTagRelationships.push(tagRel)
@@ -105,7 +105,7 @@ class CK.Model
         class @Contribution extends @db.Document('contributions')
             _.extend(@prototype, TaggableMixin.prototype)
 
-            tagRel: (tag) ->
+            tagRel: (tag, tagger) ->
                 return {
                     id: tag.id.toLowerCase()
                     name: tag.get('name')
