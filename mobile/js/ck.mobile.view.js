@@ -590,6 +590,7 @@
         // vote
         var votesArray = this.model.get('votes');
         votesArray.push(Sail.app.userData.account.login);
+        this.model.set('votes',votesArray);
         this.model.save(null,{patch:true}).done(function() {
           jQuery('#like-btn-off').addClass('hide');
           jQuery('#like-btn-on').removeClass('hide');
@@ -600,7 +601,7 @@
         // unvote
         var votesArray = this.model.get('votes');
         votesArray = _.without(votesArray, Sail.app.userData.account.login);
-        this.model.set('votes',votesArray);        
+        this.model.set('votes',votesArray);
         this.model.save(null,{patch:true}).done(function() {
           jQuery('#like-btn-on').addClass('hide');
           jQuery('#like-btn-off').removeClass('hide');
