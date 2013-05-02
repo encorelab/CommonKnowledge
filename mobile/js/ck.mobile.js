@@ -143,7 +143,6 @@ CK.Mobile = function() {
       app.proposalList.comparator = sorter;
       app.proposalList.on('add sync change', app.proposalListView.render, app.proposalListView);
       app.proposalList.sortBy(sorter);
-      app.proposalListView.render();
       // restoring unfinished props is done from chooseInterestGroup()
       app.interestGroupListView.render();
 
