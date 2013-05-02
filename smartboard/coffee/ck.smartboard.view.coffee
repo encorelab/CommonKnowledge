@@ -19,8 +19,3 @@ class CK.Smartboard.View.Base extends Backbone.View
     topToY: (top) => top + @$el.outerHeight() / 2
     xToLeft: (x) => x - @$el.outerWidth() / 2
     yToTop: (y) => y - @$el.outerHeight() / 2
-        
-        
-
-
-

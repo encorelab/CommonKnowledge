@@ -121,5 +121,6 @@ class CK.Smartboard extends Sail.App
                 runState: @runState
                 tags: @tags
                 contributions: @contributions
+                proposals: @proposals
 
             @wall.render()
