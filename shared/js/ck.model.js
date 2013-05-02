@@ -105,7 +105,7 @@
             console.warn("Cannot addTag ", tag, " to contribution ", this, " because it already has this tag.");
             return this;
           }
-          tagRel = this.tagRel(tag);
+          tagRel = this.tagRel(tag, tagger);
           existingTagRelationships.push(tagRel);
           this.set('tags', existingTagRelationships);
           return this;
@@ -141,7 +141,7 @@
 
         _.extend(Contribution.prototype, TaggableMixin.prototype);
 
-        Contribution.prototype.tagRel = function(tag) {
+        Contribution.prototype.tagRel = function(tag, tagger) {
           return {
             id: tag.id.toLowerCase(),
             name: tag.get('name'),
