@@ -679,11 +679,12 @@
       var connector, connectorId, connectorLength, connectorTransform, tagId, tagView, x1, x2, y1, y2;
       tagId = toTag.id.toLowerCase();
       tagView = this.wall.balloonViews[tagId];
-      if (tagView == null) {
-        return;
-      }
       connectorId = this.model.id + "-" + tagId;
       connector = CK.Smartboard.View.findOrCreate(this.wall.$el, "#" + connectorId, "<div class='connector " + this.BALLOON_TYPE + "-connector' id='" + connectorId + "'></div>");
+      if (!((tagView != null) && this.$el.is(':visible'))) {
+        connector.remove();
+        return;
+      }
       x1 = this.left + (this.width / 2);
       y1 = this.top + (this.height / 2);
       x2 = tagView.left + (tagView.width / 2);

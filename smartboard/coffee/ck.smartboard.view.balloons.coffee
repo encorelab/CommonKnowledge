@@ -73,15 +73,17 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
     renderConnector: (toTag) ->
         tagId = toTag.id.toLowerCase()
         tagView = @wall.balloonViews[tagId]
-
-        unless tagView?
-            # tag hasn't been rendered yet... we'll skip it for now
-            return
+        
 
         connectorId = @model.id + "-" + tagId
 
         connector = CK.Smartboard.View.findOrCreate @wall.$el, "##{connectorId}",
             "<div class='connector #{@BALLOON_TYPE}-connector' id='#{connectorId}'></div>"
+
+        unless tagView? && @$el.is(':visible')
+            # tag hasn't been rendered yet... we'll skip it for now
+            connector.remove() # this may be expensive (since it'll have to be re-added)
+            return
 
         x1 = @left + (@width/2)
         y1 = @top + (@height/2)
