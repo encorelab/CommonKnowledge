@@ -595,7 +595,6 @@
           jQuery('#like-btn-off').addClass('hide');
           jQuery('#like-btn-on').removeClass('hide');
         });
-
       },
       'click #like-btn-on': function(ev) {
         // unvote

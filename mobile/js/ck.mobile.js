@@ -133,16 +133,16 @@ CK.Mobile = function() {
         app.proposalListView.collection = app.proposalList;
       }
 
-      var sorter = function(prop) {
-        if (prop.has('created_at')) {
-          return -prop.get('created_at').getTime();
-        } else {
-          return 0;
-        }
-      };
-      app.proposalList.comparator = sorter;
+      // var sorter = function(prop) {
+      //   if (prop.has('created_at')) {
+      //     return -prop.get('created_at').getTime();
+      //   } else {
+      //     return 0;
+      //   }
+      // };
+      // app.proposalList.comparator = sorter;
       app.proposalList.on('add sync change', app.proposalListView.render, app.proposalListView);
-      app.proposalList.sortBy(sorter);
+      // app.proposalList.sortBy(sorter);
       // restoring unfinished props is done from chooseInterestGroup()
       app.interestGroupListView.render();
 
