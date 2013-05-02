@@ -894,6 +894,7 @@
       var tag;
       ProposalBalloon.__super__.render.call(this);
       this.renderConnectors();
+      this.renderVotes();
       this.$el.addClass('proposal');
       if (this.model.has('tag')) {
         tag = this.model.get('tag');
@@ -906,6 +907,19 @@
     ProposalBalloon.prototype.renderConnectors = function() {
       if (this.model.has('tag')) {
         return this.renderConnector(this.model.get('tag'));
+      }
+    };
+
+    ProposalBalloon.prototype.renderVotes = function() {
+      var container, voteCount;
+      container = this.findOrCreate('.votes', "<div class='votes'></div>");
+      voteCount = this.model.get('votes').length;
+      if (voteCount === 0) {
+        container.addClass('off');
+        return container.text('');
+      } else {
+        container.removeClass('off');
+        return container.text(voteCount);
       }
     };
 

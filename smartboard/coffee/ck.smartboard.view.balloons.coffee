@@ -312,9 +312,9 @@ class CK.Smartboard.View.ProposalBalloon extends CK.Smartboard.View.ContentBallo
 
     render: ->
         super()
-        
 
         @renderConnectors()
+        @renderVotes()
 
         @$el.addClass('proposal')
 
@@ -327,6 +327,22 @@ class CK.Smartboard.View.ProposalBalloon extends CK.Smartboard.View.ContentBallo
 
     renderConnectors: ->
         @renderConnector(@model.get 'tag') if @model.has 'tag'
+
+    renderVotes: ->
+        container = @findOrCreate '.votes',
+            "<div class='votes'></div>"
+
+        voteCount = @model.get('votes').length
+        
+
+        if voteCount is 0
+            container.addClass('off')
+            container.text('')
+        else
+            container.removeClass('off')
+            container.text(voteCount)
+
+
 
 # mz: I've commented this out because it probably needs to be re-written... also try to do more code reuse via inheritance or mixins
 
@@ -642,13 +658,13 @@ class CK.Smartboard.View.TagBalloon extends CK.Smartboard.View.Balloon
 
     renderConnectors: =>
         taggedContributionViews = _.filter @wall.balloonViews, (bv) =>
-            switch 
+            switch
                 when bv.model instanceof CK.Model.Contribution
                     bv.$el.is(':visible') and
                         bv.model.hasTag(@model)
                 when bv.model instanceof CK.Model.Proposal
                     bv.$el.is(':visible') and
-                        bv.model.has('tag') and 
+                        bv.model.has('tag') and
                         bv.model.get('tag').id is @model.id
         
         for cv in taggedContributionViews
@@ -658,6 +674,9 @@ class CK.Smartboard.View.TagBalloon extends CK.Smartboard.View.Balloon
         super()
 
         @$el.addClass('tag')
+
+        # if @model.has('colorClass')
+        #     @$el.addClass @model.get('colorClass')
 
         name = @findOrCreate '.name',
             "<h3 class='name'></h3>"
