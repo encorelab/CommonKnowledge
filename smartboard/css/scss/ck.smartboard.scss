@@ -251,6 +251,17 @@ body {
     }
 }
 
+@-webkit-keyframes pulse {
+    0% { -webkit-transform:scale(1.0); }
+    70% { -webkit-transform:scale(1.5); }
+    100% { -webkit-transform:scale(1.0); }
+}
+@-moz-keyframes pulse {
+    0% { -moz-transform:scale(1.0); }
+    70% { -moz-transform:scale(1.5); }
+    100% { -moz-transform:scale(1.0); }
+}
+
 
 .content.balloon {
     position: absolute;
@@ -392,6 +403,18 @@ body {
                 background-image: url(../img/lightbulb_big_off.png);
                 font-weight: normal;
                 opacity: 0.5;
+            }
+
+            &.changed {
+              -webkit-animation-name: pulse;
+              -webkit-animation-duration: 1s;
+              -webkit-animation-iteration-count: 1;
+              -webkit-animation-timing-function: ease-out;
+
+              -moz-animation-name: pulse;
+              -moz-animation-duration: 1s;
+              -moz-animation-iteration-count: 1;
+              -moz-animation-timing-function: ease-out;
             }
         }
     }

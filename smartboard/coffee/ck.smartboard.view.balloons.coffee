@@ -312,6 +312,13 @@ class CK.Smartboard.View.ProposalBalloon extends CK.Smartboard.View.ContentBallo
     className: 'proposal balloon'
     BALLOON_TYPE: 'proposal'
 
+    initialize: ->
+        super()
+        @model.on 'change:votes', =>
+            @$el.find('.votes').addClass('changed')
+            setTimeout (=> @$el.find('.votes').removeClass 'changed'),
+                1001
+
     render: ->
         super()
 

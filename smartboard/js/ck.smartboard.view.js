@@ -891,6 +891,17 @@
 
     ProposalBalloon.prototype.BALLOON_TYPE = 'proposal';
 
+    ProposalBalloon.prototype.initialize = function() {
+      var _this = this;
+      ProposalBalloon.__super__.initialize.call(this);
+      return this.model.on('change:votes', function() {
+        _this.$el.find('.votes').addClass('changed');
+        return setTimeout((function() {
+          return _this.$el.find('.votes').removeClass('changed');
+        }), 1001);
+      });
+    };
+
     ProposalBalloon.prototype.render = function() {
       var tag;
       ProposalBalloon.__super__.render.call(this);
