@@ -175,11 +175,11 @@
         // case: unselect a tag
         if (Sail.app.contribution.hasTag(tag)) {
           jQuery(jqButtonSelector).removeClass('active'); 
-          Sail.app.contribution.removeTag(tag);
+          Sail.app.contribution.removeTag(tag, Sail.app.userData.account.login);
         // case: select a tag
         } else {
           jQuery(jqButtonSelector).addClass('active');
-          Sail.app.contribution.addTag(tag);
+          Sail.app.contribution.addTag(tag, Sail.app.userData.account.login);
           // add tagger, other?  ie tag.set('tagger',Sail.app.userData.account.login);
         }
 
@@ -298,10 +298,10 @@
               tagButton = jQuery('<button id='+tag.id+' type="button" class="btn tag-btn"></button>');
               tagButton.text(tag.get('name'));
               tagButton.data('tag',tag);
-              jQuery('#tag-submission-container').append(tagButton);          
+              jQuery('#tag-submission-container').append(tagButton);
             }
           }
-        });        
+        });
       }
     }
   });
@@ -428,12 +428,12 @@
     events: {
       'click #interest-group-list-btn-container .tag-btn': function(ev) {
         var chosenTagId = ev.currentTarget.id;
-        var chosenTag = jQuery('#'+chosenTagId).text();
-        var ok = confirm("Do you want to choose <"+ chosenTag + "> as your specialization?");
+        var chosenTagName = jQuery('#'+chosenTagId).text();
+        var ok = confirm("Do you want to choose <"+ chosenTagName + "> as your specialization?");
         if (ok) {
-          Sail.app.chooseInterestGroup(chosenTag);
+          Sail.app.chooseInterestGroup(chosenTagName);
           Sail.app.hideAll();
-          jQuery('.brand').text('Common Knowledge - Specializing in ' + chosenTag);
+          jQuery('.brand').text('Common Knowledge - Specializing in ' + chosenTagName);
           jQuery('#proposal-screen').removeClass('hide');
           Sail.app.proposalListView.render();
         } else {
@@ -447,7 +447,7 @@
     **/
     render: function () {
       var view = this;
-      console.log("rendering InterestGroupListView!");
+      console.log("Rendering InterestGroupListView!");
 
       // clear all buttons
       // jQuery('.tag-btn').removeClass('active');
@@ -455,12 +455,12 @@
       view.collection.each(function(tag) {
         // don't show the N/A tag
         if (tag.get('name') !== "N/A") {
-          var tagButton = jQuery('button#proposal'+tag.id);
+          var tagButton = jQuery('button#tagGroup'+tag.id);
           // length avoids duplicating (probably a better way to do this in backbone?)
-          //if (tagButton.length === 0 && tag.get('name') != "N/A") {
           if (tagButton.length === 0) {
-            tagButton = jQuery('<button id="proposal'+tag.id+'" type="button" class="btn tag-btn"></button>');
-            //tagButton = jQuery(tagButton);
+            tagButton = jQuery('<button id="tagGroup'+tag.id+'" type="button" class="btn tag-btn"></button>');
+            tagButton.addClass(tag.get('colorClass'));
+
             jQuery('#interest-group-list .tag-btn-group').append(tagButton);
           }
 
@@ -476,20 +476,27 @@
   **/
   self.ProposalListView = Backbone.View.extend({
     events: {
-      'click .list-item': function (ev) {
+      'click .list-item': function(ev) {
+        // remove background colors, then adding the correct one
         jQuery('#proposal-list .note').removeClass('selected');
-
-        // The problem here was that ev.target referes to a differently deep nested element 
         var $target = jQuery(ev.target);
         if (!$target.is('.list-item')) {
            $target = $target.parents('.list-item').first();
         }
-
-        // Removing background colors, then adding the correct one
         $target.children().first().addClass('selected');
-        var proposalId = $target.attr('id');
+        var contribId = $target.attr('data');
 
-        Sail.app.showProposalDetails(Sail.app.contributionList.get(proposalId));        
+        // pass the contrib from the appropriate collection
+        if ($target.hasClass('brainstorm-item')) {
+          Sail.app.showProposalDetails(Sail.app.contributionList.get(contribId));
+        } else {
+          Sail.app.showProposalDetails(Sail.app.proposalList.get(contribId));
+        }
+      },
+
+      'click #new-proposal-btn': function(ev) {
+        jQuery('#proposal-justification-input').removeClass('disabled');
+        Sail.app.createNewProposal();
       }
     },
 
@@ -503,33 +510,32 @@
     render: function () {
       console.log("Rendering ProposalListView...");
       var createdAt;
+      var myTag = Sail.app.tagList.findWhere( {'name':Sail.app.userState.get('tag_group')} );
 
+      // add the contribs to the list - note that this will never change, so rendering once will be enough (and therefore this view is not hooked to the contributionList collection)
+      // BUT - what about board changes? TODO
       Sail.app.contributionList.each(function(contrib) {
-        // if (contrib.hasChanged() || jQuery('li#'+contrib.id).length === 0) {
-        //   // if this contrib has changed
-        //   jQuery('#proposal-list li#'+contrib.id).remove();
-        // } else {
-        //   // else break out
-        //   return;
-        // }
-        var myTag = Sail.app.tagList.findWhere( {'name':Sail.app.userState.get('tag_group')} );
+        if (contrib.hasChanged() || jQuery('li#contribution'+contrib.id).length === 0) {
+          // if this contrib has changed
+          jQuery('#proposal-list li#contribution'+contrib.id).remove();
+        } else {
+          // else break out
+          return;
+        }
         if (contrib.get('published') === true && contrib.hasTag(myTag)) {
-          var note = "<li id=" + contrib.id + " class='list-item'><a class='note'><span class='headline'></span>";
+          var note = "<li id='contribution" + contrib.id + "' class='list-item brainstorm-item' data='" + contrib.id + "'><a class='note'><span class='headline'></span>";
           note += "<br /><i class='icon-chevron-right'></i>";
           note += "<span class='author'></span><span class='date'></span></a></li>";
           note = jQuery(note);
 
           jQuery('#proposal-list .nav-list').append(note);
 
-          note.find('.headline').text(contrib.get('headline'));
-
-          // functions toLocaleDateString() and toLocaleTimeString() are only defined if created_at is a Date object
+          note.find('.headline').text('Brainstorm - '+contrib.get('headline'));
           createdAt = contrib.get('created_at');
           if (createdAt) {
             note.find('.date').text(' (' + createdAt.toLocaleDateString() + ' ' + createdAt.toLocaleTimeString() + ')');
           }
-
-          note.find('.author').text(contrib.get('author'));               
+          note.find('.author').text(contrib.get('author'));
 
           var buildOnArray = contrib.get('build_ons');
           var myBuildOn = _.find(buildOnArray, function(b) {
@@ -540,6 +546,80 @@
           }
         }
       });
+
+      // add the proposals to the list
+      Sail.app.proposalList.each(function(prop) {
+        if (prop.get('published') === true) {
+          var propTag;
+
+          if (jQuery('li#proposal'+prop.id).length === 0) {
+            // if this prop doesn't exist, add it
+            var note = "<li id='proposal" + prop.id + "' class='list-item proposal-item' data='" + prop.id + "'><a class='note'><span class='headline'></span>";
+            note += "<br /><i class='icon-chevron-right'></i>";
+            note += "<span class='author'></span><span class='date'></span></a></li>";
+            note = jQuery(note);
+            jQuery('#proposal-list .nav-list').append(note);
+            note.find('.headline').text('Proposal - '+prop.get('headline'));
+            createdAt = prop.get('created_at');
+            if (createdAt) {
+              note.find('.date').text(' (' + createdAt.toLocaleDateString() + ' ' + createdAt.toLocaleTimeString() + ')');
+            }
+            note.find('.author').text(prop.get('author'));
+            // add the correct colors based on tag_name
+            propTag = Sail.app.tagList.findWhere( {'name':prop.get('tag').name} );
+            note.children().first().addClass(propTag.get('colorClass'));            
+
+          } else if (prop.hasChanged()) {
+            // if this prop has changed, clear the li and add new info
+            var liEl = jQuery('#proposal'+prop.id);
+            //liEl.html('');
+            liEl.find('.headline').text('Proposal - '+prop.get('headline'));
+            createdAt = prop.get('created_at');
+            if (createdAt) {
+              liEl.find('.date').text(' (' + createdAt.toLocaleDateString() + ' ' + createdAt.toLocaleTimeString() + ')');
+            }
+            liEl.find('.author').text(prop.get('author'));
+            // add the correct colors based on tag_name
+            propTag = Sail.app.tagList.findWhere( {'name':prop.get('tag').name} );
+            liEl.children().first().addClass(propTag.get('colorClass')); 
+
+          } else {
+            // else break out
+            return;
+          }
+        }
+      });
+
+      // // add the proposals to the list
+      // Sail.app.proposalList.each(function(prop) {
+      //   if (prop.hasChanged() || jQuery('li#proposal'+prop.id).length === 0) {
+      //     // if this prop has changed
+      //     jQuery('#proposal-list li#proposal'+prop.id).remove();
+      //   } else {
+      //     // else break out
+      //     return;
+      //   }
+      //   if (prop.get('published') === true) {
+      //     var note = "<li id='proposal" + prop.id + "' class='list-item proposal-item' data='" + prop.id + "'><a class='note'><span class='headline'></span>";
+      //     note += "<br /><i class='icon-chevron-right'></i>";
+      //     note += "<span class='author'></span><span class='date'></span></a></li>";
+      //     note = jQuery(note);
+
+      //     jQuery('#proposal-list .nav-list').append(note);
+
+      //     note.find('.headline').text('Proposal - '+prop.get('headline'));
+      //     createdAt = prop.get('created_at');
+      //     if (createdAt) {
+      //       note.find('.date').text(' (' + createdAt.toLocaleDateString() + ' ' + createdAt.toLocaleTimeString() + ')');
+      //     }
+      //     note.find('.author').text(prop.get('author'));
+
+      //     // add the correct colors based on tag_name
+      //     var propTag = Sail.app.tagList.findWhere( {'name':prop.get('tag').name} );
+      //     note.children().first().addClass(propTag.get('colorClass'));
+      //   }
+      // });
+
     }
   });
 
@@ -549,317 +629,168 @@
   **/
   self.ProposalDetailsView = Backbone.View.extend({
     events: {
-
+      'click #like-btn-off': function(ev) {
+        // vote
+        var votesArray = this.model.get('votes');
+        votesArray.push(Sail.app.userData.account.login);
+        this.model.set('votes',votesArray);
+        this.model.save(null,{patch:true}).done(function() {
+          jQuery('#like-btn-off').addClass('hide');
+          jQuery('#like-btn-on').removeClass('hide');
+        });
+      },
+      'click #like-btn-on': function(ev) {
+        // unvote
+        var votesArray = this.model.get('votes');
+        votesArray = _.without(votesArray, Sail.app.userData.account.login);
+        this.model.set('votes',votesArray);
+        this.model.save(null,{patch:true}).done(function() {
+          jQuery('#like-btn-on').addClass('hide');
+          jQuery('#like-btn-off').removeClass('hide');
+        });
+      }
     },
 
     initialize: function () {
       console.log("Initializing ProposalDetailsView...");
     },
 
-    /**
-      Triggers full update of all dynamic elements in the details view
-    **/
     render: function () {
       console.log("rendering ProposalDetailsView!");
       var view = this;
 
-      jQuery('#proposal-details .field').text('');
+      // clear everything
+      jQuery('#proposal-details .field').text('');  
 
       // created_at will return undefined, so need to check it exists...
       if (view.model && view.model.get('created_at')) {
-        jQuery('#proposal-details .note-headline').text(view.model.get('headline'));
-        jQuery('#proposal-details .note-body').text(view.model.get('content'));
-        jQuery('#proposal-details .note-author').text('~'+view.model.get('author'));
+        // set up the tags element
+        var tagsEl = '<div><i>';
+        if (view.model instanceof CK.Model.Proposal) {
+          jQuery('#proposal-details .note-proposal').html('<b>Proposal: </b>'+view.model.get('proposal'));
+          jQuery('#proposal-details .note-justification').html('<b>Justification: </b>'+view.model.get('justification'));
+          // tags
+          tagsEl += view.model.get('tag').name;
+          jQuery('#like-btn-container').removeClass('hide');
 
+        } else if (view.model instanceof CK.Model.Contribution) {
+          jQuery('#proposal-details .note-content').text(view.model.get('content'));
+          // buildOns
+          var buildOnEl = '<div>';
+          _.each(view.model.get('build_ons'), function(b) {
+            if (b.published === true) {
+              buildOnEl += '<hr />';
+              buildOnEl += b.content;
+              buildOnEl += '<br /><span class="build-on-metadata">~' + b.author;
+              buildOnEl += ' (' + b.created_at.toLocaleDateString() + ' ' + b.created_at.toLocaleTimeString() + ')' +  '</span>';            
+            }
+          });
+          buildOnEl += '</div>';
+          buildOnEl = jQuery(buildOnEl);
+          jQuery('#proposal-details .note-build-ons').append(buildOnEl);
+          // tags
+          _.each(view.model.get('tags'), function(t) {
+            tagsEl += ' ';
+            tagsEl += t.name;
+          });
+          jQuery('#like-btn-container').addClass('hide');
+        } else {
+          console.error('Unknown type of view.model in ProposalDetailsView');
+        }
+
+        // for both Contribution model and Proposal model
+        jQuery('#proposal-details .note-headline').text(view.model.get('headline'));
+        jQuery('#proposal-details .note-author').text('~'+view.model.get('author'));
         var createdAt = view.model.get('created_at');
         if (createdAt) {
           jQuery('#proposal-details .note-created-at').text(' (' + createdAt.toLocaleDateString() + ' ' + createdAt.toLocaleTimeString() + ')');
         }
-
-        // add the tags
-        var tagsEl = '<div><i>';
-        _.each(view.model.get('tags'), function(t) {
-          tagsEl += ' ';
-          tagsEl += t.name;
-        });
         tagsEl += '</i></div>';
         tagsEl = jQuery(tagsEl);
         jQuery('#proposal-details .note-tags').append(tagsEl);
 
-        // add the buildOns (if they are published)
-        var buildOnEl = '<div>';
-        _.each(view.model.get('build_ons'), function(b) {
-          if (b.published === true) {
-            buildOnEl += '<hr />';
-            buildOnEl += b.content;
-            buildOnEl += '<br /><span class="build-on-metadata">~' + b.author;
-            buildOnEl += ' (' + b.created_at.toLocaleDateString() + ' ' + b.created_at.toLocaleTimeString() + ')' +  '</span>';            
-          }
-        });
-        buildOnEl += '</div>';
-        buildOnEl = jQuery(buildOnEl);
-        jQuery('#proposal-details .note-build-ons').append(buildOnEl);
-
       } else {
         console.warn("ProposalDetailsView render skipped this contrib because created_at doesn't exist");
       }
+
+      // voting buttons
+      var votesArray = this.model.get('votes');
+      if (_.contains(votesArray, Sail.app.userData.account.login)) {
+        jQuery('#like-btn-off').addClass('hide');
+        jQuery('#like-btn-on').removeClass('hide');
+      } else {
+        jQuery('#like-btn-on').addClass('hide');
+        jQuery('#like-btn-off').removeClass('hide');
+      }
+
     }
   });
-
-
-  // // WARNING: do not look directly at this code - it will make your eyes bleed
-  // var proposalDetails;
-  // var proposalOpenFlag = false;  
-  // // The blood prevents me from seeing why the vars are declared here ...
-
-  // /**
-  //   ProposalView
-  // **/
-  // self.ProposalListView = Backbone.View.extend({
-  //   events: {
-  //     'click .list-item': function (ev) {
-  //       // this may be the wrong way to handle it, should maybe be two views (or maybe two renders in same view?)... oddball UI should have been addressed in design
-
-  //       // The problem here was that ev.target referes to a differently deep nested element 
-  //       var $target = jQuery(ev.target);
-  //       if (!$target.is('.list-item')) {
-  //          $target = $target.parents('.list-item').first();
-  //       }
-  //       var contribId = $target.attr('id');
-
-  //       proposalDetails = Sail.app.contributionList.get(contribId);
-  //       proposalOpenFlag = true;
-
-  //       jQuery('#proposal-contribution-list .list').addClass('hide');
-  //       jQuery('#proposal-contribution-list .selected-note').removeClass('hide'); 
-
-  //       Sail.app.proposalListView.render();       
-  //     },
-
-  //     'click #group-btn': 'create-group',
-
-  //     'click #close-btn': 'close-note'
-  //   },
-
-
-  //   initialize: function () {
-  //     console.log("Initializing ProposalView...");
-
-  //     jQuery('.brand').text('Common Knowledge - Propose and Justify');
-  //     jQuery('#index-screen').addClass('hide');
-  //     jQuery('#choose-tag-screen').addClass('hide');
-  //     jQuery('#tagging-screen').addClass('hide');
-  //     jQuery('#proposal-screen').removeClass('hide');
-  //   },
-
-  //   'create-group': function () {
-  //     jQuery('.row').addClass('disabled');
-  //     jQuery('#grouping-screen').removeClass('hide');
-  //     jQuery('#group-btn').addClass('disabled');
-  //     Sail.app.groupingView.render();
-  //   },
-
-  //   'close-note': function () {
-  //     proposalOpenFlag = false;
-  //     jQuery('#proposal-contribution-list .selected-note').addClass('hide');
-  //     jQuery('#proposal-contribution-list .list').removeClass('hide');
-  //   },
-
-
-
-  //   /**
-  //     Triggers full update of all dynamic elements in the list view
-  //   **/
-  //   render: function () {
-  //     if (proposalOpenFlag) {
-  //       jQuery('#proposal-contribution-list .field').text('');
-
-  //       // created_at will return undefined, so need to check it exists... (not sure if this will happen in Beta, might be unnecessary)
-  //       if (proposalDetails && proposalDetails.get('created_at')) {
-  //         jQuery('#proposal-contribution-list .note-headline').text(proposalDetails.get('headline'));
-  //         jQuery('#proposal-contribution-list .note-body').text(proposalDetails.get('content'));
-  //         jQuery('#proposal-contribution-list .note-author').text('~'+proposalDetails.get('author'));
-  //         jQuery('#proposal-contribution-list .note-created-at').text(' (' + proposalDetails.get('created_at').toLocaleDateString() + ' ' + proposalDetails.get('created_at').toLocaleTimeString() + ')');
-
-  //         var buildOnEl = "<hr /><div>";
-  //         _.each(proposalDetails.get('build_ons'), function(b) {
-  //           var date = new Date(b.created_at);
-  //           buildOnEl += b.content + "<br />~" + b.author;
-  //           buildOnEl += " (" + date.toLocaleDateString() + ' ' + date.toLocaleTimeString() + ")" +  "<hr />";
-  //         });
-
-  //         buildOnEl += "</div>";
-  //         buildOnEl = jQuery(buildOnEl);
-  //         jQuery('#proposal-contribution-list .note-build-ons').append(buildOnEl);
-  //       } else {
-  //         console.warn(" render skipped this contrib because created_at doesn't exist");
-  //       }
-  //     } else {
-  //       console.log("rendering ProposalListView!");
-  //       var view = this;
-
-  //       jQuery('#proposal-contribution-list li').remove();
-
-  //       _.each(view.collection.models, function(contrib) {
-  //         var hasMyTagGroup = _.any(contrib.get('tags'), function(t) { return t.name === Sail.app.myTagGroup; });
-
-  //         if (contrib.get('published') === true && hasMyTagGroup) {
-  //           console.log('headline: ' + contrib.get('headline'));
-
-  //           var note = "<li id=" + contrib.id + " class='list-item'><a class='note'><span class='headline'></span>";
-  //           note += "<br /><i class='icon-chevron-right'></i>";
-  //           note += "<span class='author'></span><span class='date'></span></a></li>";
-  //           note = jQuery(note);
-
-  //           jQuery('#proposal-contribution-list .nav-list').append(note);
-
-  //           note.find('.headline').text(contrib.get('headline'));
-  //           note.find('.date').text(' (' + contrib.get('created_at').toLocaleDateString() + ' ' + contrib.get('created_at').toLocaleTimeString() + ')');
-
-  //           note.find('.author').text(contrib.get('author'));               
-  //           if (contrib.get('author') === Sail.app.userData.account.login) {
-  //             note.children().first().addClass('own-color');
-  //           }
-  //           // TODO check if this is working, then add for tags as well, then port to where it's actually relevant
-  //           // _.each(contrib.get('build_ons'), function(b) {
-  //           //    if (contrib.get('author') === Sail.app.userData.account.login) {
-  //           //     note.children().first().addClass('own-color');
-  //           //   }
-  //           // });         
-  //         } else {
-  //           console.log(contrib.id, 'is unpublished');
-  //         }
-
-  //       });
-  //     }
-  //   }
-
-  // });
-
-
-
-
 
 
   /**
     ProposalInputView
   **/
-  // self.ProposalInputView = Backbone.View.extend({
-  //   events: {
+  self.ProposalInputView = Backbone.View.extend({
+    events: {
+      'keyup :input': function(ev) {
+        var view = this,
+          inputKey = ev.target.name,
+          userValue = jQuery('#'+ev.target.id).val();
+        // If we hit a key clear intervals so that during typing intervals don't kick in
+        window.clearTimeout(Sail.app.autoSaveTimer);
 
-  //     'keyup :input': function (ev) {
-  //       var view = this,
-  //         inputKey = ev.target.name,
-  //         userValue = jQuery('#'+ev.target.id).val();
-  //       // If we hit a key clear intervals so that during typing intervals don't kick in - TODO: this can go right? But only if we're not rendering this field constantly (fix that too)
-  //       window.clearTimeout(Sail.app.autoSaveTimer);
+        // save after 10 keystrokes
+        Sail.app.autoSave(view.model, inputKey, userValue, false);
 
-  //       // save after 10 keystrokes
-  //       Sail.app.autoSave(view, inputKey, userValue, false);      // NOTE THAT autoSave has been switched to use the model, not the view
+        // setting up a timer so that if we stop typing we save stuff after 5 seconds
+        Sail.app.autoSaveTimer = setTimeout( function(){
+          console.log('Autosave data for: '+inputKey);
+          Sail.app.autoSave(view.model, inputKey, userValue, true);
+        }, 5000);
+      },
 
-  //       // setting up a timer so that if we stop typing we save stuff after 5 seconds
-  //       Sail.app.autoSaveTimer = setTimeout( function(){
-  //         console.log('Autosave data for: '+inputKey);
-  //         Sail.app.autoSave(view, inputKey, userValue, true);
-  //       }, 5000);
-  //     },
+      'click #proposal-type-btn-container .btn': function(ev) {
+        jQuery('#proposal-type-btn-container .btn').removeClass('active');
+        jQuery(ev.target).addClass('active');
+        Sail.app.proposal.set('type',jQuery(ev.target).html());
+      },
 
-  //     'click #share-proposal-headline-btn': function() {
-  //       // if Done is hit I clear my timers
-  //       // TODO I could be specific which timers to clear
-  //       window.clearTimeout(Sail.app.autoSaveTimer);
+      'click #share-proposal-justification-btn': 'share'
+    },
 
-  //       this.model.set('headline_published', true);
-  //       this.model.set('headline', jQuery('#proposal-headline-entry').val());
-  //       Sail.app.checkProposalPublishState();
-  //     },
+    initialize: function() {
+      console.log("Initializing ProposalInputView...");
+    },
 
-  //     'click #share-proposal-body-btn': function() {
-  //       // if Done is hit I clear my timers
-  //       // TODO I could be specific which timers to clear
-  //       window.clearTimeout(Sail.app.autoSaveTimer);
+    share: function() {
+      var view = this;
+      // avoid weird entries showing up in the model
+      window.clearTimeout(Sail.app.autoSaveTimer);
 
-  //       this.model.set('proposal_published', true);
-  //       this.model.set('proposal', jQuery('#proposal-body-entry').val());
-  //       Sail.app.checkProposalPublishState();
-  //     },
+      if (!Sail.app.proposal.get('type') || jQuery('#proposal-headline-entry').val() === '' || jQuery('#proposal-entry').val() === '' || jQuery('#justification-entry').val() === '') {
+        jQuery().toastmessage('showErrorToast', "Please fill all fields and choose whether this is a proposal for research or experiment");
+      } else {
+        Sail.app.proposal.set('headline',jQuery('#proposal-headline-entry').val());
+        Sail.app.proposal.set('proposal',jQuery('#proposal-entry').val());
+        Sail.app.proposal.set('justification',jQuery('#justification-entry').val());
+        Sail.app.proposal.set('published',true);
+        Sail.app.saveProposal(view);
+      }
+    },
 
-  //     'click #share-justification-body-btn': function() {
-  //       // if Done is hit I clear my timers
-  //       // TODO I could be specific which timers to clear
-  //       window.clearTimeout(Sail.app.autoSaveTimer);
+    /**
+      Triggers full update of all dynamic elements in the input view
+    **/
+    render: function () {
+      var view = this;
+      console.log("rendering ProposalInputView...");
 
-  //       this.model.set('justification_published', true);
-  //       this.model.set('justification', jQuery('#justification-body-entry').val());
-  //       Sail.app.checkProposalPublishState();
-  //     }
-  //   },
-
-  //   initialize: function () {
-  //     console.log("Initializing ProposalInputView...");
-  //   },
-
-  //   /**
-  //     Triggers full update of all dynamic elements in the list view
-  //   **/
-  //   render: function () {
-  //     var view = this;      
-
-  //     if (view.model.get('published') !== true) {
-  //       console.log('rendering ProposalInputView');
-  //       // prevent them from joining a new group randomly
-  //       jQuery('#group-btn').addClass('disabled');
-
-  //       // only do this rendering on the first pass (then the flag set to true)
-  //       if (!view.initialRenderComplete) {
-  //         jQuery('#proposal-headline-entry').val(view.model.get('headline'));
-  //         jQuery('#proposal-body-entry').val(view.model.get('proposal'));
-  //         jQuery('#justification-body-entry').val(view.model.get('justification'));
-  //         view.initialRenderComplete = true;
-  //       }
-
-  //       if (Sail.app.userData.account.login === view.model.get('initiator')) {
-  //         if (view.model.get('headline_published') === false) {
-  //           jQuery('#proposal-headline-entry').removeClass('disabled');
-  //           jQuery('#share-proposal-headline-btn').removeClass('disabled');
-  //         } else {
-  //           jQuery('#proposal-headline-entry').addClass('disabled');
-  //           jQuery('#share-proposal-headline-btn').addClass('disabled');
-  //         }
-  //         if (view.model.get('proposal_published') === false) {
-  //           jQuery('#proposal-body-entry').removeClass('disabled');
-  //           jQuery('#share-proposal-body-btn').removeClass('disabled');
-  //         } else {
-  //           jQuery('#proposal-body-entry').addClass('disabled');
-  //           jQuery('#share-proposal-body-btn').addClass('disabled');
-  //         }
-  //         jQuery('#justification-body-entry').val(view.model.get('justification'));
-
-  //       } else if (Sail.app.userData.account.login === view.model.get('receiver')) {
-  //         if (view.model.get('justification_published') === false) {
-  //           jQuery('#justification-body-entry').removeClass('disabled');
-  //           jQuery('#share-justification-body-btn').removeClass('disabled');
-  //         } else {
-  //           jQuery('#justification-body-entry').addClass('disabled');
-  //           jQuery('#share-justification-body-btn').addClass('disabled');
-  //         }
-  //         jQuery('#proposal-headline-entry').val(view.model.get('headline'));
-  //         jQuery('#proposal-body-entry').val(view.model.get('proposal'));
-
-  //       } else {
-  //         console.log('skipping render... somehow not related to this user?!');
-  //       }
-
-  //       jQuery('#group-label-container').text('Current group: ['+view.model.get('author')+']');        
-  //     }
-
-  //   }
-
-  // });
-
-
-
-
+      // we all need to have a serious talk about Backbone renders. I feel like I have to fight them constantly...
+      jQuery('#proposal-headline-entry').val(Sail.app.proposal.get('headline'));
+      jQuery('#proposal-entry').val(Sail.app.proposal.get('proposal'));
+      jQuery('#justification-entry').val(Sail.app.proposal.get('justification'));
+    }
+  });
 
 
 

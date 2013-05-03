@@ -53,16 +53,12 @@ class CK.Smartboard extends Sail.App
         if @tags.length < 4
             tag = new CK.Model.Tag
                 name: name
-                colorClassName: @getColorTagClassName()
+                colorClass: @getColorTagClassName()
                 created_at: new Date()
 
             tag.wake @config.wakeful.url
 
             @tags.add(tag)
-            #tag.save() # delay saving until we're positioned
-            #colorClassName = @getColorTagClassName()
-            # tag.set('colorClass', colorClassName)
-            # tag.save()
         else
             console.warn 'Adding more than 4 tags is leading to problems. Button should be disabled ...'
 
@@ -98,10 +94,15 @@ class CK.Smartboard extends Sail.App
         authenticated: (ev) ->
             console.log "Authenticated..."
 
+            jQuery('#auth-indicator .nickname').text(@run.name)
+
             CK.Model.init(@config.drowsy.url, @run.name).done =>
                 Wakeful.loadFayeClient(@config.wakeful.url).done =>
                     CK.Model.initWakefulCollections(@config.wakeful.url).done =>
                         @setupModel()
+
+        unauthenticated: (ev) ->
+            document.location.reload()
 
 
         'ui.initialized': (ev) ->
@@ -120,5 +121,6 @@ class CK.Smartboard extends Sail.App
                 runState: @runState
                 tags: @tags
                 contributions: @contributions
+                proposals: @proposals
 
             @wall.render()

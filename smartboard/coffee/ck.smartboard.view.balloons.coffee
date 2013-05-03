@@ -70,61 +70,70 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
         pos = @pos
         pos.left? && pos.left > 0
 
+    renderConnector: (toTag) ->
+        tagId = toTag.id.toLowerCase()
+        tagView = @wall.balloonViews[tagId]
+        
+
+        connectorId = @model.id + "-" + tagId
+
+        connector = CK.Smartboard.View.findOrCreate @wall.$el, "##{connectorId}",
+            "<div class='connector #{@BALLOON_TYPE}-connector' id='#{connectorId}'></div>"
+
+        unless tagView? && @$el.is(':visible')
+            # tag hasn't been rendered yet... we'll skip it for now
+            connector.remove() # this may be expensive (since it'll have to be re-added)
+            return
+
+        x1 = @left + (@width/2)
+        y1 = @top + (@height/2)
+        x2 = tagView.left + (tagView.width/2)
+        y2 = tagView.top + (tagView.height/2)
+
+        connectorLength = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2))
+
+        connectorTransform =
+            "rotate(" + ((Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI) ) + "deg)"
+
+        connector.css
+            'top': "#{y1}px"
+            'left': "#{x1}px"
+            'width': "#{connectorLength}px"
+            '-webkit-transform': connectorTransform
+            '-moz-transform': connectorTransform
+            'transform': connectorTransform
+
+        connector.addClass "connects-#{@model.id}"
+        connector.addClass "connects-#{tagId}"
+        connector.addClass "tag-#{tagId}" # used for Wall's @tagFilters
+
+        return connector # for additional manipulation in subclasses
+
 
     render: =>
         @pos = @model.get('pos') if @model.has('pos')
         @$el.zIndex( @model.get('z-index') ) if @model.has('z-index')
 
+class CK.Smartboard.View.ContentBalloon extends CK.Smartboard.View.Balloon
+    tagName: 'article content'
 
-class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
-    tagName: 'article'
-    className: 'contribution balloon'
-   
     id: => @domID()
-    
-    setColorClass: (colorClass) =>
-        @colorClass = colorClass
+
+    # setColorClass: (colorClass) =>
+    #     @colorClass = colorClass
+
 
     constructor: (options) ->
         super(options)
 
-        @balloonContributionTypes = {
-            default:  'default',
-            analysis: 'analysis',
-            propose: 'propose',
-            interpret: 'interpret'
-        }
-
-        @ballonContributionType = @balloonContributionTypes.default
-        @colorClass = "whiteGradient"
-
-
     initialize: ->
         super()
-
-        @model.on 'change:tags', =>
-            # for tagRel in @get('tags')
-            #     tagView = Sail.app.wall.ballonViews[tagRel.id]
-            #     if tagView?
-            #         tagView.renderConnectors()
-            @renderConnectors()
 
     events:
         # 'mousedown': (ev) -> @moveToTop()
 
         'dblclick': 'handleClick'
-            
-                
-                #@processContributionByType()
 
-    # initialize: =>
-    #     # make this View accessible from the element
-    #     @$el.data('view', @)
-
-    # makeDraggable: =>
-    #     super()
-    #     @$el.on 'drag', (ev, ui) =>
-    #         @renderConnectors()
 
     handleClick: =>
         #jQuery('.contribution').not("##{@model.id}")
@@ -134,75 +143,62 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
 
         @$el.toggleClass('opened')
         
-    processContributionByType: =>
-        if (@ballonContributionType is @balloonContributionTypes.analysis)
-            @toggleAnalysis()
+    # processContributionByType: =>
+    #     if (@ballonContributionType is @balloonContributionTypes.analysis)
+    #         @toggleAnalysis()
 
-    resetView: =>
-        balloonObj = jQuery(@$el)
-        balloonID = balloonObj.attr('id')
+    # resetView: =>
+    #     balloonObj = jQuery(@$el)
+    #     balloonID = balloonObj.attr('id')
 
-        if @ballonContributionType is @balloonContributionTypes.default
-            balloonObj.addClass(@colorClass)
-            return
+    #     if @ballonContributionType is @balloonContributionTypes.default
+    #         balloonObj.addClass(@colorClass)
+    #         return
 
-        console.log 'Reset Proposal Views'
+    #     console.log 'Reset Proposal Views'
         
-        balloonObj.removeClass('opened').removeClass(@colorClass)
+    #     balloonObj.removeClass('opened').removeClass(@colorClass)
 
-        jQuery('#' + balloonID + ' .headline').hide()
-        jQuery('#' + balloonID + ' .body').hide()
-        jQuery('#' + balloonID + ' .meta').hide()
-        jQuery('#' + balloonID + ' img.balloon-note').fadeIn('fast')
-       
-    toggleAnalysis: =>
-        console.log 'Toggle Analysis'
-        balloonObj = jQuery(@$el)
+    #     jQuery('#' + balloonID + ' .headline').hide()
+    #     jQuery('#' + balloonID + ' .body').hide()
+    #     jQuery('#' + balloonID + ' .meta').hide()
+    #     jQuery('#' + balloonID + ' img.balloon-note').fadeIn('fast')
 
-        balloonObj.toggleClass('balloon-note').toggleClass(@colorClass)
-        balloonID = balloonObj.attr('id')
+    # toggleAnalysis: =>
+    #     console.log 'Toggle Analysis'
+    #     balloonObj = jQuery(@$el)
+
+    #     balloonObj.toggleClass('balloon-note').toggleClass(@colorClass)
+    #     balloonID = balloonObj.attr('id')
        
         
-        if @$el.hasClass('opened')
-            jQuery('#' + balloonID + ' img.balloon-note').hide()
-            jQuery('#' + balloonID + ' .headline').fadeIn('fast')
-            jQuery('#' + balloonID + ' .body').fadeIn('fast')
-            jQuery('#' + balloonID + ' .meta').fadeIn('fast')
-        else
-            jQuery('#' + balloonID + ' .headline').hide()
-            jQuery('#' + balloonID + ' .body').hide()
-            jQuery('#' + balloonID + ' .meta').hide()
-            jQuery('#' + balloonID + ' img.balloon-note').fadeIn('fast')
-
+    #     if @$el.hasClass('opened')
+    #         jQuery('#' + balloonID + ' img.balloon-note').hide()
+    #         jQuery('#' + balloonID + ' .headline').fadeIn('fast')
+    #         jQuery('#' + balloonID + ' .body').fadeIn('fast')
+    #         jQuery('#' + balloonID + ' .meta').fadeIn('fast')
+    #     else
+    #         jQuery('#' + balloonID + ' .headline').hide()
+    #         jQuery('#' + balloonID + ' .body').hide()
+    #         jQuery('#' + balloonID + ' .meta').hide()
+    #         jQuery('#' + balloonID + ' img.balloon-note').fadeIn('fast')
 
     render: =>
         super()
 
-        if @model.get('published')
-            @$el.removeClass('unpublished')
+        if @model.get 'published'
+            @$el.removeClass 'unpublished'
         else
-            @$el.addClass('unpublished')
+            @$el.addClass 'unpublished'
 
-        @$el.addClass('contribution').addClass(@colorClass)
+        @$el.addClass('content')
 
-        if @model.get('kind') is 'propose'
-            @$el.addClass('synthesis')
-
-        #if (@ballonContributionType is @balloonContributionTypes.analysis)
-        nodeHeader = @findOrCreate '.balloon-note', '<img style="display: none;" class="balloon-note" src="/smartboard/img/notes_large.png" alt="Note">'
-        
         headline = @findOrCreate '.headline',
             "<h3 class='headline'></h3>"
         headline.text @model.get('headline')
 
-        body = @findOrCreate '.body',
+        @body = @findOrCreate '.body',
             "<div class='body'></div>"
-
-        if @model.get('content_type') is 'text'
-            body.text @model.get('content')
-        else
-            body.text @model.get('content')
-            # console.warn "Contribution #{@model.id} has an unrecognized content type: ", @model.get('content_type'), " ... assuming 'text'."
 
         meta = @findOrCreate '.meta',
             "<div class='meta'><span class='author'></span></div>"
@@ -210,79 +206,8 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
             .text(@model.get('author'))
             .addClass("author-#{@model.get('author')}")
 
-        @renderTags()
         @renderBuildons()
-        @renderConnectors()
         #@processContributionByType()
-
-        return this # return this for chaining
-
-    renderConnectors: =>
-        return if not @model.has('tags') or
-            _.isEmpty(@model.get('tags')) or
-            not @$el.is(':visible')
-
-        for tag in @model.get('tags')
-            tagId = tag.id.toLowerCase()
-            tagView = @wall.balloonViews[tagId]
-
-            unless tagView?
-                # tag hasn't been rendered yet... we'll skip it for now
-                continue
-
-            connectorId = @model.id + "-" + tagId
-
-            connector = CK.Smartboard.View.findOrCreate @wall.$el, "##{connectorId}",
-                "<div class='connector' id='#{connectorId}'></div>"
-
-            x1 = @left + (@width/2)
-            y1 = @top + (@height/2)
-            x2 = tagView.left + (tagView.width/2)
-            y2 = tagView.top + (tagView.height/2)
-
-            connectorLength = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2))
-
-            connectorTransform =
-                "rotate(" + ((Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI) ) + "deg)"
-
-            connector.css
-                'top': "#{y1}px"
-                'left': "#{x1}px"
-                'width': "#{connectorLength}px"
-                '-webkit-transform': connectorTransform
-                '-moz-transform': connectorTransform
-                'transform': connectorTransform
-
-            connector.addClass "connects-#{@model.id}"
-            connector.addClass "connects-#{tag.id}"
-            connector.addClass "tag-#{tag.id}" # used for Wall's @tagFilters
-
-    renderTags: =>
-        # tagsContainer = @findOrCreate '.tags',
-        #     "<div class='tags'></div>"
-
-        return unless @model.has('tags')
-
-        # validTagClasses = []
-        # for tagText in @model.get('tags')
-        #     # hacky way to convert the tag into something that can be used as a CSS clas
-        #     md5tag = MD5.hexdigest(tagText)
-        #     tagClass = "tag-#{md5tag}"
-        #     validTagClasses.push tagClass
-        #     tagSpan = CK.Smartboard.View.findOrCreate tagsContainer, ".#{tagClass}",
-        #         "<span class='tag #{tagClass}></span>"
-        #     tagSpan.text tagText
-
-        # # now remove tags that are no longer present in the model
-        # tagsContainer.find('.tag').not(validTagClasses.join(",")).remove()
-
-        tagIds = (tag.id for tag in @model.get('tags'))
-
-        @$el.attr('data-tags', tagIds.join(" "))
-
-        for tid in tagIds
-            @$el.addClass("tag-#{tid}")
-        #TODO: remove removed tags
 
         return this # return this for chaining
             
@@ -325,6 +250,99 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
         # if changed
         #     @$el.effect('highlight', 2000)
 
+
+
+class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.ContentBalloon
+    BALLOON_TYPE: 'contribution'
+    className: 'contribution balloon'
+
+    initiaialize: ->
+        @model.on 'change:tags', =>
+            @renderConnectors()
+
+    render: ->
+        super()
+
+        @renderConnectors()
+        @renderTags()
+
+        @$el.addClass('contribution')
+        
+        @body.text @model.get('content')
+    
+    renderConnectors: =>
+        return if not @model.has('tags') or
+            _.isEmpty(@model.get('tags')) or
+            not @$el.is(':visible')
+
+        for tag in @model.get('tags')
+            @renderConnector(tag)
+
+    renderTags: =>
+        # tagsContainer = @findOrCreate '.tags',
+        #     "<div class='tags'></div>"
+
+        return unless @model.has('tags')
+
+        # validTagClasses = []
+        # for tagText in @model.get('tags')
+        #     # hacky way to convert the tag into something that can be used as a CSS clas
+        #     md5tag = MD5.hexdigest(tagText)
+        #     tagClass = "tag-#{md5tag}"
+        #     validTagClasses.push tagClass
+        #     tagSpan = CK.Smartboard.View.findOrCreate tagsContainer, ".#{tagClass}",
+        #         "<span class='tag #{tagClass}></span>"
+        #     tagSpan.text tagText
+
+        # # now remove tags that are no longer present in the model
+        # tagsContainer.find('.tag').not(validTagClasses.join(",")).remove()
+
+        tagIds = (tag.id for tag in @model.get('tags'))
+
+        @$el.attr('data-tags', tagIds.join(" "))
+
+        for tid in tagIds
+            @$el.addClass("tag-#{tid}")
+        #TODO: remove removed tags
+
+        return this # return this for chaining
+    
+
+class CK.Smartboard.View.ProposalBalloon extends CK.Smartboard.View.ContentBalloon
+    className: 'proposal balloon'
+    BALLOON_TYPE: 'proposal'
+
+    render: ->
+        super()
+
+        @renderConnectors()
+        @renderVotes()
+
+        @$el.addClass('proposal')
+
+        if @model.has 'tag'
+            tag = @model.get('tag')
+            @$el.addClass(tag.colorClass)
+            @$el.addClass("tag-#{tag.id}")
+
+        @body.text @model.get('justification')
+
+    renderConnectors: ->
+        @renderConnector(@model.get 'tag') if @model.has 'tag'
+
+    renderVotes: ->
+        container = @findOrCreate '.votes',
+            "<div class='votes'></div>"
+
+        voteCount = @model.get('votes').length
+        
+
+        if voteCount is 0
+            container.addClass('off')
+            container.text('')
+        else
+            container.removeClass('off')
+            container.text(voteCount)
 
 
 
@@ -605,6 +623,8 @@ class CK.Smartboard.View.ContributionBalloon extends CK.Smartboard.View.Balloon
 class CK.Smartboard.View.TagBalloon extends CK.Smartboard.View.Balloon
     tagName: 'div'
     className: 'tag balloon'
+    BALLOON_TYPE: 'contribution'
+
     id: => @domID()
 
     initialize: ->
@@ -640,7 +660,14 @@ class CK.Smartboard.View.TagBalloon extends CK.Smartboard.View.Balloon
 
     renderConnectors: =>
         taggedContributionViews = _.filter @wall.balloonViews, (bv) =>
-            bv.model instanceof CK.Model.Contribution and bv.model.hasTag(@model)
+            switch
+                when bv.model instanceof CK.Model.Contribution
+                    bv.$el.is(':visible') and
+                        bv.model.hasTag(@model)
+                when bv.model instanceof CK.Model.Proposal
+                    bv.$el.is(':visible') and
+                        bv.model.has('tag') and
+                        bv.model.get('tag').id is @model.id
         
         for cv in taggedContributionViews
             cv.renderConnectors()
@@ -650,12 +677,15 @@ class CK.Smartboard.View.TagBalloon extends CK.Smartboard.View.Balloon
 
         @$el.addClass('tag')
 
+        # if @model.has('colorClass')
+        #     @$el.addClass @model.get('colorClass')
+
         name = @findOrCreate '.name',
             "<h3 class='name'></h3>"
         name.text @model.get('name')
 
-        if @model.has('colorClassName')
-            @setColorClass(@model.get('colorClassName'))
+        if @model.has('colorClass')
+            @setColorClass(@model.get('colorClass'))
 
         if @model.get('pinned')
             @$el.addClass('pinned')

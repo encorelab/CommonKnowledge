@@ -155,7 +155,7 @@
                 <div class="container-header">
                     <b>Choose your interest!</b>
                 </div>
-                <div id="interest-group-list-btn-container" class="tag-btn-group btn-group btn-group-vertical" data-toggle="buttons-checkbox">
+                <div id="interest-group-list-btn-container" class="tag-btn-group btn-group btn-group-vertical">
                     <!-- filled by self.TagListView, which needs the colors added TODO -->
                 </div>
 
@@ -167,13 +167,22 @@
                 <ul class="nav nav-list bs-docs-sidenav affix-top scrollable">
                     <!-- filled by ProposalListView -->
                 </ul>
+                <div class="btn-container">
+                    <a id="new-proposal-btn" class="btn btn-primary">
+                        New Proposal
+                    </a>
+                </div>                
             </div>
 
             <div id="proposal-details" class="span4 view-container">
                 <div class="selected-note scrollable">
                     <div class="note-headline field container-header" name="headline">
                     </div>
-                    <div class="note-body field" name="content">
+                    <div class="note-content field" name="content">
+                    </div>
+                    <div class="note-proposal field" name="proposal">
+                    </div>
+                    <div class="note-justification field" name="justification">
                     </div>
                     <div class="note-metadata">
                         <span class="note-author field" name="author"> </span><span class="note-created-at field" name="created_at"></span>
@@ -184,98 +193,43 @@
                     <div class="note-build-ons field" name="build_ons">
                     </div>
                 </div>
-<!--                 <div id="like-btn-container" class="btn-container">
-                    Should we work on this?
-                    <a id="like-btn-on" class="hide">
+                <div id="like-btn-container" class="hide">
+                    <div id="like-btn-title">
+                        Should we work on this?
+                    </div>
+                    <a id="like-btn-on" class="like-btn hide">
                         <img src="img/lightbulb_small_on.png" />
                     </a>
-                    <a id="like-btn-off">
+                    <a id="like-btn-off" class="like-btn">
                         <img src="img/lightbulb_small_off.png" />
                     </a>
-                </div> -->
+                </div>
             </div>   
 
-<!--             <div id="proposal-input" class="span8 view-container">
-                <div class="container-header">
+            <div id="proposal-justification-input" class="span8 view-container hide">
+                <div id="proposal-justifaction-header" class="container-header">
                     Propose and Justify
                 </div>
-                <textarea class="field" id="proposal-entry" placeholder="Why should we proceed with this proposal? What further suggestions might you add to this proposal?"></textarea>
-
-                <div class="btn-container btn-group action-btn-group">
-                    <a id="share-interpretation-btn" class="btn btn-success">
-                        Share
-                    </a>
-                </div>
-            </div>-->
-        </div>
-
-
-
-<!--         <div id="proposal-screen" class="row hide">
-            <div id="proposal-contribution-list" class="span4 view-container bs-docs-sidebar">
-                <ul class="list nav nav-list bs-docs-sidenav affix-top scrollable">
-                </ul>
-
-                <div class="selected-note scrollable hide">
-                    <a id="close-btn" class="btn btn-danger">
-                        X
-                    </a>
-                    <div class="note-headline field" name="headline">
-                        These running shoes are awesome
+                <div class="title-entry-container">
+                    <textarea class="field text-entry" id="proposal-headline-entry" name="headline" placeholder="Headline (3 word max)..."></textarea>
+                    <div id="proposal-type-btn-container" class="btn-group">
+                        <button type="button" class="btn proposal-type-btn">Research</button>
+                        <button type="button" class="btn proposal-type-btn">Experiment</button>
                     </div>
-                    <div class="note-body field" name="content">
-                        I like these running shoes because I think they'd help make me run faster.
-                        They have pumps on the tongues, to help with performance. The are also
-                        light. I hope that they come in other colours.
-                    </div>
-                    <div class="note-metadata">
-                        <span class="note-author field" name="author"> </span><span class="note-created-at field" name="created_at"></span>
-                    </div>
-                    <br />
-                    <div class="note-build-ons field" name="build_ons">
-                    </div>
-                </div>
-            </div>
-            <div id="proposal-justification-container" class="span10 view-container">
-                <div id="proposal-headline-entry-container" class="control-group proposal-container">
-                    <label id="proposal-headline-label" for="proposal-headline-entry">
-                        <b>Proposal Headline: </b>
-                    </label>
-                    <textarea class="proposal-entry-field field disabled" id="proposal-headline-entry" name="headline" placeholder="Enter headline..." type=""></textarea>
                     <div class="btn-container btn-group action-btn-group">
-                        <a id="share-proposal-headline-btn" class="btn btn-success disabled">
-                            Done
+                        <a id="share-proposal-justification-btn" class="btn btn-success">
+                            Share
                         </a>
                     </div>
                 </div>
-                <div id="body-container">
-                    <div id="proposal-body-entry-container" class="control-group span5 proposal-container">
-                        <label for="proposal-body-entry">
-                            <b>Proposal: </b>
-                        </label>
-                        <textarea class="proposal-entry-field field disabled" id="proposal-body-entry" name="proposal" placeholder="What should be done about this? What should we consider next?" type=""></textarea>
-                        <div class="btn-container btn-group action-btn-group">
-                            <a id="share-proposal-body-btn" class="btn btn-success disabled">
-                                Done
-                            </a>
-                        </div>
-                    </div>
-                    <div id="justification-body-entry-container" class="control-group span5 proposal-container">
-                        <label for="justification-body-entry">
-                            <b>Justification: </b>
-                        </label>
-                        <textarea class="proposal-entry-field field disabled" id="justification-body-entry" name="justification" placeholder="How and why will this proposal help? What are some ideas it responds to?" type=""></textarea>
-                        <div class="btn-container btn-group action-btn-group">
-                            <a id="share-justification-body-btn" class="btn btn-success disabled">
-                                Done
-                            </a>
-                        </div>
-                    </div>
+                <div class="proposal-entry-container">
+                    <textarea class="field text-entry" id="proposal-entry" name="proposal" placeholder="What should we do? How should we do it?"></textarea>
+                </div>
+                <div class="justification-entry-container">
+                    <textarea class="field text-entry" id="justification-entry" name="justification" placeholder="What might we learn?"></textarea>
                 </div>
             </div>
-        </div> -->
-
-      
+        </div>
 
     </body>
 </html>

@@ -85,7 +85,7 @@
       if (this.tags.length < 4) {
         tag = new CK.Model.Tag({
           name: name,
-          colorClassName: this.getColorTagClassName(),
+          colorClass: this.getColorTagClassName(),
           created_at: new Date()
         });
         tag.wake(this.config.wakeful.url);
@@ -132,6 +132,7 @@
       authenticated: function(ev) {
         var _this = this;
         console.log("Authenticated...");
+        jQuery('#auth-indicator .nickname').text(this.run.name);
         return CK.Model.init(this.config.drowsy.url, this.run.name).done(function() {
           return Wakeful.loadFayeClient(_this.config.wakeful.url).done(function() {
             return CK.Model.initWakefulCollections(_this.config.wakeful.url).done(function() {
@@ -139,6 +140,9 @@
             });
           });
         });
+      },
+      unauthenticated: function(ev) {
+        return document.location.reload();
       },
       'ui.initialized': function(ev) {
         return console.log("UI initialized...");
@@ -152,7 +156,8 @@
           el: jQuery('#wall'),
           runState: this.runState,
           tags: this.tags,
-          contributions: this.contributions
+          contributions: this.contributions,
+          proposals: this.proposals
         });
         return this.wall.render();
       }

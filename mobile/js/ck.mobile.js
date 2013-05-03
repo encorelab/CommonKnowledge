@@ -37,13 +37,11 @@ CK.Mobile = function() {
   app.bucketedContribution = null;
   app.bucketTaggingView = null;
   app.interestGroupListView = null;
+  app.proposalList = null;
   app.proposalListView = null;
-  app.proposalDetailsView = null;
-
-  // Global vars - a lot of this stuff can go TODO
-  app.synthesisFlag = false;
-  app.myTagGroup = null;
+  app.proposal = null;
   app.proposalInputView = null;
+  app.proposalDetailsView = null;
 
   app.autoSaveTimer = window.setTimeout(function() { console.log("timer activated"); } ,10);
 
@@ -97,27 +95,7 @@ CK.Mobile = function() {
       jQuery('#index-screen').removeClass('hide');
       app.contributionListView.render();
 
-      app.tryRestoreUnfinishedWork();
-
-      // // restoring unfinished contribs/buildons
-      // // will return the first unfinished contrib it finds
-      // var unfinishedContrib = _.find(app.contributionList.models, function(contrib) {
-      //   return contrib.get('author') === app.userData.account.login && contrib.get('published') === false && (contrib.get('content') || contrib.get('headline'));
-      // });
-      // var unfinishedBuildOn = _.find(app.contributionList.models, function(contrib) {
-      //   return _.find(contrib.get('build_ons'), function(b) {
-      //     return b.author === app.userData.account.login && b.published === false && b.content !== "";
-      //   });
-      // });
-
-      // // if there are both unfinished contribs and unfinished buildons, contrib wins (right?)
-      // if (unfinishedContrib) {
-      //   console.log('Unfinished Contribution found...');
-      //   app.restoreUnfinishedNote(unfinishedContrib);
-      // } else if (unfinishedBuildOn) {
-      //   console.log('Unfinished BuildOn found...');
-      //   app.restoreUnfinishedBuildOn(unfinishedBuildOn);
-      // }
+      app.tryRestoreUnfinishedContribution();
 
     } else if (p === 'tagging') {
       // TAGGING PHASE
@@ -134,9 +112,7 @@ CK.Mobile = function() {
       app.updateUserState();
       app.bucketTaggingView.render();
 
-      app.tryRestoreUnfinishedWork();
-
-    } else if (p === 'exploration') {
+      app.tryRestoreUnfinishedContribution();
 
     } else if (p === 'propose') {
       // PROPOSAL PHASE
@@ -144,20 +120,34 @@ CK.Mobile = function() {
       jQuery('.brand').text('Common Knowledge - Propose');
 
       // PROPOSAL VIEW
+      app.proposalList = CK.Model.awake.proposals;
       if (app.proposalListView === null) {
         app.proposalListView = new CK.Mobile.View.ProposalListView({
           el: jQuery('#proposal-list'),
-          collection: app.contributionList
+          collection: app.proposalList
         });
       } else {
         if (typeof app.proposalListView.collection !== 'undefined' && app.proposalListView.collection !== null) {
           app.proposalListView.stopListening(app.proposalListView.collection);
         }
-        app.proposalListView.collection = app.contributionList;
+        app.proposalListView.collection = app.proposalList;
       }
 
-      app.updateUserState();
+      var sorter = function(prop) {
+        if (prop.has('created_at')) {
+          return -prop.get('created_at').getTime();
+        } else {
+          return 0;
+        }
+      };
+      app.proposalList.comparator = sorter;
+      app.proposalList.on('add sync change', app.proposalListView.render, app.proposalListView);
+      app.proposalList.sortBy(sorter);
+      // restoring unfinished props is done from chooseInterestGroup()
+
       app.interestGroupListView.render();
+
+      app.updateUserState();
 
     } else {
       console.log("Unknown state...");
@@ -204,16 +194,7 @@ CK.Mobile = function() {
       }
     } else if (app.runState.get('phase') === 'propose') {
       jQuery('#choose-interest-group-screen').removeClass('hide');
-      
-      // if (!app.userState.get('tag_group') || app.userState.get('tag_group') === '') {
-      //   // if user still needs to choose a tag
-      //   jQuery('#choose-interest-group-screen').removeClass('hide');
-      //   app.interestGroupListView.render();
-      // } else {
-      //   // if user has already chosen a tag
-      //   jQuery('#proposal-screen').removeClass('hide');
-      //   app.proposalListView.render();
-      // }
+
     }
 
   };
@@ -320,7 +301,7 @@ CK.Mobile = function() {
         app.interestGroupListView.stopListening(app.interestGroupListView.collection);
       }
       app.interestGroupListView.collection = app.tagList;
-    }    
+    }
 
     // CONTRIBUTIONS COLLECTION
     app.contributionList = CK.Model.awake.contributions;
@@ -457,7 +438,152 @@ CK.Mobile = function() {
     app.detailsView.render();
   };
 
-  app.tryRestoreUnfinishedWork = function() {
+  app.contributionToTag = function (contributionId) {
+    app.bucketedContribution = Sail.app.contributionList.get(contributionId);
+    app.bucketedContribution.wake(Sail.app.config.wakeful.url);
+    // check if view exists or not
+    if (app.contributionToTagView === null) {
+      // create the view, attach to DOM and hand in model
+      app.contributionToTagView = new CK.Mobile.View.ContributionToTagView({
+        el: jQuery('#contribution-to-tag-screen'),
+        model: app.bucketedContribution
+      });
+    } else {
+      // check if view has a model
+      if (typeof app.contributionToTagView.model !== 'undefined' && app.contributionToTagView.model !== null) {
+        // stop listening to event (avoid multiple reactions)
+        app.contributionToTagView.stopListening(app.contributionToTagView.model);
+      }
+      // overwrite the model with the newly created model
+      app.contributionToTagView.model = app.bucketedContribution;
+    }
+    app.bucketTaggingView.render();
+    app.contributionToTagView.render();
+  };
+
+  app.saveBucketedContribution = function() {
+    console.log("Saving bucketed contribution...");
+    // add tags to an array, then set that array to the bucketedContrib
+    if (jQuery('#none-btn').hasClass('active')) {
+      console.log("No tags to add");
+    } else {
+      _.each(jQuery('#bucket-tagging-btn-container .active'), function(b) {
+        app.bucketedContribution.addTag(jQuery(b).data('tag'), app.userData.account.login);          // tag object is embedded in the button
+        //console.log(jQuery(b).data('tag').get('name'));
+      });
+    }
+    // re-add the assigned_tagger (since it's not in bucketedContribution)
+    app.bucketedContribution.set('assigned_tagger',app.userData.account.login);
+    // save the bucketedContrib
+    app.bucketedContribution.save();     //null, {patch:true}
+    // set status to waiting
+    app.userState.set('tagging_status','waiting');
+    app.userState.save();
+    // clear the fields (there's no real way to do this in the view without stepping on the render)
+    jQuery('#bucket-tagging-btn-container .active').removeClass('active');
+  };
+
+  app.chooseInterestGroup = function(chosenTagName) {
+    console.log('Interest group chosen...');
+    app.userState.set('tag_group',chosenTagName);
+    app.userState.save().done(function() {
+      app.tryRestoreUnfinishedProposal(chosenTagName);
+    });
+  };
+
+  app.createNewProposal = function() {
+    console.log("Creating a new proposal note...");
+
+    app.proposal = new CK.Model.Proposal();
+    // ensure that models inside the collection are wakeful
+    app.proposal.wake(Sail.app.config.wakeful.url);
+    // app.proposal.on('all',function() { console.log(arguments); });
+
+    // case: no previous proposalInputView
+    if (app.proposalInputView === null) {
+      app.proposalInputView = new CK.Mobile.View.ProposalInputView({
+        el: jQuery('#proposal-justification-input'),
+        model: app.proposal
+      });
+    // case: already have an proposalInputView with attached model
+    } else {
+      // detatch that model and attach the current contrib model
+      if (typeof app.proposalInputView.model !== 'undefined' && app.proposalInputView.model !== null) {
+        app.proposalInputView.stopListening(app.proposalInputView.model);
+      }
+      app.proposalInputView.model = app.proposal;
+    }
+
+    app.proposalInputView.$el.show('slide', {direction: 'up'});
+
+    var d = new Date();
+    var myTag = Sail.app.tagList.findWhere( {'name':Sail.app.userState.get('tag_group')} );
+    // var myTagObj = {
+    //   "id":myTag.id,
+    //   "name":myTag.get('name'),
+    //   "colorClass":myTag.get('colorClass')
+    // };
+    app.proposal.set('created_at',d);
+    app.proposal.set('author', app.userData.account.login);             // change this to some kind of 'team' authorship?
+    app.proposal.set('published', false);
+    app.proposal.set('headline','');
+    app.proposal.set('proposal','');
+    app.proposal.set('justification','');
+    app.proposal.set('votes',[]);
+    app.proposal.set('type',null);
+    app.proposal.setTag(myTag);
+
+    app.proposal.save();
+    app.proposalInputView.render();
+  };
+
+  app.saveProposal = function(view) {
+    console.log("Submitting proposal...");
+    Sail.app.proposal.wake(Sail.app.config.wakeful.url);      // just in case
+    Sail.app.proposal.save()            //patch:true,    // does this want to switch to patch?
+      .done( function() {
+        console.log("Proposal saved!");
+
+        jQuery('#proposal-justification-input').hide('slide', {direction: 'up'});
+        jQuery().toastmessage('showSuccessToast', "Proposal submitted");
+
+        // I think we need to lock the fields again and force the student to use the new note/build on button
+        // jQuery('#note-body-entry').addClass('disabled');
+        // jQuery('#note-headline-entry').addClass('disabled');
+
+        // clear the old proposal plus ui fields
+        view.stopListening(Sail.app.proposal);
+        // clear fields
+        view.$el.find(".field").val(null);
+        jQuery('#proposal-type-btn-container .btn').removeClass('active');
+      })
+      .fail( function() {
+        console.log('Error submitting');
+      });
+  };
+
+  app.showProposalDetails = function(note) {
+    console.log('Creating a new proposal details...');
+    var details = note;
+    if (app.proposalDetailsView === null) {
+      app.proposalDetailsView = new CK.Mobile.View.ProposalDetailsView({
+        el: jQuery('#proposal-details'),
+        model: details
+      });
+    } else {
+      if (typeof app.proposalDetailsView.model !== 'undefined' && app.proposalDetailsView.model !== null) {
+        app.proposalDetailsView.stopListening(app.proposalDetailsView.model);
+      }
+      app.proposalDetailsView.model = details;
+    }
+    details.wake(Sail.app.config.wakeful.url);
+    app.proposalDetailsView.render();
+  };
+
+
+  // ******** HELPER FUNCTIONS ********* //
+
+  app.tryRestoreUnfinishedContribution = function() {
     // restoring unfinished contribs/buildons
     // will return the first unfinished contrib it finds
     var unfinishedContrib = _.find(app.contributionList.models, function(contrib) {
@@ -528,255 +654,31 @@ CK.Mobile = function() {
     Sail.app.contribution = contrib;
   };
 
-  app.contributionToTag = function (contributionId) {
-    app.bucketedContribution = Sail.app.contributionList.get(contributionId);
-    app.bucketedContribution.wake(Sail.app.config.wakeful.url);
-    // check if view exists or not
-    if (app.contributionToTagView === null) {
-      // create the view, attach to DOM and hand in model
-      app.contributionToTagView = new CK.Mobile.View.ContributionToTagView({
-        el: jQuery('#contribution-to-tag-screen'),
-        model: app.bucketedContribution
-      });
-    } else {
-      // check if view has a model
-      if (typeof app.contributionToTagView.model !== 'undefined' && app.contributionToTagView.model !== null) {
-        // stop listening to event (avoid multiple reactions)
-        app.contributionToTagView.stopListening(app.contributionToTagView.model);
+  app.tryRestoreUnfinishedProposal = function(tagName) {
+    var unfinishedProp = _.find(app.proposalList.models, function(prop) {
+      return prop.get('author') === app.userData.account.login && prop.get('published') === false && prop.get('tag').name === tagName && (prop.get('proposal') || prop.get('justification'));
+    });
+
+    if (unfinishedProp) {
+      console.log("Restoring Proposal");
+      app.proposal = unfinishedProp;
+
+      if (app.proposalInputView === null) {
+        app.proposalInputView = new CK.Mobile.View.ProposalInputView({
+          el: jQuery('#proposal-justification-input'),
+          model: app.proposal
+        });
+      } else {
+        if (typeof app.proposalInputView.model !== 'undefined' && app.proposalInputView.model !== null) {
+          app.proposalInputView.stopListening(app.proposalInputView.model);
+        }
+        app.proposalInputView.model = app.proposal;
       }
-      // overwrite the model with the newly created model
-      app.contributionToTagView.model = app.bucketedContribution;
+      app.proposal.set('type','');                  // again, not ideal, but easy and cheap
+      app.proposalInputView.$el.show('slide', {direction: 'up'});
+      app.proposalInputView.render();
     }
-    app.bucketTaggingView.render();
-    app.contributionToTagView.render();
   };
-
-  app.saveBucketedContribution = function() {
-    console.log("Saving bucketed contribution...");
-    // add tags to an array, then set that array to the bucketedContrib
-    if (jQuery('#none-btn').hasClass('active')) {
-      console.log("No tags to add");
-    } else {
-      _.each(jQuery('#bucket-tagging-btn-container .active'), function(b) {
-        // TODO: do we still have a concept of tagger? Does addTag not do that? So manually?
-        app.bucketedContribution.addTag(jQuery(b).data('tag'));          // tag object is embedded in the button
-        //console.log(jQuery(b).data('tag').get('name'));
-      });
-    }
-    // re-add the assigned_tagger (since it's not in bucketedContribution)
-    app.bucketedContribution.set('assigned_tagger',app.userData.account.login);
-    // save the bucketedContrib
-    app.bucketedContribution.save();     //null, {patch:true}
-    // set status to waiting
-    app.userState.set('tagging_status','waiting');
-    app.userState.save();
-    // clear the fields (there's no real way to do this in the view without stepping on the render)
-    jQuery('#bucket-tagging-btn-container .active').removeClass('active');
-  };
-
-  app.chooseInterestGroup = function(chosenTagName) {
-    console.log('Interest group chosen...');
-    app.userState.set('tag_group',chosenTagName);
-    app.userState.save();
-  };
-
-  app.showProposalDetails = function(contrib) {
-    console.log('Creating a new Details...');
-    // if (contribType === 'brainstorm') {
-
-    // } else if (contribType === 'proposal') {
-
-    // } else {
-    //   console.error("Unknown contribution type...")
-    // }
-    var details = contrib;
-    if (app.proposalDetailsView === null) {
-      app.proposalDetailsView = new CK.Mobile.View.ProposalDetailsView({
-        el: jQuery('#proposal-details'),
-        model: details
-      });
-    } else {
-      if (typeof app.proposalDetailsView.model !== 'undefined' && app.proposalDetailsView.model !== null) {
-        app.proposalDetailsView.stopListening(app.proposalDetailsView.model);
-      }
-      app.proposalDetailsView.model = details;
-    }
-    details.on('change', app.proposalDetailsView.render, app.proposalDetailsView);
-    // have to call this manually because there are no change events later
-    app.proposalDetailsView.render();
-  };
-
-  
-
-
-
-  // var proposalsList = null;       // getting late the night before
-  // app.startProposal = function() {
-  //   app.hideWaitScreen();
-  //   // for list view
-  //   CK.setState(app.userData.account.login, {proposal: {}});     // do we need this?
-  //   console.log('creating ProposalListView');
-
-  //   if (app.contributionList === null) {
-  //     app.contributionList = new CK.Model.Contributions();
-  //   }
-
-  //   //app.contributionList.wake(app.config.wakeful.url);
-  //   app.contributionList.on('change', function(model) { console.log(model.changedAttributes()); });    
-  //   app.proposalListView = new CK.Mobile.View.ProposalListView({
-  //     el: jQuery('#proposal-contribution-list'),
-  //     collection: app.contributionList
-  //   });
-  //   app.contributionList.on('reset add', app.proposalListView.render, app.proposalListView);
-  //   var sort = ['created_at', 'DESC'];
-  //   app.contributionList.fetch({
-  //     data: { sort: JSON.stringify(sort) }
-  //   });
-
-  //   // for singular proposal
-  //   if (app.proposalInputView === null) {
-  //     app.proposalInputView = new CK.Mobile.View.ProposalInputView({
-  //       el: jQuery('#proposal-justification-container')
-  //     });
-  //   }
-
-  //   // for proposal collection
-  //   app.proposalsList = new CK.Model.Proposals();
-  //   app.proposalsList.wake(Sail.app.config.wakeful.url);
-  //   app.proposalsList.on('add', app.bindProposal);
-  //   app.proposalsList.on('reset', function(props) {
-  //     props.each(app.bindProposal);
-  //   });
-  //   app.proposalsList.fetch();
-
-  //   // for grouping view
-  //   var states = CK.Model.awake.states;
-
-  //   states.on('change', function(model) { console.log(model.changedAttributes()); });
-
-  //   app.groupingView = new CK.Mobile.View.GroupingView({
-  //     el: jQuery('#grouping-screen'),
-  //     collection: states
-  //   });
-  //   states.on('reset add', app.groupingView.render, app.groupingView);
-
-  //   function fetchSuccess (m) {
-  //     console.log('fetched user states:', states);
-  //   }
-  //   function fetchError (err) {
-  //     console.warn('error fetching states');
-  //   }
-
-  //   states.fetch({success: fetchSuccess, error: fetchError});       // this will no longer work with drowsy 0.2.0
-  // };
-
-  // app.newProposal = function(initiator, receiver, tagGroupName, tagGroupId) {
-  //   // for proposal entry view
-  //   var proposal = new CK.Model.Proposal();
-  //   proposal.wake(Sail.app.config.wakeful.url);
-
-  //   proposal.on('change', function(model) { console.log(model.changedAttributes()); });    
-
-  //   var groupName = initiator + '-' + receiver;
-  //   proposal.set('published', false);
-  //   proposal.set('headline_published', false);
-  //   proposal.set('proposal_published', false);
-  //   proposal.set('justification_published', false);
-  //   proposal.set('author', groupName);
-  //   proposal.set('initiator', initiator);
-  //   proposal.set('receiver', receiver);
-  //   proposal.set('tag_group_id', tagGroupId);
-  //   proposal.set('tag_group_name', tagGroupName);
-
-  //   proposal.on('reset add', app.proposalInputView.render, app.proposalInputView);
-
-  //   proposal.save();
-  // };
-
-  // app.bindProposal = function(prop) {
-  //   if (!prop.get('published') && (prop.get('initiator') === Sail.app.userData.account.login || prop.get('receiver') === Sail.app.userData.account.login)) {
-  //     // Something added
-
-  //     app.proposalInputView.initialRenderComplete = false;
-  //     app.proposalInputView.stopListening(app.proposalInputView.model);
-      
-  //     // this is really important - will be the model for how we listen to wakeful events, I think
-  //     prop.on('change:published', function() {
-  //       if (prop.get('published') === true) {
-  //         prop.off();
-  //         jQuery().toastmessage('showSuccessToast', "Proposal submitted");
-  //         jQuery('#group-btn').removeClass('disabled');
-  //         jQuery('#group-label-container').text("");
-  //       }
-  //     });
-
-  //     prop.wake(Sail.app.config.wakeful.url);
-  //     prop.on('change', app.proposalInputView.render, app.proposalInputView);
-
-  //     app.proposalInputView.model = prop;
-  //     app.proposalInputView.render();
-  //   }
-  // };
-
-
-  // app.checkProposalPublishState = function() {
-  //   if (app.proposalInputView.model.get('headline_published') === true && app.proposalInputView.model.get('proposal_published') && app.proposalInputView.model.get('justification_published') === true) {
-  //     console.log('setting proposal published state to true...');
-  //     app.proposalInputView.model.set('published', true);
-  //     app.proposalInputView.model.save();
-  //   } else {
-  //     app.proposalInputView.model.save();
-  //   }
-  // };
-
-  // app.createGroup = function(receiver, tagGroupName, tagGroupId) {
-  //   console.log('creating group...');
-
-  //   var initiator = app.userData.account.login;
-  //   app.newProposal(initiator, receiver, tagGroupName, tagGroupId);
-  // };
-
-  // app.startInterpretation = function() {
-  //   console.log('creating InterpretationListView');
-    
-  //   if (app.proposalList === null) {
-  //     // instantiate new contributions collection
-  //     app.proposalList = new CK.Model.Proposals();
-  //     // make collection wakefull (receiving changes form other actors via pub/sub)
-  //     app.proposalList.wake(Sail.app.config.wakeful.url);
-  //   }
-
-  //   app.proposalList.on('change', function(model) { console.log(model.changedAttributes()); });
-
-  //   // check if view already exists
-  //  if (app.interpretationListView === null) {
-  //     app.interpretationListView = new CK.Mobile.View.InterpretationListView({
-  //       el: jQuery('#contribution-list'),
-  //       collection: app.proposalList
-  //     });
-  //   }
-
-  //   app.proposalList.on('reset add', app.interpretationListView.render, app.interpretationListView);
-  //   var sort = ['created_at', 'DESC'];
-  //   // var selector = {"author": "matt"};
-  //   app.proposalList.fetch({
-  //     data: { sort: JSON.stringify(sort) }
-  //   });
-  // };
-
-  // app.toggleVote = function() {
-  //   // set the vote (or whatever) field in the object
-  //   if (jQuery('#like-btn-on').hasClass('hide')) {
-  //     jQuery('#like-btn-on').removeClass('hide');
-  //     jQuery('#like-btn-off').addClass('hide');
-  //   } else {
-  //     jQuery('#like-btn-on').addClass('hide');
-  //     jQuery('#like-btn-off').removeClass('hide');
-  //   }
-  // };
-
-
-  // ******** HELPER FUNCTIONS ********* //
 
   app.showWaitScreen = function() {
     console.log("Showing wait screen...");
@@ -799,6 +701,7 @@ CK.Mobile = function() {
     jQuery('#bucket-tagging-screen').addClass('hide');
     jQuery('#choose-interest-group-screen').addClass('hide');
     jQuery('#proposal-screen').addClass('hide');
+    jQuery('#proposal-justification-input').addClass('hide');
   };
 
   app.autoSave = function(model, inputKey, inputValue, instantSave) {

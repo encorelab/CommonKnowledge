@@ -60,6 +60,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
         @runState = options.runState
         @tags = options.tags
         @contributions = options.contributions
+        @proposals = options.proposals
         super(options)
 
     initialize: ->
@@ -73,6 +74,11 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             @addBalloon c, CK.Smartboard.View.ContributionBalloon, @balloonViews
         @contributions.each (c) =>
             @addBalloon c, CK.Smartboard.View.ContributionBalloon, @balloonViews
+
+        @proposals.on 'add', (p) =>
+            @addBalloon p, CK.Smartboard.View.ProposalBalloon, @balloonViews
+        @proposals.each (p) =>
+            @addBalloon p, CK.Smartboard.View.ProposalBalloon, @balloonViews
 
         @tags.on 'add', (t) =>
             @addBalloon t, CK.Smartboard.View.TagBalloon, @balloonViews
@@ -188,19 +194,19 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
         @tagFilters.splice(@tagFilters.indexOf(tag), 1)
         @renderFiltered()
 
-    # blurs/unblurs contribution balloons based on the current contents of @tagFilters 
+    # blurs/unblurs contribution balloons based on the current contents of @tagFilters
     renderFiltered: (tag) ->
         if @tagFilters.length is 0
-            @$el.find(".contribution, .connector").removeClass('blurred')
+            @$el.find(".content, .connector").removeClass('blurred')
         else
             activeIds = (tag.id for tag in @tagFilters)
             selector = ".tag-"+activeIds.join(", .tag-")
 
-            @$el.find(".contribution:not(#{selector})").addClass('blurred')
+            @$el.find(".content:not(#{selector})").addClass('blurred')
             @$el.find(".connector:not(#{selector})").addClass('blurred')
 
             maxZ = @maxBallonZ()
-            @$el.find(".contribution").filter("#{selector}")
+            @$el.find(".content").filter("#{selector}")
                 .removeClass('blurred')
                 .css('z-index', maxZ+1) # NOTE: currently we don't persist this z-index change, since it's only temporary
             @$el.find(".connector").filter("#{selector}")
@@ -234,6 +240,8 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                         .addClass('mode-propose')
                         .removeClass('mode-research_and_experiment')
                     @changeWatermark("propose")
+                    setTimeout (=> @$el.find('.contribution, .contribution-connector').remove() ),
+                        1100 # let the fadeout animation complete
                 when 'research_and_experiment'
                     jQuery('body')
                         .removeClass('mode-brainstorm')
@@ -242,6 +250,8 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                         .removeClass('mode-propose')
                         .addClass('mode-research_and_experiment')
                     @changeWatermark("experiment")
+                    setTimeout (=> @$el.find('.contribution, .contribution-connector').remove() ),
+                        1100 # let the fadeout animation complete
                 else
                     jQuery('body')
                         .addClass('mode-brainstorm')
