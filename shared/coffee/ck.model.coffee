@@ -120,6 +120,16 @@ class CK.Model
                     name: tag.get('name')
                     colorClass: tag.get('colorClass')
 
+            addVote: (username) ->
+                votes = _.clone @get('votes')
+                votes.push(username)
+                @set 'votes', votes
+
+            removeVote: (username) ->
+                votes = _.without @get('votes'), username
+                @set 'votes', votes
+
+
         class @Contributions extends @db.Collection('contributions')
             model: CK.Model.Contribution
 

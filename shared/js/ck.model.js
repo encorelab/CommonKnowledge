@@ -169,6 +169,19 @@
           });
         };
 
+        Proposal.prototype.addVote = function(username) {
+          var votes;
+          votes = _.clone(this.get('votes'));
+          votes.push(username);
+          return this.set('votes', votes);
+        };
+
+        Proposal.prototype.removeVote = function(username) {
+          var votes;
+          votes = _.without(this.get('votes'), username);
+          return this.set('votes', votes);
+        };
+
         return Proposal;
 
       })(this.db.Document('proposals'));
