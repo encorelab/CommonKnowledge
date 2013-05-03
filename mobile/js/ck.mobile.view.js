@@ -552,6 +552,8 @@
         var propTag;
 
         if (prop.get('published') === true) {
+          var propTag;
+
           if (jQuery('li#proposal'+prop.id).length === 0) {
             // if this prop doesn't exist, add it
             var note = "<li id='proposal" + prop.id + "' class='list-item proposal-item' data='" + prop.id + "'><a class='note'><span class='headline'></span>";

@@ -145,13 +145,6 @@ CK.Mobile = function() {
       app.proposalList.sortBy(sorter);
       // restoring unfinished props is done from chooseInterestGroup()
 
-
-// this.collection.comparator = function (user) {
-//   return user.get("firstname").toLowerCase();
-// };
-
-// this.collection.sort();
-
       app.interestGroupListView.render();
 
       app.updateUserState();
