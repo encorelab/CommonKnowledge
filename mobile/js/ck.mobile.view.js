@@ -513,7 +513,7 @@
       var myTag = Sail.app.tagList.findWhere( {'name':Sail.app.userState.get('tag_group')} );
 
       Sail.app.contributionList.each(function(contrib) {
-        if (contrib.get('published') === true) {
+        if (contrib.get('published') === true && contrib.hasTag(myTag)) {
           var buildOnArray;
           var myBuildOn;
           if (jQuery('li#contribution'+contrib.id).length === 0) {
