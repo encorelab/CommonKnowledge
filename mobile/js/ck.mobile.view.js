@@ -512,45 +512,58 @@
       var createdAt;
       var myTag = Sail.app.tagList.findWhere( {'name':Sail.app.userState.get('tag_group')} );
 
-      // add the contribs to the list - note that this will never change, so rendering once will be enough (and therefore this view is not hooked to the contributionList collection)
-      // BUT - what about board changes? TODO
       Sail.app.contributionList.each(function(contrib) {
-        if (contrib.hasChanged() || jQuery('li#contribution'+contrib.id).length === 0) {
-          // if this contrib has changed
-          jQuery('#proposal-list li#contribution'+contrib.id).remove();
-        } else {
-          // else break out
-          return;
-        }
-        if (contrib.get('published') === true && contrib.hasTag(myTag)) {
-          var note = "<li id='contribution" + contrib.id + "' class='list-item brainstorm-item' data='" + contrib.id + "'><a class='note'><span class='headline'></span>";
-          note += "<br /><i class='icon-chevron-right'></i>";
-          note += "<span class='author'></span><span class='date'></span></a></li>";
-          note = jQuery(note);
+        if (contrib.get('published') === true) {
+          var buildOnArray;
+          var myBuildOn;
+          if (jQuery('li#contribution'+contrib.id).length === 0) {
+            // contrib doesn't exist in the list
+            var note = "<li id='contribution" + contrib.id + "' class='list-item brainstorm-item' data='" + contrib.id + "'><a class='note'><span class='headline'></span>";
+            note += "<br /><i class='icon-chevron-right'></i>";
+            note += "<span class='author'></span><span class='date'></span></a></li>";
+            note = jQuery(note);
+            jQuery('#proposal-list .nav-list').append(note);
 
-          jQuery('#proposal-list .nav-list').append(note);
+            note.find('.headline').text('Brainstorm - '+contrib.get('headline'));
+            createdAt = contrib.get('created_at');
+            if (createdAt) {
+              note.find('.date').text(' (' + createdAt.toLocaleDateString() + ' ' + createdAt.toLocaleTimeString() + ')');
+            }
+            note.find('.author').text(contrib.get('author'));
+            buildOnArray = contrib.get('build_ons');
+            myBuildOn = _.find(buildOnArray, function(b) {
+              return b.author === Sail.app.userData.account.login && b.published === true;
+            });
+            if (myBuildOn || contrib.get('author') === Sail.app.userData.account.login) {
+              note.children().first().addClass('own-color');
+            }
 
-          note.find('.headline').text('Brainstorm - '+contrib.get('headline'));
-          createdAt = contrib.get('created_at');
-          if (createdAt) {
-            note.find('.date').text(' (' + createdAt.toLocaleDateString() + ' ' + createdAt.toLocaleTimeString() + ')');
-          }
-          note.find('.author').text(contrib.get('author'));
+          } else if (contrib.hasChanged()) {
+            // contrib has changed, remove content from list item, repopulate
+            var liEl = jQuery('#contribution'+contrib.id);
+            liEl.find('.headline').text('Brainstorm - '+contrib.get('headline'));
+            createdAt = contrib.get('created_at');
+            if (createdAt) {
+              liEl.find('.date').text(' (' + createdAt.toLocaleDateString() + ' ' + createdAt.toLocaleTimeString() + ')');
+            }
+            liEl.find('.author').text(contrib.get('author'));
+            buildOnArray = contrib.get('build_ons');
+            myBuildOn = _.find(buildOnArray, function(b) {
+              return b.author === Sail.app.userData.account.login && b.published === true;
+            });
+            if (myBuildOn || contrib.get('author') === Sail.app.userData.account.login) {
+              liEl.children().first().addClass('own-color');
+            }
 
-          var buildOnArray = contrib.get('build_ons');
-          var myBuildOn = _.find(buildOnArray, function(b) {
-            return b.author === Sail.app.userData.account.login && b.published === true;
-          });
-          if (myBuildOn || contrib.get('author') === Sail.app.userData.account.login) {
-            note.children().first().addClass('own-color');
+          } else {
+            // break
+            return;
           }
         }
       });
 
       // add the proposals to the list
       Sail.app.proposalList.each(function(prop) {
-        var propTag;
-
         if (prop.get('published') === true) {
           var propTag;
 
@@ -591,36 +604,6 @@
           }
         }
       });
-
-      // // add the proposals to the list
-      // Sail.app.proposalList.each(function(prop) {
-      //   if (prop.hasChanged() || jQuery('li#proposal'+prop.id).length === 0) {
-      //     // if this prop has changed
-      //     jQuery('#proposal-list li#proposal'+prop.id).remove();
-      //   } else {
-      //     // else break out
-      //     return;
-      //   }
-      //   if (prop.get('published') === true) {
-      //     var note = "<li id='proposal" + prop.id + "' class='list-item proposal-item' data='" + prop.id + "'><a class='note'><span class='headline'></span>";
-      //     note += "<br /><i class='icon-chevron-right'></i>";
-      //     note += "<span class='author'></span><span class='date'></span></a></li>";
-      //     note = jQuery(note);
-
-      //     jQuery('#proposal-list .nav-list').append(note);
-
-      //     note.find('.headline').text('Proposal - '+prop.get('headline'));
-      //     createdAt = prop.get('created_at');
-      //     if (createdAt) {
-      //       note.find('.date').text(' (' + createdAt.toLocaleDateString() + ' ' + createdAt.toLocaleTimeString() + ')');
-      //     }
-      //     note.find('.author').text(prop.get('author'));
-
-      //     // add the correct colors based on tag_name
-      //     var propTag = Sail.app.tagList.findWhere( {'name':prop.get('tag').name} );
-      //     note.children().first().addClass(propTag.get('colorClass'));
-      //   }
-      // });
 
     }
   });
