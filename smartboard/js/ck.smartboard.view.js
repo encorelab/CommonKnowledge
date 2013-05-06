@@ -913,7 +913,9 @@
         this.$el.addClass(tag.colorClass);
         this.$el.addClass("tag-" + tag.id);
       }
-      return this.body.text(this.model.get('justification'));
+      this.body.html('');
+      this.body.append(jQuery('<p>').text(this.model.get('proposal')));
+      return this.body.append(jQuery('<p>').text(this.model.get('justification')));
     };
 
     ProposalBalloon.prototype.renderConnectors = function() {

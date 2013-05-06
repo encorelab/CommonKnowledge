@@ -332,7 +332,9 @@ class CK.Smartboard.View.ProposalBalloon extends CK.Smartboard.View.ContentBallo
             @$el.addClass(tag.colorClass)
             @$el.addClass("tag-#{tag.id}")
 
-        @body.text @model.get('justification')
+        @body.html('')
+        @body.append(jQuery('<p>').text(@model.get('proposal')))
+        @body.append(jQuery('<p>').text(@model.get('justification')))
 
     renderConnectors: ->
         @renderConnector(@model.get 'tag') if @model.has 'tag'
