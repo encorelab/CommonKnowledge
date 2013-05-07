@@ -634,6 +634,10 @@
 
     initialize: function () {
       console.log("Initializing ProposalDetailsView...");
+
+      this.model.on('invalid', function (err) {
+        alert(err);
+      });
     },
 
     render: function () {
@@ -741,6 +745,10 @@
 
     initialize: function() {
       console.log("Initializing ProposalInputView...");
+
+      this.model.on('invalid', function (err) {
+        alert(err);
+      });
     },
 
     share: function() {

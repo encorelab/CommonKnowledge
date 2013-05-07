@@ -161,6 +161,14 @@
           return Proposal.__super__.constructor.apply(this, arguments);
         }
 
+        Proposal.prototype.validate = function(attrs) {
+          if (!_.all(attrs.votes, function(a) {
+            return typeof a === 'string';
+          })) {
+            return "'votes' must be an array of strings but is " + (JSON.stringify(attrs.votes));
+          }
+        };
+
         Proposal.prototype.setTag = function(tag) {
           return this.set('tag', {
             id: tag.id.toLowerCase(),

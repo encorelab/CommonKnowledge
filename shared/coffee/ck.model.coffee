@@ -114,6 +114,10 @@ class CK.Model
                 }
 
         class @Proposal extends @db.Document('proposals')
+            validate: (attrs) ->
+                unless _.all(attrs.votes, (a) -> typeof a is 'string')
+                    return "'votes' must be an array of strings but is #{JSON.stringify(attrs.votes)}"
+
             setTag: (tag) ->
                 @set 'tag',
                     id: tag.id.toLowerCase()
