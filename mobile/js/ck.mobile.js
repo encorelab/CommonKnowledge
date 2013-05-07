@@ -156,7 +156,6 @@ CK.Mobile = function() {
       // INVESTIGATE PHASE
       console.log('Entering investigate phase...');
       jQuery('.brand').text('Common Knowledge - Investigation');
-      jQuery('#investigation-screen').removeClass('hide');
 
       app.proposalList = CK.Model.awake.proposals;
       app.investigationList = CK.Model.awake.investigations;
@@ -179,8 +178,9 @@ CK.Mobile = function() {
 
       // TODO - sort?
 
-      app.tryRestoreUnfinishedInvestigation();
-      app.investigationListView.render();
+      app.interestGroupListView.render();
+
+      app.updateUserState();      
 
     } else {
       console.log("Unknown state...");
@@ -226,6 +226,9 @@ CK.Mobile = function() {
         console.error('Unknown tagging status...');
       }
     } else if (app.runState.get('phase') === 'propose') {
+      jQuery('#choose-interest-group-screen').removeClass('hide');
+
+    } else if (app.runState.get('phase') === 'investigate') {
       jQuery('#choose-interest-group-screen').removeClass('hide');
 
     }
@@ -520,7 +523,8 @@ CK.Mobile = function() {
     console.log('Interest group chosen...');
     app.userState.set('tag_group',chosenTagName);
     app.userState.save().done(function() {
-      app.tryRestoreUnfinishedProposal(chosenTagName);
+      //app.tryRestoreUnfinishedProposal(chosenTagName); TODO - add me back in when it's no longer insane
+      // OR app.tryRestoreUnfinishedInvestigation();
     });
   };
 

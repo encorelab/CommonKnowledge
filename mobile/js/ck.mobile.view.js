@@ -433,9 +433,14 @@
         if (ok) {
           Sail.app.chooseInterestGroup(chosenTagName);
           Sail.app.hideAll();
-          jQuery('.brand').text('Common Knowledge - Specializing in ' + chosenTagName);
-          jQuery('#proposal-screen').removeClass('hide');
-          Sail.app.proposalListView.render();
+          if (Sail.app.runState.get('phase') === 'purpose') {
+            jQuery('.brand').text('Common Knowledge - Specializing in ' + chosenTagName);
+            jQuery('#proposal-screen').removeClass('hide');
+            Sail.app.proposalListView.render();
+          } else {
+            jQuery('#investigation-screen').removeClass('hide');
+            Sail.app.investigationListView.render();
+          }
         } else {
           jQuery('#interest-group-list-btn-container .tag-btn').removeClass('active');
         }
@@ -797,7 +802,6 @@
         $target.children().first().addClass('selected');
         var contribId = $target.attr('data');
 
-        // pass the note from the appropriate collection - ARMIN
         if ($target.hasClass('proposal-item')) {
           Sail.app.showInvestigationDetails(Sail.app.proposalList.get(contribId));
         } else {
