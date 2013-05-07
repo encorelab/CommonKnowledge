@@ -149,10 +149,9 @@
           phase: 'propose'
         });
       },
-      'click #go-interpret': function(ev) {
-        return;
+      'click #go-investigate': function(ev) {
         return this.runState.save({
-          phase: 'interpret'
+          phase: 'investigate'
         });
       }
     };
@@ -326,35 +325,42 @@
     };
 
     Wall.prototype.render = function() {
-      var paused, phase,
+      var elementsToRemove, paused, phase, _ref,
         _this = this;
       phase = this.runState.get('phase');
       if (phase !== this.$el.data('phase')) {
         switch (phase) {
           case 'tagging':
-            jQuery('body').removeClass('mode-brainstorm').addClass('mode-tagging').removeClass('mode-exploration').removeClass('mode-propose').removeClass('mode-research_and_experiment');
+            jQuery('body').removeClass('mode-brainstorm').addClass('mode-tagging').removeClass('mode-exploration').removeClass('mode-propose').removeClass('mode-investigate');
             this.changeWatermark("tagging");
             break;
           case 'exploration':
-            jQuery('body').removeClass('mode-brainstorm').removeClass('mode-tagging').addClass('mode-exploration').removeClass('mode-propose').removeClass('mode-research_and_experiment');
+            jQuery('body').removeClass('mode-brainstorm').removeClass('mode-tagging').addClass('mode-exploration').removeClass('mode-propose').removeClass('mode-investigate');
             this.changeWatermark("exploration");
             break;
           case 'propose':
-            jQuery('body').removeClass('mode-brainstorm').removeClass('mode-tagging').removeClass('mode-exploration').addClass('mode-propose').removeClass('mode-research_and_experiment');
+            jQuery('body').removeClass('mode-brainstorm').removeClass('mode-tagging').removeClass('mode-exploration').addClass('mode-propose').removeClass('mode-investigate');
             this.changeWatermark("propose");
             setTimeout((function() {
               return _this.$el.find('.contribution, .contribution-connector').remove();
             }), 1100);
             break;
-          case 'research_and_experiment':
-            jQuery('body').removeClass('mode-brainstorm').removeClass('mode-tagging').removeClass('mode-exploration').removeClass('mode-propose').addClass('mode-research_and_experiment');
-            this.changeWatermark("experiment");
+          case 'investigate':
+            jQuery('body').removeClass('mode-brainstorm').removeClass('mode-tagging').removeClass('mode-exploration').removeClass('mode-propose').addClass('mode-investigate');
+            this.changeWatermark((_ref = Sail.app.interestGroup) != null ? _ref : "investigate");
+            if (Sail.app.interestGroup != null) {
+              jQuery('body').addClass('mode-investigate-with-topic');
+              elementsToRemove = '.contribution, .contribution-connector, .tag, .proposal-connector';
+            } else {
+              jQuery('body').removeClass('mode-investigate-with-topic');
+              elementsToRemove = '.contribution, .contribution-connector';
+            }
             setTimeout((function() {
-              return _this.$el.find('.contribution, .contribution-connector').remove();
+              return _this.$el.find(elementsToRemove).remove();
             }), 1100);
             break;
           default:
-            jQuery('body').addClass('mode-brainstorm').removeClass('mode-tagging').removeClass('mode-exploration').removeClass('mode-propose').removeClass('mode-research_and_experiment');
+            jQuery('body').addClass('mode-brainstorm').removeClass('mode-tagging').removeClass('mode-exploration').removeClass('mode-propose').removeClass('mode-investigate');
             this.changeWatermark("brainstorm");
         }
         this.$el.data('phase', phase);

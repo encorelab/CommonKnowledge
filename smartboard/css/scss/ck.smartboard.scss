@@ -5,8 +5,7 @@
 $wall-color: #ab2;
 $wall-color-tagging: #51ba34;
 $wall-color-propose: #34ba70;
-$wall-color-interpret: #34bab3;
-$wall-color-evaluate: #c0b7ca;
+$wall-color-investigate: #34bab3;
 
 $contribution-bubble-color: #fff;
 
@@ -55,7 +54,7 @@ body {
         opacity: 0.4;
     }
 
-    #go-interpret {
+    #go-investigate {
         opacity: 0.4;
     }
 
@@ -71,7 +70,7 @@ body {
             opacity: 1.0;
         }
 
-        #go-interpret {
+        #go-investigate {
             opacity: 0.4;
             pointer-events: none;
         }
@@ -90,9 +89,8 @@ body {
             pointer-events: none;
         }
 
-        #go-interpret {
-            opacity: 0.4;
-            pointer-events: none;
+        #go-investigate {
+            opacity: 1.0;
         }
 
         #show-word-cloud {
@@ -104,8 +102,8 @@ body {
         }
     }
 
-     &.mode-interpret {
-        background-color: $wall-color-interpret;
+    &.mode-investigate {
+        background-color: $wall-color-investigate;
 
         #go-tagging {
             opacity: 0.4;
@@ -115,7 +113,7 @@ body {
             opacity: 0.4;
         }
 
-        #go-interpret {
+        #go-investigate {
             opacity: 0.4;
         }
 
@@ -126,29 +124,11 @@ body {
         .contribution, .contribution-connector {
             opacity: 0;
         }
-    }
 
-    &.mode-evaluate {
-        background-color: $wall-color-evaluate;
-
-        #go-tagging {
-            opacity: 0.4;
-        }
-
-        #go-propose {
-            opacity: 0.4;
-        }
-
-        #go-interpret {
-            opacity: 0.4;
-        }
-
-        #show-word-cloud {
-            display: none;
-        }
-
-        .contribution, .contribution-connector {
-            opacity: 0;
+        &.mode-investigate-with-topic {
+            .tag, .proposal-connector {
+                opacity: 0;
+            }
         }
     }
 
@@ -583,7 +563,7 @@ button {
 #go-propose {
 }
 
-#go-interpret {
+#go-investigate {
 }
 
 #toggle-pause {

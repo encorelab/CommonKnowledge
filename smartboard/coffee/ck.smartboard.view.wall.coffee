@@ -45,16 +45,13 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             @runState.save(paused: !paused)
 
         'click #go-tagging': (ev) ->
-            #return # temporarily disabled for April 8 run
             @runState.save(phase: 'tagging')
 
         'click #go-propose': (ev) ->
-            #return # temporarily disabled for April 8 run
             @runState.save(phase: 'propose')
 
-        'click #go-interpret': (ev) ->
-            return # temporarily disabled for April 8 run
-            @runState.save(phase: 'interpret')
+        'click #go-investigate': (ev) ->
+            @runState.save(phase: 'investigate')
 
     constructor: (options) ->
         @runState = options.runState
@@ -222,7 +219,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                         .addClass('mode-tagging')
                         .removeClass('mode-exploration')
                         .removeClass('mode-propose')
-                        .removeClass('mode-research_and_experiment')
+                        .removeClass('mode-investigate')
                     @changeWatermark("tagging")
                 when 'exploration'
                     jQuery('body')
@@ -230,7 +227,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                         .removeClass('mode-tagging')
                         .addClass('mode-exploration')
                         .removeClass('mode-propose')
-                        .removeClass('mode-research_and_experiment')
+                        .removeClass('mode-investigate')
                     @changeWatermark("exploration")
                 when 'propose'
                     jQuery('body')
@@ -238,19 +235,28 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                         .removeClass('mode-tagging')
                         .removeClass('mode-exploration')
                         .addClass('mode-propose')
-                        .removeClass('mode-research_and_experiment')
+                        .removeClass('mode-investigate')
                     @changeWatermark("propose")
                     setTimeout (=> @$el.find('.contribution, .contribution-connector').remove() ),
                         1100 # let the fadeout animation complete
-                when 'research_and_experiment'
+                when 'investigate'
                     jQuery('body')
                         .removeClass('mode-brainstorm')
                         .removeClass('mode-tagging')
                         .removeClass('mode-exploration')
                         .removeClass('mode-propose')
-                        .addClass('mode-research_and_experiment')
-                    @changeWatermark("experiment")
-                    setTimeout (=> @$el.find('.contribution, .contribution-connector').remove() ),
+                        .addClass('mode-investigate')
+
+                    @changeWatermark(Sail.app.interestGroup ? "investigate")
+
+                    if Sail.app.interestGroup?
+                        jQuery('body').addClass('mode-investigate-with-topic')
+                        elementsToRemove = '.contribution, .contribution-connector, .tag, .proposal-connector'
+                    else
+                        jQuery('body').removeClass('mode-investigate-with-topic')
+                        elementsToRemove = '.contribution, .contribution-connector'
+                    
+                    setTimeout (=> @$el.find(elementsToRemove).remove() ),
                         1100 # let the fadeout animation complete
                 else
                     jQuery('body')
@@ -258,7 +264,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                         .removeClass('mode-tagging')
                         .removeClass('mode-exploration')
                         .removeClass('mode-propose')
-                        .removeClass('mode-research_and_experiment')
+                        .removeClass('mode-investigate')
                     @changeWatermark("brainstorm")
 
             @$el.data('phase', phase)

@@ -71,6 +71,18 @@ class CK.Smartboard extends Sail.App
         if @wall.mode is 'evaluate'
             @switchToInterpretation()
 
+    getInterestGroupFromURL: ->
+        rx = /[\?\&]ig=([^\?\&]+)/
+        match = rx.exec window.location.search
+        if match?
+            match[1]
+        else
+            null
+
+    setInterestGroup: (ig) ->
+        @wall.render() if @wall?
+        @interestGroup = ig
+
     # set up all the Collections used by the board
     setupModel: =>
         @contributions = CK.Model.awake.contributions
@@ -95,6 +107,8 @@ class CK.Smartboard extends Sail.App
             console.log "Authenticated..."
 
             jQuery('#auth-indicator .nickname').text(@run.name)
+
+            @setInterestGroup @getInterestGroupFromURL()
 
             CK.Model.init(@config.drowsy.url, @run.name).done =>
                 Wakeful.loadFayeClient(@config.wakeful.url).done =>

@@ -635,8 +635,8 @@
     initialize: function () {
       console.log("Initializing ProposalDetailsView...");
 
-      this.model.on('invalid', function (err) {
-        alert(err);
+      this.model.on('invalid', function (model, err) {
+        alert(JSON.stringify(err));
       });
     },
 
@@ -746,8 +746,8 @@
     initialize: function() {
       console.log("Initializing ProposalInputView...");
 
-      this.model.on('invalid', function (err) {
-        alert(err);
+      this.model.on('invalid', function (model, err) {
+        alert(JSON.stringify(err));
       });
     },
 

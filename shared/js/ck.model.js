@@ -25,7 +25,7 @@
 
     function Model() {}
 
-    Model.requiredCollections = ['contributions', 'tags', 'states', 'proposals'];
+    Model.requiredCollections = ['contributions', 'tags', 'states', 'proposals', 'investigations'];
 
     Model.init = function(url, db) {
       var deferredConfigure,
@@ -75,7 +75,52 @@
     };
 
     Model.defineModelClasses = function() {
-      var TaggableMixin;
+      var BuildOnableMixin, TaggableMixin, VotableMixin;
+      VotableMixin = (function() {
+
+        function VotableMixin() {}
+
+        VotableMixin.prototype.addVote = function(username) {
+          var votes;
+          votes = _.clone(this.get('votes'));
+          if (votes == null) {
+            votes = [];
+          }
+          votes.push(username);
+          return this.set('votes', votes);
+        };
+
+        VotableMixin.prototype.removeVote = function(username) {
+          var votes;
+          votes = _.without(this.get('votes'), username);
+          return this.set('votes', votes);
+        };
+
+        return VotableMixin;
+
+      })();
+      BuildOnableMixin = (function() {
+
+        function BuildOnableMixin() {}
+
+        BuildOnableMixin.prototype.addBuildOn = function(author, content) {
+          var bo, build_ons;
+          build_ons = _.clone(this.get('build_ons'));
+          if (build_ons == null) {
+            build_ons = [];
+          }
+          bo = {
+            content: content,
+            author: author,
+            created_at: new Date()
+          };
+          build_ons.push(bo);
+          return this.set('build_ons', build_ons);
+        };
+
+        return BuildOnableMixin;
+
+      })();
       TaggableMixin = (function() {
 
         function TaggableMixin() {
@@ -161,6 +206,8 @@
           return Proposal.__super__.constructor.apply(this, arguments);
         }
 
+        _.extend(Proposal.prototype, VotableMixin.prototype);
+
         Proposal.prototype.validate = function(attrs) {
           if (!_.all(attrs.votes, function(a) {
             return typeof a === 'string';
@@ -177,22 +224,49 @@
           });
         };
 
-        Proposal.prototype.addVote = function(username) {
-          var votes;
-          votes = _.clone(this.get('votes'));
-          votes.push(username);
-          return this.set('votes', votes);
-        };
-
-        Proposal.prototype.removeVote = function(username) {
-          var votes;
-          votes = _.without(this.get('votes'), username);
-          return this.set('votes', votes);
-        };
-
         return Proposal;
 
       })(this.db.Document('proposals'));
+      this.Investigation = (function(_super) {
+
+        __extends(Investigation, _super);
+
+        function Investigation() {
+          return Investigation.__super__.constructor.apply(this, arguments);
+        }
+
+        _.extend(Investigation.prototype, VotableMixin.prototype);
+
+        _.extend(Investigation.prototype, BuildOnableMixin.prototype);
+
+        Investigation.prototype.validate = function(attrs) {
+          if (!_.all(attrs.authors, function(a) {
+            return typeof a === 'string';
+          })) {
+            return "'authors' must be an array of strings but is " + (JSON.stringify(attrs.authors));
+          }
+        };
+
+        Investigation.prototype.addAuthor = function(username) {
+          var authors;
+          authors = _.clone(this.get('authors'));
+          authors.push(username);
+          return this.set('authors', authors);
+        };
+
+        Investigation.prototype.removeAuthor = function(username) {
+          var authors;
+          authors = _.without(this.get('authors'), username);
+          return this.set('authors', authors);
+        };
+
+        Investigation.prototype.hasAuthor = function(username) {
+          return _.contains(this.get('authors'), username);
+        };
+
+        return Investigation;
+
+      })(this.db.Document('investigations'));
       this.Contributions = (function(_super) {
 
         __extends(Contributions, _super);
@@ -219,6 +293,19 @@
         return Proposals;
 
       })(this.db.Collection('proposals'));
+      this.Investigations = (function(_super) {
+
+        __extends(Investigations, _super);
+
+        function Investigations() {
+          return Investigations.__super__.constructor.apply(this, arguments);
+        }
+
+        Investigations.prototype.model = CK.Model.Investigation;
+
+        return Investigations;
+
+      })(this.db.Collection('investigations'));
       this.Tag = (function(_super) {
 
         __extends(Tag, _super);
