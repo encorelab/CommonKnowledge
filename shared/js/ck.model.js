@@ -224,6 +224,14 @@
           });
         };
 
+        Proposal.prototype.getColorClass = function() {
+          if (this.has('tag')) {
+            return this.get('tag').colorClass;
+          } else {
+            return null;
+          }
+        };
+
         return Proposal;
 
       })(this.db.Document('proposals'));
@@ -262,6 +270,11 @@
 
         Investigation.prototype.hasAuthor = function(username) {
           return _.contains(this.get('authors'), username);
+        };
+
+        Investigation.prototype.getProposal = function() {
+          var _ref;
+          return (_ref = this.proposal) != null ? _ref : this.proposal = CK.Model.awake.proposals.get(this.get('proposal_id'));
         };
 
         return Investigation;

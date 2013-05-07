@@ -150,6 +150,12 @@ class CK.Model
                     name: tag.get('name')
                     colorClass: tag.get('colorClass')
 
+            getColorClass: ->
+                if @has 'tag'
+                    @get('tag').colorClass
+                else
+                    null
+
             
 
         class @Investigation extends @db.Document('investigations')
@@ -171,6 +177,10 @@ class CK.Model
 
             hasAuthor: (username) ->
                 _.contains @get('authors'), username
+
+            getProposal: ->
+                # memoize
+                @proposal ?= CK.Model.awake.proposals.get @get('proposal_id')
 
 
         class @Contributions extends @db.Collection('contributions')

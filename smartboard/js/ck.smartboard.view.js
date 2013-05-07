@@ -766,11 +766,14 @@
       if (this.$el.hasClass('.ui-draggable-dragging')) {
         return;
       }
-      return this.$el.toggleClass('opened');
+      this.$el.toggleClass('opened');
+      if (this.renderConnectors != null) {
+        return this.renderConnectors();
+      }
     };
 
     ContentBalloon.prototype.render = function() {
-      var headline, meta;
+      var headline;
       ContentBalloon.__super__.render.call(this);
       if (this.model.get('published')) {
         this.$el.removeClass('unpublished');
@@ -781,25 +784,35 @@
       headline = this.findOrCreate('.headline', "<h3 class='headline'></h3>");
       headline.text(this.model.get('headline'));
       this.body = this.findOrCreate('.body', "<div class='body'></div>");
-      meta = this.findOrCreate('.meta', "<div class='meta'><span class='author'></span></div>");
-      meta.find('.author').text(this.model.get('author')).addClass("author-" + (this.model.get('author')));
+      this.meta = this.findOrCreate('.meta', "<div class='meta'><span class='author'></span></div>");
+      this.meta.find('.author').text(this.model.get('author')).addClass("author-" + (this.model.get('author')));
       this.renderBuildons();
       return this;
     };
 
     ContentBalloon.prototype.renderBodypart = function(part, content) {
-      var partContainer;
-      partContainer = this.findOrCreate("." + part, "<div class='" + part + "'>                <h5>" + part + "</h5>                <div class='part-content'></div>            </div>");
-      return partContainer.find('part-content').text(content);
+      var humanPart, partContainer;
+      if (!content || content.match(/^\s+$/g)) {
+        return;
+      }
+      humanPart = part.replace('_', ' ');
+      partContainer = CK.Smartboard.View.findOrCreate(this.body, "." + part, "<div class='bodypart " + part + "'>                <h5>" + humanPart + "</h5>                <div class='part-content'></div>            </div>");
+      return partContainer.find('.part-content').text(content);
     };
 
     ContentBalloon.prototype.renderBuildons = function() {
-      var $b, b, buildons, changed, container, counter, _i, _len, _results;
+      var $b, b, buildons, changed, container, counter, _i, _len, _results,
+        _this = this;
       if (!this.model.has('build_ons')) {
         return;
       }
       buildons = this.model.get('build_ons');
       if (!(buildons.length > 0)) {
+        return;
+      }
+      if (!_.any(buildons, function(b) {
+        return b.published;
+      })) {
         return;
       }
       container = this.findOrCreate('.buildons', "<div class='buildons'></div>");
@@ -827,7 +840,7 @@
 
     ContentBalloon.prototype.renderVotes = function() {
       var container, voteCount, votes;
-      if (!this.model.has('build_ons')) {
+      if (!this.model.has('votes')) {
         return;
       }
       votes = this.model.get('votes');
@@ -951,7 +964,7 @@
       this.$el.addClass('proposal');
       if (this.model.has('tag')) {
         tag = this.model.get('tag');
-        this.$el.addClass(tag.colorClass);
+        this.$el.addClass(this.model.getColorClass());
         this.$el.addClass("tag-" + tag.id);
       }
       this.renderBodypart('proposal', this.model.get('proposal'));
@@ -959,9 +972,25 @@
     };
 
     ProposalBalloon.prototype.renderConnectors = function() {
+      var bv, inv, investigations, _i, _len, _results,
+        _this = this;
       if (this.model.has('tag')) {
-        return this.renderConnector(this.model.get('tag'));
+        this.renderConnector(this.model.get('tag'));
       }
+      investigations = CK.Model.awake.investigations.filter(function(inv) {
+        return inv.get('proposal_id') === _this.model.id;
+      });
+      _results = [];
+      for (_i = 0, _len = investigations.length; _i < _len; _i++) {
+        inv = investigations[_i];
+        bv = this.wall.balloonViews[inv.id];
+        if (bv != null) {
+          _results.push(bv.renderConnector(this.model));
+        } else {
+          _results.push(void 0);
+        }
+      }
+      return _results;
     };
 
     return ProposalBalloon;
@@ -993,21 +1022,31 @@
     };
 
     InvestigationBalloon.prototype.render = function() {
-      var part, possibleBodyparts, prop, propId, _i, _len, _results;
+      var auth, author, invType, part, possibleBodyparts, prop, _i, _j, _len, _len1, _ref, _results;
+      invType = this.findOrCreate('.investigation-type', "<h2 class='investigation-type'></h2>");
+      invType.text(this.model.get('type'));
       InvestigationBalloon.__super__.render.call(this);
       this.renderVotes();
       this.renderBuildons();
       if (!this.model.has('proposal_id')) {
         throw "Investigation#" + this.model.id + " has no proposal_id!";
       }
-      propId = this.model.get('proposal_id');
-      prop = CK.Model.awake.proposals.get(propId);
-      this.renderConnector(prop);
-      this.$el.addClass("proposal-" + propId);
+      prop = this.model.getProposal();
+      this.$el.addClass("proposal-" + prop.id);
+      this.$el.addClass(prop.getColorClass());
+      this.$el.addClass("investigation-" + (this.model.get('type')));
+      auth = this.meta.find('.author');
+      auth.text(this.model.get('authors').join(" "));
+      _ref = this.model.get('authors');
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        author = _ref[_i];
+        auth.addClass("author-" + author);
+      }
+      this.renderConnectors();
       possibleBodyparts = ['new_information', 'references', 'question', 'findings', 'conclusions', 'hypothesis', 'method', 'results'];
       _results = [];
-      for (_i = 0, _len = possibleBodyparts.length; _i < _len; _i++) {
-        part = possibleBodyparts[_i];
+      for (_j = 0, _len1 = possibleBodyparts.length; _j < _len1; _j++) {
+        part = possibleBodyparts[_j];
         if (this.model.has(part)) {
           _results.push(this.renderBodypart(part, this.model.get(part)));
         }
@@ -1016,17 +1055,12 @@
     };
 
     InvestigationBalloon.prototype.renderConnectors = function() {
-      var tag, _i, _len, _ref, _results;
-      if (!this.model.has('tags') || _.isEmpty(this.model.get('tags')) || !this.$el.is(':visible')) {
+      var prop;
+      prop = this.model.getProposal();
+      if (prop == null) {
         return;
       }
-      _ref = this.model.get('tags');
-      _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        tag = _ref[_i];
-        _results.push(this.renderConnector(tag));
-      }
-      return _results;
+      return this.renderConnector(prop);
     };
 
     return InvestigationBalloon;
