@@ -134,7 +134,7 @@ class CK.Model
                 votes = _.without @get('votes'), username
                 @set 'votes', votes
 
-        class @Investigation extends @db.Documents('investigations')
+        class @Investigation extends @db.Document('investigations')
             validate: (attrs) ->
                 unless _.all(attrs.authors, (a) -> typeof a is 'string')
                     return "'authors' must be an array of strings but is #{JSON.stringify(attrs.authors)}"

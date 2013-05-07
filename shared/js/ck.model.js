@@ -228,7 +228,7 @@
 
         return Investigation;
 
-      })(this.db.Documents('investigations'));
+      })(this.db.Document('investigations'));
       this.Contributions = (function(_super) {
 
         __extends(Contributions, _super);
