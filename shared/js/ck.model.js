@@ -25,7 +25,7 @@
 
     function Model() {}
 
-    Model.requiredCollections = ['contributions', 'tags', 'states', 'proposals'];
+    Model.requiredCollections = ['contributions', 'tags', 'states', 'proposals', 'investigations'];
 
     Model.init = function(url, db) {
       var deferredConfigure,
@@ -193,6 +193,17 @@
         return Proposal;
 
       })(this.db.Document('proposals'));
+      this.Investigation = (function(_super) {
+
+        __extends(Investigation, _super);
+
+        function Investigation() {
+          return Investigation.__super__.constructor.apply(this, arguments);
+        }
+
+        return Investigation;
+
+      })(this.db.Documents('investigations'));
       this.Contributions = (function(_super) {
 
         __extends(Contributions, _super);
@@ -219,6 +230,19 @@
         return Proposals;
 
       })(this.db.Collection('proposals'));
+      this.Investigations = (function(_super) {
+
+        __extends(Investigations, _super);
+
+        function Investigations() {
+          return Investigations.__super__.constructor.apply(this, arguments);
+        }
+
+        Investigations.prototype.model = CK.Model.Investigation;
+
+        return Investigations;
+
+      })(this.db.Collection('investigations'));
       this.Tag = (function(_super) {
 
         __extends(Tag, _super);

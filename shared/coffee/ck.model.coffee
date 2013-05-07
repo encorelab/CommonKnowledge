@@ -21,7 +21,8 @@ class CK.Model
         'contributions',
         'tags',
         'states',
-        'proposals'
+        'proposals',
+        'investigations'
     ]
 
     @init: (url, db) ->
@@ -133,12 +134,17 @@ class CK.Model
                 votes = _.without @get('votes'), username
                 @set 'votes', votes
 
+        class @Investigation extends @db.Documents('investigations')
+
 
         class @Contributions extends @db.Collection('contributions')
             model: CK.Model.Contribution
 
         class @Proposals extends @db.Collection('proposals')
             model: CK.Model.Proposal
+
+        class @Investigations extends @db.Collection('investigations')
+            model: CK.Model.Investigation
 
         class @Tag extends @db.Document('tags')
 
