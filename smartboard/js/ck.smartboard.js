@@ -110,6 +110,24 @@
       }
     };
 
+    Smartboard.prototype.getInterestGroupFromURL = function() {
+      var match, rx;
+      rx = /[\?\&]ig=([^\?\&]+)/;
+      match = rx.exec(window.location.search);
+      if (match != null) {
+        return match[1];
+      } else {
+        return null;
+      }
+    };
+
+    Smartboard.prototype.setInterestGroup = function(ig) {
+      if (this.wall != null) {
+        this.wall.render();
+      }
+      return this.interestGroup = ig;
+    };
+
     Smartboard.prototype.setupModel = function() {
       this.contributions = CK.Model.awake.contributions;
       this.proposals = CK.Model.awake.proposals;
@@ -133,6 +151,7 @@
         var _this = this;
         console.log("Authenticated...");
         jQuery('#auth-indicator .nickname').text(this.run.name);
+        this.setInterestGroup(this.getInterestGroupFromURL());
         return CK.Model.init(this.config.drowsy.url, this.run.name).done(function() {
           return Wakeful.loadFayeClient(_this.config.wakeful.url).done(function() {
             return CK.Model.initWakefulCollections(_this.config.wakeful.url).done(function() {

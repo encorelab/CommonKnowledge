@@ -45,16 +45,13 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             @runState.save(paused: !paused)
 
         'click #go-tagging': (ev) ->
-            #return # temporarily disabled for April 8 run
             @runState.save(phase: 'tagging')
 
         'click #go-propose': (ev) ->
-            #return # temporarily disabled for April 8 run
             @runState.save(phase: 'propose')
 
-        'click #go-interpret': (ev) ->
-            return # temporarily disabled for April 8 run
-            @runState.save(phase: 'interpret')
+        'click #go-investigate': (ev) ->
+            @runState.save(phase: 'investigate')
 
     constructor: (options) ->
         @runState = options.runState
@@ -249,7 +246,9 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                         .removeClass('mode-exploration')
                         .removeClass('mode-propose')
                         .addClass('mode-investigate')
-                    @changeWatermark("investigate")
+
+                    @changeWatermark(Sail.app.interestGroup ? "investigate")
+                    
                     setTimeout (=> @$el.find('.contribution, .contribution-connector').remove() ),
                         1100 # let the fadeout animation complete
                 else

@@ -149,10 +149,9 @@
           phase: 'propose'
         });
       },
-      'click #go-interpret': function(ev) {
-        return;
+      'click #go-investigate': function(ev) {
         return this.runState.save({
-          phase: 'interpret'
+          phase: 'investigate'
         });
       }
     };
@@ -326,7 +325,7 @@
     };
 
     Wall.prototype.render = function() {
-      var paused, phase,
+      var paused, phase, _ref,
         _this = this;
       phase = this.runState.get('phase');
       if (phase !== this.$el.data('phase')) {
@@ -348,7 +347,7 @@
             break;
           case 'investigate':
             jQuery('body').removeClass('mode-brainstorm').removeClass('mode-tagging').removeClass('mode-exploration').removeClass('mode-propose').addClass('mode-investigate');
-            this.changeWatermark("investigate");
+            this.changeWatermark((_ref = Sail.app.interestGroup) != null ? _ref : "investigate");
             setTimeout((function() {
               return _this.$el.find('.contribution, .contribution-connector').remove();
             }), 1100);
