@@ -75,7 +75,52 @@
     };
 
     Model.defineModelClasses = function() {
-      var TaggableMixin;
+      var BuildOnableMixin, TaggableMixin, VotableMixin;
+      VotableMixin = (function() {
+
+        function VotableMixin() {}
+
+        VotableMixin.prototype.addVote = function(username) {
+          var votes;
+          votes = _.clone(this.get('votes'));
+          if (votes == null) {
+            votes = [];
+          }
+          votes.push(username);
+          return this.set('votes', votes);
+        };
+
+        VotableMixin.prototype.removeVote = function(username) {
+          var votes;
+          votes = _.without(this.get('votes'), username);
+          return this.set('votes', votes);
+        };
+
+        return VotableMixin;
+
+      })();
+      BuildOnableMixin = (function() {
+
+        function BuildOnableMixin() {}
+
+        BuildOnableMixin.prototype.addBuildOn = function(author, content) {
+          var bo, build_ons;
+          build_ons = _.clone(this.get('build_ons'));
+          if (build_ons == null) {
+            build_ons = [];
+          }
+          bo = {
+            content: content,
+            author: author,
+            created_at: new Date()
+          };
+          build_ons.push(bo);
+          return this.set('build_ons', build_ons);
+        };
+
+        return BuildOnableMixin;
+
+      })();
       TaggableMixin = (function() {
 
         function TaggableMixin() {
@@ -161,6 +206,8 @@
           return Proposal.__super__.constructor.apply(this, arguments);
         }
 
+        _.extend(Proposal.prototype, VotableMixin.prototype);
+
         Proposal.prototype.validate = function(attrs) {
           if (!_.all(attrs.votes, function(a) {
             return typeof a === 'string';
@@ -177,19 +224,6 @@
           });
         };
 
-        Proposal.prototype.addVote = function(username) {
-          var votes;
-          votes = _.clone(this.get('votes'));
-          votes.push(username);
-          return this.set('votes', votes);
-        };
-
-        Proposal.prototype.removeVote = function(username) {
-          var votes;
-          votes = _.without(this.get('votes'), username);
-          return this.set('votes', votes);
-        };
-
         return Proposal;
 
       })(this.db.Document('proposals'));
@@ -200,6 +234,10 @@
         function Investigation() {
           return Investigation.__super__.constructor.apply(this, arguments);
         }
+
+        _.extend(Investigation.prototype, VotableMixin.prototype);
+
+        _.extend(Investigation.prototype, BuildOnableMixin.prototype);
 
         Investigation.prototype.validate = function(attrs) {
           if (!_.all(attrs.authors, function(a) {

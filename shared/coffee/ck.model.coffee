@@ -64,6 +64,29 @@ class CK.Model
 
     @defineModelClasses: ->
 
+        class VotableMixin
+            addVote: (username) ->
+                votes = _.clone @get('votes')
+                votes ?= []
+                votes.push(username)
+                @set 'votes', votes
+
+            removeVote: (username) ->
+                votes = _.without @get('votes'), username
+                @set 'votes', votes
+
+        class BuildOnableMixin
+            addBuildOn: (author, content) ->
+                build_ons = _.clone @get('build_ons')
+                build_ons ?= []
+                bo =
+                    content: content
+                    author: author
+                    created_at: new Date()
+
+                build_ons.push(bo)
+                @set 'build_ons', build_ons
+
         class TaggableMixin
             addTag: (tag, tagger) =>
                 unless tag instanceof CK.Model.Tag
@@ -115,6 +138,8 @@ class CK.Model
                 }
 
         class @Proposal extends @db.Document('proposals')
+            _.extend(@prototype, VotableMixin.prototype)
+
             validate: (attrs) ->
                 unless _.all(attrs.votes, (a) -> typeof a is 'string')
                     return "'votes' must be an array of strings but is #{JSON.stringify(attrs.votes)}"
@@ -125,16 +150,12 @@ class CK.Model
                     name: tag.get('name')
                     colorClass: tag.get('colorClass')
 
-            addVote: (username) ->
-                votes = _.clone @get('votes')
-                votes.push(username)
-                @set 'votes', votes
-
-            removeVote: (username) ->
-                votes = _.without @get('votes'), username
-                @set 'votes', votes
+            
 
         class @Investigation extends @db.Document('investigations')
+            _.extend(@prototype, VotableMixin.prototype)
+            _.extend(@prototype, BuildOnableMixin.prototype)
+
             validate: (attrs) ->
                 unless _.all(attrs.authors, (a) -> typeof a is 'string')
                     return "'authors' must be an array of strings but is #{JSON.stringify(attrs.authors)}"
