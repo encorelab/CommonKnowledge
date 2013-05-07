@@ -201,6 +201,31 @@
           return Investigation.__super__.constructor.apply(this, arguments);
         }
 
+        Investigation.prototype.validate = function(attrs) {
+          if (!_.all(attrs.authors, function(a) {
+            return typeof a === 'string';
+          })) {
+            return "'authors' must be an array of strings but is " + (JSON.stringify(attrs.authors));
+          }
+        };
+
+        Investigation.prototype.addAuthor = function(username) {
+          var authors;
+          authors = _.clone(this.get('authors'));
+          authors.push(username);
+          return this.set('authors', authors);
+        };
+
+        Investigation.prototype.removeAuthor = function(username) {
+          var authors;
+          authors = _.without(this.get('authors'), username);
+          return this.set('authors', authors);
+        };
+
+        Investigation.prototype.hasAuthor = function(username) {
+          return _.contains(this.get('authors'), username);
+        };
+
         return Investigation;
 
       })(this.db.Documents('investigations'));

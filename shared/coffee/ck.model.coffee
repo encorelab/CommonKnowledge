@@ -135,6 +135,21 @@ class CK.Model
                 @set 'votes', votes
 
         class @Investigation extends @db.Documents('investigations')
+            validate: (attrs) ->
+                unless _.all(attrs.authors, (a) -> typeof a is 'string')
+                    return "'authors' must be an array of strings but is #{JSON.stringify(attrs.authors)}"
+
+            addAuthor: (username) ->
+                authors = _.clone @get('authors')
+                authors.push(username)
+                @set 'authors', authors
+
+            removeAuthor: (username) ->
+                authors = _.without @get('authors'), username
+                @set 'authors', authors
+
+            hasAuthor: (username) ->
+                _.contains @get('authors'), username
 
 
         class @Contributions extends @db.Collection('contributions')
