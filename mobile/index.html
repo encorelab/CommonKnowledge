@@ -171,7 +171,7 @@
                     <a id="new-proposal-btn" class="btn btn-primary">
                         New Proposal
                     </a>
-                </div>                
+                </div>
             </div>
 
             <div id="proposal-details" class="span4 view-container">
@@ -227,6 +227,60 @@
                 </div>
                 <div class="justification-entry-container">
                     <textarea class="field text-entry" id="justification-entry" name="justification" placeholder="What might we learn?"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <div id="investigation-screen" class="row hide">
+            <div id="investigation-list" class="span4 view-container bs-docs-sidebar">
+                <ul class="nav nav-list bs-docs-sidenav affix-top scrollable">
+                    <!-- filled by InvestigationListView -->
+                </ul>
+                <div class="btn-container">
+                    <a id="inv-new-proposal-btn" class="btn btn-primary">
+                        New Proposal
+                    </a>
+                </div>
+            </div>
+
+            <div id="investigation-details" class="span4 view-container">
+                <div class="selected-note scrollable">
+                    <div class="note-headline field container-header" name="headline">
+                    </div>
+                    <div class="note-content field" name="content">
+                    </div>
+                    <div class="note-investigation field" name="investigation">
+                    </div>
+                    <div class="note-metadata">
+                        <span class="note-author field" name="author"> </span><span class="note-created-at field" name="created_at"></span>
+                    </div>
+                    <br />
+                    <div class="note-tags field" name="tags">
+                    </div>
+                    <div class="note-build-ons field" name="build_ons">
+                    </div>
+                </div>
+                <div class="btn-container">
+                    <a id="new-investigation-btn" class="btn btn-primary hide">          <!-- hide one of me -->
+                        New Investigation
+                    </a>
+                    <a id="inv-build-on-btn" class="btn btn-primary">
+                        Build On
+                    </a>                   
+                </div>
+            </div>   
+
+            <div id="investigation-input" class="span8 view-container hide">
+                <div id="investigation-header" class="container-header">
+                    <!-- filled by InvestigationInputView -->
+                </div>
+                <div class="title-entry-container">
+                    <textarea class="field text-entry" id="investigation-headline-entry" name="headline"></textarea>
+                    <div class="btn-container btn-group action-btn-group">
+                        <a id="share-investigation-justification-btn" class="btn btn-success">
+                            Share
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

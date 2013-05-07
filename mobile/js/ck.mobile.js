@@ -42,6 +42,8 @@ CK.Mobile = function() {
   app.proposal = null;
   app.proposalInputView = null;
   app.proposalDetailsView = null;
+  app.investigationList = null;
+  app.investigationListView = null;
 
   app.autoSaveTimer = window.setTimeout(function() { console.log("timer activated"); } ,10);
 
@@ -115,7 +117,7 @@ CK.Mobile = function() {
       app.tryRestoreUnfinishedContribution();
 
     } else if (p === 'propose') {
-      // PROPOSAL PHASE
+      // PROPOSE PHASE
       console.log('Entering propose phase...');
       jQuery('.brand').text('Common Knowledge - Propose');
 
@@ -148,6 +150,35 @@ CK.Mobile = function() {
       app.interestGroupListView.render();
 
       app.updateUserState();
+
+    } else if (p === 'investigate') {
+      // INVESTIGATE PHASE
+      console.log('Entering investigate phase...');
+      jQuery('.brand').text('Common Knowledge - Investigation');
+
+      app.proposalList = CK.Model.awake.proposals;
+      app.investigationList = CK.Model.awake.investigations;
+
+      if (app.investigationListView === null) {
+        app.investigationListView = new CK.Mobile.View.InvestigationListView({
+          el: jQuery('#investigation-list'),
+          proposals: app.proposalList,
+          investigations: app.investigationList
+        });
+      } else {
+        if (typeof app.investigationListView.collection !== 'undefined' && app.investigationListView.collection !== null) {
+          app.investigationListView.stopListening(app.investigationListView.collection);
+        }
+        app.investigationListView.proposals = app.proposalList;
+        app.investigationListView.investigations = app.investigationList;
+      }
+      app.proposalList.on('add sync change', app.investigationListView.render, app.investigationListView);
+      app.investigationList.on('add sync change', app.investigationListView.render, app.investigationListView);
+
+      // TODO - sort?
+
+      app.tryRestoreUnfinishedInvestigation();
+      app.investigationListView.render();
 
     } else {
       console.log("Unknown state...");
@@ -680,6 +711,10 @@ CK.Mobile = function() {
     }
   };
 
+  app.tryRestoreUnfinishedInvestigation = function() {
+    console.log('TODO');
+  };
+
   app.showWaitScreen = function() {
     console.log("Showing wait screen...");
     jQuery('#wait-screen').removeClass('hide');
@@ -702,6 +737,7 @@ CK.Mobile = function() {
     jQuery('#choose-interest-group-screen').addClass('hide');
     jQuery('#proposal-screen').addClass('hide');
     jQuery('#proposal-justification-input').addClass('hide');
+    jQuery('#investigation-screen').addClass('hide');
   };
 
   app.autoSave = function(model, inputKey, inputValue, instantSave) {
