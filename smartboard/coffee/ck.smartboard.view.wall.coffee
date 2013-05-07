@@ -248,8 +248,15 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                         .addClass('mode-investigate')
 
                     @changeWatermark(Sail.app.interestGroup ? "investigate")
+
+                    if Sail.app.interestGroup?
+                        jQuery('body').addClass('mode-investigate-with-topic')
+                        elementsToRemove = '.contribution, .contribution-connector, .tag, .proposal-connector'
+                    else
+                        jQuery('body').removeClass('mode-investigate-with-topic')
+                        elementsToRemove = '.contribution, .contribution-connector'
                     
-                    setTimeout (=> @$el.find('.contribution, .contribution-connector').remove() ),
+                    setTimeout (=> @$el.find(elementsToRemove).remove() ),
                         1100 # let the fadeout animation complete
                 else
                     jQuery('body')

@@ -49,6 +49,8 @@ body {
       display: none; }
     body.mode-investigate .contribution, body.mode-investigate .contribution-connector {
       opacity: 0; }
+    body.mode-investigate.mode-investigate-with-topic .tag, body.mode-investigate.mode-investigate-with-topic .proposal-connector {
+      opacity: 0; }
   body.paused {
     background-color: #aaa; }
 

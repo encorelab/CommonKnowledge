@@ -102,7 +102,7 @@ body {
         }
     }
 
-     &.mode-investigate {
+    &.mode-investigate {
         background-color: $wall-color-investigate;
 
         #go-tagging {
@@ -123,6 +123,12 @@ body {
 
         .contribution, .contribution-connector {
             opacity: 0;
+        }
+
+        &.mode-investigate-with-topic {
+            .tag, .proposal-connector {
+                opacity: 0;
+            }
         }
     }
 

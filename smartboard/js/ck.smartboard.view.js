@@ -325,7 +325,7 @@
     };
 
     Wall.prototype.render = function() {
-      var paused, phase, _ref,
+      var elementsToRemove, paused, phase, _ref,
         _this = this;
       phase = this.runState.get('phase');
       if (phase !== this.$el.data('phase')) {
@@ -348,8 +348,15 @@
           case 'investigate':
             jQuery('body').removeClass('mode-brainstorm').removeClass('mode-tagging').removeClass('mode-exploration').removeClass('mode-propose').addClass('mode-investigate');
             this.changeWatermark((_ref = Sail.app.interestGroup) != null ? _ref : "investigate");
+            if (Sail.app.interestGroup != null) {
+              jQuery('body').addClass('mode-investigate-with-topic');
+              elementsToRemove = '.contribution, .contribution-connector, .tag, .proposal-connector';
+            } else {
+              jQuery('body').removeClass('mode-investigate-with-topic');
+              elementsToRemove = '.contribution, .contribution-connector';
+            }
             setTimeout((function() {
-              return _this.$el.find('.contribution, .contribution-connector').remove();
+              return _this.$el.find(elementsToRemove).remove();
             }), 1100);
             break;
           default:
