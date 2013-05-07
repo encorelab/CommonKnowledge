@@ -58,6 +58,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
         @tags = options.tags
         @contributions = options.contributions
         @proposals = options.proposals
+        @investigations = options.investigations
         super(options)
 
     initialize: ->
@@ -76,6 +77,12 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             @addBalloon p, CK.Smartboard.View.ProposalBalloon, @balloonViews
         @proposals.each (p) =>
             @addBalloon p, CK.Smartboard.View.ProposalBalloon, @balloonViews
+
+        @investigations.on 'add', (i) =>
+            @addBalloon i, CK.Smartboard.View.InvestigationBalloon, @balloonViews
+        @investigations.each (i) =>
+            @addBalloon i, CK.Smartboard.View.InvestigationBalloon, @balloonViews
+
 
         @tags.on 'add', (t) =>
             @addBalloon t, CK.Smartboard.View.TagBalloon, @balloonViews

@@ -87,6 +87,7 @@ class CK.Smartboard extends Sail.App
     setupModel: =>
         @contributions = CK.Model.awake.contributions
         @proposals = CK.Model.awake.proposals
+        @investigations = CK.Model.awake.investigations
         @tags = CK.Model.awake.tags
 
         @runState = CK.getState 'RUN'
@@ -136,5 +137,6 @@ class CK.Smartboard extends Sail.App
                 tags: @tags
                 contributions: @contributions
                 proposals: @proposals
+                investigations: @investigations
 
             @wall.render()

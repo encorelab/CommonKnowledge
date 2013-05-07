@@ -172,6 +172,7 @@
       this.tags = options.tags;
       this.contributions = options.contributions;
       this.proposals = options.proposals;
+      this.investigations = options.investigations;
       Wall.__super__.constructor.call(this, options);
     }
 
@@ -191,6 +192,12 @@
       });
       this.proposals.each(function(p) {
         return _this.addBalloon(p, CK.Smartboard.View.ProposalBalloon, _this.balloonViews);
+      });
+      this.investigations.on('add', function(i) {
+        return _this.addBalloon(i, CK.Smartboard.View.InvestigationBalloon, _this.balloonViews);
+      });
+      this.investigations.each(function(i) {
+        return _this.addBalloon(i, CK.Smartboard.View.InvestigationBalloon, _this.balloonViews);
       });
       this.tags.on('add', function(t) {
         return _this.addBalloon(t, CK.Smartboard.View.TagBalloon, _this.balloonViews);
@@ -681,20 +688,20 @@
       return (pos.left != null) && pos.left > 0;
     };
 
-    Balloon.prototype.renderConnector = function(toTag) {
-      var connector, connectorId, connectorLength, connectorTransform, tagId, tagView, x1, x2, y1, y2;
-      tagId = toTag.id.toLowerCase();
-      tagView = this.wall.balloonViews[tagId];
-      connectorId = this.model.id + "-" + tagId;
+    Balloon.prototype.renderConnector = function(toDoc) {
+      var connector, connectorId, connectorLength, connectorTransform, toId, toView, x1, x2, y1, y2;
+      toId = toDoc.id.toLowerCase();
+      toView = this.wall.balloonViews[toId];
+      connectorId = this.model.id + "-" + toId;
       connector = CK.Smartboard.View.findOrCreate(this.wall.$el, "#" + connectorId, "<div class='connector " + this.BALLOON_TYPE + "-connector' id='" + connectorId + "'></div>");
-      if (!((tagView != null) && this.$el.is(':visible'))) {
+      if (!((toView != null) && this.$el.is(':visible'))) {
         connector.remove();
         return;
       }
       x1 = this.left + (this.width / 2);
       y1 = this.top + (this.height / 2);
-      x2 = tagView.left + (tagView.width / 2);
-      y2 = tagView.top + (tagView.height / 2);
+      x2 = toView.left + (toView.width / 2);
+      y2 = toView.top + (toView.height / 2);
       connectorLength = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
       connectorTransform = "rotate(" + (Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI) + "deg)";
       connector.css({
@@ -706,8 +713,10 @@
         'transform': connectorTransform
       });
       connector.addClass("connects-" + this.model.id);
-      connector.addClass("connects-" + tagId);
-      connector.addClass("tag-" + tagId);
+      connector.addClass("connects-" + toId);
+      if (toDoc instanceof CK.Model.Tag) {
+        connector.addClass("tag-" + toId);
+      }
       return connector;
     };
 
@@ -778,13 +787,19 @@
       return this;
     };
 
+    ContentBalloon.prototype.renderBodypart = function(part, content) {
+      var partContainer;
+      partContainer = this.findOrCreate("." + part, "<div class='" + part + "'>                <h5>" + part + "</h5>                <div class='part-content'></div>            </div>");
+      return partContainer.find('part-content').text(content);
+    };
+
     ContentBalloon.prototype.renderBuildons = function() {
       var $b, b, buildons, changed, container, counter, _i, _len, _results;
       if (!this.model.has('build_ons')) {
         return;
       }
       buildons = this.model.get('build_ons');
-      if (!buildons.length) {
+      if (!(buildons.length > 0)) {
         return;
       }
       container = this.findOrCreate('.buildons', "<div class='buildons'></div>");
@@ -808,6 +823,26 @@
         _results.push(container.append($b));
       }
       return _results;
+    };
+
+    ContentBalloon.prototype.renderVotes = function() {
+      var container, voteCount, votes;
+      if (!this.model.has('build_ons')) {
+        return;
+      }
+      votes = this.model.get('votes');
+      if (votes == null) {
+        return;
+      }
+      container = this.findOrCreate('.votes', "<div class='votes'></div>");
+      voteCount = votes.length;
+      if (voteCount === 0) {
+        container.addClass('off');
+        return container.text('');
+      } else {
+        container.removeClass('off');
+        return container.text(voteCount);
+      }
     };
 
     return ContentBalloon;
@@ -919,9 +954,8 @@
         this.$el.addClass(tag.colorClass);
         this.$el.addClass("tag-" + tag.id);
       }
-      this.body.html('');
-      this.body.append(jQuery('<p>').text(this.model.get('proposal')));
-      return this.body.append(jQuery('<p>').text(this.model.get('justification')));
+      this.renderBodypart('proposal', this.model.get('proposal'));
+      return this.renderBodypart('justification', this.model.get('justifiction'));
     };
 
     ProposalBalloon.prototype.renderConnectors = function() {
@@ -930,20 +964,72 @@
       }
     };
 
-    ProposalBalloon.prototype.renderVotes = function() {
-      var container, voteCount;
-      container = this.findOrCreate('.votes', "<div class='votes'></div>");
-      voteCount = this.model.get('votes').length;
-      if (voteCount === 0) {
-        container.addClass('off');
-        return container.text('');
-      } else {
-        container.removeClass('off');
-        return container.text(voteCount);
-      }
+    return ProposalBalloon;
+
+  })(CK.Smartboard.View.ContentBalloon);
+
+  CK.Smartboard.View.InvestigationBalloon = (function(_super) {
+
+    __extends(InvestigationBalloon, _super);
+
+    function InvestigationBalloon() {
+      this.renderConnectors = __bind(this.renderConnectors, this);
+      return InvestigationBalloon.__super__.constructor.apply(this, arguments);
+    }
+
+    InvestigationBalloon.prototype.className = 'investigation balloon';
+
+    InvestigationBalloon.prototype.BALLOON_TYPE = 'investigation';
+
+    InvestigationBalloon.prototype.initialize = function() {
+      var _this = this;
+      InvestigationBalloon.__super__.initialize.call(this);
+      return this.model.on('change:votes', function() {
+        _this.$el.find('.votes').addClass('changed');
+        return setTimeout((function() {
+          return _this.$el.find('.votes').removeClass('changed');
+        }), 1001);
+      });
     };
 
-    return ProposalBalloon;
+    InvestigationBalloon.prototype.render = function() {
+      var part, possibleBodyparts, prop, propId, _i, _len, _results;
+      InvestigationBalloon.__super__.render.call(this);
+      this.renderVotes();
+      this.renderBuildons();
+      if (!this.model.has('proposal_id')) {
+        throw "Investigation#" + this.model.id + " has no proposal_id!";
+      }
+      propId = this.model.get('proposal_id');
+      prop = CK.Model.awake.proposals.get(propId);
+      this.renderConnector(prop);
+      this.$el.addClass("proposal-" + propId);
+      possibleBodyparts = ['new_information', 'references', 'question', 'findings', 'conclusions', 'hypothesis', 'method', 'results'];
+      _results = [];
+      for (_i = 0, _len = possibleBodyparts.length; _i < _len; _i++) {
+        part = possibleBodyparts[_i];
+        if (this.model.has(part)) {
+          _results.push(this.renderBodypart(part, this.model.get(part)));
+        }
+      }
+      return _results;
+    };
+
+    InvestigationBalloon.prototype.renderConnectors = function() {
+      var tag, _i, _len, _ref, _results;
+      if (!this.model.has('tags') || _.isEmpty(this.model.get('tags')) || !this.$el.is(':visible')) {
+        return;
+      }
+      _ref = this.model.get('tags');
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        tag = _ref[_i];
+        _results.push(this.renderConnector(tag));
+      }
+      return _results;
+    };
+
+    return InvestigationBalloon;
 
   })(CK.Smartboard.View.ContentBalloon);
 

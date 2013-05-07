@@ -131,6 +131,7 @@
     Smartboard.prototype.setupModel = function() {
       this.contributions = CK.Model.awake.contributions;
       this.proposals = CK.Model.awake.proposals;
+      this.investigations = CK.Model.awake.investigations;
       this.tags = CK.Model.awake.tags;
       this.runState = CK.getState('RUN');
       if (this.runState == null) {
@@ -176,7 +177,8 @@
           runState: this.runState,
           tags: this.tags,
           contributions: this.contributions,
-          proposals: this.proposals
+          proposals: this.proposals,
+          investigations: this.investigations
         });
         return this.wall.render();
       }
