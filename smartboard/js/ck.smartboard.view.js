@@ -332,29 +332,29 @@
       if (phase !== this.$el.data('phase')) {
         switch (phase) {
           case 'tagging':
-            jQuery('body').removeClass('mode-brainstorm').addClass('mode-tagging').removeClass('mode-exploration').removeClass('mode-propose').removeClass('mode-research_and_experiment');
+            jQuery('body').removeClass('mode-brainstorm').addClass('mode-tagging').removeClass('mode-exploration').removeClass('mode-propose').removeClass('mode-investigate');
             this.changeWatermark("tagging");
             break;
           case 'exploration':
-            jQuery('body').removeClass('mode-brainstorm').removeClass('mode-tagging').addClass('mode-exploration').removeClass('mode-propose').removeClass('mode-research_and_experiment');
+            jQuery('body').removeClass('mode-brainstorm').removeClass('mode-tagging').addClass('mode-exploration').removeClass('mode-propose').removeClass('mode-investigate');
             this.changeWatermark("exploration");
             break;
           case 'propose':
-            jQuery('body').removeClass('mode-brainstorm').removeClass('mode-tagging').removeClass('mode-exploration').addClass('mode-propose').removeClass('mode-research_and_experiment');
+            jQuery('body').removeClass('mode-brainstorm').removeClass('mode-tagging').removeClass('mode-exploration').addClass('mode-propose').removeClass('mode-investigate');
             this.changeWatermark("propose");
             setTimeout((function() {
               return _this.$el.find('.contribution, .contribution-connector').remove();
             }), 1100);
             break;
-          case 'research_and_experiment':
-            jQuery('body').removeClass('mode-brainstorm').removeClass('mode-tagging').removeClass('mode-exploration').removeClass('mode-propose').addClass('mode-research_and_experiment');
-            this.changeWatermark("experiment");
+          case 'investigate':
+            jQuery('body').removeClass('mode-brainstorm').removeClass('mode-tagging').removeClass('mode-exploration').removeClass('mode-propose').addClass('mode-investigate');
+            this.changeWatermark("investigate");
             setTimeout((function() {
               return _this.$el.find('.contribution, .contribution-connector').remove();
             }), 1100);
             break;
           default:
-            jQuery('body').addClass('mode-brainstorm').removeClass('mode-tagging').removeClass('mode-exploration').removeClass('mode-propose').removeClass('mode-research_and_experiment');
+            jQuery('body').addClass('mode-brainstorm').removeClass('mode-tagging').removeClass('mode-exploration').removeClass('mode-propose').removeClass('mode-investigate');
             this.changeWatermark("brainstorm");
         }
         this.$el.data('phase', phase);
