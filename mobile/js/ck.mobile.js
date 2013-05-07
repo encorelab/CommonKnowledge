@@ -528,8 +528,15 @@ CK.Mobile = function() {
     });
   };
 
-  app.createNewProposal = function() {
+  app.createNewProposal = function(type) {
     console.log("Creating a new proposal note...");
+
+    var elType;
+    if (type === 'proposal') {
+      elType = jQuery('#proposal-justification-input');
+    } else {
+      elType = jQuery('#investigation-proposal-input');
+    }
 
     app.proposal = new CK.Model.Proposal();
     // ensure that models inside the collection are wakeful
@@ -539,7 +546,7 @@ CK.Mobile = function() {
     // case: no previous proposalInputView
     if (app.proposalInputView === null) {
       app.proposalInputView = new CK.Mobile.View.ProposalInputView({
-        el: jQuery('#proposal-justification-input'),
+        el: elType,
         model: app.proposal
       });
     // case: already have an proposalInputView with attached model
@@ -555,13 +562,8 @@ CK.Mobile = function() {
 
     var d = new Date();
     var myTag = Sail.app.tagList.findWhere( {'name':Sail.app.userState.get('tag_group')} );
-    // var myTagObj = {
-    //   "id":myTag.id,
-    //   "name":myTag.get('name'),
-    //   "colorClass":myTag.get('colorClass')
-    // };
     app.proposal.set('created_at',d);
-    app.proposal.set('author', app.userData.account.login);             // change this to some kind of 'team' authorship?
+    app.proposal.set('author', app.userData.account.login);
     app.proposal.set('published', false);
     app.proposal.set('headline','');
     app.proposal.set('proposal','');
@@ -582,6 +584,7 @@ CK.Mobile = function() {
         console.log("Proposal saved!");
 
         jQuery('#proposal-justification-input').hide('slide', {direction: 'up'});
+        jQuery('#investigation-proposal-input').hide('slide', {direction: 'up'});
         jQuery().toastmessage('showSuccessToast', "Proposal submitted");
 
         // I think we need to lock the fields again and force the student to use the new note/build on button
@@ -592,6 +595,7 @@ CK.Mobile = function() {
         view.stopListening(Sail.app.proposal);
         // clear fields
         view.$el.find(".field").val(null);
+        jQuery('#investigation-proposal-type-btn-container .btn').removeClass('active');
         jQuery('#proposal-type-btn-container .btn').removeClass('active');
       })
       .fail( function() {
