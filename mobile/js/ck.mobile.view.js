@@ -797,12 +797,12 @@
         $target.children().first().addClass('selected');
         var contribId = $target.attr('data');
 
-        // pass the note from the appropriate collection
-        // if ($target.hasClass('brainstorm-item')) {
-        //   Sail.app.showProposalDetails(Sail.app.contributionList.get(contribId));
-        // } else {
-        //   Sail.app.showProposalDetails(Sail.app.proposalList.get(contribId));
-        // }
+        // pass the note from the appropriate collection - ARMIN
+        if ($target.hasClass('proposal-item')) {
+          Sail.app.showInvestigationDetails(Sail.app.proposalList.get(contribId));
+        } else {
+          Sail.app.showInvestigationDetails(Sail.app.investigationList.get(contribId));
+        }
       },
 
       'click #inv-new-proposal-btn': function(ev) {
@@ -825,7 +825,7 @@
 
       // add the proposals to the list
       Sail.app.proposalList.each(function(prop) {
-        if (prop.get('published') === true && prop.get('tag') === myTag) {
+        if (prop.get('published') === true && prop.get('tag').id === myTag.get('_id')) {
           var propTag;
 
           if (jQuery('li#proposal'+prop.id).length === 0) {
@@ -834,7 +834,7 @@
             note += "<br /><i class='icon-chevron-right'></i>";
             note += "<span class='author'></span><span class='date'></span></a></li>";
             note = jQuery(note);
-            jQuery('#proposal-list .nav-list').append(note);
+            jQuery('#investigation-list .nav-list').append(note);
             note.find('.headline').text('Proposal - '+prop.get('headline'));
             createdAt = prop.get('created_at');
             if (createdAt) {
@@ -865,6 +865,91 @@
           }
         }
       });
+
+    }
+  });
+
+
+  /**
+    InvestigationDetailsView
+  **/
+  self.InvestigationDetailsView = Backbone.View.extend({
+    events: {
+
+    },
+
+    initialize: function () {
+      console.log("Initializing InvestigationDetailsView...");
+
+    },
+
+    render: function () {
+      console.log("rendering InvestigationDetailsView!");
+      var view = this;
+
+      // // clear everything
+      // jQuery('#proposal-details .field').text('');  
+
+      // // created_at will return undefined, so need to check it exists...
+      // if (view.model && view.model.get('created_at')) {
+      //   // set up the tags element
+      //   var tagsEl = '<div><i>';
+      //   if (view.model instanceof CK.Model.Proposal) {
+      //     jQuery('#proposal-details .note-proposal').html('<b>Proposal: </b>'+view.model.get('proposal'));
+      //     jQuery('#proposal-details .note-justification').html('<b>Justification: </b>'+view.model.get('justification'));
+      //     // tags
+      //     tagsEl += view.model.get('tag').name;
+      //     jQuery('#like-btn-container').removeClass('hide');
+
+      //   } else if (view.model instanceof CK.Model.Contribution) {
+      //     jQuery('#proposal-details .note-content').text(view.model.get('content'));
+      //     // buildOns
+      //     var buildOnEl = '<div>';
+      //     _.each(view.model.get('build_ons'), function(b) {
+      //       if (b.published === true) {
+      //         buildOnEl += '<hr />';
+      //         buildOnEl += b.content;
+      //         buildOnEl += '<br /><span class="build-on-metadata">~' + b.author;
+      //         buildOnEl += ' (' + b.created_at.toLocaleDateString() + ' ' + b.created_at.toLocaleTimeString() + ')' +  '</span>';            
+      //       }
+      //     });
+      //     buildOnEl += '</div>';
+      //     buildOnEl = jQuery(buildOnEl);
+      //     jQuery('#proposal-details .note-build-ons').append(buildOnEl);
+      //     // tags
+      //     _.each(view.model.get('tags'), function(t) {
+      //       tagsEl += ' ';
+      //       tagsEl += t.name;
+      //     });
+      //     jQuery('#like-btn-container').addClass('hide');
+      //   } else {
+      //     console.error('Unknown type of view.model in ProposalDetailsView');
+      //   }
+
+      //   // for both Contribution model and Proposal model
+      //   jQuery('#proposal-details .note-headline').text(view.model.get('headline'));
+      //   jQuery('#proposal-details .note-author').text('~'+view.model.get('author'));
+      //   var createdAt = view.model.get('created_at');
+      //   if (createdAt) {
+      //     jQuery('#proposal-details .note-created-at').text(' (' + createdAt.toLocaleDateString() + ' ' + createdAt.toLocaleTimeString() + ')');
+      //   }
+      //   tagsEl += '</i></div>';
+      //   tagsEl = jQuery(tagsEl);
+      //   jQuery('#proposal-details .note-tags').append(tagsEl);
+
+      // } else {
+      //   console.warn("ProposalDetailsView render skipped this contrib because created_at doesn't exist");
+      // }
+
+      // // voting buttons
+      // var votesArray = this.model.get('votes');
+      // if (_.contains(votesArray, Sail.app.userData.account.login)) {
+      //   jQuery('#like-btn-off').addClass('hide');
+      //   jQuery('#like-btn-on').removeClass('hide');
+      // } else {
+      //   jQuery('#like-btn-on').addClass('hide');
+      //   jQuery('#like-btn-off').removeClass('hide');
+      // }
 
     }
   });

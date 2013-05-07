@@ -44,6 +44,7 @@ CK.Mobile = function() {
   app.proposalDetailsView = null;
   app.investigationList = null;
   app.investigationListView = null;
+  app.investigationDetailsView = null;
 
   app.autoSaveTimer = window.setTimeout(function() { console.log("timer activated"); } ,10);
 
@@ -155,6 +156,7 @@ CK.Mobile = function() {
       // INVESTIGATE PHASE
       console.log('Entering investigate phase...');
       jQuery('.brand').text('Common Knowledge - Investigation');
+      jQuery('#investigation-screen').removeClass('hide');
 
       app.proposalList = CK.Model.awake.proposals;
       app.investigationList = CK.Model.awake.investigations;
@@ -611,6 +613,23 @@ CK.Mobile = function() {
     app.proposalDetailsView.render();
   };
 
+  app.showInvestigationDetails = function(note) {
+    console.log('Creating a new investigation details...');
+    var details = note;
+    if (app.investigationDetailsView === null) {
+      app.investigationDetailsView = new CK.Mobile.View.InvestigationDetailsView({
+        el: jQuery('#investigation-details'),
+        model: details
+      });
+    } else {
+      if (typeof app.investigationDetailsView.model !== 'undefined' && app.investigationDetailsView.model !== null) {
+        app.investigationDetailsView.stopListening(app.investigationDetailsView.model);
+      }
+      app.investigationDetailsView.model = details;
+    }
+    details.wake(Sail.app.config.wakeful.url);
+    app.investigationDetailsView.render();
+  };
 
   // ******** HELPER FUNCTIONS ********* //
 
