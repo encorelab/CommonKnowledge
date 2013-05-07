@@ -11,7 +11,7 @@ body {
   transition: background-color 3s ease 0; }
   body #go-propose {
     opacity: 0.4; }
-  body #go-interpret {
+  body #go-investigate {
     opacity: 0.4; }
   body.mode-tagging {
     background-color: #51ba34; }
@@ -20,7 +20,7 @@ body {
       pointer-events: none; }
     body.mode-tagging #go-propose {
       opacity: 1.0; }
-    body.mode-tagging #go-interpret {
+    body.mode-tagging #go-investigate {
       opacity: 0.4;
       pointer-events: none; }
   body.mode-propose {
@@ -31,36 +31,24 @@ body {
     body.mode-propose #go-propose {
       opacity: 0.4;
       pointer-events: none; }
-    body.mode-propose #go-interpret {
+    body.mode-propose #go-investigate {
       opacity: 0.4;
       pointer-events: none; }
     body.mode-propose #show-word-cloud {
       display: none; }
     body.mode-propose .contribution, body.mode-propose .contribution-connector {
       opacity: 0; }
-  body.mode-interpret {
+  body.mode-investigate {
     background-color: #34bab3; }
-    body.mode-interpret #go-tagging {
+    body.mode-investigate #go-tagging {
       opacity: 0.4; }
-    body.mode-interpret #go-propose {
+    body.mode-investigate #go-propose {
       opacity: 0.4; }
-    body.mode-interpret #go-interpret {
+    body.mode-investigate #go-investigate {
       opacity: 0.4; }
-    body.mode-interpret #show-word-cloud {
+    body.mode-investigate #show-word-cloud {
       display: none; }
-    body.mode-interpret .contribution, body.mode-interpret .contribution-connector {
-      opacity: 0; }
-  body.mode-evaluate {
-    background-color: #c0b7ca; }
-    body.mode-evaluate #go-tagging {
-      opacity: 0.4; }
-    body.mode-evaluate #go-propose {
-      opacity: 0.4; }
-    body.mode-evaluate #go-interpret {
-      opacity: 0.4; }
-    body.mode-evaluate #show-word-cloud {
-      display: none; }
-    body.mode-evaluate .contribution, body.mode-evaluate .contribution-connector {
+    body.mode-investigate .contribution, body.mode-investigate .contribution-connector {
       opacity: 0; }
   body.paused {
     background-color: #aaa; }
