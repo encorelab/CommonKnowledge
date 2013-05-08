@@ -148,7 +148,7 @@ input {
 	overflow-y: auto;
 }
 
-#contribution-input {
+#contribution-input, #proposal-justification-input, #investigation-proposal-input, #investigation-input {
 	width: 611px;						/* sigh - still fighting bootstrap */
 	background-color: #ddd;
 	border-radius: 7px;
