@@ -278,9 +278,11 @@
                     <!-- filled by InvestigationInputView -->
                 </div>
                 <div class="title-entry-container">
-                    <textarea class="field text-entry" id="investigation-headline-entry" name="headline"></textarea>
+                    <textarea class="field headline-entry" id="investigation-headline-entry" name="headline" placeholder="Headline..."></textarea>
+                    <textarea class="field text-entry" id="new-information-entry" name="new_information" placeholder="What new information have you observed, measured, or read about?"></textarea>
+                    <textarea class="field text-entry" id="references-entry" name="references" placeholder="What resource(s) did you use to learn this? (e.g. simulation name+URL, book title+author, information website name+URL, etc.)"></textarea>
                     <div class="btn-container btn-group action-btn-group">
-                        <a id="share-investigation-justification-btn" class="btn btn-success">
+                        <a id="share-investigation-btn" class="btn btn-success">
                             Share
                         </a>
                     </div>
@@ -291,7 +293,7 @@
                     Propose and Justify
                 </div>
                 <div class="title-entry-container">
-                    <textarea class="field text-entry" id="investigation-proposal-headline-entry" name="headline" placeholder="Headline (3 word max)..."></textarea>
+                    <textarea class="field text-entry" id="investigation-proposal-headline-entry" name="headline"></textarea>
                     <div id="investigation-proposal-type-btn-container" class="btn-group">
                         <button type="button" class="btn proposal-type-btn">Research</button>
                         <button type="button" class="btn proposal-type-btn">Experiment</button>

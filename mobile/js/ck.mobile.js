@@ -45,6 +45,7 @@ CK.Mobile = function() {
   app.investigationList = null;
   app.investigationListView = null;
   app.investigationDetailsView = null;
+  app.investigationInputView = null;
 
   app.autoSaveTimer = window.setTimeout(function() { console.log("timer activated"); } ,10);
 
@@ -620,6 +621,83 @@ CK.Mobile = function() {
     details.wake(Sail.app.config.wakeful.url);
     app.proposalDetailsView.render();
   };
+
+  app.createNewInvestigation = function(type, propId) {
+    console.log('Creating a new investigation...');
+
+    app.investigation = new CK.Model.Investigation();
+    // ensure that models inside the collection are wakeful
+    app.investigation.wake(Sail.app.config.wakeful.url);
+    app.investigation.on('all',function() { console.log(arguments); });
+
+    // think about how to set up the different UI elements - here or in the view?
+    var d = new Date();
+    app.investigation.set('created_at',d);
+    app.investigation.set('authors', [app.userData.account.login]);
+    app.investigation.set('published', false); 
+    app.investigation.set('interest_group', app.userState.get('tag_group'));
+    app.investigation.set('proposal_id', propId);
+    app.investigation.set('headline','');
+
+    if (type === 'inquiry') {
+      // setup the inquiry specific elements of the view? Or do we have 3 views?
+      jQuery('#investigation-header').text('New Inquiry Note');
+      jQuery('#investigation-header').effect("highlight", {}, 1500);
+      //jQuery('#new-information-entry').removeClass('hide');
+      //jQuery('#references-entry').removeClass('hide');
+      app.investigation.set('type', 'inquiry');
+      app.investigation.set('build_ons', []);
+      app.investigation.set('new_information','');
+      app.investigation.set('references','');
+    } else if (type === 'research') {
+
+    } else if (type === 'experiment') {
+
+    } else {
+      console.error('Unknown investigation type!');
+    }
+
+    // TODO - setup 3 different views for this (inquiry, research, experiment)
+    // case: no previous investigationInputView
+    if (app.investigationInputView === null) {
+      app.investigationInputView = new CK.Mobile.View.InvestigationInputView({
+        el: jQuery('#investigation-input'),
+        model: app.investigation
+      });
+    // case: already have an investigationInputView with attached model
+    } else {
+      // detatch that model and attach the current contrib model
+      if (typeof app.investigationInputView.model !== 'undefined' && app.investigationInputView.model !== null) {
+        app.investigationInputView.stopListening(app.investigationInputView.model);
+      }
+      app.investigationInputView.model = app.investigation;
+    }
+
+    app.investigationInputView.$el.show('slide', {direction: 'up'});    
+    
+    app.investigation.save();
+    app.investigationInputView.render();    
+  };
+
+  app.saveInvestigation = function(view, model) {
+    console.log("Submitting investiation...");
+    Sail.app.investigation.wake(Sail.app.config.wakeful.url);      // just in case
+    Sail.app.investigation.save()            //patch:true,    // does this want to switch to patch?
+      .done( function() {
+        console.log("Investigation saved!");
+
+        jQuery('#investigation-input').hide('slide', {direction: 'up'});
+        jQuery().toastmessage('showSuccessToast', "Investigation submitted");
+
+        // clear the old proposal plus ui fields
+        view.stopListening(model);
+        // clear fields
+        view.$el.find(".field").val(null);
+      })
+      .fail( function() {
+        console.log('Error submitting');
+      });
+  };  
 
   app.showInvestigationDetails = function(note) {
     console.log('Creating a new investigation details...');

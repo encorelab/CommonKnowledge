@@ -941,7 +941,17 @@
   **/
   self.InvestigationDetailsView = Backbone.View.extend({
     events: {
-
+      'click #new-investigation-btn': function() {
+        if (this.model instanceof CK.Model.Proposal) {
+          // TODO: handle the other non-inquiry cases
+          Sail.app.createNewInvestigation('inquiry', this.model.id);
+        } else if (this.model instanceof CK.Model.Investigation) {
+          // if inquiry
+          // else something
+        } else {
+          console.error('Unknown model type!');
+        }
+      }
     },
 
     initialize: function () {
@@ -1052,7 +1062,70 @@
   });
 
 
- 
+  /**
+    InvestigationInputView
+  **/
+  self.InvestigationInputView = Backbone.View.extend({
+    events: {
+      'keyup :input': function(ev) {
+        var view = this,
+          inputKey = ev.target.name,
+          userValue = jQuery('#'+ev.target.id).val();
+        // If we hit a key clear intervals so that during typing intervals don't kick in
+        window.clearTimeout(Sail.app.autoSaveTimer);
+
+        // save after 10 keystrokes
+        Sail.app.autoSave(view.model, inputKey, userValue, false);
+
+        // setting up a timer so that if we stop typing we save stuff after 5 seconds
+        Sail.app.autoSaveTimer = setTimeout( function(){
+          console.log('Autosave data for: '+inputKey);
+          Sail.app.autoSave(view.model, inputKey, userValue, true);
+        }, 5000);
+      },
+
+      'click #share-investigation-btn': 'share'
+    },
+
+    initialize: function() {
+      console.log("Initializing InvestigationInputView...");
+    },
+
+
+    share: function() {
+      var view = this;
+      // avoid weird entries showing up in the model
+      window.clearTimeout(Sail.app.autoSaveTimer);
+
+      console.log('Fake share');
+
+      // for inquiry
+      if (jQuery('#investigation-headline-entry').val() === '' || jQuery('#new-information-entry').val() === '') {
+        jQuery().toastmessage('showErrorToast', "Please enter both new information and a headline");
+      } else {
+        Sail.app.investigation.set('headline',jQuery('#investigation-headline-entry').val());
+        Sail.app.investigation.set('new_information',jQuery('#new-information-entry').val());
+        Sail.app.investigation.set('references',jQuery('#references-entry').val());
+        Sail.app.investigation.set('published',true);
+        Sail.app.saveInvestigation(view, this.model);
+      }
+    },
+
+    /**
+      Triggers full update of all dynamic elements in the input view
+    **/
+    render: function () {
+      var view = this;
+      console.log("rendering InvestigationInputView...");
+
+      // better to do the render with a _.each(fields)
+
+      // for inquiry
+      jQuery('#investigation-headline-entry').val(Sail.app.investigation.get('headline'));
+      jQuery('#new-information-entry').val(Sail.app.investigation.get('new_information'));
+      jQuery('#references-entry').val(Sail.app.investigation.get('references'));
+    }
+  });
 
 
   CK.Mobile.View = self;
