@@ -433,7 +433,7 @@
         if (ok) {
           Sail.app.chooseInterestGroup(chosenTagName);
           Sail.app.hideAll();
-          if (Sail.app.runState.get('phase') === 'purpose') {
+          if (Sail.app.runState.get('phase') === 'propose') {
             jQuery('.brand').text('Common Knowledge - Specializing in ' + chosenTagName);
             jQuery('#proposal-screen').removeClass('hide');
             Sail.app.proposalListView.render();
