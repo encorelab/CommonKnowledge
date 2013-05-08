@@ -454,9 +454,6 @@
       var view = this;
       console.log("Rendering InterestGroupListView!");
 
-      // clear all buttons
-      // jQuery('.tag-btn').removeClass('active');
-
       view.collection.each(function(tag) {
         // don't show the N/A tag
         if (tag.get('name') !== "N/A") {
@@ -501,7 +498,7 @@
 
       'click #new-proposal-btn': function(ev) {
         jQuery('#proposal-justification-input').removeClass('disabled');
-        Sail.app.createNewProposal();
+        Sail.app.createNewProposal('proposal');
       }
     },
 
@@ -745,7 +742,15 @@
         Sail.app.proposal.set('type',jQuery(ev.target).html());
       },
 
-      'click #share-proposal-justification-btn': 'share'
+      'click #investigation-proposal-type-btn-container': function(ev) {
+        jQuery('#investigation-proposal-type-btn-container .btn').removeClass('active');
+        jQuery(ev.target).addClass('active');
+        Sail.app.proposal.set('type',jQuery(ev.target).html());        
+      },
+
+      'click #share-proposal-justification-btn': 'share',
+
+      'click #share-investigation-proposal-btn': 'shareInvProp'
     },
 
     initialize: function() {
@@ -772,6 +777,22 @@
       }
     },
 
+    shareInvProp: function() {
+      var view = this;
+      // avoid weird entries showing up in the model
+      window.clearTimeout(Sail.app.autoSaveTimer);
+
+      if (!Sail.app.proposal.get('type') || jQuery('#investigation-proposal-headline-entry').val() === '' || jQuery('#investigation-proposal-entry').val() === '' || jQuery('#investigation-justification-entry').val() === '') {
+        jQuery().toastmessage('showErrorToast', "Please fill all fields and choose whether this is a proposal for research or experiment");
+      } else {
+        Sail.app.proposal.set('headline',jQuery('#investigation-proposal-headline-entry').val());
+        Sail.app.proposal.set('proposal',jQuery('#investigation-proposal-entry').val());
+        Sail.app.proposal.set('justification',jQuery('#investigation-justification-entry').val());
+        Sail.app.proposal.set('published',true);
+        Sail.app.saveProposal(view);
+      }
+    },
+
     /**
       Triggers full update of all dynamic elements in the input view
     **/
@@ -779,10 +800,14 @@
       var view = this;
       console.log("rendering ProposalInputView...");
 
-      // we all need to have a serious talk about Backbone renders. I feel like I have to fight them constantly...
+      // for proposal
       jQuery('#proposal-headline-entry').val(Sail.app.proposal.get('headline'));
       jQuery('#proposal-entry').val(Sail.app.proposal.get('proposal'));
       jQuery('#justification-entry').val(Sail.app.proposal.get('justification'));
+      // for investigation
+      jQuery('#investigation-proposal-headline-entry').val(Sail.app.proposal.get('headline'));
+      jQuery('#investigation-proposal-entry').val(Sail.app.proposal.get('proposal'));
+      jQuery('#investigation-justification-entry').val(Sail.app.proposal.get('justification'));
     }
   });
 
@@ -810,8 +835,8 @@
       },
 
       'click #inv-new-proposal-btn': function(ev) {
-        jQuery('#proposal-justification-input').removeClass('disabled');
-        Sail.app.createNewProposal();
+        jQuery('#investigation-input').removeClass('disabled');
+        Sail.app.createNewProposal('investigation');
       }
     },
 
@@ -989,6 +1014,8 @@
     }
   });
 
+
+ 
 
 
   CK.Mobile.View = self;

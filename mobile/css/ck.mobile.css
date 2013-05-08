@@ -303,7 +303,7 @@ input {
 	height: 325px;
 }
 
-#proposal-justifaction-header {
+#proposal-justifiction-header, #investigation-proposal-header {
 	font-size: 18px;
 	font-weight: bold;
 }
@@ -313,28 +313,28 @@ input {
 	text-shadow: none;
 }
 
-#proposal-justification-input .text-entry {
+#proposal-justification-input .text-entry, #investigation-proposal-input .text-entry {
 	width: 97.5%;
 	height: 117px;
 	margin-bottom: 10px;
 }
 
-#proposal-justification-input #proposal-headline-entry {
+#proposal-justification-input #proposal-headline-entry, #investigation-proposal-input #investigation-proposal-headline-entry {
 	width: 50%;
 	height: 22px;
 }
 
 /* for the research/experiment buttons */
-#proposal-justification-input #proposal-type-btn-container {
+#proposal-justification-input #proposal-type-btn-container, #investigation-proposal-type-btn-container {
 	display: inline;
 }
 
-#proposal-justification-input .proposal-type-btn {
+.proposal-type-btn {
 	width: 102px;
 }
 
 /* for the share button */
-#proposal-justification-input .btn-container {
+#proposal-justification-input .btn-container, #investigation-proposal-input .btn-container {
 	bottom: 284px;
 	right: 7px;
 }
