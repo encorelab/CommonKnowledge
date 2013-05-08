@@ -251,7 +251,11 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
 
                     if ig?
                         @changeWatermark ig.get('name')
-                        jQuery('body').addClass('mode-investigate-with-topic')
+
+                        jQuery('body')
+                            .addClass('mode-investigate-with-topic')
+                            .addClass(ig.get('colorClass'))
+                            
                         elementsToRemove = ".contribution, .contribution-connector, .tag, .proposal-connector, " +
                             ".proposal:not(.ig-#{ig.id}), .investigation:not(.ig-#{ig.id}), .connector:not(.ig-#{ig.id})"
                     else
@@ -282,7 +286,7 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                         .removeClass('mode-exploration')
                         .removeClass('mode-propose')
                         .addClass('mode-investigate')
-                    
+
                     setTimeout (=> jQuery('head').append(hideStyle) ),
                         1100 # let the fadeout animation complete
                 else

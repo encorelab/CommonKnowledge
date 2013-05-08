@@ -51,6 +51,14 @@ body {
       opacity: 0; }
     body.mode-investigate.mode-investigate-with-topic .tag, body.mode-investigate.mode-investigate-with-topic .proposal-connector {
       opacity: 0; }
+    body.mode-investigate.group1-color {
+      background-color: #c1dc16; }
+    body.mode-investigate.group2-color {
+      background-color: #5097fb; }
+    body.mode-investigate.group3-color {
+      background-color: #b159f3; }
+    body.mode-investigate.group4-color {
+      background-color: #59f378; }
   body.paused {
     background-color: #aaa; }
 

@@ -356,7 +356,7 @@
             ig = Sail.app.interestGroup;
             if (ig != null) {
               this.changeWatermark(ig.get('name'));
-              jQuery('body').addClass('mode-investigate-with-topic');
+              jQuery('body').addClass('mode-investigate-with-topic').addClass(ig.get('colorClass'));
               elementsToRemove = ".contribution, .contribution-connector, .tag, .proposal-connector, " + (".proposal:not(.ig-" + ig.id + "), .investigation:not(.ig-" + ig.id + "), .connector:not(.ig-" + ig.id + ")");
             } else {
               this.changeWatermark("investigate");

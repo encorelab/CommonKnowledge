@@ -130,6 +130,22 @@ body {
                 opacity: 0;
             }
         }
+
+        &.group1-color {
+            background-color: lighten(invert($tag-bubble-color-group1-to), 15%);
+        }
+
+        &.group2-color {
+            background-color: lighten(invert($tag-bubble-color-group2-to), 15%);
+        }
+
+        &.group3-color {
+            background-color: lighten(invert($tag-bubble-color-group3-to), 15%);
+        }
+
+        &.group4-color {
+            background-color: lighten(invert($tag-bubble-color-group4-to), 15%);
+        }
     }
 
     &.paused {
