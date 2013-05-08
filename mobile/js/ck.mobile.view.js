@@ -998,7 +998,7 @@
           
           if (attr_data && attr_data !== '') {
             if (jQuery(this).attr('name') !== 'headline') {
-              attr_name = Sail.app.capitaliseFirstLetter(attr_name);
+              attr_name = Sail.app.removeUnderscore(Sail.app.capitaliseFirstLetter(attr_name));
               jQuery(this).append(jQuery("<b>"+attr_name+": </b>"));
             }
             
