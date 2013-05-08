@@ -901,7 +901,7 @@ CK.Mobile = function() {
     jQuery('#contribution-to-tag-screen').addClass('hide');
     jQuery('#bucket-tagging-screen').addClass('hide');
     jQuery('#choose-interest-group-screen').addClass('hide');
-    jQuery('#invosal-screen').addClass('hide');
+    jQuery('#proposal-screen').addClass('hide');
     jQuery('#proposal-justification-input').addClass('hide');
     jQuery('#investigation-screen').addClass('hide');
   };

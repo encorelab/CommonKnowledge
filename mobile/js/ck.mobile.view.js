@@ -838,6 +838,14 @@
       },
 
       'click #inv-new-proposal-btn': function(ev) {
+        // if other field is already there, hide it
+        jQuery('#investigation-input').hide();
+
+        // // clear the old proposal plus ui fields
+        // view.stopListening(model);
+        // // clear fields
+        // view.$el.find(".field").val(null);
+
         jQuery('#investigation-input').removeClass('disabled');
         Sail.app.createNewProposal('investigation');
       }
@@ -945,6 +953,7 @@
   self.InvestigationDetailsView = Backbone.View.extend({
     events: {
       'click #new-investigation-btn': function() {
+        jQuery('#investigation-proposal-input').hide();
         Sail.app.createNewInvestigation('inquiry', this.model.id);
       },
 
