@@ -520,12 +520,13 @@ CK.Mobile = function() {
     jQuery('#bucket-tagging-btn-container .active').removeClass('active');
   };
 
-  app.chooseInterestGroup = function(chosenTagName) {
+  app.chooseInterestGroup = function(chosenTagName, callback) {
     console.log('Interest group chosen...');
     app.userState.set('tag_group',chosenTagName);
     app.userState.save().done(function() {
       //app.tryRestoreUnfinishedProposal(chosenTagName); TODO - add me back in when it's no longer insane
       // OR app.tryRestoreUnfinishedInvestigation();
+      callback();
     });
   };
 
