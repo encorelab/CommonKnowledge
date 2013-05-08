@@ -247,23 +247,43 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                     setTimeout (=> @$el.find('.contribution, .contribution-connector').remove() ),
                         1100 # let the fadeout animation complete
                 when 'investigate'
+                    ig = Sail.app.interestGroup
+
+                    if ig?
+                        @changeWatermark ig.get('name')
+                        jQuery('body').addClass('mode-investigate-with-topic')
+                        elementsToRemove = ".contribution, .contribution-connector, .tag, .proposal-connector, " +
+                            ".proposal:not(.ig-#{ig.id}), .investigation:not(.ig-#{ig.id}), .connector:not(.ig-#{ig.id})"
+                    else
+                        @changeWatermark "investigate"
+                        jQuery('body').removeClass('mode-investigate-with-topic')
+                        elementsToRemove = '.contribution, .contribution-connector'
+                    
+                    # this is kind of an odd way to do it, but this ensures
+                    # that any items matching 'elementsToRemove' that are
+                    # added subsequently will also be hidden
+                    fadeoutStyle = jQuery "<style>
+                            #{elementsToRemove} {
+                                opacity: 0.0;
+                            }
+                        </style>"
+
+                    hideStyle = jQuery "<style>
+                            #{elementsToRemove} {
+                                display: none;
+                            }
+                        </style>"
+
+                    jQuery('head').append(fadeoutStyle)
+
                     jQuery('body')
                         .removeClass('mode-brainstorm')
                         .removeClass('mode-tagging')
                         .removeClass('mode-exploration')
                         .removeClass('mode-propose')
                         .addClass('mode-investigate')
-
-                    @changeWatermark(Sail.app.interestGroup ? "investigate")
-
-                    if Sail.app.interestGroup?
-                        jQuery('body').addClass('mode-investigate-with-topic')
-                        elementsToRemove = '.contribution, .contribution-connector, .tag, .proposal-connector'
-                    else
-                        jQuery('body').removeClass('mode-investigate-with-topic')
-                        elementsToRemove = '.contribution, .contribution-connector'
                     
-                    setTimeout (=> @$el.find(elementsToRemove).remove() ),
+                    setTimeout (=> jQuery('head').append(hideStyle) ),
                         1100 # let the fadeout animation complete
                 else
                     jQuery('body')

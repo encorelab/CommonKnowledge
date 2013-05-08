@@ -110,7 +110,7 @@
       }
     };
 
-    Smartboard.prototype.getInterestGroupFromURL = function() {
+    Smartboard.prototype.getInterestGroupIdFromURL = function() {
       var match, rx;
       rx = /[\?\&]ig=([^\?\&]+)/;
       match = rx.exec(window.location.search);
@@ -122,10 +122,10 @@
     };
 
     Smartboard.prototype.setInterestGroup = function(ig) {
+      this.interestGroup = ig;
       if (this.wall != null) {
-        this.wall.render();
+        return this.wall.render();
       }
-      return this.interestGroup = ig;
     };
 
     Smartboard.prototype.setupModel = function() {
@@ -152,7 +152,6 @@
         var _this = this;
         console.log("Authenticated...");
         jQuery('#auth-indicator .nickname').text(this.run.name);
-        this.setInterestGroup(this.getInterestGroupFromURL());
         return CK.Model.init(this.config.drowsy.url, this.run.name).done(function() {
           return Wakeful.loadFayeClient(_this.config.wakeful.url).done(function() {
             return CK.Model.initWakefulCollections(_this.config.wakeful.url).done(function() {
@@ -171,6 +170,7 @@
         return console.log("Connected...");
       },
       ready: function(ev) {
+        var interestTag;
         console.log("Ready...");
         this.wall = new CK.Smartboard.View.Wall({
           el: jQuery('#wall'),
@@ -180,6 +180,8 @@
           proposals: this.proposals,
           investigations: this.investigations
         });
+        interestTag = CK.Model.awake.tags.get(this.getInterestGroupIdFromURL());
+        this.setInterestGroup(interestTag);
         return this.wall.render();
       }
     };

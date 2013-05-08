@@ -332,7 +332,7 @@
     };
 
     Wall.prototype.render = function() {
-      var elementsToRemove, paused, phase, _ref,
+      var elementsToRemove, fadeoutStyle, hideStyle, ig, paused, phase,
         _this = this;
       phase = this.runState.get('phase');
       if (phase !== this.$el.data('phase')) {
@@ -353,17 +353,22 @@
             }), 1100);
             break;
           case 'investigate':
-            jQuery('body').removeClass('mode-brainstorm').removeClass('mode-tagging').removeClass('mode-exploration').removeClass('mode-propose').addClass('mode-investigate');
-            this.changeWatermark((_ref = Sail.app.interestGroup) != null ? _ref : "investigate");
-            if (Sail.app.interestGroup != null) {
+            ig = Sail.app.interestGroup;
+            if (ig != null) {
+              this.changeWatermark(ig.get('name'));
               jQuery('body').addClass('mode-investigate-with-topic');
-              elementsToRemove = '.contribution, .contribution-connector, .tag, .proposal-connector';
+              elementsToRemove = ".contribution, .contribution-connector, .tag, .proposal-connector, " + (".proposal:not(.ig-" + ig.id + "), .investigation:not(.ig-" + ig.id + "), .connector:not(.ig-" + ig.id + ")");
             } else {
+              this.changeWatermark("investigate");
               jQuery('body').removeClass('mode-investigate-with-topic');
               elementsToRemove = '.contribution, .contribution-connector';
             }
+            fadeoutStyle = jQuery("<style>                            " + elementsToRemove + " {                                opacity: 0.0;                            }                        </style>");
+            hideStyle = jQuery("<style>                            " + elementsToRemove + " {                                display: none;                            }                        </style>");
+            jQuery('head').append(fadeoutStyle);
+            jQuery('body').removeClass('mode-brainstorm').removeClass('mode-tagging').removeClass('mode-exploration').removeClass('mode-propose').addClass('mode-investigate');
             setTimeout((function() {
-              return _this.$el.find(elementsToRemove).remove();
+              return jQuery('head').append(hideStyle);
             }), 1100);
             break;
           default:
@@ -689,7 +694,7 @@
     };
 
     Balloon.prototype.renderConnector = function(toDoc) {
-      var connector, connectorId, connectorLength, connectorTransform, toId, toView, x1, x2, y1, y2;
+      var connector, connectorId, connectorLength, connectorTransform, ig, toId, toView, x1, x2, y1, y2;
       toId = toDoc.id.toLowerCase();
       toView = this.wall.balloonViews[toId];
       connectorId = this.model.id + "-" + toId;
@@ -716,6 +721,10 @@
       connector.addClass("connects-" + toId);
       if (toDoc instanceof CK.Model.Tag) {
         connector.addClass("tag-" + toId);
+      }
+      if (toDoc.getTag != null) {
+        ig = toDoc.getTag();
+        connector.addClass("ig-" + ig.id);
       }
       return connector;
     };
@@ -962,6 +971,7 @@
       this.renderConnectors();
       this.renderVotes();
       this.$el.addClass('proposal');
+      this.$el.addClass("ig-" + this.model.getTag().id);
       if (this.model.has('tag')) {
         tag = this.model.get('tag');
         this.$el.addClass(this.model.getColorClass());
@@ -1034,6 +1044,7 @@
       prop = this.model.getProposal();
       this.$el.addClass("proposal-" + prop.id);
       this.$el.addClass(prop.getColorClass());
+      this.$el.addClass("ig-" + this.model.getTag().id);
       this.$el.addClass("investigation-" + (this.model.get('type')));
       auth = this.meta.find('.author');
       auth.text(this.model.get('authors').join(" "));

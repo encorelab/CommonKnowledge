@@ -109,6 +109,10 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
         if toDoc instanceof CK.Model.Tag
             connector.addClass "tag-#{toId}" # used for Wall's @tagFilters
 
+        if toDoc.getTag? # used for interestGroup board filtering
+            ig = toDoc.getTag()
+            connector.addClass "ig-#{ig.id}"
+
         return connector # for additional manipulation in subclasses
 
 
@@ -328,6 +332,8 @@ class CK.Smartboard.View.ProposalBalloon extends CK.Smartboard.View.ContentBallo
 
         @$el.addClass('proposal')
 
+        @$el.addClass "ig-"+@model.getTag().id
+
         if @model.has 'tag'
             tag = @model.get('tag')
             @$el.addClass @model.getColorClass()
@@ -378,8 +384,9 @@ class CK.Smartboard.View.InvestigationBalloon extends CK.Smartboard.View.Content
 
         prop = @model.getProposal()
 
-        @$el.addClass("proposal-#{prop.id}")
+        @$el.addClass "proposal-#{prop.id}"
         @$el.addClass prop.getColorClass()
+        @$el.addClass "ig-"+@model.getTag().id
 
         @$el.addClass("investigation-#{@model.get('type')}")
 
