@@ -955,15 +955,10 @@
     events: {
       'click #new-investigation-btn': function() {
         Sail.app.createNewInvestigation('inquiry', this.model.id);
-        // if (this.model instanceof CK.Model.Proposal) {
-        //   // TODO: handle the other non-inquiry cases
-        //   Sail.app.createNewInvestigation('inquiry', this.model.id);
-        // } else if (this.model instanceof CK.Model.Investigation) {
-        //   // if inquiry
-        //   // else something
-        // } else {
-        //   console.error('Unknown model type!');
-        // }
+      },
+
+      'click #inv-build-on-btn': function() {
+        alert('Under construction');
       }
     },
 
@@ -1030,9 +1025,6 @@
       if (view.model.has('created_at') && view.model.get('created_at').getMonth) {
         jQuery('#investigation-details .note-created-at').text(' (' + view.model.get('created_at').toLocaleDateString() + ' ' + view.model.get('created_at').toLocaleTimeString() + ')');
       }
-
-
-      
 
     }
   });
