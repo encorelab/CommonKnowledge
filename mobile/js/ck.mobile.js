@@ -790,6 +790,10 @@ CK.Mobile = function() {
     }
   };
 
+  app.capitaliseFirstLetter = function(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  };
+
 };
 
 CK.Mobile.prototype = new Sail.App();

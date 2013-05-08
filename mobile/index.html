@@ -245,18 +245,21 @@
 
             <div id="investigation-details" class="span4 view-container">
                 <div class="selected-note scrollable">
-                    <div class="note-headline field container-header" name="headline">
+                    <div class="note-headline field proposal container-header" name="headline">
                     </div>
-                    <div class="note-content field" name="content">
+                    <!-- Proposal specific fields -->
+                    <div class="note-proposal proposal field" name="proposal">
                     </div>
+                    <div class="note-justification proposal field" name="justification">
+                    </div>
+                    <!-- Investigation specific fields -->
                     <div class="note-investigation field" name="investigation">
                     </div>
+                    <!-- Common stuff -->
                     <div class="note-metadata">
-                        <span class="note-author field" name="author"> </span><span class="note-created-at field" name="created_at"></span>
+                        <span class="note-author field" name="author"></span><span class="note-created-at field" name="created_at"></span>
                     </div>
                     <br />
-                    <div class="note-tags field" name="tags">
-                    </div>
                     <div class="note-build-ons field" name="build_ons">
                     </div>
                 </div>

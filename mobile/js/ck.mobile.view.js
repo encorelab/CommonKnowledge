@@ -890,6 +890,37 @@
     render: function () {
       console.log("rendering InvestigationDetailsView!");
       var view = this;
+      // clear everything
+      jQuery('#investigation-details .field').text('');
+
+      if (view.model instanceof CK.Model.Proposal) {
+        console.log("InvestigationDetailsView is rendering a Proposal Model");
+
+        jQuery('#investigation-details .proposal').each(function(){
+          var attr_name = jQuery(this).attr('name');
+          var attr_data = view.model.get(attr_name);
+          
+          if (jQuery(this).attr('name') === 'proposal' || jQuery(this).attr('name') === 'justification') {
+            attr_name = Sail.app.capitaliseFirstLetter(attr_name);
+            jQuery(this).append(jQuery("<b>"+attr_name+": </b>"));
+          }
+          
+          jQuery(this).append(jQuery("<span>"+attr_data+"</span>"));
+        });
+      } else if (view.model instanceof CK.Model.Investigation) {
+        console.log("InvestigationDetailsView is rendering a Investigation Model");
+      } else {
+        console.error("InvestigationDetailsView is expecting a Proposal or Investigation Model");
+        console.error(view.model);
+      }
+
+      // add author
+      jQuery('#investigation-details .note-author').text('~'+view.model.get('author'));
+      // add creation date
+      if (view.model.has('created_at') && view.model.get('created_at').getMonth) {
+        jQuery('#investigation-details .note-created-at').text(' (' + view.model.get('created_at').toLocaleDateString() + ' ' + view.model.get('created_at').toLocaleTimeString() + ')');
+      }
+
 
       // // clear everything
       // jQuery('#proposal-details .field').text('');  
