@@ -849,6 +849,7 @@
     **/
     render: function () {
       console.log("Rendering InvestigationListView...");
+      var view = this;
       var createdAt;
       var myTag = Sail.app.tagList.findWhere( {'name':Sail.app.userState.get('tag_group')} );
 
@@ -894,8 +895,44 @@
           }
         }
       });
+    
+      // add the investigations to the list
+      view.options.investigations.each(function(inv){
+        // if (inv.get('published') === true && inv.get('tag').id === myTag.get('_id')) {
+        if (inv.get('published') === true) {
+          if (jQuery('li#investigation'+inv.id).length === 0) {
+            // if this inv doesn't exist, add it
+            var note = "<li id='investigation" + inv.id + "' class='list-item investigation-item' data='" + inv.id + "'><a class='note'><span class='headline'></span>";
+            note += "<br /><i class='icon-chevron-right'></i>";
+            note += "<span class='author'></span><span class='date'></span></a></li>";
+            note = jQuery(note);
+            jQuery('#investigation-list .nav-list').append(note);
+            note.find('.headline').text('Investigation - '+inv.get('headline'));
+            
+            if (inv.has('created_at') && inv.get('created_at').getMonth) {
+              note.find('.date').text(' (' + inv.get('created_at').toLocaleDateString() + ' ' + inv.get('created_at').toLocaleTimeString() + ')');
+            }
+            note.find('.author').text(inv.get('author'));
+          } else if (inv.hasChanged()) {
+            // if this inv has changed, clear the li and add new info
+            var liEl = jQuery('#proposal'+inv.id);
+            //liEl.html('');
+            liEl.find('.headline').text('Proposal - '+inv.get('headline'));
+          
+            if (inv.has('created_at') && inv.get('created_at').getMonth) {
+              liEl.find('.date').text(' (' + inv.get('created_at').toLocaleDateString() + ' ' + inv.get('created_at').toLocaleTimeString() + ')');
+            } else {
+              liEl.find('.date').text('(no date found)');
+            }
+            liEl.find('.author').text(inv.get('author'));
+          } else {
+            // else break out
+            return;
+          }
+        }
+      });
 
-    }
+    } // end of render
   });
 
 
