@@ -431,17 +431,7 @@
         var chosenTagName = jQuery('#'+chosenTagId).text();
         var ok = confirm("Do you want to choose <"+ chosenTagName + "> as your specialization?");
         if (ok) {
-          Sail.app.chooseInterestGroup(chosenTagName, function() {
-            Sail.app.hideAll();
-            if (Sail.app.runState.get('phase') === 'propose') {
-              jQuery('.brand').text('Common Knowledge - Specializing in ' + chosenTagName);
-              jQuery('#proposal-screen').removeClass('hide');
-              Sail.app.proposalListView.render();
-            } else {
-              jQuery('#investigation-screen').removeClass('hide');
-              Sail.app.investigationListView.render();
-            }            
-          });
+          Sail.app.chooseInterestGroup(chosenTagName);
         } else {
           jQuery('#interest-group-list-btn-container .tag-btn').removeClass('active');
         }
@@ -644,7 +634,7 @@
     },
 
     render: function () {
-      console.log("rendering ProposalDetailsView!");
+      console.log("Rendering ProposalDetailsView...");
       var view = this;
 
       // clear everything
@@ -969,7 +959,7 @@
     },
 
     render: function () {
-      console.log("rendering InvestigationDetailsView!");
+      console.log("Rendering InvestigationDetailsView...");
       var view = this;
       // clear everything
       jQuery('#investigation-details .field').text('');
@@ -1058,6 +1048,9 @@
 
     initialize: function() {
       console.log("Initializing InvestigationInputView...");
+      var attachedProp = Sail.app.proposalList.findWhere( {'_id':Sail.app.investigation.get('proposal_id')} )
+      jQuery('#investigation-header').text('New Inquiry Note about '+attachedProp.get('headline'));
+      jQuery('#investigation-header').effect("highlight", {}, 1500);      
     },
 
 
@@ -1065,8 +1058,6 @@
       var view = this;
       // avoid weird entries showing up in the model
       window.clearTimeout(Sail.app.autoSaveTimer);
-
-      console.log('Fake share');
 
       // for inquiry
       if (jQuery('#investigation-headline-entry').val() === '' || jQuery('#new-information-entry').val() === '') {
@@ -1085,7 +1076,7 @@
     **/
     render: function () {
       var view = this;
-      console.log("rendering InvestigationInputView...");
+      console.log("Rendering InvestigationInputView...");
 
       // better to do the render with a _.each(fields)
 

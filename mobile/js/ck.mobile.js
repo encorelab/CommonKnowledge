@@ -45,6 +45,7 @@ CK.Mobile = function() {
   app.investigationList = null;
   app.investigationListView = null;
   app.investigationDetailsView = null;
+  app.investigation = null;
   app.investigationInputView = null;
 
   app.autoSaveTimer = window.setTimeout(function() { console.log("timer activated"); } ,10);
@@ -156,7 +157,6 @@ CK.Mobile = function() {
     } else if (p === 'investigate') {
       // INVESTIGATE PHASE
       console.log('Entering investigate phase...');
-      jQuery('.brand').text('Common Knowledge - Investigation');
 
       app.proposalList = CK.Model.awake.proposals;
       app.investigationList = CK.Model.awake.investigations;
@@ -520,13 +520,22 @@ CK.Mobile = function() {
     jQuery('#bucket-tagging-btn-container .active').removeClass('active');
   };
 
-  app.chooseInterestGroup = function(chosenTagName, callback) {
+  app.chooseInterestGroup = function(chosenTagName) {
     console.log('Interest group chosen...');
     app.userState.set('tag_group',chosenTagName);
     app.userState.save().done(function() {
-      //app.tryRestoreUnfinishedProposal(chosenTagName); TODO - add me back in when it's no longer insane
-      // OR app.tryRestoreUnfinishedInvestigation();
-      callback();
+      Sail.app.hideAll();
+      if (Sail.app.runState.get('phase') === 'propose') {
+        jQuery('.brand').text('Common Knowledge - Specializing in ' + chosenTagName);
+        jQuery('#proposal-screen').removeClass('hide');
+        app.tryRestoreUnfinishedProposal(chosenTagName)
+        Sail.app.proposalListView.render();
+      } else {
+        jQuery('.brand').text('Common Knowledge - Investigating ' + chosenTagName);
+        jQuery('#investigation-screen').removeClass('hide');
+        app.tryRestoreUnfinishedInvestigation(chosenTagName);
+        Sail.app.investigationListView.render();
+      }
     });
   };
 
@@ -641,9 +650,6 @@ CK.Mobile = function() {
     app.investigation.set('headline','');
 
     if (type === 'inquiry') {
-      // setup the inquiry specific elements of the view? Or do we have 3 views?
-      jQuery('#investigation-header').text('New Inquiry Note');
-      jQuery('#investigation-header').effect("highlight", {}, 1500);
       //jQuery('#new-information-entry').removeClass('hide');
       //jQuery('#references-entry').removeClass('hide');
       app.investigation.set('type', 'inquiry');
@@ -797,7 +803,7 @@ CK.Mobile = function() {
     });
 
     if (unfinishedProp) {
-      console.log("Restoring Proposal");
+      console.log("Restoring Proposal...");
       app.proposal = unfinishedProp;
 
       if (app.proposalInputView === null) {
@@ -817,8 +823,62 @@ CK.Mobile = function() {
     }
   };
 
-  app.tryRestoreUnfinishedInvestigation = function() {
-    console.log('TODO');
+  app.tryRestoreUnfinishedInvestigation = function(tagName) {
+    var toRestore = null;
+    var unfinishedProp = _.find(app.proposalList.models, function(prop) {
+      return prop.get('author') === app.userData.account.login && prop.get('published') === false && prop.get('tag').name === tagName && (prop.get('proposal') || prop.get('justification'));
+    });
+    var unfinishedInq = _.find(app.investigationList.models, function(inv) {
+      return inv.get('type') === 'inquiry' && inv.hasAuthor(app.userData.account.login) && inv.get('published') === false && inv.get('interest_group') === tagName && (inv.get('headline') || inv.get('new_information'));
+    });
+    if (unfinishedProp) {
+      if (!unfinishedInq || unfinishedProp.get('created_at') > unfinishedInq.get('created_at')) {
+        toRestore = 'prop';
+      }
+    }
+    if (unfinishedInq) {
+      if (!unfinishedProp || unfinishedInq.get('created_at') > unfinishedProp.get('created_at')) {
+        toRestore = 'inq';
+      }
+    }
+    if (toRestore === 'prop') {
+      console.log("Restoring Proposal...");
+      app.proposal = unfinishedProp;
+
+      if (app.proposalInputView === null) {
+        app.proposalInputView = new CK.Mobile.View.ProposalInputView({
+          el: jQuery('#investigation-proposal-input'),
+          model: app.proposal
+        });
+      } else {
+        if (typeof app.proposalInputView.model !== 'undefined' && app.proposalInputView.model !== null) {
+          app.proposalInputView.stopListening(app.proposalInputView.model);
+        }
+        app.proposalInputView.model = app.proposal;
+      }
+      app.proposal.set('type','');                  // again, not ideal, but easy and cheap
+      app.proposalInputView.$el.show('slide', {direction: 'up'});
+      app.proposalInputView.render();   
+    }
+    else if (toRestore === 'inq') {
+      console.log("Restoring Inquiry...");
+      app.investigation = unfinishedInq;
+
+      if (app.investigationInputView === null) {
+        app.investigationInputView = new CK.Mobile.View.InvestigationInputView({
+          el: jQuery('#investigation-input'),
+          model: app.investigation
+        });
+      } else {
+        if (typeof app.investigationInputView.model !== 'undefined' && app.investigationInputView.model !== null) {
+          app.investigationInputView.stopListening(app.investigationInputView.model);
+        }
+        app.investigationInputView.model = app.investigation;
+      }
+      app.investigationInputView.$el.show('slide', {direction: 'up'});
+      app.investigationInputView.render();   
+    }     
+
   };
 
   app.showWaitScreen = function() {
@@ -841,7 +901,7 @@ CK.Mobile = function() {
     jQuery('#contribution-to-tag-screen').addClass('hide');
     jQuery('#bucket-tagging-screen').addClass('hide');
     jQuery('#choose-interest-group-screen').addClass('hide');
-    jQuery('#proposal-screen').addClass('hide');
+    jQuery('#invosal-screen').addClass('hide');
     jQuery('#proposal-justification-input').addClass('hide');
     jQuery('#investigation-screen').addClass('hide');
   };
