@@ -329,6 +329,10 @@ input {
 	height: 22px;
 }
 
+#investigation-details .investigation-type {
+	margin-bottom: 0.5em
+}
+
 /* for the research/experiment buttons */
 #proposal-justification-input #proposal-type-btn-container, #investigation-proposal-type-btn-container {
 	display: inline;
