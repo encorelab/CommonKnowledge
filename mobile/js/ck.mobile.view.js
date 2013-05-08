@@ -431,16 +431,17 @@
         var chosenTagName = jQuery('#'+chosenTagId).text();
         var ok = confirm("Do you want to choose <"+ chosenTagName + "> as your specialization?");
         if (ok) {
-          Sail.app.chooseInterestGroup(chosenTagName);
-          Sail.app.hideAll();
-          if (Sail.app.runState.get('phase') === 'propose') {
-            jQuery('.brand').text('Common Knowledge - Specializing in ' + chosenTagName);
-            jQuery('#proposal-screen').removeClass('hide');
-            Sail.app.proposalListView.render();
-          } else {
-            jQuery('#investigation-screen').removeClass('hide');
-            Sail.app.investigationListView.render();
-          }
+          Sail.app.chooseInterestGroup(chosenTagName, function() {
+            Sail.app.hideAll();
+            if (Sail.app.runState.get('phase') === 'propose') {
+              jQuery('.brand').text('Common Knowledge - Specializing in ' + chosenTagName);
+              jQuery('#proposal-screen').removeClass('hide');
+              Sail.app.proposalListView.render();
+            } else {
+              jQuery('#investigation-screen').removeClass('hide');
+              Sail.app.investigationListView.render();
+            }            
+          });
         } else {
           jQuery('#interest-group-list-btn-container .tag-btn').removeClass('active');
         }
