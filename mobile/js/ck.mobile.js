@@ -528,7 +528,7 @@ CK.Mobile = function() {
       if (Sail.app.runState.get('phase') === 'propose') {
         jQuery('.brand').text('Common Knowledge - Specializing in ' + chosenTagName);
         jQuery('#proposal-screen').removeClass('hide');
-        app.tryRestoreUnfinishedProposal(chosenTagName)
+        app.tryRestoreUnfinishedProposal(chosenTagName);
         Sail.app.proposalListView.render();
       } else {
         jQuery('.brand').text('Common Knowledge - Investigating ' + chosenTagName);

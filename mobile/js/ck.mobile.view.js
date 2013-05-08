@@ -1060,7 +1060,7 @@
 
     initialize: function() {
       console.log("Initializing InvestigationInputView...");
-      var attachedProp = Sail.app.proposalList.findWhere( {'_id':Sail.app.investigation.get('proposal_id')} )
+      var attachedProp = Sail.app.proposalList.findWhere( {'_id':Sail.app.investigation.get('proposal_id')} );
       jQuery('#investigation-header').text('New Inquiry Note about '+attachedProp.get('headline'));
       jQuery('#investigation-header').effect("highlight", {}, 1500);      
     },
