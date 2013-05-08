@@ -830,9 +830,9 @@
         // if investigation
         } else {
           // if investigation->inquiry
-          if (invObj.get('type') === 'inquiry') {
-            jQuery('#inv-build-on-btn').removeClass('hide');
-          }
+          // if (invObj.get('type') === 'inquiry') {
+          //   jQuery('#inv-build-on-btn').removeClass('hide');
+          // }
           Sail.app.showInvestigationDetails(invObj);
         }
       },
