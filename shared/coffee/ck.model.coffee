@@ -145,10 +145,22 @@ class CK.Model
                     return "'votes' must be an array of strings but is #{JSON.stringify(attrs.votes)}"
 
             setTag: (tag) ->
+                @_tag = null
                 @set 'tag',
                     id: tag.id.toLowerCase()
                     name: tag.get('name')
                     colorClass: tag.get('colorClass')
+
+            getColorClass: ->
+                if @has 'tag'
+                    @get('tag').colorClass
+                else
+                    null
+
+            getTag: ->
+                return null unless @has('tag')
+                # memoize
+                @_tag ?= CK.Model.awake.tags.get @get('tag').id
 
             
 
@@ -172,6 +184,13 @@ class CK.Model
             hasAuthor: (username) ->
                 _.contains @get('authors'), username
 
+            getProposal: ->
+                return null unless @get('proposal_id')
+                # memoize
+                @_proposal ?= CK.Model.awake.proposals.get @get('proposal_id')
+
+            getTag: ->
+                @getProposal().getTag()
 
         class @Contributions extends @db.Collection('contributions')
             model: CK.Model.Contribution

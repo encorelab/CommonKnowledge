@@ -130,6 +130,22 @@ body {
                 opacity: 0;
             }
         }
+
+        &.group1-color {
+            background-color: lighten(invert($tag-bubble-color-group1-to), 15%);
+        }
+
+        &.group2-color {
+            background-color: lighten(invert($tag-bubble-color-group2-to), 15%);
+        }
+
+        &.group3-color {
+            background-color: lighten(invert($tag-bubble-color-group3-to), 15%);
+        }
+
+        &.group4-color {
+            background-color: lighten(invert($tag-bubble-color-group4-to), 15%);
+        }
     }
 
     &.paused {
@@ -255,6 +271,8 @@ body {
 
     overflow: hidden;
 
+    @include transition(1s, height);
+
     background: -moz-linear-gradient(top, $contrib-bubble-base-color 0%, darken($contrib-bubble-base-color, 4%) 50%, darken($contrib-bubble-base-color, 12%) 51%, darken($contrib-bubble-base-color, 3%) 100%); /* FF3.6+ */
     background: -webkit-linear-gradient(top, $contrib-bubble-base-color 0%,darken($contrib-bubble-base-color, 4%) 50%,darken($contrib-bubble-base-color, 12%) 51%,darken($contrib-bubble-base-color, 3%) 100%); /* Chrome10+,Safari5.1+ */
     background: linear-gradient(to bottom, $contrib-bubble-base-color 0%,darken($contrib-bubble-base-color, 4%) 50%,darken($contrib-bubble-base-color, 12%) 51%,darken($contrib-bubble-base-color, 3%) 100%); /* W3C */
@@ -279,13 +297,18 @@ body {
     // }
 
     .meta .author {
-        color: rgba(black, 0.8);
+        color: rgba(#666, 0.7);
         font-size: 11px;
         margin-bottom: 1em;
         padding: 2px;
         position: absolute;
         right: 14px;
         top: 0;
+
+        text-align: right;
+        text-overflow: ellipsis;
+        height: 1em;
+        overflow: hidden;
     }
 
     .meta .buildon-counter {
@@ -306,6 +329,20 @@ body {
         padding-bottom: 6px;
         padding-left: 14px;
         padding-right: 14px;
+
+        .bodypart {
+            h5 {
+                margin-top: 4px;
+                margin-bottom: 0;
+                text-transform: capitalize;
+                color: #666;
+            }
+
+            .part-content {
+                font-size: 11px;
+                color: #666;
+            }
+        }
     }
 
     .buildons {
@@ -336,6 +373,41 @@ body {
         }
     }
 
+    .votes {
+        background-image: url(../img/lightbulb_big_on.png);
+        background-repeat: no-repeat;
+        position: absolute;
+        width: 36px;
+        height: 31px;
+        background-size: 100%;
+        text-align: center;
+        right: 0px;
+        bottom: 6px;
+        font-size: 14px;
+        padding-top: 5px;
+        color: #440;
+        font-weight: bold;
+        opacity: 1.0;
+
+        &.off {
+            background-image: url(../img/lightbulb_big_off.png);
+            font-weight: normal;
+            opacity: 0.5;
+        }
+
+        &.changed {
+          -webkit-animation-name: pulse;
+          -webkit-animation-duration: 1s;
+          -webkit-animation-iteration-count: 1;
+          -webkit-animation-timing-function: ease-out;
+
+          -moz-animation-name: pulse;
+          -moz-animation-duration: 1s;
+          -moz-animation-iteration-count: 1;
+          -moz-animation-timing-function: ease-out;
+        }
+    }
+
     // .tag {
     //     background: rgba(200,200,200, 0.75);
     //     border-radius: 5px;
@@ -349,6 +421,9 @@ body {
         // min-width: 200px;
         max-width: 240px;
         background-color: rgba($contribution-bubble-color, 1.0);
+
+        overflow-y: scroll;
+
         //background: rgba($contribution-bubble-color, 1.0);
     }
     &.opened .body {
@@ -363,40 +438,25 @@ body {
     // }
 
     &.proposal {
-        .votes {
-            background-image: url(../img/lightbulb_big_on.png);
-            background-repeat: no-repeat;
-            position: absolute;
-            width: 36px;
-            height: 31px;
-            background-size: 100%;
-            text-align: center;
-            right: 0px;
-            bottom: 6px;
-            font-size: 14px;
-            padding-top: 5px;
-            color: #440;
-            font-weight: bold;
-            opacity: 1.0;
+        
+    }
 
-            &.off {
-                background-image: url(../img/lightbulb_big_off.png);
-                font-weight: normal;
-                opacity: 0.5;
-            }
-
-            &.changed {
-              -webkit-animation-name: pulse;
-              -webkit-animation-duration: 1s;
-              -webkit-animation-iteration-count: 1;
-              -webkit-animation-timing-function: ease-out;
-
-              -moz-animation-name: pulse;
-              -moz-animation-duration: 1s;
-              -moz-animation-iteration-count: 1;
-              -moz-animation-timing-function: ease-out;
-            }
+    &.investigation {
+        .investigation-type {
+            margin-top: 12px;
+            font-size: 12px;
+            padding-top: 4px;
+            padding-bottom: 0;
+            padding-left: 14px;
+            padding-right: 14px;
+            margin-bottom: -12px;
+            color: #888;
+            text-transform: uppercase;
         }
+
+        // &.investigation-experiment {
+        //     border: dotted 2px rgba(255,255,255,0.5);
+        // }
     }
 }
 

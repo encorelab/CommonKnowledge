@@ -70,25 +70,25 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
         pos = @pos
         pos.left? && pos.left > 0
 
-    renderConnector: (toTag) ->
-        tagId = toTag.id.toLowerCase()
-        tagView = @wall.balloonViews[tagId]
+    renderConnector: (toDoc) ->
+        toId = toDoc.id.toLowerCase()
+        toView = @wall.balloonViews[toId]
         
 
-        connectorId = @model.id + "-" + tagId
+        connectorId = @model.id + "-" + toId
 
         connector = CK.Smartboard.View.findOrCreate @wall.$el, "##{connectorId}",
             "<div class='connector #{@BALLOON_TYPE}-connector' id='#{connectorId}'></div>"
 
-        unless tagView? && @$el.is(':visible')
+        unless toView? && @$el.is(':visible')
             # tag hasn't been rendered yet... we'll skip it for now
             connector.remove() # this may be expensive (since it'll have to be re-added)
             return
 
         x1 = @left + (@width/2)
         y1 = @top + (@height/2)
-        x2 = tagView.left + (tagView.width/2)
-        y2 = tagView.top + (tagView.height/2)
+        x2 = toView.left + (toView.width/2)
+        y2 = toView.top + (toView.height/2)
 
         connectorLength = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2))
 
@@ -104,8 +104,14 @@ class CK.Smartboard.View.Balloon extends CK.Smartboard.View.Base
             'transform': connectorTransform
 
         connector.addClass "connects-#{@model.id}"
-        connector.addClass "connects-#{tagId}"
-        connector.addClass "tag-#{tagId}" # used for Wall's @tagFilters
+        connector.addClass "connects-#{toId}"
+
+        if toDoc instanceof CK.Model.Tag
+            connector.addClass "tag-#{toId}" # used for Wall's @tagFilters
+
+        if toDoc.getTag? # used for interestGroup board filtering
+            ig = toDoc.getTag()
+            connector.addClass "ig-#{ig.id}"
 
         return connector # for additional manipulation in subclasses
 
@@ -142,6 +148,9 @@ class CK.Smartboard.View.ContentBalloon extends CK.Smartboard.View.Balloon
             return # prevent unwanted click action while dragging
 
         @$el.toggleClass('opened')
+
+        # need to update connectors since balloon height probably changed
+        @renderConnectors() if @renderConnectors?
         
 
     render: =>
@@ -161,9 +170,9 @@ class CK.Smartboard.View.ContentBalloon extends CK.Smartboard.View.Balloon
         @body = @findOrCreate '.body',
             "<div class='body'></div>"
 
-        meta = @findOrCreate '.meta',
+        @meta = @findOrCreate '.meta',
             "<div class='meta'><span class='author'></span></div>"
-        meta.find('.author')
+        @meta.find('.author')
             .text(@model.get('author'))
             .addClass("author-#{@model.get('author')}")
 
@@ -171,6 +180,20 @@ class CK.Smartboard.View.ContentBalloon extends CK.Smartboard.View.Balloon
         #@processContributionByType()
 
         return this # return this for chaining
+
+    renderBodypart: (part, content) ->
+        # skip if content is all whitespace
+        return if !content or content.match(/^\s+$/g)
+
+        humanPart = part.replace('_', ' ')
+
+        partContainer = CK.Smartboard.View.findOrCreate @body, ".#{part}",
+            "<div class='bodypart #{part}'>
+                <h5>#{humanPart}</h5>
+                <div class='part-content'></div>
+            </div>"
+
+        partContainer.find('.part-content').text(content)
             
 
     renderBuildons: =>
@@ -178,7 +201,9 @@ class CK.Smartboard.View.ContentBalloon extends CK.Smartboard.View.Balloon
 
         buildons = @model.get('build_ons')
 
-        return unless buildons.length
+        return unless buildons.length > 0
+
+        return unless _.any(buildons, (b) => b.published)
 
         container = @findOrCreate '.buildons',
             "<div class='buildons'></div>"
@@ -210,6 +235,25 @@ class CK.Smartboard.View.ContentBalloon extends CK.Smartboard.View.Balloon
 
         # if changed
         #     @$el.effect('highlight', 2000)
+
+    renderVotes: ->
+        return unless @model.has('votes')
+
+        votes = @model.get('votes')
+
+        return unless votes?
+
+        container = @findOrCreate '.votes',
+            "<div class='votes'></div>"
+
+        voteCount = votes.length
+
+        if voteCount is 0
+            container.addClass('off')
+            container.text('')
+        else
+            container.removeClass('off')
+            container.text(voteCount)
 
 
 
@@ -288,32 +332,91 @@ class CK.Smartboard.View.ProposalBalloon extends CK.Smartboard.View.ContentBallo
 
         @$el.addClass('proposal')
 
+        @$el.addClass "ig-"+@model.getTag().id
+
         if @model.has 'tag'
             tag = @model.get('tag')
-            @$el.addClass(tag.colorClass)
+            @$el.addClass @model.getColorClass()
             @$el.addClass("tag-#{tag.id}")
 
-        @body.html('')
-        @body.append(jQuery('<p>').text(@model.get('proposal')))
-        @body.append(jQuery('<p>').text(@model.get('justification')))
+        @renderBodypart 'proposal', @model.get('proposal')
+        @renderBodypart 'justification', @model.get('justifiction')
 
     renderConnectors: ->
         @renderConnector(@model.get 'tag') if @model.has 'tag'
 
-    renderVotes: ->
-        container = @findOrCreate '.votes',
-            "<div class='votes'></div>"
+        # FIXME: this is inefficient... consider
+        #           adding an 'investigations' property to
+        #           proposals
+        investigations = CK.Model.awake.investigations.filter (inv) =>
+            inv.get('proposal_id') is @model.id
 
-        voteCount = @model.get('votes').length
+        for inv in investigations
+            bv = @wall.balloonViews[inv.id]
+            if bv?
+                bv.renderConnector(@model)
+
+
+class CK.Smartboard.View.InvestigationBalloon extends CK.Smartboard.View.ContentBalloon
+    className: 'investigation balloon'
+    BALLOON_TYPE: 'investigation'
+
+    initialize: ->
+        super()
+        @model.on 'change:votes', =>
+            @$el.find('.votes').addClass('changed')
+            setTimeout (=> @$el.find('.votes').removeClass 'changed'),
+                1001
+
+    render: ->
+        invType = @findOrCreate '.investigation-type',
+            "<h2 class='investigation-type'></h2>"
+
+        invType.text(@model.get 'type')
+
+        super()
+
+        @renderVotes()
+        @renderBuildons()
+
+        unless @model.has 'proposal_id'
+            throw "Investigation##{@model.id} has no proposal_id!"
+
+        prop = @model.getProposal()
+
+        @$el.addClass "proposal-#{prop.id}"
+        @$el.addClass prop.getColorClass()
+        @$el.addClass "ig-"+@model.getTag().id
+
+        @$el.addClass("investigation-#{@model.get('type')}")
+
+        auth = @meta.find('.author')
         
+        auth.text(@model.get('authors').join(" "))
+        for author in @model.get('authors')
+            auth.addClass("author-#{author}")
 
-        if voteCount is 0
-            container.addClass('off')
-            container.text('')
-        else
-            container.removeClass('off')
-            container.text(voteCount)
+        @renderConnectors()
 
+        possibleBodyparts = [
+            'new_information',
+            'references',
+            'question',
+            'findings',
+            'conclusions',
+            'hypothesis',
+            'method',
+            'results'
+        ]
+
+        for part in possibleBodyparts when @model.has(part)
+            @renderBodypart part, @model.get(part)
+
+
+    renderConnectors: =>
+        prop = @model.getProposal()
+        return unless prop?
+        @renderConnector(prop)
 
 
 class CK.Smartboard.View.TagBalloon extends CK.Smartboard.View.Balloon

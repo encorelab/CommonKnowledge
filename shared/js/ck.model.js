@@ -217,11 +217,28 @@
         };
 
         Proposal.prototype.setTag = function(tag) {
+          this._tag = null;
           return this.set('tag', {
             id: tag.id.toLowerCase(),
             name: tag.get('name'),
             colorClass: tag.get('colorClass')
           });
+        };
+
+        Proposal.prototype.getColorClass = function() {
+          if (this.has('tag')) {
+            return this.get('tag').colorClass;
+          } else {
+            return null;
+          }
+        };
+
+        Proposal.prototype.getTag = function() {
+          var _ref;
+          if (!this.has('tag')) {
+            return null;
+          }
+          return (_ref = this._tag) != null ? _ref : this._tag = CK.Model.awake.tags.get(this.get('tag').id);
         };
 
         return Proposal;
@@ -262,6 +279,18 @@
 
         Investigation.prototype.hasAuthor = function(username) {
           return _.contains(this.get('authors'), username);
+        };
+
+        Investigation.prototype.getProposal = function() {
+          var _ref;
+          if (!this.get('proposal_id')) {
+            return null;
+          }
+          return (_ref = this._proposal) != null ? _ref : this._proposal = CK.Model.awake.proposals.get(this.get('proposal_id'));
+        };
+
+        Investigation.prototype.getTag = function() {
+          return this.getProposal().getTag();
         };
 
         return Investigation;
