@@ -973,6 +973,7 @@
       var view = this;
       // clear everything
       jQuery('#investigation-details .field').text('');
+      jQuery('#investigation-details .field').removeClass('populated');
 
       if (view.model instanceof CK.Model.Proposal) {
         console.log("InvestigationDetailsView is rendering a Proposal Model");
@@ -985,6 +986,7 @@
             if (jQuery(this).attr('name') !== 'headline') {
               attr_name = Sail.app.capitaliseFirstLetter(attr_name);
               jQuery(this).append(jQuery("<b>"+attr_name+": </b>"));
+              jQuery(this).addClass('populated');
             }
             
             jQuery(this).append(jQuery("<span>"+attr_data+"</span>"));
@@ -1001,6 +1003,7 @@
             if (jQuery(this).attr('name') !== 'headline') {
               attr_name = Sail.app.removeUnderscore(Sail.app.capitaliseFirstLetter(attr_name));
               jQuery(this).append(jQuery("<b>"+attr_name+": </b>"));
+              jQuery(this).addClass('populated');
             }
             
             jQuery(this).append(jQuery("<span>"+attr_data+"</span>"));
