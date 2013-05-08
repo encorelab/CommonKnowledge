@@ -818,6 +818,8 @@
   self.InvestigationListView = Backbone.View.extend({
     events: {
       'click .list-item': function(ev) {
+        // hide the buttons, to be reshown later
+        jQuery('#investigation-details .btn').addClass('hide');
         // remove background colors, then adding the correct one
         jQuery('#investigation-list .note').removeClass('selected');
         var $target = jQuery(ev.target);
@@ -827,10 +829,20 @@
         $target.children().first().addClass('selected');
         var contribId = $target.attr('data');
 
+        var propObj = Sail.app.proposalList.get(contribId);
+        var invObj = Sail.app.investigationList.get(contribId);
+
+        // if proposal
         if ($target.hasClass('proposal-item')) {
-          Sail.app.showInvestigationDetails(Sail.app.proposalList.get(contribId));
+          jQuery('#new-investigation-btn').removeClass('hide');
+          Sail.app.showInvestigationDetails(propObj);
+        // if investigation
         } else {
-          Sail.app.showInvestigationDetails(Sail.app.investigationList.get(contribId));
+          // if investigation->inquiry
+          if (invObj.get('type') === 'inquiry') {
+            jQuery('#inv-build-on-btn').removeClass('hide');
+          }
+          Sail.app.showInvestigationDetails(invObj);
         }
       },
 
@@ -942,15 +954,16 @@
   self.InvestigationDetailsView = Backbone.View.extend({
     events: {
       'click #new-investigation-btn': function() {
-        if (this.model instanceof CK.Model.Proposal) {
-          // TODO: handle the other non-inquiry cases
-          Sail.app.createNewInvestigation('inquiry', this.model.id);
-        } else if (this.model instanceof CK.Model.Investigation) {
-          // if inquiry
-          // else something
-        } else {
-          console.error('Unknown model type!');
-        }
+        Sail.app.createNewInvestigation('inquiry', this.model.id);
+        // if (this.model instanceof CK.Model.Proposal) {
+        //   // TODO: handle the other non-inquiry cases
+        //   Sail.app.createNewInvestigation('inquiry', this.model.id);
+        // } else if (this.model instanceof CK.Model.Investigation) {
+        //   // if inquiry
+        //   // else something
+        // } else {
+        //   console.error('Unknown model type!');
+        // }
       }
     },
 
