@@ -42,6 +42,9 @@ CK.Mobile = function() {
   app.proposal = null;
   app.proposalInputView = null;
   app.proposalDetailsView = null;
+  app.investigationList = null;
+  app.investigationListView = null;
+  app.investigationDetailsView = null;
 
   app.autoSaveTimer = window.setTimeout(function() { console.log("timer activated"); } ,10);
 
@@ -115,7 +118,7 @@ CK.Mobile = function() {
       app.tryRestoreUnfinishedContribution();
 
     } else if (p === 'propose') {
-      // PROPOSAL PHASE
+      // PROPOSE PHASE
       console.log('Entering propose phase...');
       jQuery('.brand').text('Common Knowledge - Propose');
 
@@ -148,6 +151,36 @@ CK.Mobile = function() {
       app.interestGroupListView.render();
 
       app.updateUserState();
+
+    } else if (p === 'investigate') {
+      // INVESTIGATE PHASE
+      console.log('Entering investigate phase...');
+      jQuery('.brand').text('Common Knowledge - Investigation');
+
+      app.proposalList = CK.Model.awake.proposals;
+      app.investigationList = CK.Model.awake.investigations;
+
+      if (app.investigationListView === null) {
+        app.investigationListView = new CK.Mobile.View.InvestigationListView({
+          el: jQuery('#investigation-list'),
+          proposals: app.proposalList,
+          investigations: app.investigationList
+        });
+      } else {
+        if (typeof app.investigationListView.collection !== 'undefined' && app.investigationListView.collection !== null) {
+          app.investigationListView.stopListening(app.investigationListView.collection);
+        }
+        app.investigationListView.proposals = app.proposalList;
+        app.investigationListView.investigations = app.investigationList;
+      }
+      app.proposalList.on('add sync change', app.investigationListView.render, app.investigationListView);
+      app.investigationList.on('add sync change', app.investigationListView.render, app.investigationListView);
+
+      // TODO - sort?
+
+      app.interestGroupListView.render();
+
+      app.updateUserState();      
 
     } else {
       console.log("Unknown state...");
@@ -193,6 +226,9 @@ CK.Mobile = function() {
         console.error('Unknown tagging status...');
       }
     } else if (app.runState.get('phase') === 'propose') {
+      jQuery('#choose-interest-group-screen').removeClass('hide');
+
+    } else if (app.runState.get('phase') === 'investigate') {
       jQuery('#choose-interest-group-screen').removeClass('hide');
 
     }
@@ -487,12 +523,20 @@ CK.Mobile = function() {
     console.log('Interest group chosen...');
     app.userState.set('tag_group',chosenTagName);
     app.userState.save().done(function() {
-      app.tryRestoreUnfinishedProposal(chosenTagName);
+      //app.tryRestoreUnfinishedProposal(chosenTagName); TODO - add me back in when it's no longer insane
+      // OR app.tryRestoreUnfinishedInvestigation();
     });
   };
 
-  app.createNewProposal = function() {
+  app.createNewProposal = function(type) {
     console.log("Creating a new proposal note...");
+
+    var elType;
+    if (type === 'proposal') {
+      elType = jQuery('#proposal-justification-input');
+    } else {
+      elType = jQuery('#investigation-proposal-input');
+    }
 
     app.proposal = new CK.Model.Proposal();
     // ensure that models inside the collection are wakeful
@@ -502,7 +546,7 @@ CK.Mobile = function() {
     // case: no previous proposalInputView
     if (app.proposalInputView === null) {
       app.proposalInputView = new CK.Mobile.View.ProposalInputView({
-        el: jQuery('#proposal-justification-input'),
+        el: elType,
         model: app.proposal
       });
     // case: already have an proposalInputView with attached model
@@ -518,13 +562,8 @@ CK.Mobile = function() {
 
     var d = new Date();
     var myTag = Sail.app.tagList.findWhere( {'name':Sail.app.userState.get('tag_group')} );
-    // var myTagObj = {
-    //   "id":myTag.id,
-    //   "name":myTag.get('name'),
-    //   "colorClass":myTag.get('colorClass')
-    // };
     app.proposal.set('created_at',d);
-    app.proposal.set('author', app.userData.account.login);             // change this to some kind of 'team' authorship?
+    app.proposal.set('author', app.userData.account.login);
     app.proposal.set('published', false);
     app.proposal.set('headline','');
     app.proposal.set('proposal','');
@@ -545,6 +584,7 @@ CK.Mobile = function() {
         console.log("Proposal saved!");
 
         jQuery('#proposal-justification-input').hide('slide', {direction: 'up'});
+        jQuery('#investigation-proposal-input').hide('slide', {direction: 'up'});
         jQuery().toastmessage('showSuccessToast', "Proposal submitted");
 
         // I think we need to lock the fields again and force the student to use the new note/build on button
@@ -555,6 +595,7 @@ CK.Mobile = function() {
         view.stopListening(Sail.app.proposal);
         // clear fields
         view.$el.find(".field").val(null);
+        jQuery('#investigation-proposal-type-btn-container .btn').removeClass('active');
         jQuery('#proposal-type-btn-container .btn').removeClass('active');
       })
       .fail( function() {
@@ -580,6 +621,23 @@ CK.Mobile = function() {
     app.proposalDetailsView.render();
   };
 
+  app.showInvestigationDetails = function(note) {
+    console.log('Creating a new investigation details...');
+    var details = note;
+    if (app.investigationDetailsView === null) {
+      app.investigationDetailsView = new CK.Mobile.View.InvestigationDetailsView({
+        el: jQuery('#investigation-details'),
+        model: details
+      });
+    } else {
+      if (typeof app.investigationDetailsView.model !== 'undefined' && app.investigationDetailsView.model !== null) {
+        app.investigationDetailsView.stopListening(app.investigationDetailsView.model);
+      }
+      app.investigationDetailsView.model = details;
+    }
+    details.wake(Sail.app.config.wakeful.url);
+    app.investigationDetailsView.render();
+  };
 
   // ******** HELPER FUNCTIONS ********* //
 
@@ -680,6 +738,10 @@ CK.Mobile = function() {
     }
   };
 
+  app.tryRestoreUnfinishedInvestigation = function() {
+    console.log('TODO');
+  };
+
   app.showWaitScreen = function() {
     console.log("Showing wait screen...");
     jQuery('#wait-screen').removeClass('hide');
@@ -702,6 +764,7 @@ CK.Mobile = function() {
     jQuery('#choose-interest-group-screen').addClass('hide');
     jQuery('#proposal-screen').addClass('hide');
     jQuery('#proposal-justification-input').addClass('hide');
+    jQuery('#investigation-screen').addClass('hide');
   };
 
   app.autoSave = function(model, inputKey, inputValue, instantSave) {

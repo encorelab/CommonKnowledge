@@ -433,9 +433,14 @@
         if (ok) {
           Sail.app.chooseInterestGroup(chosenTagName);
           Sail.app.hideAll();
-          jQuery('.brand').text('Common Knowledge - Specializing in ' + chosenTagName);
-          jQuery('#proposal-screen').removeClass('hide');
-          Sail.app.proposalListView.render();
+          if (Sail.app.runState.get('phase') === 'purpose') {
+            jQuery('.brand').text('Common Knowledge - Specializing in ' + chosenTagName);
+            jQuery('#proposal-screen').removeClass('hide');
+            Sail.app.proposalListView.render();
+          } else {
+            jQuery('#investigation-screen').removeClass('hide');
+            Sail.app.investigationListView.render();
+          }
         } else {
           jQuery('#interest-group-list-btn-container .tag-btn').removeClass('active');
         }
@@ -448,9 +453,6 @@
     render: function () {
       var view = this;
       console.log("Rendering InterestGroupListView!");
-
-      // clear all buttons
-      // jQuery('.tag-btn').removeClass('active');
 
       view.collection.each(function(tag) {
         // don't show the N/A tag
@@ -496,7 +498,7 @@
 
       'click #new-proposal-btn': function(ev) {
         jQuery('#proposal-justification-input').removeClass('disabled');
-        Sail.app.createNewProposal();
+        Sail.app.createNewProposal('proposal');
       }
     },
 
@@ -740,7 +742,15 @@
         Sail.app.proposal.set('type',jQuery(ev.target).html());
       },
 
-      'click #share-proposal-justification-btn': 'share'
+      'click #investigation-proposal-type-btn-container': function(ev) {
+        jQuery('#investigation-proposal-type-btn-container .btn').removeClass('active');
+        jQuery(ev.target).addClass('active');
+        Sail.app.proposal.set('type',jQuery(ev.target).html());        
+      },
+
+      'click #share-proposal-justification-btn': 'share',
+
+      'click #share-investigation-proposal-btn': 'shareInvProp'
     },
 
     initialize: function() {
@@ -767,6 +777,22 @@
       }
     },
 
+    shareInvProp: function() {
+      var view = this;
+      // avoid weird entries showing up in the model
+      window.clearTimeout(Sail.app.autoSaveTimer);
+
+      if (!Sail.app.proposal.get('type') || jQuery('#investigation-proposal-headline-entry').val() === '' || jQuery('#investigation-proposal-entry').val() === '' || jQuery('#investigation-justification-entry').val() === '') {
+        jQuery().toastmessage('showErrorToast', "Please fill all fields and choose whether this is a proposal for research or experiment");
+      } else {
+        Sail.app.proposal.set('headline',jQuery('#investigation-proposal-headline-entry').val());
+        Sail.app.proposal.set('proposal',jQuery('#investigation-proposal-entry').val());
+        Sail.app.proposal.set('justification',jQuery('#investigation-justification-entry').val());
+        Sail.app.proposal.set('published',true);
+        Sail.app.saveProposal(view);
+      }
+    },
+
     /**
       Triggers full update of all dynamic elements in the input view
     **/
@@ -774,13 +800,191 @@
       var view = this;
       console.log("rendering ProposalInputView...");
 
-      // we all need to have a serious talk about Backbone renders. I feel like I have to fight them constantly...
+      // for proposal
       jQuery('#proposal-headline-entry').val(Sail.app.proposal.get('headline'));
       jQuery('#proposal-entry').val(Sail.app.proposal.get('proposal'));
       jQuery('#justification-entry').val(Sail.app.proposal.get('justification'));
+      // for investigation
+      jQuery('#investigation-proposal-headline-entry').val(Sail.app.proposal.get('headline'));
+      jQuery('#investigation-proposal-entry').val(Sail.app.proposal.get('proposal'));
+      jQuery('#investigation-justification-entry').val(Sail.app.proposal.get('justification'));
     }
   });
 
+
+  /**
+    InvestigationListView
+  **/
+  self.InvestigationListView = Backbone.View.extend({
+    events: {
+      'click .list-item': function(ev) {
+        // remove background colors, then adding the correct one
+        jQuery('#investigation-list .note').removeClass('selected');
+        var $target = jQuery(ev.target);
+        if (!$target.is('.list-item')) {
+           $target = $target.parents('.list-item').first();
+        }
+        $target.children().first().addClass('selected');
+        var contribId = $target.attr('data');
+
+        if ($target.hasClass('proposal-item')) {
+          Sail.app.showInvestigationDetails(Sail.app.proposalList.get(contribId));
+        } else {
+          Sail.app.showInvestigationDetails(Sail.app.investigationList.get(contribId));
+        }
+      },
+
+      'click #inv-new-proposal-btn': function(ev) {
+        jQuery('#investigation-input').removeClass('disabled');
+        Sail.app.createNewProposal('investigation');
+      }
+    },
+
+    initialize: function () {
+      console.log("Initializing InvestigationListView...");
+    },
+
+    /**
+      Triggers full update of all dynamic elements in the list view
+    **/
+    render: function () {
+      console.log("Rendering InvestigationListView...");
+      var createdAt;
+      var myTag = Sail.app.tagList.findWhere( {'name':Sail.app.userState.get('tag_group')} );
+
+      // add the proposals to the list
+      Sail.app.proposalList.each(function(prop) {
+        if (prop.get('published') === true && prop.get('tag').id === myTag.get('_id')) {
+          var propTag;
+
+          if (jQuery('li#proposal'+prop.id).length === 0) {
+            // if this prop doesn't exist, add it
+            var note = "<li id='proposal" + prop.id + "' class='list-item proposal-item' data='" + prop.id + "'><a class='note'><span class='headline'></span>";
+            note += "<br /><i class='icon-chevron-right'></i>";
+            note += "<span class='author'></span><span class='date'></span></a></li>";
+            note = jQuery(note);
+            jQuery('#investigation-list .nav-list').append(note);
+            note.find('.headline').text('Proposal - '+prop.get('headline'));
+            createdAt = prop.get('created_at');
+            if (createdAt) {
+              note.find('.date').text(' (' + createdAt.toLocaleDateString() + ' ' + createdAt.toLocaleTimeString() + ')');
+            }
+            note.find('.author').text(prop.get('author'));
+            // add the correct colors based on tag_name
+            // propTag = Sail.app.tagList.findWhere( {'name':prop.get('tag').name} );
+            // note.children().first().addClass(propTag.get('colorClass'));            
+
+          } else if (prop.hasChanged()) {
+            // if this prop has changed, clear the li and add new info
+            var liEl = jQuery('#proposal'+prop.id);
+            //liEl.html('');
+            liEl.find('.headline').text('Proposal - '+prop.get('headline'));
+            createdAt = prop.get('created_at');
+            if (createdAt) {
+              liEl.find('.date').text(' (' + createdAt.toLocaleDateString() + ' ' + createdAt.toLocaleTimeString() + ')');
+            }
+            liEl.find('.author').text(prop.get('author'));
+            // add the correct colors based on tag_name
+            // propTag = Sail.app.tagList.findWhere( {'name':prop.get('tag').name} );
+            // liEl.children().first().addClass(propTag.get('colorClass')); 
+
+          } else {
+            // else break out
+            return;
+          }
+        }
+      });
+
+    }
+  });
+
+
+  /**
+    InvestigationDetailsView
+  **/
+  self.InvestigationDetailsView = Backbone.View.extend({
+    events: {
+
+    },
+
+    initialize: function () {
+      console.log("Initializing InvestigationDetailsView...");
+
+    },
+
+    render: function () {
+      console.log("rendering InvestigationDetailsView!");
+      var view = this;
+
+      // // clear everything
+      // jQuery('#proposal-details .field').text('');  
+
+      // // created_at will return undefined, so need to check it exists...
+      // if (view.model && view.model.get('created_at')) {
+      //   // set up the tags element
+      //   var tagsEl = '<div><i>';
+      //   if (view.model instanceof CK.Model.Proposal) {
+      //     jQuery('#proposal-details .note-proposal').html('<b>Proposal: </b>'+view.model.get('proposal'));
+      //     jQuery('#proposal-details .note-justification').html('<b>Justification: </b>'+view.model.get('justification'));
+      //     // tags
+      //     tagsEl += view.model.get('tag').name;
+      //     jQuery('#like-btn-container').removeClass('hide');
+
+      //   } else if (view.model instanceof CK.Model.Contribution) {
+      //     jQuery('#proposal-details .note-content').text(view.model.get('content'));
+      //     // buildOns
+      //     var buildOnEl = '<div>';
+      //     _.each(view.model.get('build_ons'), function(b) {
+      //       if (b.published === true) {
+      //         buildOnEl += '<hr />';
+      //         buildOnEl += b.content;
+      //         buildOnEl += '<br /><span class="build-on-metadata">~' + b.author;
+      //         buildOnEl += ' (' + b.created_at.toLocaleDateString() + ' ' + b.created_at.toLocaleTimeString() + ')' +  '</span>';            
+      //       }
+      //     });
+      //     buildOnEl += '</div>';
+      //     buildOnEl = jQuery(buildOnEl);
+      //     jQuery('#proposal-details .note-build-ons').append(buildOnEl);
+      //     // tags
+      //     _.each(view.model.get('tags'), function(t) {
+      //       tagsEl += ' ';
+      //       tagsEl += t.name;
+      //     });
+      //     jQuery('#like-btn-container').addClass('hide');
+      //   } else {
+      //     console.error('Unknown type of view.model in ProposalDetailsView');
+      //   }
+
+      //   // for both Contribution model and Proposal model
+      //   jQuery('#proposal-details .note-headline').text(view.model.get('headline'));
+      //   jQuery('#proposal-details .note-author').text('~'+view.model.get('author'));
+      //   var createdAt = view.model.get('created_at');
+      //   if (createdAt) {
+      //     jQuery('#proposal-details .note-created-at').text(' (' + createdAt.toLocaleDateString() + ' ' + createdAt.toLocaleTimeString() + ')');
+      //   }
+      //   tagsEl += '</i></div>';
+      //   tagsEl = jQuery(tagsEl);
+      //   jQuery('#proposal-details .note-tags').append(tagsEl);
+
+      // } else {
+      //   console.warn("ProposalDetailsView render skipped this contrib because created_at doesn't exist");
+      // }
+
+      // // voting buttons
+      // var votesArray = this.model.get('votes');
+      // if (_.contains(votesArray, Sail.app.userData.account.login)) {
+      //   jQuery('#like-btn-off').addClass('hide');
+      //   jQuery('#like-btn-on').removeClass('hide');
+      // } else {
+      //   jQuery('#like-btn-on').addClass('hide');
+      //   jQuery('#like-btn-off').removeClass('hide');
+      // }
+
+    }
+  });
+
+
+ 
 
 
   CK.Mobile.View = self;
