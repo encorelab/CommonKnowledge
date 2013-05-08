@@ -869,9 +869,9 @@
         if (prop.get('published') === true && prop.get('tag').id === myTag.get('_id')) {
           var propTag;
 
-          if (jQuery('li#proposal'+prop.id).length === 0) {
+          if (jQuery('li#investigation-proposal'+prop.id).length === 0) {
             // if this prop doesn't exist, add it
-            var note = "<li id='proposal" + prop.id + "' class='list-item proposal-item' data='" + prop.id + "'><a class='note'><span class='headline'></span>";
+            var note = "<li id='investigation-proposal" + prop.id + "' class='list-item proposal-item' data='" + prop.id + "'><a class='note'><span class='headline'></span>";
             note += "<br /><i class='icon-chevron-right'></i>";
             note += "<span class='author'></span><span class='date'></span></a></li>";
             note = jQuery(note);
@@ -888,7 +888,7 @@
 
           } else if (prop.hasChanged()) {
             // if this prop has changed, clear the li and add new info
-            var liEl = jQuery('#proposal'+prop.id);
+            var liEl = jQuery('#investigation-proposal'+prop.id);
             //liEl.html('');
             liEl.find('.headline').text('Proposal - '+prop.get('headline'));
             createdAt = prop.get('created_at');
