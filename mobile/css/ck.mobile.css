@@ -329,8 +329,12 @@ input {
 	height: 22px;
 }
 
+#investigation-details .populated {
+	margin-bottom: 0.3em;
+}
+
 #investigation-details .investigation-type {
-	margin-bottom: 0.5em
+	margin-bottom: 0.8em
 }
 
 /* for the research/experiment buttons */

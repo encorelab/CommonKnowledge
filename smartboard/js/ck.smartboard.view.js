@@ -978,7 +978,7 @@
         this.$el.addClass("tag-" + tag.id);
       }
       this.renderBodypart('proposal', this.model.get('proposal'));
-      return this.renderBodypart('justification', this.model.get('justifiction'));
+      return this.renderBodypart('justification', this.model.get('justification'));
     };
 
     ProposalBalloon.prototype.renderConnectors = function() {

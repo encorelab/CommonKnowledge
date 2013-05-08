@@ -937,6 +937,15 @@ CK.Mobile = function() {
     return string.charAt(0).toUpperCase() + string.slice(1);
   };
 
+  app.removeUnderscore = function(string) {
+    var ind = string.indexOf("_");
+    if (ind > -1) {
+      return string.slice(0, ind) + ' ' + app.capitaliseFirstLetter(string.slice(ind+1));
+    } else {
+      return string;
+    }
+  };
+
 };
 
 CK.Mobile.prototype = new Sail.App();

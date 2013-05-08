@@ -340,7 +340,7 @@ class CK.Smartboard.View.ProposalBalloon extends CK.Smartboard.View.ContentBallo
             @$el.addClass("tag-#{tag.id}")
 
         @renderBodypart 'proposal', @model.get('proposal')
-        @renderBodypart 'justification', @model.get('justifiction')
+        @renderBodypart 'justification', @model.get('justification')
 
     renderConnectors: ->
         @renderConnector(@model.get 'tag') if @model.has 'tag'
