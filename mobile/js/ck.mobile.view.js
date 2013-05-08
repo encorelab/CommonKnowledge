@@ -899,7 +899,7 @@
       // add the investigations to the list
       view.options.investigations.each(function(inv){
         // if (inv.get('published') === true && inv.get('tag').id === myTag.get('_id')) {
-        if (inv.get('published') === true) {
+        if (inv.get('published') === true && inv.get('interest_group') === myTag.get('name')) {
           if (jQuery('li#investigation'+inv.id).length === 0) {
             // if this inv doesn't exist, add it
             var note = "<li id='investigation" + inv.id + "' class='list-item investigation-item' data='" + inv.id + "'><a class='note'><span class='headline'></span>";
@@ -962,22 +962,47 @@
           var attr_name = jQuery(this).attr('name');
           var attr_data = view.model.get(attr_name);
           
-          if (jQuery(this).attr('name') === 'proposal' || jQuery(this).attr('name') === 'justification') {
-            attr_name = Sail.app.capitaliseFirstLetter(attr_name);
-            jQuery(this).append(jQuery("<b>"+attr_name+": </b>"));
+          if (attr_data && attr_data !== '') {
+            if (jQuery(this).attr('name') !== 'headline') {
+              attr_name = Sail.app.capitaliseFirstLetter(attr_name);
+              jQuery(this).append(jQuery("<b>"+attr_name+": </b>"));
+            }
+            
+            jQuery(this).append(jQuery("<span>"+attr_data+"</span>"));
           }
-          
-          jQuery(this).append(jQuery("<span>"+attr_data+"</span>"));
         });
       } else if (view.model instanceof CK.Model.Investigation) {
         console.log("InvestigationDetailsView is rendering a Investigation Model");
+     
+        jQuery('#investigation-details .investigation').each(function(){
+          var attr_name = jQuery(this).attr('name');
+          var attr_data = view.model.get(attr_name);
+          
+          if (attr_data && attr_data !== '') {
+            if (jQuery(this).attr('name') !== 'headline') {
+              attr_name = Sail.app.capitaliseFirstLetter(attr_name);
+              jQuery(this).append(jQuery("<b>"+attr_name+": </b>"));
+            }
+            
+            jQuery(this).append(jQuery("<span>"+attr_data+"</span>"));
+          }
+        });
       } else {
         console.error("InvestigationDetailsView is expecting a Proposal or Investigation Model");
         console.error(view.model);
       }
 
       // add author
-      jQuery('#investigation-details .note-author').text('~'+view.model.get('author'));
+      if (view.model.has('author')) {
+        jQuery('#investigation-details .note-author').text('~'+view.model.get('author'));
+      } else if (view.model.has('authors')) {
+        var authors = '';
+        _.each(view.model.get('authors'), function(a){
+          authors += a + ', ';
+        });
+        jQuery('#investigation-details .note-author').text('~'+authors);
+      }
+      
       // add creation date
       if (view.model.has('created_at') && view.model.get('created_at').getMonth) {
         jQuery('#investigation-details .note-created-at').text(' (' + view.model.get('created_at').toLocaleDateString() + ' ' + view.model.get('created_at').toLocaleTimeString() + ')');
