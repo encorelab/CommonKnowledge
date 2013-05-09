@@ -971,9 +971,9 @@
       this.renderConnectors();
       this.renderVotes();
       this.$el.addClass('proposal');
-      this.$el.addClass("ig-" + this.model.getTag().id);
       if (this.model.has('tag')) {
         tag = this.model.get('tag');
+        this.$el.addClass("ig-" + tag.id);
         this.$el.addClass(this.model.getColorClass());
         this.$el.addClass("tag-" + tag.id);
       }
@@ -1032,7 +1032,7 @@
     };
 
     InvestigationBalloon.prototype.render = function() {
-      var auth, author, invType, part, possibleBodyparts, prop, _i, _j, _len, _len1, _ref, _results;
+      var auth, author, invType, part, possibleBodyparts, prop, tag, _i, _j, _len, _len1, _ref, _results;
       invType = this.findOrCreate('.investigation-type', "<h2 class='investigation-type'></h2>");
       invType.text(this.model.get('type'));
       InvestigationBalloon.__super__.render.call(this);
@@ -1047,7 +1047,10 @@
       }
       this.$el.addClass("proposal-" + prop.id);
       this.$el.addClass(prop.getColorClass());
-      this.$el.addClass("ig-" + this.model.getTag().id);
+      tag = this.model.getTag();
+      if (tag != null) {
+        this.$el.addClass("ig-" + tag.id);
+      }
       this.$el.addClass("investigation-" + (this.model.get('type')));
       auth = this.meta.find('.author');
       auth.text(this.model.get('authors').join(" "));
