@@ -1047,7 +1047,9 @@
       }
       this.$el.addClass("proposal-" + prop.id);
       this.$el.addClass(prop.getColorClass());
-      this.$el.addClass("ig-" + this.model.getTag().id);
+      if (this.model.has('tag')) {
+        this.$el.addClass("ig-" + this.model.getTag().id);
+      }
       this.$el.addClass("investigation-" + (this.model.get('type')));
       auth = this.meta.find('.author');
       auth.text(this.model.get('authors').join(" "));

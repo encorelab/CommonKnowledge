@@ -390,7 +390,7 @@ class CK.Smartboard.View.InvestigationBalloon extends CK.Smartboard.View.Content
 
         @$el.addClass "proposal-#{prop.id}"
         @$el.addClass prop.getColorClass()
-        @$el.addClass "ig-"+@model.getTag().id
+        @$el.addClass "ig-"+@model.getTag().id if @model.has('tag')
 
         @$el.addClass("investigation-#{@model.get('type')}")
 
