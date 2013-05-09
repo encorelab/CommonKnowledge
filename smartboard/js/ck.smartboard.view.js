@@ -357,11 +357,11 @@
             if (ig != null) {
               this.changeWatermark(ig.get('name'));
               jQuery('body').addClass('mode-investigate-with-topic').addClass(ig.get('colorClass'));
-              elementsToRemove = ".contribution, .contribution-connector, .tag, .proposal-connector, " + (".proposal:not(.ig-" + ig.id + "), .investigation:not(.ig-" + ig.id + "), .connector:not(.ig-" + ig.id + ")");
+              elementsToRemove = ".balloon.contribution, .connector.contribution-connector, .balloon.tag, .connector.proposal-connector, " + (".balloon.proposal:not(.ig-" + ig.id + "), .balloon.investigation:not(.ig-" + ig.id + "), .connector:not(.ig-" + ig.id + ")");
             } else {
               this.changeWatermark("investigate");
               jQuery('body').removeClass('mode-investigate-with-topic');
-              elementsToRemove = '.contribution, .contribution-connector';
+              elementsToRemove = '.balloon.contribution, .connector.contribution-connector';
             }
             fadeoutStyle = jQuery("<style>                            " + elementsToRemove + " {                                opacity: 0.0;                            }                        </style>");
             hideStyle = jQuery("<style>                            " + elementsToRemove + " {                                display: none;                            }                        </style>");
@@ -1042,6 +1042,9 @@
         throw "Investigation#" + this.model.id + " has no proposal_id!";
       }
       prop = this.model.getProposal();
+      if (prop == null) {
+        return;
+      }
       this.$el.addClass("proposal-" + prop.id);
       this.$el.addClass(prop.getColorClass());
       this.$el.addClass("ig-" + this.model.getTag().id);

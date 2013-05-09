@@ -384,6 +384,10 @@ class CK.Smartboard.View.InvestigationBalloon extends CK.Smartboard.View.Content
 
         prop = @model.getProposal()
 
+        unless prop?
+            return
+            #throw "Investigation##{@model.id} has is connected to a proposal that does not exist!"
+
         @$el.addClass "proposal-#{prop.id}"
         @$el.addClass prop.getColorClass()
         @$el.addClass "ig-"+@model.getTag().id
