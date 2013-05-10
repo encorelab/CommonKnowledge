@@ -148,7 +148,7 @@ input {
 	overflow-y: auto;
 }
 
-#contribution-input, #proposal-justification-input, #investigation-proposal-input, #investigation-input {
+#contribution-input, #proposal-justification-input, #investigation-proposal-input, #inquiry-input {
 	width: 611px;						/* sigh - still fighting bootstrap */
 	background-color: #ddd;
 	border-radius: 7px;
@@ -303,7 +303,7 @@ input {
 	height: 325px;
 }
 
-#proposal-justifiction-header, #investigation-proposal-header, #investigation-header {
+#proposal-justifiction-header, #investigation-proposal-header, #inquiry-header {
 	font-size: 18px;
 	font-weight: bold;
 }
@@ -313,9 +313,15 @@ input {
 	text-shadow: none;
 }
 
-#proposal-justification-input .text-entry, #investigation-proposal-input .text-entry, #investigation-input .text-entry {
+#proposal-justification-input .text-entry, #investigation-proposal-input .text-entry, #inquiry-input .text-entry {
 	width: 97.5%;
 	height: 117px;
+	margin-bottom: 10px;
+}
+
+#experiment-input .text-entry {
+	width: 85%;
+	height: 80px;
 	margin-bottom: 10px;
 }
 
@@ -334,10 +340,10 @@ input {
 }
 
 #investigation-details .investigation-type {
-	margin-bottom: 0.8em
+	margin-bottom: 1.4em
 }
 
-/* for the research/experiment buttons */
+/* for the research/experiment buttons in proposals */
 #proposal-justification-input #proposal-type-btn-container, #investigation-proposal-type-btn-container {
 	display: inline;
 }
@@ -347,9 +353,14 @@ input {
 }
 
 /* for the share button */
-#proposal-justification-input .btn-container, #investigation-proposal-input .btn-container, #investigation-input .btn-container {
+#proposal-justification-input .btn-container, #investigation-proposal-input .btn-container, #inquiry-input .btn-container {
 	bottom: 284px;
 	right: 7px;
+}
+
+#experiment-input .btn-container {
+	bottom: 284px;
+	right: 26px;
 }
 
 #like-btn-title {
@@ -366,6 +377,10 @@ input {
 
 #like-btn-on {
 	bottom: 7px;
+}
+
+#investigation-details .btn {
+	width: 120px;
 }
 
 

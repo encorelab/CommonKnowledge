@@ -635,6 +635,10 @@ CK.Mobile = function() {
   app.createNewInvestigation = function(type, propId) {
     console.log('Creating a new investigation...');
 
+    if (app.investigationInputView && app.investigationInputView.model) {
+      app.investigationInputView.stopListening(app.investigationInputView.model);
+    }
+
     app.investigation = new CK.Model.Investigation();
     // ensure that models inside the collection are wakeful
     app.investigation.wake(Sail.app.config.wakeful.url);
@@ -643,41 +647,41 @@ CK.Mobile = function() {
     // think about how to set up the different UI elements - here or in the view?
     var d = new Date();
     app.investigation.set('created_at',d);
-    app.investigation.set('authors', [app.userData.account.login]);
-    app.investigation.set('published', false); 
-    app.investigation.set('interest_group', app.userState.get('tag_group'));
-    app.investigation.set('proposal_id', propId);
+    app.investigation.set('authors',[app.userData.account.login]);
+    app.investigation.set('published',false); 
+    app.investigation.set('interest_group',app.userState.get('tag_group'));
+    app.investigation.set('proposal_id',propId);
     app.investigation.set('headline','');
 
     if (type === 'inquiry') {
-      //jQuery('#new-information-entry').removeClass('hide');
-      //jQuery('#references-entry').removeClass('hide');
-      app.investigation.set('type', 'inquiry');
-      app.investigation.set('build_ons', []);
+      app.investigation.set('type','inquiry');
+      app.investigation.set('build_ons',[]);
       app.investigation.set('new_information','');
       app.investigation.set('references','');
-    } else if (type === 'research') {
 
+      app.investigationInputView = new CK.Mobile.View.InquiryInputView({
+        el: jQuery('#inquiry-input'),
+        model: app.investigation
+      });
+
+    } else if (type === 'research') {
+      // TODO?
     } else if (type === 'experiment') {
+      app.investigation.set('type','experiment');
+      app.investigation.set('question','');
+      app.investigation.set('hypothesis','');
+      app.investigation.set('method','');
+      app.investigation.set('results','');
+      app.investigation.set('conclusions','');
+
+      app.investigationInputView = new CK.Mobile.View.ExperimentInputView({
+        el: jQuery('#experiment-input'),
+        model: app.investigation
+      });
+
 
     } else {
       console.error('Unknown investigation type!');
-    }
-
-    // TODO - setup 3 different views for this (inquiry, research, experiment)
-    // case: no previous investigationInputView
-    if (app.investigationInputView === null) {
-      app.investigationInputView = new CK.Mobile.View.InvestigationInputView({
-        el: jQuery('#investigation-input'),
-        model: app.investigation
-      });
-    // case: already have an investigationInputView with attached model
-    } else {
-      // detatch that model and attach the current contrib model
-      if (typeof app.investigationInputView.model !== 'undefined' && app.investigationInputView.model !== null) {
-        app.investigationInputView.stopListening(app.investigationInputView.model);
-      }
-      app.investigationInputView.model = app.investigation;
     }
 
     app.investigationInputView.$el.show('slide', {direction: 'up'});    
@@ -693,7 +697,8 @@ CK.Mobile = function() {
       .done( function() {
         console.log("Investigation saved!");
 
-        jQuery('#investigation-input').hide('slide', {direction: 'up'});
+        jQuery('#inquiry-input').hide('slide', {direction: 'up'});
+        jQuery('#experiment-input').hide('slide', {direction: 'up'});
         jQuery().toastmessage('showSuccessToast', "Investigation submitted");
 
         // clear the old proposal plus ui fields
@@ -824,24 +829,26 @@ CK.Mobile = function() {
   };
 
   app.tryRestoreUnfinishedInvestigation = function(tagName) {
+    var restoreArray = [];
     var toRestore = null;
+    // find an unfinished, unpublished prop and inv (default grabs the last/newest one, which is the one we want)
     var unfinishedProp = _.find(app.proposalList.models, function(prop) {
       return prop.get('author') === app.userData.account.login && prop.get('published') === false && prop.get('tag').name === tagName && (prop.get('proposal') || prop.get('justification'));
     });
-    var unfinishedInq = _.find(app.investigationList.models, function(inv) {
-      return inv.get('type') === 'inquiry' && inv.hasAuthor(app.userData.account.login) && inv.get('published') === false && inv.get('interest_group') === tagName && (inv.get('headline') || inv.get('new_information'));
+    var unfinishedInq = _.find(app.investigationList.models, function(inq) {
+      return inq.hasAuthor(app.userData.account.login) && inq.get('published') === false && inq.get('interest_group') === tagName && inq.get('type') === 'inquiry' && inq.get('headline');
     });
-    if (unfinishedProp) {
-      if (!unfinishedInq || unfinishedProp.get('created_at') > unfinishedInq.get('created_at')) {
-        toRestore = 'prop';
-      }
-    }
-    if (unfinishedInq) {
-      if (!unfinishedProp || unfinishedInq.get('created_at') > unfinishedProp.get('created_at')) {
-        toRestore = 'inq';
-      }
-    }
-    if (toRestore === 'prop') {
+    var unfinishedExp = _.find(app.investigationList.models, function(exp) {
+      return exp.hasAuthor(app.userData.account.login) && exp.get('published') === false && exp.get('interest_group') === tagName && exp.get('type') === 'experiment' && exp.get('headline');
+    });    
+    // decide which of three is newest
+    if (unfinishedProp) { restoreArray.push(unfinishedProp); }
+    if (unfinishedInq) { restoreArray.push(unfinishedInq); }
+    if (unfinishedExp) { restoreArray.push(unfinishedExp); }
+    toRestore = _.max(restoreArray, function(o) { return o.get('created_at'); });
+
+    // restore the newest of the two
+    if (toRestore instanceof CK.Model.Proposal) {
       console.log("Restoring Proposal...");
       app.proposal = unfinishedProp;
 
@@ -858,26 +865,50 @@ CK.Mobile = function() {
       }
       app.proposal.set('type','');                  // again, not ideal, but easy and cheap
       app.proposalInputView.$el.show('slide', {direction: 'up'});
-      app.proposalInputView.render();   
-    }
-    else if (toRestore === 'inq') {
-      console.log("Restoring Inquiry...");
-      app.investigation = unfinishedInq;
+      app.proposalInputView.render();
 
-      if (app.investigationInputView === null) {
-        app.investigationInputView = new CK.Mobile.View.InvestigationInputView({
-          el: jQuery('#investigation-input'),
-          model: app.investigation
-        });
+    } else if (toRestore instanceof CK.Model.Investigation) {
+      console.log("Restoring Inquiry...");
+      var viewEl;
+      if (toRestore.get('type') === 'inquiry') {
+        app.investigation = unfinishedInq;
+        viewEl = jQuery('#inquiry-input');
       } else {
-        if (typeof app.investigationInputView.model !== 'undefined' && app.investigationInputView.model !== null) {
-          app.investigationInputView.stopListening(app.investigationInputView.model);
-        }
-        app.investigationInputView.model = app.investigation;
+        viewEl = jQuery('#experiment-input');
+        app.investigation = unfinishedExp;
       }
+
+      if (app.investigation.get('type') === 'inquiry') {
+        if (app.investigationInputView === null) {
+          app.investigationInputView = new CK.Mobile.View.InquiryInputView({
+            el: viewEl,
+            model: app.investigation
+          });
+        } else {
+          if (typeof app.investigationInputView.model !== 'undefined' && app.investigationInputView.model !== null) {
+            app.investigationInputView.stopListening(app.investigationInputView.model);
+          }
+          app.investigationInputView.model = app.investigation;
+        }
+      } else if (app.investigation.get('type') === 'experiment') {
+        if (app.investigationInputView === null) {
+          app.investigationInputView = new CK.Mobile.View.ExperimentInputView({
+            el: viewEl,
+            model: app.investigation
+          });
+        } else {
+          if (typeof app.investigationInputView.model !== 'undefined' && app.investigationInputView.model !== null) {
+            app.investigationInputView.stopListening(app.investigationInputView.model);
+          }
+          app.investigationInputView.model = app.investigation;
+        }
+      } else {
+        console.error('Unknown type, skipping restore!');
+      }
+
       app.investigationInputView.$el.show('slide', {direction: 'up'});
-      app.investigationInputView.render();   
-    }     
+      app.investigationInputView.render();
+    }
 
   };
 

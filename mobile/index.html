@@ -271,8 +271,11 @@
                     </div>
                 </div>
                 <div class="btn-container">
-                    <a id="new-investigation-btn" class="btn btn-primary hide">
-                        New Investigation
+                    <a id="new-inquiry-btn" class="btn btn-primary hide">
+                        New Inquiry
+                    </a>
+                    <a id="new-experiment-btn" class="btn btn-primary hide">
+                        New Experiment
                     </a>
                     <a id="inv-build-on-btn" class="btn btn-primary hide">
                         Build On
@@ -280,21 +283,39 @@
                 </div>
             </div>   
 
-            <div id="investigation-input" class="span8 view-container hide">
-                <div id="investigation-header" class="container-header">
-                    <!-- filled by InvestigationInputView -->
+            <div id="inquiry-input" class="span8 view-container hide">
+                <div id="inquiry-header" class="container-header">
+                    <!-- filled by InquiryInputView -->
                 </div>
                 <div class="title-entry-container">
-                    <textarea class="field headline-entry" id="investigation-headline-entry" name="headline" placeholder="Headline..."></textarea>
+                    <textarea class="field headline-entry" id="inquiry-headline-entry" name="headline" placeholder="Headline..."></textarea>
                     <textarea class="field text-entry" id="new-information-entry" name="new_information" placeholder="What new information have you observed, measured, or read about?"></textarea>
                     <textarea class="field text-entry" id="references-entry" name="references" placeholder="What resource(s) did you use to learn this? (e.g. simulation name+URL, book title+author, information website name+URL, etc.)"></textarea>
                     <div class="btn-container btn-group action-btn-group">
-                        <a id="share-investigation-btn" class="btn btn-success">
+                        <a id="share-inquiry-btn" class="btn btn-success">
                             Share
                         </a>
                     </div>
                 </div>
             </div>
+            <div id="experiment-input" class="span8 view-container hide">
+                <div id="experiment-header" class="container-header">
+                    <!-- filled by ExperimentInputView -->
+                </div>
+                <div class="title-entry-container scrollable">
+                    <textarea class="field headline-entry" id="experiment-headline-entry" name="headline" placeholder="Headline..."></textarea>
+                    <textarea class="field text-entry" id="experiment-question-entry" name="question" placeholder="What question are you investigating?"></textarea>
+                    <textarea class="field text-entry" id="experiment-hypothesis-entry" name="hypothesis" placeholder="Make an educated guess about how this works!"></textarea>
+                    <textarea class="field text-entry" id="experiment-method-entry" name="method" placeholder="How you will test your hypothesis?"></textarea>
+                    <textarea class="field text-entry" id="experiment-results-entry" name="results" placeholder="Share all your observations and/or measurements from your experiment."></textarea>
+                    <textarea class="field text-entry" id="experiment-conclusions-entry" name="conclusions" placeholder="Analyze your observations and/or measurements to see if your hypothesis is true or false!"></textarea>
+                    <div class="btn-container btn-group action-btn-group">
+                        <a id="share-experiment-btn" class="btn btn-success">
+                            Share
+                        </a>
+                    </div>
+                </div>
+            </div>            
             <div id="investigation-proposal-input" class="span8 view-container hide">
                 <div id="investigation-proposal-header" class="container-header">
                     Propose and Justify

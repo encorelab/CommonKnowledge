@@ -825,7 +825,8 @@
 
         // if proposal
         if ($target.hasClass('proposal-item')) {
-          jQuery('#new-investigation-btn').removeClass('hide');
+          jQuery('#new-inquiry-btn').removeClass('hide');
+          jQuery('#new-experiment-btn').removeClass('hide');
           Sail.app.showInvestigationDetails(propObj);
         // if investigation
         } else {
@@ -839,14 +840,10 @@
 
       'click #inv-new-proposal-btn': function(ev) {
         // if other field is already there, hide it
-        jQuery('#investigation-input').hide();
+        jQuery('#inquiry-input').hide();
+        jQuery('#experiment-input').hide();
 
-        // // clear the old proposal plus ui fields
-        // view.stopListening(model);
-        // // clear fields
-        // view.$el.find(".field").val(null);
-
-        jQuery('#investigation-input').removeClass('disabled');
+        //jQuery('#inquiry-input').removeClass('disabled');
         Sail.app.createNewProposal('investigation');
       }
     },
@@ -952,10 +949,16 @@
   **/
   self.InvestigationDetailsView = Backbone.View.extend({
     events: {
-      'click #new-investigation-btn': function() {
+      'click #new-inquiry-btn': function() {
         jQuery('#investigation-proposal-input').hide();
+        jQuery('#experiment-input').hide();
         Sail.app.createNewInvestigation('inquiry', this.model.id);
       },
+      'click #new-experiment-btn': function() {
+        jQuery('#investigation-proposal-input').hide();
+        jQuery('#inquiry-input').hide();
+        Sail.app.createNewInvestigation('experiment', this.model.id);
+      },      
 
       'click #inv-build-on-btn': function() {
         alert('Under construction');
@@ -1034,9 +1037,9 @@
 
 
   /**
-    InvestigationInputView
+    InquiryInputView
   **/
-  self.InvestigationInputView = Backbone.View.extend({
+  self.InquiryInputView = Backbone.View.extend({
     events: {
       'keyup :input': function(ev) {
         var view = this,
@@ -1055,27 +1058,25 @@
         }, 5000);
       },
 
-      'click #share-investigation-btn': 'share'
+      'click #share-inquiry-btn': 'share'
     },
 
     initialize: function() {
-      console.log("Initializing InvestigationInputView...");
+      console.log("Initializing InquiryInputView...");
       var attachedProp = Sail.app.proposalList.findWhere( {'_id':Sail.app.investigation.get('proposal_id')} );
-      jQuery('#investigation-header').text('New Inquiry Note about '+attachedProp.get('headline'));
-      jQuery('#investigation-header').effect("highlight", {}, 1500);      
+      jQuery('#inquiry-header').text('New Inquiry Note about '+attachedProp.get('headline'));
+      jQuery('#inquiry-header').effect("highlight", {}, 1500);      
     },
-
 
     share: function() {
       var view = this;
       // avoid weird entries showing up in the model
       window.clearTimeout(Sail.app.autoSaveTimer);
 
-      // for inquiry
-      if (jQuery('#investigation-headline-entry').val() === '' || jQuery('#new-information-entry').val() === '') {
+      if (jQuery('#inquiry-headline-entry').val() === '' || jQuery('#new-information-entry').val() === '') {
         jQuery().toastmessage('showErrorToast', "Please enter both new information and a headline");
       } else {
-        Sail.app.investigation.set('headline',jQuery('#investigation-headline-entry').val());
+        Sail.app.investigation.set('headline',jQuery('#inquiry-headline-entry').val());
         Sail.app.investigation.set('new_information',jQuery('#new-information-entry').val());
         Sail.app.investigation.set('references',jQuery('#references-entry').val());
         Sail.app.investigation.set('published',true);
@@ -1083,19 +1084,74 @@
       }
     },
 
-    /**
-      Triggers full update of all dynamic elements in the input view
-    **/
     render: function () {
       var view = this;
-      console.log("Rendering InvestigationInputView...");
+      console.log("Rendering InquiryInputView...");
 
-      // better to do the render with a _.each(fields)
-
-      // for inquiry
-      jQuery('#investigation-headline-entry').val(Sail.app.investigation.get('headline'));
+      jQuery('#inquiry-headline-entry').val(Sail.app.investigation.get('headline'));
       jQuery('#new-information-entry').val(Sail.app.investigation.get('new_information'));
       jQuery('#references-entry').val(Sail.app.investigation.get('references'));
+    }
+  });
+
+
+  /**
+    ExperimentInputView
+  **/
+  self.ExperimentInputView = Backbone.View.extend({
+    events: {
+      'keyup :input': function(ev) {
+        var view = this,
+          inputKey = ev.target.name,
+          userValue = jQuery('#'+ev.target.id).val();
+        // If we hit a key clear intervals so that during typing intervals don't kick in
+        window.clearTimeout(Sail.app.autoSaveTimer);
+
+        // save after 10 keystrokes
+        Sail.app.autoSave(view.model, inputKey, userValue, false);
+
+        // setting up a timer so that if we stop typing we save stuff after 5 seconds
+        Sail.app.autoSaveTimer = setTimeout( function(){
+          console.log('Autosave data for: '+inputKey);
+          Sail.app.autoSave(view.model, inputKey, userValue, true);
+        }, 5000);
+      },
+
+      'click #share-experiment-btn': 'share'
+    },
+
+    initialize: function() {
+      console.log("Initializing ExperimentInputView...");
+      var attachedProp = Sail.app.proposalList.findWhere( {'_id':Sail.app.investigation.get('proposal_id')} );
+      jQuery('#experiment-header').text('New Experiment about '+attachedProp.get('headline'));
+      jQuery('#experiment-header').effect("highlight", {}, 1500);      
+    },
+
+    share: function() {
+      var view = this;
+      window.clearTimeout(Sail.app.autoSaveTimer);
+
+      if (jQuery('#experiment-headline-entry').val() === '') {
+        jQuery().toastmessage('showErrorToast', "Please enter a headline");
+      } else {
+        Sail.app.investigation.set('headline',jQuery('#experiment-headline-entry').val());
+        Sail.app.investigation.set('question',jQuery('#experiment-question-entry').val());
+        Sail.app.investigation.set('hypothesis',jQuery('#experiment-hypothesis-entry').val());
+        Sail.app.investigation.set('method',jQuery('#experiment-method-entry').val());
+        Sail.app.investigation.set('results',jQuery('#experiment-results-entry').val());
+        Sail.app.investigation.set('conclusions',jQuery('#experiment-conclusions-entry').val());
+        Sail.app.investigation.set('published',true);
+        Sail.app.saveInvestigation(view, this.model);
+      }
+    },
+
+    render: function () {
+      var view = this;
+      console.log("Rendering ExperimentInputView...");
+
+      _.each(jQuery('#experiment-input .field'), function(f) {
+        jQuery(f).val(Sail.app.investigation.get(f.name));
+      });
     }
   });
 
