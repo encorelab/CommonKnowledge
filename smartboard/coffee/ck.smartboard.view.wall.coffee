@@ -255,13 +255,13 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
                         jQuery('body')
                             .addClass('mode-investigate-with-topic')
                             .addClass(ig.get('colorClass'))
-                            
-                        elementsToRemove = ".contribution, .contribution-connector, .tag, .proposal-connector, " +
-                            ".proposal:not(.ig-#{ig.id}), .investigation:not(.ig-#{ig.id}), .connector:not(.ig-#{ig.id})"
+
+                        elementsToRemove = ".balloon.contribution, .connector.contribution-connector, .balloon.tag, .connector.proposal-connector, " +
+                            ".balloon.proposal:not(.ig-#{ig.id}), .balloon.investigation:not(.ig-#{ig.id}), .connector:not(.ig-#{ig.id})"
                     else
                         @changeWatermark "investigate"
                         jQuery('body').removeClass('mode-investigate-with-topic')
-                        elementsToRemove = '.contribution, .contribution-connector'
+                        elementsToRemove = '.balloon.contribution, .connector.contribution-connector'
                     
                     # this is kind of an odd way to do it, but this ensures
                     # that any items matching 'elementsToRemove' that are
