@@ -320,7 +320,7 @@ input {
 }
 
 #experiment-input .text-entry {
-	width: 85%;
+	width: 80%;
 	height: 80px;
 	margin-bottom: 10px;
 }
@@ -381,6 +381,10 @@ input {
 
 #investigation-details .btn {
 	width: 120px;
+}
+
+#connect-btn-title {
+	font-size: 12px;
 }
 
 

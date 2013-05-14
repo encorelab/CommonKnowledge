@@ -834,6 +834,7 @@
           // if (invObj.get('type') === 'inquiry') {
           //   jQuery('#inv-build-on-btn').removeClass('hide');
           // }
+          jQuery('#connect-btn-container').removeClass('hide');
           Sail.app.showInvestigationDetails(invObj);
         }
       },
@@ -880,8 +881,8 @@
             }
             note.find('.author').text(prop.get('author'));
             // add the correct colors based on tag_name
-            // propTag = Sail.app.tagList.findWhere( {'name':prop.get('tag').name} );
-            // note.children().first().addClass(propTag.get('colorClass'));            
+            propTag = Sail.app.tagList.findWhere( {'name':prop.get('tag').name} );
+            note.children().first().addClass(propTag.get('colorClass'));            
 
           } else if (prop.hasChanged()) {
             // if this prop has changed, clear the li and add new info
@@ -958,8 +959,24 @@
         jQuery('#investigation-proposal-input').hide();
         jQuery('#inquiry-input').hide();
         Sail.app.createNewInvestigation('experiment', this.model.id);
-      },      
+      },
 
+      'click #connect-btn-off': function(ev) {
+        // vote
+        this.model.addVote(Sail.app.userData.account.login);
+        this.model.save(null,{patch:true}).done(function() {
+          jQuery('#connect-btn-off').addClass('hide');
+          jQuery('#connect-btn-on').removeClass('hide');
+        });
+      },
+      'click #connect-btn-on': function(ev) {
+        // unvote
+        this.model.removeVote(Sail.app.userData.account.login);
+        this.model.save(null,{patch:true}).done(function() {
+          jQuery('#connect-btn-on').addClass('hide');
+          jQuery('#connect-btn-off').removeClass('hide');
+        });
+      },
       'click #inv-build-on-btn': function() {
         alert('Under construction');
       }
@@ -1030,7 +1047,17 @@
       // add creation date
       if (view.model.has('created_at') && view.model.get('created_at').getMonth) {
         jQuery('#investigation-details .note-created-at').text(' (' + view.model.get('created_at').toLocaleDateString() + ' ' + view.model.get('created_at').toLocaleTimeString() + ')');
-      }
+      }1
+
+      // set the voting buttons
+      var votesArray = this.model.get('votes');
+      if (_.contains(votesArray, Sail.app.userData.account.login)) {
+        jQuery('#connect-btn-off').addClass('hide');
+        jQuery('#connect-btn-on').removeClass('hide');
+      } else {
+        jQuery('#connect-btn-on').addClass('hide');
+        jQuery('#connect-btn-off').removeClass('hide');
+      }      
 
     }
   });

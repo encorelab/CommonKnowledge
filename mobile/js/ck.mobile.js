@@ -727,6 +727,14 @@ CK.Mobile = function() {
     }
     details.wake(Sail.app.config.wakeful.url);
     app.investigationDetailsView.render();
+
+    // now, if the user is the author of the note, open the note in reeditable mode
+    // if (note instanceof CK.Model.Investigation && note.hasAuthor(app.userData.account.login)) {
+    //   console.log('Opening the investigation note in reeditable mode...');
+    //   // **this is going to be omitted for now, maybe TODO later (probably not)**
+    //   // tryRestoreUnfinishedInvestigation is the best way, refactor, use a flag? Think about how we deal with published, cause that could be tough
+
+    // }
   };
 
   // ******** HELPER FUNCTIONS ********* //
