@@ -809,8 +809,9 @@
   self.InvestigationListView = Backbone.View.extend({
     events: {
       'click .list-item': function(ev) {
-        // hide the buttons, to be reshown later
+        // hide the buttons and voting stuff, to be reshown later
         jQuery('#investigation-details .btn').addClass('hide');
+        jQuery('#connect-btn-container').addClass('hide');
         // remove background colors, then adding the correct one
         jQuery('#investigation-list .note').removeClass('selected');
         var $target = jQuery(ev.target);
@@ -1047,7 +1048,7 @@
       // add creation date
       if (view.model.has('created_at') && view.model.get('created_at').getMonth) {
         jQuery('#investigation-details .note-created-at').text(' (' + view.model.get('created_at').toLocaleDateString() + ' ' + view.model.get('created_at').toLocaleTimeString() + ')');
-      }1
+      }
 
       // set the voting buttons
       var votesArray = this.model.get('votes');
