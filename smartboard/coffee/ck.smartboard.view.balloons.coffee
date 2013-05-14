@@ -334,7 +334,7 @@ class CK.Smartboard.View.ProposalBalloon extends CK.Smartboard.View.ContentBallo
 
         if @model.has 'tag'
             tag = @model.get('tag')
-            @$el.addClass "ig-"+tag.id 
+            @$el.addClass "ig-"+tag.id
             @$el.addClass @model.getColorClass()
             @$el.addClass("tag-#{tag.id}")
 

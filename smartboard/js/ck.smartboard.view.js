@@ -413,9 +413,15 @@
     };
 
     Wall.prototype.unpause = function() {
+      var ig;
       jQuery('body').removeClass('paused');
       this.$el.find('#toggle-pause').removeClass('paused').text('Pause');
-      return this.changeWatermark(this.$el.data('phase') || "brainstorm");
+      ig = Sail.app.interestGroup;
+      if (ig != null) {
+        return this.changeWatermark(ig.get('name'));
+      } else {
+        return this.changeWatermark(this.$el.data('phase') || "brainstorm");
+      }
     };
 
     Wall.prototype.changeWatermark = function(text) {

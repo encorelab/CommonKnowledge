@@ -338,7 +338,11 @@ class CK.Smartboard.View.Wall extends CK.Smartboard.View.Base
             .removeClass('paused')
             .text('Pause')
 
-        @changeWatermark(@$el.data('phase') || "brainstorm")
+        ig = Sail.app.interestGroup                     # sorry Matt, not the prettiest, I know...
+        if ig?
+            @changeWatermark ig.get('name')
+        else
+            @changeWatermark(@$el.data('phase') || "brainstorm")
 
     changeWatermark: (text) =>
         jQuery('#watermark').fadeOut 800, ->
