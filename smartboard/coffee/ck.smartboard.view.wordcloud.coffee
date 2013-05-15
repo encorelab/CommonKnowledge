@@ -41,18 +41,56 @@ class CK.Smartboard.View.WordCloud extends CK.Smartboard.View.Base
         punctuation = /[!"&()*+,-\.\/:;<=>?\[\\\]^`\{|\}~]+/g
         wordSeparators = /[\s\u3031-\u3035\u309b\u309c\u30a0\u30fc\uff70]+/g
         text = ''
-        
-        @contributions = new CK.Model.Contributions()
-        @contributions.fetch success: (collection, response) =>
-            _.each collection.models, (c) ->
-                if c.get('published')
-                    console.log c.get('headline'), c.get('content')
-                    text += c.get('headline') + ' '
-                    text += c.get('content') + ' '
+
+        unless Sail.app.runState.get('phase') == 'investigate'
+            @contributions = new CK.Model.Contributions()
+            @contributions.fetch success: (collection, response) =>
+                _.each collection.models, (c) ->
+                    if c.get('published')
+                        console.log c.get('headline'), c.get('content')
+                        text += c.get('headline') + ' '
+                        text += c.get('content') + ' '
+                _.each text.split(wordSeparators), (word) ->
+                    word = word.replace(punctuation, "")
+                    wordsToReturn.push(word)
+                callback (wordsToReturn)
+        else
+            jQuery(".balloon").each ->
+                currentBalloon = jQuery(this)
+                unless currentBalloon.hasClass('unpublished')
+                    if currentBalloon.hasClass('proposal') or currentBalloon.hasClass('investigation')
+                        console.log 'published element?'
+                        text += currentBalloon.children('.headline').text() + ' '
+                        currentBalloon.children('.body').children('.bodypart').children('.part-content').each ->
+                            text += jQuery(this).text() + ' '
+                else
+                    console.log 'ignore unpublished element'
             _.each text.split(wordSeparators), (word) ->
                 word = word.replace(punctuation, "")
                 wordsToReturn.push(word)
             callback (wordsToReturn)
+
+
+    # gatherWordsForCloud: (wordsToReturn, callback) =>
+    #     punctuation = /[!"&()*+,-\.\/:;<=>?\[\\\]^`\{|\}~]+/g
+    #     wordSeparators = /[\s\u3031-\u3035\u309b\u309c\u30a0\u30fc\uff70]+/g
+    #     text = ''
+
+    #     jQuery(".balloon").each ->
+    #         currentBalloon = jQuery(this)
+    #         unless currentBalloon.hasClass('unpublished')
+    #             if currentBalloon.hasClass('proposal') or currentBalloon.hasClass('investigation')
+    #                 console.log 'published element?'
+    #                 text += currentBalloon.children('.headline').text() + ' '
+    #                 currentBalloon.children('.body').children('.bodypart').children('.part-content').each ->
+    #                     text += jQuery(this).text() + ' '
+    #         else
+    #             console.log 'ignore unpublished element'
+    #     _.each text.split(wordSeparators), (word) ->
+    #         word = word.replace(punctuation, "")
+    #         wordsToReturn.push(word)
+    #     callback (wordsToReturn)
+            
 
 
     filterWords: (wordsToFilter) ->

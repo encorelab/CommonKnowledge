@@ -500,23 +500,46 @@
       punctuation = /[!"&()*+,-\.\/:;<=>?\[\\\]^`\{|\}~]+/g;
       wordSeparators = /[\s\u3031-\u3035\u309b\u309c\u30a0\u30fc\uff70]+/g;
       text = '';
-      this.contributions = new CK.Model.Contributions();
-      return this.contributions.fetch({
-        success: function(collection, response) {
-          _.each(collection.models, function(c) {
-            if (c.get('published')) {
-              console.log(c.get('headline'), c.get('content'));
-              text += c.get('headline') + ' ';
-              return text += c.get('content') + ' ';
+      if (Sail.app.runState.get('phase') !== 'investigate') {
+        this.contributions = new CK.Model.Contributions();
+        return this.contributions.fetch({
+          success: function(collection, response) {
+            _.each(collection.models, function(c) {
+              if (c.get('published')) {
+                console.log(c.get('headline'), c.get('content'));
+                text += c.get('headline') + ' ';
+                return text += c.get('content') + ' ';
+              }
+            });
+            _.each(text.split(wordSeparators), function(word) {
+              word = word.replace(punctuation, "");
+              return wordsToReturn.push(word);
+            });
+            return callback(wordsToReturn);
+          }
+        });
+      } else {
+        jQuery(".balloon").each(function() {
+          var currentBalloon;
+          currentBalloon = jQuery(this);
+          if (!currentBalloon.hasClass('unpublished')) {
+            if (currentBalloon.hasClass('proposal') || currentBalloon.hasClass('investigation')) {
+              console.log('published element?');
+              text += currentBalloon.children('.headline').text() + ' ';
+              return currentBalloon.children('.body').children('.bodypart').children('.part-content').each(function() {
+                return text += jQuery(this).text() + ' ';
+              });
             }
-          });
-          _.each(text.split(wordSeparators), function(word) {
-            word = word.replace(punctuation, "");
-            return wordsToReturn.push(word);
-          });
-          return callback(wordsToReturn);
-        }
-      });
+          } else {
+            return console.log('ignore unpublished element');
+          }
+        });
+        _.each(text.split(wordSeparators), function(word) {
+          word = word.replace(punctuation, "");
+          return wordsToReturn.push(word);
+        });
+        return callback(wordsToReturn);
+      }
     };
 
     WordCloud.prototype.filterWords = function(wordsToFilter) {
