@@ -46,7 +46,7 @@ body {
     body.mode-investigate #go-investigate {
       opacity: 0.4; }
     body.mode-investigate #show-word-cloud {
-      display: none; }
+      display: 0.4; }
     body.mode-investigate .contribution, body.mode-investigate .contribution-connector {
       opacity: 0; }
     body.mode-investigate.mode-investigate-with-topic .tag, body.mode-investigate.mode-investigate-with-topic .proposal-connector {
