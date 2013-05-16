@@ -384,9 +384,16 @@ input {
 }
 
 #connect-btn-title {
-	font-size: 12px;
+	float: left;
+	font-size: 11px;
+	margin-top: 5px;
 }
 
+.connect-btn-img {
+	float: right;
+	width: 60px;
+	height: 40px;
+}
 
 
 /* Overwriting and adding CSS rules for Sail.js elements (like Rollcall added login boxes)*/
