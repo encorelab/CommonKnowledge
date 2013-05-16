@@ -375,25 +375,42 @@ body {
     }
 
     .votes {
-        background-image: url(../img/lightbulb_big_on.png);
+        /*background-image: url(../img/lightbulb_big_on.png);*/
         background-repeat: no-repeat;
-        position: absolute;
-        width: 36px;
-        height: 31px;
+        position: absolute; 
         background-size: 100%;
         text-align: center;
         right: 0px;
         bottom: 6px;
         font-size: 14px;
-        padding-top: 5px;
         color: #440;
         font-weight: bold;
         opacity: 1.0;
 
-        &.off {
-            background-image: url(../img/lightbulb_big_off.png);
-            font-weight: normal;
-            opacity: 0.5;
+        &.proposal-votes {
+            background-image: url(../img/lightbulb_big_on.png);
+            width: 36px;
+            height: 31px;
+            padding-top: 5px;
+
+            &.off {
+                background-image: url(../img/lightbulb_big_off.png);
+                font-weight: normal;
+                opacity: 0.5;
+            }
+        }
+
+        &.investigation-votes {
+            background-image: url(../img/connect_btn_on.png);
+            width: 50px;
+            height: 22px;
+            padding-top: 9px;
+
+            &.off {
+                background-image: url(../img/connect_btn_off.png);
+                font-weight: normal;
+                opacity: 0.5;
+            }
         }
 
         &.changed {

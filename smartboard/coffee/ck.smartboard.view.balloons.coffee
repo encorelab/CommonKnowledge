@@ -246,6 +246,12 @@ class CK.Smartboard.View.ContentBalloon extends CK.Smartboard.View.Balloon
         container = @findOrCreate '.votes',
             "<div class='votes'></div>"
 
+        if @model instanceof CK.Model.Proposal
+            container.addClass('proposal-votes')
+        
+        if @model instanceof CK.Model.Investigation
+            container.addClass('investigation-votes')
+
         voteCount = votes.length
 
         if voteCount is 0

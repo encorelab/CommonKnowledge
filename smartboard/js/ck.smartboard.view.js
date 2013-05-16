@@ -886,6 +886,12 @@
         return;
       }
       container = this.findOrCreate('.votes', "<div class='votes'></div>");
+      if (this.model instanceof CK.Model.Proposal) {
+        container.addClass('proposal-votes');
+      }
+      if (this.model instanceof CK.Model.Investigation) {
+        container.addClass('investigation-votes');
+      }
       voteCount = votes.length;
       if (voteCount === 0) {
         container.addClass('off');
