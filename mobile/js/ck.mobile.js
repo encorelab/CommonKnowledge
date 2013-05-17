@@ -844,10 +844,10 @@ CK.Mobile = function() {
       return prop.get('author') === app.userData.account.login && prop.get('published') === false && prop.get('tag').name === tagName && (prop.get('proposal') || prop.get('justification'));
     });
     var unfinishedInq = _.find(app.investigationList.models, function(inq) {
-      return inq.hasAuthor(app.userData.account.login) && inq.get('published') === false && inq.get('interest_group') === tagName && inq.get('type') === 'inquiry' && inq.get('headline');
+      return inq.hasAuthor(app.userData.account.login) && inq.get('published') === false && inq.get('interest_group') === tagName && inq.get('type') === 'inquiry' && (inq.get('headline') || inq.get('new_information') || inq.get('references'));
     });
     var unfinishedExp = _.find(app.investigationList.models, function(exp) {
-      return exp.hasAuthor(app.userData.account.login) && exp.get('published') === false && exp.get('interest_group') === tagName && exp.get('type') === 'experiment' && exp.get('headline');
+      return exp.hasAuthor(app.userData.account.login) && exp.get('published') === false && exp.get('interest_group') === tagName && exp.get('type') === 'experiment' && (exp.get('headline') || exp.get('question') || exp.get('hypothesis') || exp.get('method') || exp.get('results') || exp.get('conclusions'));
     });    
     // decide which of three is newest
     if (unfinishedProp) { restoreArray.push(unfinishedProp); }
