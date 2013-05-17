@@ -528,16 +528,30 @@
         jQuery(".balloon").each(function() {
           var currentBalloon;
           currentBalloon = jQuery(this);
-          if (!currentBalloon.hasClass('unpublished')) {
-            if (currentBalloon.hasClass('proposal') || currentBalloon.hasClass('investigation')) {
-              console.log('published element?');
-              text += currentBalloon.children('.headline').text() + ' ';
-              return currentBalloon.children('.body').children('.bodypart').children('.part-content').each(function() {
-                return text += jQuery(this).text() + ' ';
-              });
+          if (Sail.app.interestGroup != null) {
+            if (currentBalloon.hasClass('ig-' + Sail.app.interestGroup.id)) {
+              if (currentBalloon.hasClass('proposal') || currentBalloon.hasClass('investigation')) {
+                console.log('published element?');
+                text += currentBalloon.children('.headline').text() + ' ';
+                return currentBalloon.children('.body').children('.bodypart').children('.part-content').each(function() {
+                  return text += jQuery(this).text() + ' ';
+                });
+              }
+            } else {
+              return console.log('ignore element not in interest group: ' + Sail.app.interestGroup.id);
             }
           } else {
-            return console.log('ignore unpublished element');
+            if (!currentBalloon.hasClass('unpublished')) {
+              if (currentBalloon.hasClass('proposal') || currentBalloon.hasClass('investigation')) {
+                console.log('published element?');
+                text += currentBalloon.children('.headline').text() + ' ';
+                return currentBalloon.children('.body').children('.bodypart').children('.part-content').each(function() {
+                  return text += jQuery(this).text() + ' ';
+                });
+              }
+            } else {
+              return console.log('ignore unpublished element');
+            }
           }
         });
         _.each(text.split(wordSeparators), function(word) {
