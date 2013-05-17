@@ -1095,7 +1095,7 @@
         auth.addClass("author-" + author);
       }
       this.renderConnectors();
-      possibleBodyparts = ['new_information', 'references', 'question', 'findings', 'conclusions', 'hypothesis', 'method', 'results'];
+      possibleBodyparts = ['new_information', 'references', 'question', 'hypothesis', 'method', 'results', 'conclusions'];
       _results = [];
       for (_j = 0, _len1 = possibleBodyparts.length; _j < _len1; _j++) {
         part = possibleBodyparts[_j];
