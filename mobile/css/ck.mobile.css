@@ -308,7 +308,7 @@ input {
 	font-weight: bold;
 }
 
-#proposal-list .nav-list > li > a {
+#proposal-list .nav-list > li > a, #investigation-list > .nav-list > li > a {
 	color: black;
 	text-shadow: none;
 }
