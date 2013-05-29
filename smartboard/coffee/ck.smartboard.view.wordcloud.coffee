@@ -57,14 +57,24 @@ class CK.Smartboard.View.WordCloud extends CK.Smartboard.View.Base
         else
             jQuery(".balloon").each ->
                 currentBalloon = jQuery(this)
-                unless currentBalloon.hasClass('unpublished')
-                    if currentBalloon.hasClass('proposal') or currentBalloon.hasClass('investigation')
-                        console.log 'published element?'
-                        text += currentBalloon.children('.headline').text() + ' '
-                        currentBalloon.children('.body').children('.bodypart').children('.part-content').each ->
-                            text += jQuery(this).text() + ' '
+                if Sail.app.interestGroup?
+                    if currentBalloon.hasClass('ig-'+Sail.app.interestGroup.id)
+                        if currentBalloon.hasClass('proposal') or currentBalloon.hasClass('investigation')
+                            console.log 'published element?'
+                            text += currentBalloon.children('.headline').text() + ' '
+                            currentBalloon.children('.body').children('.bodypart').children('.part-content').each ->
+                                text += jQuery(this).text() + ' '
+                    else
+                        console.log 'ignore element not in interest group: ' + Sail.app.interestGroup.id
                 else
-                    console.log 'ignore unpublished element'
+                    unless currentBalloon.hasClass('unpublished')
+                        if currentBalloon.hasClass('proposal') or currentBalloon.hasClass('investigation')
+                            console.log 'published element?'
+                            text += currentBalloon.children('.headline').text() + ' '
+                            currentBalloon.children('.body').children('.bodypart').children('.part-content').each ->
+                                text += jQuery(this).text() + ' '
+                    else
+                        console.log 'ignore unpublished element'
             _.each text.split(wordSeparators), (word) ->
                 word = word.replace(punctuation, "")
                 wordsToReturn.push(word)

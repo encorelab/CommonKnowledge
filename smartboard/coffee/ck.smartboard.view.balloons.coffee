@@ -414,11 +414,10 @@ class CK.Smartboard.View.InvestigationBalloon extends CK.Smartboard.View.Content
             'new_information',
             'references',
             'question',
-            'findings',
-            'conclusions',
             'hypothesis',
             'method',
-            'results'
+            'results',
+            'conclusions',
         ]
 
         for part in possibleBodyparts when @model.has(part)
