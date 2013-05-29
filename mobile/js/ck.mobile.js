@@ -839,16 +839,25 @@ CK.Mobile = function() {
   app.tryRestoreUnfinishedInvestigation = function(tagName) {
     var restoreArray = [];
     var toRestore = null;
-    // find an unfinished, unpublished prop and inv (default grabs the last/newest one, which is the one we want)
-    var unfinishedProp = _.find(app.proposalList.models, function(prop) {
+    var unfinishedProp = null;
+    var unfinishedInq = null;
+    var unfinishedExp = null;
+    // create an array of an unfinished, unpublished props and invs, then find the most recent in each array (highest created_at)
+    var unfinishedPropArray = _.filter(app.proposalList.models, function(prop) {
       return prop.get('author') === app.userData.account.login && prop.get('published') === false && prop.get('tag').name === tagName && (prop.get('proposal') || prop.get('justification'));
     });
-    var unfinishedInq = _.find(app.investigationList.models, function(inq) {
+    if (unfinishedPropArray.length > 0) { unfinishedProp = _.max(unfinishedPropArray, function(prop) { return prop.get('created_at'); }); }
+
+    var unfinishedInqArray = _.filter(app.investigationList.models, function(inq) {
       return inq.hasAuthor(app.userData.account.login) && inq.get('published') === false && inq.get('interest_group') === tagName && inq.get('type') === 'inquiry' && (inq.get('headline') || inq.get('new_information') || inq.get('references'));
     });
-    var unfinishedExp = _.find(app.investigationList.models, function(exp) {
+    if (unfinishedInqArray.length > 0) { unfinishedInq = _.max(unfinishedInqArray, function(inq) { return inq.get('created_at'); }); }
+
+    var unfinishedExpArray = _.filter(app.investigationList.models, function(exp) {
       return exp.hasAuthor(app.userData.account.login) && exp.get('published') === false && exp.get('interest_group') === tagName && exp.get('type') === 'experiment' && (exp.get('headline') || exp.get('question') || exp.get('hypothesis') || exp.get('method') || exp.get('results') || exp.get('conclusions'));
-    });    
+    });
+    if (unfinishedExpArray.length > 0) { unfinishedExp = _.max(unfinishedExpArray, function(exp) { return exp.get('created_at'); }); }
+
     // decide which of three is newest
     if (unfinishedProp) { restoreArray.push(unfinishedProp); }
     if (unfinishedInq) { restoreArray.push(unfinishedInq); }
